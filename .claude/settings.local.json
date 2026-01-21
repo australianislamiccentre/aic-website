@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAustralian Islamic Centre website - initial release\n\nFeatures:\n- Homepage with hero, prayer times, programs, services sections\n- About page with timeline and team info\n- Programs, Services, Events, Media pages\n- Contact page with form \\(mailto integration\\)\n- Donate page with Stripe integration \\(currently disabled for review\\)\n- Visit page with directions and facilities\n- Architecture page showcasing the building\n- Resources page for worshippers\n- Responsive design with animations\n- Prayer times display\n\nTechnical:\n- Next.js 16 with App Router\n- Tailwind CSS 4 for styling\n- Framer Motion for animations\n- Stripe integration \\(disabled pending configuration\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git config:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Stripe webhook build error - use lazy initialization\n\nPrevents build-time error when STRIPE_SECRET_KEY is not set\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ],
     "additionalDirectories": [
       "/Users/rashidelhouli/australian-islamic-centre/src/components/sections",
