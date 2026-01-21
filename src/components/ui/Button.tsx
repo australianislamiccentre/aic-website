@@ -106,13 +106,14 @@ export function Button({
           target={target || "_blank"}
           rel="noopener noreferrer"
           className={cn(baseClasses, "group")}
+          onClick={onClick}
         >
           {content}
         </a>
       );
     }
     return (
-      <Link href={href} className={cn(baseClasses, "group")}>
+      <Link href={href} className={cn(baseClasses, "group")} onClick={onClick}>
         {content}
       </Link>
     );
