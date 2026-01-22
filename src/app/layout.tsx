@@ -91,13 +91,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth overflow-x-hidden">
       <body
-        className={`${inter.variable} ${playfair.variable} ${amiri.variable} antialiased bg-neutral-50 text-gray-900`}
+        className={`${inter.variable} ${playfair.variable} ${amiri.variable} antialiased bg-neutral-50 text-gray-900 overflow-x-hidden`}
       >
         <ScrollProgress />
         <Header />
-        <main>{children}</main>
+        <main className="overflow-x-hidden">{children}</main>
         <Footer />
       </body>
     </html>

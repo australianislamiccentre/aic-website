@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -99,21 +99,31 @@ const navigation = [
   { name: "Contact", href: "/contact" },
 ];
 
+// Hook to subscribe to scroll position using useSyncExternalStore
+function useIsScrolled(threshold = 50) {
+  const subscribe = useCallback((callback: () => void) => {
+    window.addEventListener("scroll", callback, { passive: true });
+    return () => window.removeEventListener("scroll", callback);
+  }, []);
+
+  const getSnapshot = useCallback(() => {
+    return window.scrollY > threshold;
+  }, [threshold]);
+
+  const getServerSnapshot = useCallback(() => {
+    return false; // Default to not scrolled on server
+  }, []);
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
 export function Header() {
   const pathname = usePathname();
-  const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolled = useIsScrolled(50);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileExpandedItem, setMobileExpandedItem] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
