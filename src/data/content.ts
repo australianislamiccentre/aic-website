@@ -1,4 +1,12 @@
-// Prayer times - These should be fetched dynamically in production
+// Prayer times - Dynamically calculated based on the current date
+// Re-export from the prayer-times utility for convenience
+export { getPrayerTimesSimple as getDynamicPrayerTimes, getNextPrayer, getPrayerTimesForDate } from "@/lib/prayer-times";
+
+// Centralized prayer configuration - will be replaced by Sanity CMS
+import { getJumuahTimes } from "@/lib/prayer-config";
+
+// Static fallback prayer times (used for SSR initial render)
+// These will be replaced by dynamic times on the client
 export const prayerTimes = {
   fajr: { adhan: "5:30 AM", iqamah: "5:45 AM" },
   sunrise: { adhan: "6:45 AM", iqamah: "-" },
@@ -8,11 +16,10 @@ export const prayerTimes = {
   isha: { adhan: "9:45 PM", iqamah: "10:00 PM" },
 };
 
-// Jumu'ah (Friday) prayer times
-export const jumuahTimes = [
-  { session: "Arabic Session", time: "1:00 PM", language: "Arabic" },
-  { session: "English Session", time: "2:15 PM", language: "English" },
-];
+// Jumu'ah (Friday) prayer times - now from centralized config
+// This will automatically update when JUMUAH_CONFIG changes in prayer-config.ts
+// Eventually this will come from Sanity CMS
+export const jumuahTimes = getJumuahTimes();
 
 // AIC Images - Local images from public/images folder
 export const aicImages = {

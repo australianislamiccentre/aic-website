@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { prayerTimes, jumuahTimes, mosqueEtiquette, aicInfo, services, upcomingEvents } from "@/data/content";
+import { jumuahTimes, mosqueEtiquette, aicInfo, services, upcomingEvents } from "@/data/content";
+import { getPrayerTimesForDate } from "@/lib/prayer-times";
 import {
   Clock,
   MapPin,
@@ -26,15 +28,10 @@ import {
   Sun,
   Sunset,
   Cloud,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
 } from "lucide-react";
-
-const prayerList = [
-  { name: "Fajr", adhan: prayerTimes.fajr.adhan, iqamah: prayerTimes.fajr.iqamah, arabic: "الفجر", icon: Moon, color: "from-indigo-500 to-purple-600" },
-  { name: "Dhuhr", adhan: prayerTimes.dhuhr.adhan, iqamah: prayerTimes.dhuhr.iqamah, arabic: "الظهر", icon: Sun, color: "from-yellow-400 to-orange-500" },
-  { name: "Asr", adhan: prayerTimes.asr.adhan, iqamah: prayerTimes.asr.iqamah, arabic: "العصر", icon: Cloud, color: "from-blue-400 to-cyan-500" },
-  { name: "Maghrib", adhan: prayerTimes.maghrib.adhan, iqamah: prayerTimes.maghrib.iqamah, arabic: "المغرب", icon: Sunset, color: "from-rose-400 to-red-500" },
-  { name: "Isha", adhan: prayerTimes.isha.adhan, iqamah: prayerTimes.isha.iqamah, arabic: "العشاء", icon: Moon, color: "from-purple-500 to-indigo-600" },
-];
 
 const etiquetteIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   footprints: Footprints,
@@ -46,12 +43,66 @@ const etiquetteIcons: Record<string, React.ComponentType<{ className?: string }>
 };
 
 export default function WorshippersPage() {
-  const today = new Date().toLocaleDateString("en-AU", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const prayerTimes = getPrayerTimesForDate(selectedDate);
+
+  const formatDisplayDate = (date: Date) => {
+    return date.toLocaleDateString("en-AU", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "Australia/Melbourne",
+    });
+  };
+
+  const formatInputDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
+  const goToPreviousDay = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() - 1);
+    setSelectedDate(newDate);
+  };
+
+  const goToNextDay = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() + 1);
+    setSelectedDate(newDate);
+  };
+
+  const goToToday = () => {
+    setSelectedDate(new Date());
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = new Date(e.target.value + "T12:00:00");
+    if (!isNaN(newDate.getTime())) {
+      setSelectedDate(newDate);
+    }
+  };
+
+  // Build prayer list from dynamic times
+  const prayerList = [
+    { name: "Fajr", adhan: prayerTimes.fajr.adhan, iqamah: prayerTimes.fajr.iqamah, arabic: "الفجر", icon: Moon, color: "from-indigo-500 to-purple-600" },
+    { name: "Dhuhr", adhan: prayerTimes.dhuhr.adhan, iqamah: prayerTimes.dhuhr.iqamah, arabic: "الظهر", icon: Sun, color: "from-yellow-400 to-orange-500" },
+    { name: "Asr", adhan: prayerTimes.asr.adhan, iqamah: prayerTimes.asr.iqamah, arabic: "العصر", icon: Cloud, color: "from-blue-400 to-cyan-500" },
+    { name: "Maghrib", adhan: prayerTimes.maghrib.adhan, iqamah: prayerTimes.maghrib.iqamah, arabic: "المغرب", icon: Sunset, color: "from-rose-400 to-red-500" },
+    { name: "Isha", adhan: prayerTimes.isha.adhan, iqamah: prayerTimes.isha.iqamah, arabic: "العشاء", icon: Moon, color: "from-purple-500 to-indigo-600" },
+  ];
 
   return (
     <>
@@ -95,12 +146,67 @@ export default function WorshippersPage() {
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
                 <Clock className="w-4 h-4" />
-                Daily Prayer Times
+                {isToday(selectedDate) ? "Today's Prayer Times" : "Prayer Times"}
               </div>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 Prayer Schedule
               </h2>
-              <p className="text-gray-600 text-lg">{today}</p>
+
+              {/* Date Navigation */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
+                {/* Navigation Buttons */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={goToPreviousDay}
+                    className="p-2.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
+                    aria-label="Previous day"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-gray-600" />
+                  </button>
+
+                  {/* Date Display */}
+                  <div className="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm min-w-[240px] text-center">
+                    <span className="text-gray-900 font-medium">{formatDisplayDate(selectedDate)}</span>
+                  </div>
+
+                  <button
+                    onClick={goToNextDay}
+                    className="p-2.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
+                    aria-label="Next day"
+                  >
+                    <ChevronRight className="w-5 h-5 text-gray-600" />
+                  </button>
+
+                  {/* Calendar Button */}
+                  <div className="relative">
+                    <button
+                      className="p-2.5 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors shadow-sm"
+                      aria-label="Open calendar"
+                    >
+                      <Calendar className="w-5 h-5 text-white" />
+                    </button>
+                    <input
+                      type="date"
+                      value={formatInputDate(selectedDate)}
+                      onChange={handleDateChange}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      aria-label="Select date"
+                    />
+                  </div>
+                </div>
+
+                {/* Today Button */}
+                {!isToday(selectedDate) && (
+                  <button
+                    onClick={goToToday}
+                    className="p-2.5 rounded-lg bg-gray-800 hover:bg-gray-900 transition-colors shadow-sm"
+                    aria-label="Back to today"
+                    title="Back to today"
+                  >
+                    <RotateCcw className="w-5 h-5 text-white" />
+                  </button>
+                )}
+              </div>
             </div>
           </FadeIn>
 
@@ -128,7 +234,7 @@ export default function WorshippersPage() {
           <FadeIn>
             <div className="bg-neutral-50 rounded-2xl p-8 text-center">
               <p className="text-gray-600">
-                <strong>Sunrise:</strong> {prayerTimes.sunrise.adhan} &bull;
+                <strong>Sunrise:</strong> {prayerTimes.sunrise.adhan} <span className="text-teal-600">(Shuruk: {prayerTimes.sunrise.iqamah})</span> &bull;
                 <strong className="ml-4">Location:</strong> {aicInfo.address.full}
               </p>
             </div>

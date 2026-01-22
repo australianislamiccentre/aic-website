@@ -5,7 +5,8 @@ import { motion } from "framer-motion";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { prayerTimes } from "@/data/content";
+import { PrayerTimesCard } from "@/components/ui/PrayerTimesCard";
+import { jumuahTimes } from "@/data/content";
 import {
   Clock,
   Calendar,
@@ -16,21 +17,7 @@ import {
   ChevronDown,
   ChevronUp,
   Search,
-  Sunrise,
-  Sun,
-  Cloud,
-  Sunset,
-  Moon,
 } from "lucide-react";
-
-const prayers = [
-  { name: "Fajr", time: prayerTimes.fajr.adhan, icon: Moon, arabic: "الفجر" },
-  { name: "Sunrise", time: prayerTimes.sunrise.adhan, icon: Sunrise, arabic: "الشروق" },
-  { name: "Dhuhr", time: prayerTimes.dhuhr.adhan, icon: Sun, arabic: "الظهر" },
-  { name: "Asr", time: prayerTimes.asr.adhan, icon: Cloud, arabic: "العصر" },
-  { name: "Maghrib", time: prayerTimes.maghrib.adhan, icon: Sunset, arabic: "المغرب" },
-  { name: "Isha", time: prayerTimes.isha.adhan, icon: Moon, arabic: "العشاء" },
-];
 
 const downloads = [
   {
@@ -200,26 +187,12 @@ export default function ResourcesPage() {
             </div>
           </FadeIn>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {prayers.map((prayer, index) => (
-              <FadeIn key={prayer.name} delay={index * 0.1}>
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  className="bg-gradient-to-br from-teal-50 to-neutral-50 rounded-2xl p-6 text-center border border-neutral-100"
-                >
-                  <prayer.icon className="w-8 h-8 mx-auto text-teal-600 mb-3" />
-                  <p className="text-teal-600 font-arabic mb-1">{prayer.arabic}</p>
-                  <h3 className="font-semibold text-gray-900 mb-1">{prayer.name}</h3>
-                  <p className="text-2xl font-bold text-neutral-700">{prayer.time}</p>
-                </motion.div>
-              </FadeIn>
-            ))}
-          </div>
+          <PrayerTimesCard variant="full" showIqamah={true} showArabic={true} highlightNext={true} />
 
           <FadeIn delay={0.4}>
             <div className="text-center mt-8">
               <p className="text-gray-500 text-sm mb-4">
-                Friday Jumu&apos;ah prayer is at 12:30 PM and 1:30 PM
+                Friday Jumu&apos;ah prayer: Arabic Khutbah at {jumuahTimes[0].time}, English Khutbah at {jumuahTimes[1].time}
               </p>
               <Button
                 href="#"

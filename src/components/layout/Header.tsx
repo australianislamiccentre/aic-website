@@ -16,7 +16,6 @@ import {
   ChevronRight,
   Search,
   Heart,
-  Clock,
   MapPin,
   Phone,
   ExternalLink,
@@ -159,31 +158,35 @@ export function Header() {
 
   return (
     <>
-      {/* Top bar */}
+      {/* Top bar - Desktop */}
       <div className="hidden lg:block bg-neutral-900 text-white/90 py-2">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between text-sm">
+          {/* Left side - placeholder for announcements */}
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-lime-400" />
-              <span>Next Prayer: Dhuhr 1:30 PM</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-lime-400" />
-              <span>{aicInfo.address.full}</span>
-            </div>
+            <span className="text-white/70">Welcome to the Australian Islamic Centre</span>
           </div>
+          {/* Right side - contact info */}
           <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-white/50" />
+              <span className="text-white/70">{aicInfo.address.suburb}, {aicInfo.address.state}</span>
+            </div>
             <a href={`tel:${aicInfo.phone}`} className="flex items-center gap-2 hover:text-lime-400 transition-colors">
               <Phone className="w-4 h-4" />
               <span>{aicInfo.phone}</span>
             </a>
-            <Link href="/contact" className="hover:text-lime-400 transition-colors">
-              Contact
-            </Link>
-            <Link href="/media#updates" className="hover:text-teal-400 transition-colors">
-              Announcements
-            </Link>
           </div>
+        </div>
+      </div>
+
+      {/* Top bar - Mobile/Tablet */}
+      <div className="lg:hidden bg-neutral-900 text-white py-2 px-4">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-white/70">Welcome to AIC</span>
+          <a href={`tel:${aicInfo.phone}`} className="flex items-center gap-1.5 text-white/70 hover:text-lime-400 transition-colors">
+            <Phone className="w-3.5 h-3.5" />
+            <span>{aicInfo.phone}</span>
+          </a>
         </div>
       </div>
 

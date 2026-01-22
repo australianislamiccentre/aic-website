@@ -4,8 +4,10 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
-import { ArrowRight, Play, ChevronLeft, ChevronRight } from "lucide-react";
-import { aicImages, prayerTimes, jumuahTimes } from "@/data/content";
+import { ArrowRight, Play, ChevronLeft, ChevronRight, ChevronDown, Sunrise, Sun, Cloud, Sunset, Moon } from "lucide-react";
+import { aicImages, jumuahTimes } from "@/data/content";
+import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
+import type { PrayerName } from "@/lib/prayer-times";
 
 // Hero slides with different images and content
 const heroSlides = [
@@ -46,52 +48,15 @@ const heroSlides = [
   },
 ];
 
-interface PrayerTime {
-  name: string;
-  time: string;
-}
-
-const prayers: PrayerTime[] = [
-  { name: "Fajr", time: prayerTimes.fajr.iqamah },
-  { name: "Dhuhr", time: prayerTimes.dhuhr.iqamah },
-  { name: "Asr", time: prayerTimes.asr.iqamah },
-  { name: "Maghrib", time: prayerTimes.maghrib.iqamah },
-  { name: "Isha", time: prayerTimes.isha.iqamah },
-];
-
-function getNextPrayer(): { name: string; time: string } {
-  const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  const currentTime = currentHour * 60 + currentMinute;
-
-  const parseTime = (timeStr: string): number => {
-    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
-    if (!match) return 0;
-    let hours = parseInt(match[1]);
-    const minutes = parseInt(match[2]);
-    const period = match[3]?.toUpperCase();
-
-    if (period === "PM" && hours !== 12) hours += 12;
-    if (period === "AM" && hours === 12) hours = 0;
-
-    return hours * 60 + minutes;
-  };
-
-  const prayerMinutes = prayers.map(p => ({
-    name: p.name,
-    time: p.time,
-    minutes: parseTime(p.time)
-  }));
-
-  for (const prayer of prayerMinutes) {
-    if (prayer.minutes > currentTime) {
-      return { name: prayer.name, time: prayer.time };
-    }
-  }
-
-  return { name: "Fajr", time: prayers[0].time };
-}
+// Prayer icons config
+const PRAYER_ICONS: Record<PrayerName, typeof Moon> = {
+  fajr: Moon,
+  sunrise: Sunrise,
+  dhuhr: Sun,
+  asr: Cloud,
+  maghrib: Sunset,
+  isha: Moon,
+};
 
 export function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -99,8 +64,35 @@ export function HeroSection() {
   const [direction, setDirection] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [imagesLoaded, setImagesLoaded] = useState<boolean[]>(new Array(heroSlides.length).fill(false));
-  const [nextPrayer, setNextPrayer] = useState(() => getNextPrayer());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [mobileExpanded, setMobileExpanded] = useState(false);
+
+  // Check if today is Friday (for Jumu'ah display)
+  const isFriday = new Date().toLocaleString("en-US", {
+    timeZone: "Australia/Melbourne",
+    weekday: "long"
+  }) === "Friday";
+
+  // Use dynamic prayer times
+  const prayerTimes = usePrayerTimes();
+  const nextPrayerData = useNextPrayer();
+
+  // Build prayers array with full data
+  const prayers = [
+    { key: "fajr" as const, name: "Fajr", adhan: prayerTimes.fajr.adhan, iqamah: prayerTimes.fajr.iqamah },
+    { key: "sunrise" as const, name: "Sunrise", adhan: prayerTimes.sunrise.adhan, iqamah: prayerTimes.sunrise.iqamah },
+    { key: "dhuhr" as const, name: "Dhuhr", adhan: prayerTimes.dhuhr.adhan, iqamah: prayerTimes.dhuhr.iqamah },
+    { key: "asr" as const, name: "Asr", adhan: prayerTimes.asr.adhan, iqamah: prayerTimes.asr.iqamah },
+    { key: "maghrib" as const, name: "Maghrib", adhan: prayerTimes.maghrib.adhan, iqamah: prayerTimes.maghrib.iqamah },
+    { key: "isha" as const, name: "Isha", adhan: prayerTimes.isha.adhan, iqamah: prayerTimes.isha.iqamah },
+  ];
+
+  const nextPrayer = {
+    name: nextPrayerData.displayName,
+    adhan: nextPrayerData.adhan,
+    iqamah: nextPrayerData.iqamah,
+    key: nextPrayerData.name,
+  };
 
   // Mouse parallax
   const mouseX = useMotionValue(0);
@@ -131,13 +123,6 @@ export function HeroSection() {
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [mouseX, mouseY]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setNextPrayer(getNextPrayer());
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Auto-advance slides
   useEffect(() => {
@@ -450,61 +435,92 @@ export function HeroSection() {
         transition={{ delay: 1, duration: 0.8 }}
         className="absolute bottom-0 left-0 right-0 z-40"
       >
-        <div className="backdrop-blur-xl bg-black/50 border-t border-white/10">
-          {/* Desktop: Two-line layout */}
-          <div className="hidden md:block">
-            <div className="max-w-7xl mx-auto px-6 py-3">
-              {/* Line 1: Daily Prayer Times */}
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <span className="text-white/60 text-sm font-medium">Prayer Times</span>
-                  <div className="w-px h-4 bg-white/20" />
-                  <div className="flex items-center gap-2">
-                    <span className="text-white/60 text-sm">Next:</span>
-                    <div className="px-3 py-1 rounded-lg bg-green-500/20 border border-green-500/30">
-                      <span className="text-green-400 font-bold">{nextPrayer.name}</span>
-                      <span className="text-white font-semibold ml-2">{nextPrayer.time}</span>
+        <div className="backdrop-blur-xl bg-black/60 border-t border-white/10">
+          {/* Desktop: Prayer cards layout */}
+          <div className="hidden lg:block">
+            <div className="max-w-7xl mx-auto px-6 py-4">
+              {/* Next Prayer Highlight + Prayer Grid */}
+              <div className="flex items-start gap-6">
+                {/* Next Prayer Card */}
+                <div className="flex-shrink-0 px-5 py-3 rounded-xl bg-gradient-to-br from-green-500/30 to-green-600/20 border border-green-500/40">
+                  <p className="text-green-400/80 text-xs font-medium uppercase tracking-wider mb-1">Next Prayer</p>
+                  <div className="flex items-center gap-3">
+                    {(() => {
+                      const Icon = PRAYER_ICONS[nextPrayer.key];
+                      return <Icon className="w-6 h-6 text-green-400" />;
+                    })()}
+                    <div>
+                      <p className="text-white font-bold text-lg">{nextPrayer.name}</p>
+                      <div className="flex items-center gap-3 text-sm">
+                        <span className="text-white/60">Athan <span className="text-white font-semibold">{nextPrayer.adhan}</span></span>
+                        {nextPrayer.key !== "sunrise" && (
+                          <span className="text-white/60">Iqamah <span className="text-green-400 font-bold">{nextPrayer.iqamah}</span></span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  {prayers.map((prayer) => (
-                    <div
-                      key={prayer.name}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
-                        nextPrayer.name === prayer.name
-                          ? "bg-green-500/20 border border-green-500/30"
-                          : "hover:bg-white/10"
-                      }`}
-                    >
-                      <span className={`text-sm font-medium ${
-                        nextPrayer.name === prayer.name ? "text-green-400" : "text-white/60"
-                      }`}>
-                        {prayer.name}
-                      </span>
-                      <span className={`font-semibold text-sm ${
-                        nextPrayer.name === prayer.name ? "text-white" : "text-white/80"
-                      }`}>
-                        {prayer.time}
-                      </span>
-                    </div>
-                  ))}
+                {/* All Prayers Grid */}
+                <div className="flex-1 grid grid-cols-6 gap-3">
+                  {prayers.map((prayer) => {
+                    const Icon = PRAYER_ICONS[prayer.key];
+                    const isNext = nextPrayer.key === prayer.key;
+
+                    return (
+                      <div
+                        key={prayer.key}
+                        className={`rounded-xl p-3 transition-all ${
+                          isNext
+                            ? "bg-green-500/20 border border-green-500/40"
+                            : "bg-white/5 border border-white/10 hover:bg-white/10"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon className={`w-4 h-4 ${isNext ? "text-green-400" : "text-white/50"}`} />
+                          <span className={`font-medium text-sm ${isNext ? "text-green-400" : "text-white/80"}`}>
+                            {prayer.name}
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-white/40 text-xs">Athan</span>
+                            <span className={`font-semibold text-sm ${isNext ? "text-white" : "text-white/90"}`}>
+                              {prayer.adhan}
+                            </span>
+                          </div>
+                          {prayer.key !== "sunrise" ? (
+                            <div className="flex justify-between items-center">
+                              <span className="text-white/40 text-xs">Iqamah</span>
+                              <span className={`font-bold text-sm ${isNext ? "text-green-400" : "text-lime-400"}`}>
+                                {prayer.iqamah}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex justify-between items-center">
+                              <span className="text-white/40 text-xs">Shuruk</span>
+                              <span className="font-bold text-sm text-orange-400">
+                                {prayer.iqamah}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Line 2: Jumu'ah Times */}
-              <div className="flex items-center justify-between pt-2 border-t border-white/10">
+              {/* Jumu'ah Times */}
+              <div className="flex items-center justify-end gap-4 mt-3 pt-3 border-t border-white/10">
+                <span className="text-white/50 text-sm font-medium">Jumu&apos;ah (Friday)</span>
                 <div className="flex items-center gap-3">
-                  <span className="text-white/60 text-sm font-medium">Jumu&apos;ah (Friday)</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5">
-                    <span className="text-white/50 text-sm">Arabic Khutbah</span>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5">
+                    <span className="text-white/50 text-xs">Arabic</span>
                     <span className="text-lime-400 font-semibold">{jumuahTimes[0].time}</span>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5">
-                    <span className="text-white/50 text-sm">English Khutbah</span>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5">
+                    <span className="text-white/50 text-xs">English</span>
                     <span className="text-lime-400 font-semibold">{jumuahTimes[1].time}</span>
                   </div>
                 </div>
@@ -512,57 +528,215 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Mobile: Compact two-line layout */}
-          <div className="md:hidden">
-            <div className="px-4 py-3">
-              {/* Line 1: Next prayer + all times scrollable */}
-              <div className="flex items-center gap-3 mb-2">
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-white/60 text-xs">Next:</span>
-                  <div className="px-2 py-1 rounded-lg bg-green-500/20 border border-green-500/30">
-                    <span className="text-green-400 font-bold text-sm">{nextPrayer.name}</span>
-                    <span className="text-white font-semibold text-sm ml-1">{nextPrayer.time}</span>
+          {/* Tablet: Compact grid */}
+          <div className="hidden md:block lg:hidden">
+            <div className="max-w-4xl mx-auto px-6 py-4">
+              {/* Next Prayer */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-white/60 text-sm">Next Prayer:</span>
+                  <div className="px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30">
+                    <span className="text-green-400 font-bold">{nextPrayer.name}</span>
+                    <span className="text-white/60 text-sm ml-2">Athan</span>
+                    <span className="text-white font-semibold ml-1">{nextPrayer.adhan}</span>
+                    {nextPrayer.key !== "sunrise" && (
+                      <>
+                        <span className="text-white/40 mx-2">|</span>
+                        <span className="text-white/60 text-sm">Iqamah</span>
+                        <span className="text-green-400 font-bold ml-1">{nextPrayer.iqamah}</span>
+                      </>
+                    )}
                   </div>
-                </div>
-                <div className="flex items-center gap-1.5 overflow-x-auto">
-                  {prayers.map((prayer) => (
-                    <div
-                      key={prayer.name}
-                      className={`flex items-center gap-1 px-2 py-1 rounded-lg flex-shrink-0 ${
-                        nextPrayer.name === prayer.name
-                          ? "bg-green-500/20 border border-green-500/30"
-                          : "bg-white/5"
-                      }`}
-                    >
-                      <span className={`text-xs font-medium ${
-                        nextPrayer.name === prayer.name ? "text-green-400" : "text-white/50"
-                      }`}>
-                        {prayer.name}
-                      </span>
-                      <span className={`font-semibold text-xs ${
-                        nextPrayer.name === prayer.name ? "text-white" : "text-white/70"
-                      }`}>
-                        {prayer.time}
-                      </span>
-                    </div>
-                  ))}
                 </div>
               </div>
 
-              {/* Line 2: Jumu'ah times */}
-              <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-                <span className="text-white/50 text-xs flex-shrink-0">Jumu&apos;ah</span>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
-                    <span className="text-white/40 text-xs">Ar</span>
-                    <span className="text-lime-400 font-semibold text-xs">{jumuahTimes[0].time}</span>
-                  </div>
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
-                    <span className="text-white/40 text-xs">En</span>
-                    <span className="text-lime-400 font-semibold text-xs">{jumuahTimes[1].time}</span>
-                  </div>
+              {/* Prayer Grid */}
+              <div className="grid grid-cols-6 gap-2 mb-3">
+                {prayers.map((prayer) => {
+                  const isNext = nextPrayer.key === prayer.key;
+                  return (
+                    <div
+                      key={prayer.key}
+                      className={`rounded-lg p-2 text-center ${
+                        isNext ? "bg-green-500/20 border border-green-500/30" : "bg-white/5"
+                      }`}
+                    >
+                      <p className={`text-xs font-medium mb-1 ${isNext ? "text-green-400" : "text-white/60"}`}>
+                        {prayer.name}
+                      </p>
+                      <p className={`text-sm font-semibold ${isNext ? "text-white" : "text-white/80"}`}>
+                        {prayer.adhan}
+                      </p>
+                      <p className={`text-xs font-bold ${isNext ? "text-green-400" : "text-lime-400"}`}>
+                        {prayer.iqamah}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Jumu'ah */}
+              <div className="flex items-center justify-center gap-4 pt-2 border-t border-white/10">
+                <span className="text-white/50 text-sm">Jumu&apos;ah</span>
+                <div className="flex items-center gap-2 px-2 py-1 rounded bg-white/5">
+                  <span className="text-white/40 text-xs">Arabic</span>
+                  <span className="text-lime-400 font-semibold text-sm">{jumuahTimes[0].time}</span>
+                </div>
+                <div className="flex items-center gap-2 px-2 py-1 rounded bg-white/5">
+                  <span className="text-white/40 text-xs">English</span>
+                  <span className="text-lime-400 font-semibold text-sm">{jumuahTimes[1].time}</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Mobile: Collapsible layout */}
+          <div className="md:hidden">
+            <div className="px-4 py-3">
+              {/* Next Prayer with expand toggle */}
+              {/* On Friday when Dhuhr is next, show Jumu'ah instead */}
+              {isFriday && nextPrayer.key === "dhuhr" ? (
+                <>
+                  <button
+                    onClick={() => setMobileExpanded(!mobileExpanded)}
+                    className="w-full px-3 py-2 rounded-lg bg-amber-500/20 border border-amber-500/30 active:bg-amber-500/30 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sun className="w-5 h-5 text-amber-400" />
+                        <div className="text-left">
+                          <p className="text-white/50 text-xs">Next Prayer</p>
+                          <p className="text-amber-400 font-bold text-sm">Jumu&apos;ah</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <div className="flex items-center justify-end gap-2 text-xs">
+                            <span className="text-white/40">Arabic</span>
+                            <span className="text-white font-semibold">{jumuahTimes[0].time}</span>
+                          </div>
+                          <div className="flex items-center justify-end gap-2 text-xs">
+                            <span className="text-white/40">English</span>
+                            <span className="text-amber-400 font-bold">{jumuahTimes[1].time}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center ml-1">
+                          <motion.div
+                            animate={{ rotate: mobileExpanded ? 180 : 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <ChevronDown className="w-5 h-5 text-white/50" />
+                          </motion.div>
+                          <span className="text-white/30 text-[10px]">All times</span>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setMobileExpanded(!mobileExpanded)}
+                    className="w-full px-3 py-2 rounded-lg bg-green-500/20 border border-green-500/30 active:bg-green-500/30 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {(() => {
+                          const Icon = PRAYER_ICONS[nextPrayer.key];
+                          return <Icon className="w-5 h-5 text-green-400" />;
+                        })()}
+                        <div className="text-left">
+                          <p className="text-white/50 text-xs">Next Prayer</p>
+                          <p className="text-green-400 font-bold text-sm">{nextPrayer.name}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <p className="text-white text-sm font-semibold">{nextPrayer.adhan}</p>
+                          {nextPrayer.key !== "sunrise" && (
+                            <p className="text-green-400 text-xs font-bold">Iqamah {nextPrayer.iqamah}</p>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-center ml-1">
+                          <motion.div
+                            animate={{ rotate: mobileExpanded ? 180 : 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <ChevronDown className="w-5 h-5 text-white/50" />
+                          </motion.div>
+                          <span className="text-white/30 text-[10px]">All times</span>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Friday Jumu'ah - Visible on Fridays when Dhuhr is NOT next */}
+                  {isFriday && !mobileExpanded && (
+                    <div className="flex flex-wrap items-center justify-center gap-2 mt-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                      <span className="text-amber-400/80 text-xs font-medium">Jumu&apos;ah Today</span>
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
+                        <span className="text-white/30 text-xs">Arabic</span>
+                        <span className="text-amber-400 font-semibold text-xs">{jumuahTimes[0].time}</span>
+                      </div>
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
+                        <span className="text-white/30 text-xs">English</span>
+                        <span className="text-amber-400 font-semibold text-xs">{jumuahTimes[1].time}</span>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Expanded: All Prayer Times */}
+              <AnimatePresence>
+                {mobileExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    {/* Prayer Times Grid - 3x2 */}
+                    <div className="grid grid-cols-3 gap-2 mt-3">
+                      {prayers.map((prayer) => {
+                        const isNext = nextPrayer.key === prayer.key;
+                        return (
+                          <div
+                            key={prayer.key}
+                            className={`rounded-lg p-2 ${
+                              isNext ? "bg-green-500/15 border border-green-500/30" : "bg-white/5"
+                            }`}
+                          >
+                            <p className={`text-xs font-medium mb-0.5 ${isNext ? "text-green-400" : "text-white/50"}`}>
+                              {prayer.name}
+                            </p>
+                            <p className={`text-sm font-semibold ${isNext ? "text-white" : "text-white/80"}`}>
+                              {prayer.adhan}
+                            </p>
+                            <p className={`text-xs font-bold ${isNext ? "text-green-400" : "text-lime-400/80"}`}>
+                              {prayer.iqamah}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Jumu'ah in expanded view */}
+                    <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-white/10">
+                      <span className="text-white/40 text-xs">Jumu&apos;ah</span>
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
+                        <span className="text-white/30 text-xs">Arabic</span>
+                        <span className="text-lime-400 font-semibold text-xs">{jumuahTimes[0].time}</span>
+                      </div>
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
+                        <span className="text-white/30 text-xs">English</span>
+                        <span className="text-lime-400 font-semibold text-xs">{jumuahTimes[1].time}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
