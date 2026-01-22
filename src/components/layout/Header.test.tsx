@@ -10,6 +10,7 @@ vi.mock("@/data/content", () => ({
     address: {
       full: "15 Corporate Crescent, Newport VIC 3015",
       suburb: "Newport",
+      state: "VIC",
     },
     externalLinks: {
       college: "https://aicollege.edu.au",
@@ -190,14 +191,12 @@ describe("Header", () => {
     expect(contactLinkWithHref).toBeTruthy();
   });
 
-  it("renders top bar with prayer time and address on desktop", () => {
+  it("renders top bar with welcome message and location on desktop", () => {
     render(<Header />);
 
     // Top bar content (visible on lg screens)
-    expect(screen.getByText(/Next Prayer:/)).toBeInTheDocument();
-    expect(
-      screen.getByText("15 Corporate Crescent, Newport VIC 3015")
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Welcome to the Australian Islamic Centre/)).toBeInTheDocument();
+    expect(screen.getByText(/Newport, VIC/)).toBeInTheDocument();
   });
 
   it("renders phone number in top bar", () => {
