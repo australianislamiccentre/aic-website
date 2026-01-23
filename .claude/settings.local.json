@@ -7,7 +7,17 @@
       "Bash(git remote add:*)",
       "Bash(git push:*)",
       "Bash(git config:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Stripe webhook build error - use lazy initialization\n\nPrevents build-time error when STRIPE_SECRET_KEY is not set\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Stripe webhook build error - use lazy initialization\n\nPrevents build-time error when STRIPE_SECRET_KEY is not set\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(npm run test:run:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(npm test:*)",
+      "Bash(npx tsx:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(git stash:*)"
     ],
     "additionalDirectories": [
       "/Users/rashidelhouli/australian-islamic-centre/src/components/sections",
