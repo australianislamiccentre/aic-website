@@ -30,7 +30,9 @@
       "Bash(pkill:*)",
       "Bash(ls:*)",
       "Bash(npm run seed:programs:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(git merge:*)",
+      "Bash(npm ls:*)"
     ],
     "additionalDirectories": [
       "/Users/rashidelhouli/australian-islamic-centre/src/components/sections",
