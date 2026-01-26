@@ -3,12 +3,27 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FadeIn } from "@/components/animations/FadeIn";
-import { testimonials } from "@/data/content";
-import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { SanityTestimonial } from "@/types/sanity";
+import { urlFor } from "@/sanity/lib/image";
+import { ChevronLeft, ChevronRight, Quote, MessageSquare } from "lucide-react";
 import Image from "next/image";
 
-export function TestimonialsSection() {
+interface TestimonialsSectionProps {
+  testimonials: SanityTestimonial[];
+}
+
+function getImageUrl(image: SanityTestimonial["image"]): string {
+  if (!image) return "/images/aic 1.jpg";
+  return urlFor(image).width(128).height(128).url();
+}
+
+export function TestimonialsSection({ testimonials }: TestimonialsSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Don't render if no testimonials
+  if (testimonials.length === 0) {
+    return null;
+  }
 
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
@@ -17,6 +32,8 @@ export function TestimonialsSection() {
   const prevTestimonial = () => {
     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
+
+  const currentTestimonial = testimonials[currentIndex];
 
   return (
     <section className="py-16 md:py-24 bg-white relative overflow-hidden">
@@ -57,64 +74,68 @@ export function TestimonialsSection() {
                 className="bg-white rounded-2xl p-8 md:p-12 shadow-lg border border-gray-100 relative"
               >
                 <blockquote className="text-xl md:text-2xl text-gray-700 leading-relaxed mb-8 italic text-center">
-                  &quot;{testimonials[currentIndex].quote}&quot;
+                  &quot;{currentTestimonial.quote}&quot;
                 </blockquote>
 
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 rounded-full overflow-hidden mb-4 ring-4 ring-neutral-100">
                     <Image
-                      src={testimonials[currentIndex].image || ""}
-                      alt={testimonials[currentIndex].author}
+                      src={getImageUrl(currentTestimonial.image)}
+                      alt={currentTestimonial.author}
                       width={64}
                       height={64}
-                      className="object-cover"
+                      className="object-cover w-full h-full"
                     />
                   </div>
                   <p className="font-semibold text-gray-900 text-lg">
-                    {testimonials[currentIndex].author}
+                    {currentTestimonial.author}
                   </p>
-                  <p className="text-neutral-600">
-                    {testimonials[currentIndex].role}
-                  </p>
+                  {currentTestimonial.role && (
+                    <p className="text-neutral-600">
+                      {currentTestimonial.role}
+                    </p>
+                  )}
                 </div>
               </motion.div>
             </AnimatePresence>
 
-            {/* Navigation */}
-            <div className="flex items-center justify-center gap-4 mt-8">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={prevTestimonial}
-                className="w-11 h-11 rounded-xl bg-white shadow-md flex items-center justify-center text-gray-500 hover:text-teal-600 hover:shadow-lg border border-gray-100 transition-all"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </motion.button>
+            {/* Navigation - only show if more than one testimonial */}
+            {testimonials.length > 1 && (
+              <div className="flex items-center justify-center gap-4 mt-8">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={prevTestimonial}
+                  className="w-11 h-11 rounded-xl bg-white shadow-md flex items-center justify-center text-gray-500 hover:text-teal-600 hover:shadow-lg border border-gray-100 transition-all"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </motion.button>
 
-              {/* Dots */}
-              <div className="flex items-center gap-2">
-                {testimonials.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentIndex(index)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      index === currentIndex
-                        ? "w-6 bg-teal-500"
-                        : "w-2 bg-gray-300 hover:bg-gray-400"
-                    }`}
-                  />
-                ))}
+                {/* Dots */}
+                <div className="flex items-center gap-2">
+                  {testimonials.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentIndex(index)}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        index === currentIndex
+                          ? "w-6 bg-teal-500"
+                          : "w-2 bg-gray-300 hover:bg-gray-400"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={nextTestimonial}
+                  className="w-11 h-11 rounded-xl bg-white shadow-md flex items-center justify-center text-gray-500 hover:text-teal-600 hover:shadow-lg border border-gray-100 transition-all"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </motion.button>
               </div>
-
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={nextTestimonial}
-                className="w-11 h-11 rounded-xl bg-white shadow-md flex items-center justify-center text-gray-500 hover:text-teal-600 hover:shadow-lg border border-gray-100 transition-all"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </motion.button>
-            </div>
+            )}
           </div>
         </div>
       </div>

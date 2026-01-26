@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { SearchDialog } from "@/components/ui/SearchDialog";
 import { aicInfo } from "@/data/content";
+import { SanitySiteSettings } from "@/types/sanity";
 import {
   Menu,
   X,
@@ -21,82 +22,89 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-const navigation = [
-  {
-    name: "Home",
-    href: "/",
-    children: [
-      { name: "Prayer Times", href: "/#prayer-times" },
-      { name: "For Worshippers", href: "/worshippers" },
-      { name: "For Visitors", href: "/visit" },
-      { name: "AIC College", href: aicInfo.externalLinks.college, external: true },
-      { name: "AIC Bookstore", href: aicInfo.externalLinks.bookstore, external: true },
-      { name: "Newport Storm FC", href: aicInfo.externalLinks.newportStorm, external: true },
-    ],
-  },
-  { name: "About", href: "/about" },
-  {
-    name: "Worshippers",
-    href: "/worshippers",
-    children: [
-      { name: "Daily Prayers", href: "/worshippers#prayers" },
-      { name: "Friday Sermons", href: "/worshippers#jumuah" },
-      { name: "Mosque Etiquette", href: "/worshippers#etiquette" },
-      { name: "Religious Programs", href: "/worshippers#programs" },
-      { name: "Events", href: "/events" },
-      { name: "Services", href: "/services" },
-      { name: "Getting to AIC", href: "/visit#directions" },
-    ],
-  },
-  {
-    name: "Services",
-    href: "/services",
-    children: [
-      { name: "Religious Services", href: "/services#religious" },
-      { name: "Funeral Services", href: "/services#funeral" },
-      { name: "Nikah Services", href: "/services#nikah" },
-      { name: "Counselling & Support", href: "/services#counselling" },
-    ],
-  },
-  {
-    name: "Visitors",
-    href: "/visit",
-    children: [
-      { name: "Visiting Hours", href: "/visit#hours" },
-      { name: "Book a Visit", href: "/visit#book" },
-      { name: "Mosque Manners", href: "/visit#manners" },
-      { name: "360° Tour", href: "/visit#virtual-tour" },
-      { name: "Getting to AIC", href: "/visit#directions" },
-      { name: "FAQs", href: "/visit#faq" },
-    ],
-  },
-  {
-    name: "Programs",
-    href: "/programs",
-    children: [
-      { name: "Education Programs", href: "/programs#education" },
-      { name: "AIC College", href: aicInfo.externalLinks.college, external: true },
-      { name: "AIC Salam School", href: "/programs#salam" },
-      { name: "IQRA Academy", href: "/programs#iqra" },
-      { name: "Al-Noor Institute", href: "/programs#alnoor" },
-      { name: "Sports & Youth", href: "/programs#youth" },
-      { name: "Newport Storm FC", href: aicInfo.externalLinks.newportStorm, external: true },
-      { name: "Boys Youth Nights", href: "/programs#boysynights" },
-    ],
-  },
-  {
-    name: "News & Media",
-    href: "/media",
-    children: [
-      { name: "Latest Updates", href: "/media#updates" },
-      { name: "Social Media", href: "/media#social" },
-      { name: "Podcasts", href: "/media#podcasts" },
-      { name: "Gallery", href: "/media#gallery" },
-    ],
-  },
-  { name: "Architecture", href: "/architecture" },
-  { name: "Contact", href: "/contact" },
-];
+interface HeaderProps {
+  siteSettings?: SanitySiteSettings | null;
+}
+
+// Build navigation with external links
+function buildNavigation(externalLinks: { college: string; bookstore: string; newportStorm: string }) {
+  return [
+    {
+      name: "Home",
+      href: "/",
+      children: [
+        { name: "Prayer Times", href: "/#prayer-times" },
+        { name: "For Worshippers", href: "/worshippers" },
+        { name: "For Visitors", href: "/visit" },
+        { name: "AIC College", href: externalLinks.college, external: true },
+        { name: "AIC Bookstore", href: externalLinks.bookstore, external: true },
+        { name: "Newport Storm FC", href: externalLinks.newportStorm, external: true },
+      ],
+    },
+    { name: "About", href: "/about" },
+    {
+      name: "Worshippers",
+      href: "/worshippers",
+      children: [
+        { name: "Daily Prayers", href: "/worshippers#prayers" },
+        { name: "Friday Sermons", href: "/worshippers#jumuah" },
+        { name: "Mosque Etiquette", href: "/worshippers#etiquette" },
+        { name: "Religious Programs", href: "/worshippers#programs" },
+        { name: "Events", href: "/events" },
+        { name: "Services", href: "/services" },
+        { name: "Getting to AIC", href: "/visit#directions" },
+      ],
+    },
+    {
+      name: "Services",
+      href: "/services",
+      children: [
+        { name: "Religious Services", href: "/services#religious" },
+        { name: "Funeral Services", href: "/services#funeral" },
+        { name: "Nikah Services", href: "/services#nikah" },
+        { name: "Counselling & Support", href: "/services#counselling" },
+      ],
+    },
+    {
+      name: "Visitors",
+      href: "/visit",
+      children: [
+        { name: "Visiting Hours", href: "/visit#hours" },
+        { name: "Book a Visit", href: "/visit#book" },
+        { name: "Mosque Manners", href: "/visit#manners" },
+        { name: "360° Tour", href: "/visit#virtual-tour" },
+        { name: "Getting to AIC", href: "/visit#directions" },
+        { name: "FAQs", href: "/visit#faq" },
+      ],
+    },
+    {
+      name: "Programs",
+      href: "/programs",
+      children: [
+        { name: "Education Programs", href: "/programs#education" },
+        { name: "AIC College", href: externalLinks.college, external: true },
+        { name: "AIC Salam School", href: "/programs#salam" },
+        { name: "IQRA Academy", href: "/programs#iqra" },
+        { name: "Al-Noor Institute", href: "/programs#alnoor" },
+        { name: "Sports & Youth", href: "/programs#youth" },
+        { name: "Newport Storm FC", href: externalLinks.newportStorm, external: true },
+        { name: "Boys Youth Nights", href: "/programs#boysynights" },
+      ],
+    },
+    {
+      name: "News & Media",
+      href: "/media",
+      children: [
+        { name: "Latest Updates", href: "/media#updates" },
+        { name: "Social Media", href: "/media#social" },
+        { name: "Podcasts", href: "/media#podcasts" },
+        { name: "Gallery", href: "/media#gallery" },
+      ],
+    },
+    { name: "Architecture", href: "/architecture" },
+    { name: "Contact", href: "/contact" },
+  ];
+}
 
 // Hook to subscribe to scroll position using useSyncExternalStore
 function useIsScrolled(threshold = 50) {
@@ -116,13 +124,29 @@ function useIsScrolled(threshold = 50) {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
-export function Header() {
+export function Header({ siteSettings }: HeaderProps) {
   const pathname = usePathname();
   const isScrolled = useIsScrolled(50);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileExpandedItem, setMobileExpandedItem] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  // Use Sanity data if available, fallback to hardcoded values
+  const info = {
+    address: {
+      suburb: siteSettings?.address?.suburb ?? aicInfo.address.suburb,
+      state: siteSettings?.address?.state ?? aicInfo.address.state,
+    },
+    phone: siteSettings?.phone ?? aicInfo.phone,
+    externalLinks: {
+      college: siteSettings?.externalLinks?.college ?? aicInfo.externalLinks.college,
+      bookstore: siteSettings?.externalLinks?.bookstore ?? aicInfo.externalLinks.bookstore,
+      newportStorm: siteSettings?.externalLinks?.sportsClub ?? aicInfo.externalLinks.newportStorm,
+    },
+  };
+
+  const navigation = buildNavigation(info.externalLinks);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -169,11 +193,11 @@ export function Header() {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-white/50" />
-              <span className="text-white/70">{aicInfo.address.suburb}, {aicInfo.address.state}</span>
+              <span className="text-white/70">{info.address.suburb}, {info.address.state}</span>
             </div>
-            <a href={`tel:${aicInfo.phone}`} className="flex items-center gap-2 hover:text-lime-400 transition-colors">
+            <a href={`tel:${info.phone}`} className="flex items-center gap-2 hover:text-lime-400 transition-colors">
               <Phone className="w-4 h-4" />
-              <span>{aicInfo.phone}</span>
+              <span>{info.phone}</span>
             </a>
           </div>
         </div>
@@ -183,9 +207,9 @@ export function Header() {
       <div className="lg:hidden bg-neutral-900 text-white py-2 px-4">
         <div className="flex items-center justify-between text-xs">
           <span className="text-white/70">Welcome to AIC</span>
-          <a href={`tel:${aicInfo.phone}`} className="flex items-center gap-1.5 text-white/70 hover:text-lime-400 transition-colors">
+          <a href={`tel:${info.phone}`} className="flex items-center gap-1.5 text-white/70 hover:text-lime-400 transition-colors">
             <Phone className="w-3.5 h-3.5" />
-            <span>{aicInfo.phone}</span>
+            <span>{info.phone}</span>
           </a>
         </div>
       </div>
@@ -469,14 +493,14 @@ export function Header() {
                 </Button>
 
                 <div className="flex items-center justify-center gap-6 text-sm text-white/60">
-                  <a href={`tel:${aicInfo.phone}`} className="flex items-center gap-2 hover:text-white transition-colors">
+                  <a href={`tel:${info.phone}`} className="flex items-center gap-2 hover:text-white transition-colors">
                     <Phone className="w-4 h-4" />
-                    <span>{aicInfo.phone}</span>
+                    <span>{info.phone}</span>
                   </a>
                   <span className="text-white/20">|</span>
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4" />
-                    <span>{aicInfo.address.suburb}</span>
+                    <span>{info.address.suburb}</span>
                   </div>
                 </div>
               </div>

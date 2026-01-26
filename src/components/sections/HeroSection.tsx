@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/Button";
 import { ArrowRight, Play, ChevronLeft, ChevronRight, ChevronDown, Sunrise, Sun, Cloud, Sunset, Moon } from "lucide-react";
 import { aicImages, jumuahTimes } from "@/data/content";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
+import { TARAWEEH_CONFIG, EID_CONFIG } from "@/lib/prayer-config";
 import type { PrayerName } from "@/lib/prayer-times";
+import type { SanityPrayerSettings } from "@/types/sanity";
+import { Star } from "lucide-react";
 
 // Hero slides with different images and content
 const heroSlides = [
@@ -58,7 +61,18 @@ const PRAYER_ICONS: Record<PrayerName, typeof Moon> = {
   isha: Moon,
 };
 
-export function HeroSection() {
+interface HeroSectionProps {
+  prayerSettings?: SanityPrayerSettings | null;
+}
+
+export function HeroSection({ prayerSettings }: HeroSectionProps) {
+  // Use Sanity data with fallback to hardcoded config
+  const taraweehActive = prayerSettings?.taraweehEnabled ?? TARAWEEH_CONFIG.enabled;
+  const taraweehTime = prayerSettings?.taraweehTime ?? TARAWEEH_CONFIG.time;
+  const eidFitrActive = prayerSettings?.eidFitrActive ?? EID_CONFIG.eidAlFitr.active;
+  const eidFitrTime = prayerSettings?.eidFitrTime ?? EID_CONFIG.eidAlFitr.times[0]?.time;
+  const eidAdhaActive = prayerSettings?.eidAdhaActive ?? EID_CONFIG.eidAlAdha.active;
+  const eidAdhaTime = prayerSettings?.eidAdhaTime ?? EID_CONFIG.eidAlAdha.times[0]?.time;
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -511,10 +525,11 @@ export function HeroSection() {
                 </div>
               </div>
 
-              {/* Jumu'ah Times */}
-              <div className="flex items-center justify-end gap-4 mt-3 pt-3 border-t border-white/10">
-                <span className="text-white/50 text-sm font-medium">Jumu&apos;ah (Friday)</span>
+              {/* Jumu'ah, Taraweeh & Eid */}
+              <div className="flex items-center justify-end gap-6 mt-3 pt-3 border-t border-white/10">
+                {/* Jumu'ah */}
                 <div className="flex items-center gap-3">
+                  <span className="text-white/50 text-sm font-medium">Jumu&apos;ah</span>
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5">
                     <span className="text-white/50 text-xs">Arabic</span>
                     <span className="text-lime-400 font-semibold">{jumuahTimes[0].time}</span>
@@ -524,6 +539,33 @@ export function HeroSection() {
                     <span className="text-lime-400 font-semibold">{jumuahTimes[1].time}</span>
                   </div>
                 </div>
+
+                {/* Taraweeh - only during Ramadan */}
+                {taraweehActive && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/20 border border-purple-500/30">
+                    <Star className="w-4 h-4 text-purple-400" />
+                    <span className="text-purple-300 text-sm font-medium">Taraweeh</span>
+                    <span className="text-purple-400 font-semibold">{taraweehTime}</span>
+                  </div>
+                )}
+
+                {/* Eid al-Fitr */}
+                {eidFitrActive && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/30">
+                    <Star className="w-4 h-4 text-amber-400" />
+                    <span className="text-amber-300 text-sm font-medium">Eid al-Fitr</span>
+                    <span className="text-amber-400 font-semibold">{eidFitrTime}</span>
+                  </div>
+                )}
+
+                {/* Eid al-Adha */}
+                {eidAdhaActive && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/30">
+                    <Star className="w-4 h-4 text-amber-400" />
+                    <span className="text-amber-300 text-sm font-medium">Eid al-Adha</span>
+                    <span className="text-amber-400 font-semibold">{eidAdhaTime}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -575,17 +617,40 @@ export function HeroSection() {
                 })}
               </div>
 
-              {/* Jumu'ah */}
-              <div className="flex items-center justify-center gap-4 pt-2 border-t border-white/10">
-                <span className="text-white/50 text-sm">Jumu&apos;ah</span>
-                <div className="flex items-center gap-2 px-2 py-1 rounded bg-white/5">
-                  <span className="text-white/40 text-xs">Arabic</span>
-                  <span className="text-lime-400 font-semibold text-sm">{jumuahTimes[0].time}</span>
+              {/* Jumu'ah, Taraweeh & Eid */}
+              <div className="flex flex-wrap items-center justify-center gap-4 pt-2 border-t border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-white/50 text-sm">Jumu&apos;ah</span>
+                  <div className="flex items-center gap-2 px-2 py-1 rounded bg-white/5">
+                    <span className="text-white/40 text-xs">Arabic</span>
+                    <span className="text-lime-400 font-semibold text-sm">{jumuahTimes[0].time}</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-2 py-1 rounded bg-white/5">
+                    <span className="text-white/40 text-xs">English</span>
+                    <span className="text-lime-400 font-semibold text-sm">{jumuahTimes[1].time}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 px-2 py-1 rounded bg-white/5">
-                  <span className="text-white/40 text-xs">English</span>
-                  <span className="text-lime-400 font-semibold text-sm">{jumuahTimes[1].time}</span>
-                </div>
+                {taraweehActive && (
+                  <div className="flex items-center gap-2 px-2 py-1 rounded bg-purple-500/20 border border-purple-500/30">
+                    <Star className="w-3 h-3 text-purple-400" />
+                    <span className="text-purple-300 text-xs">Taraweeh</span>
+                    <span className="text-purple-400 font-semibold text-sm">{taraweehTime}</span>
+                  </div>
+                )}
+                {eidFitrActive && (
+                  <div className="flex items-center gap-2 px-2 py-1 rounded bg-amber-500/20 border border-amber-500/30">
+                    <Star className="w-3 h-3 text-amber-400" />
+                    <span className="text-amber-300 text-xs">Eid al-Fitr</span>
+                    <span className="text-amber-400 font-semibold text-sm">{eidFitrTime}</span>
+                  </div>
+                )}
+                {eidAdhaActive && (
+                  <div className="flex items-center gap-2 px-2 py-1 rounded bg-amber-500/20 border border-amber-500/30">
+                    <Star className="w-3 h-3 text-amber-400" />
+                    <span className="text-amber-300 text-xs">Eid al-Adha</span>
+                    <span className="text-amber-400 font-semibold text-sm">{eidAdhaTime}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -722,8 +787,8 @@ export function HeroSection() {
                       })}
                     </div>
 
-                    {/* Jumu'ah in expanded view */}
-                    <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-white/10">
+                    {/* Jumu'ah, Taraweeh & Eid in expanded view */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 mt-3 pt-3 border-t border-white/10">
                       <span className="text-white/40 text-xs">Jumu&apos;ah</span>
                       <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
                         <span className="text-white/30 text-xs">Arabic</span>
@@ -734,6 +799,31 @@ export function HeroSection() {
                         <span className="text-lime-400 font-semibold text-xs">{jumuahTimes[1].time}</span>
                       </div>
                     </div>
+                    {(taraweehActive || eidFitrActive || eidAdhaActive) && (
+                      <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+                        {taraweehActive && (
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-purple-500/20 border border-purple-500/30">
+                            <Star className="w-3 h-3 text-purple-400" />
+                            <span className="text-purple-300 text-xs">Taraweeh</span>
+                            <span className="text-purple-400 font-semibold text-xs">{taraweehTime}</span>
+                          </div>
+                        )}
+                        {eidFitrActive && (
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
+                            <Star className="w-3 h-3 text-amber-400" />
+                            <span className="text-amber-300 text-xs">Eid al-Fitr</span>
+                            <span className="text-amber-400 font-semibold text-xs">{eidFitrTime}</span>
+                          </div>
+                        )}
+                        {eidAdhaActive && (
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
+                            <Star className="w-3 h-3 text-amber-400" />
+                            <span className="text-amber-300 text-xs">Eid al-Adha</span>
+                            <span className="text-amber-400 font-semibold text-xs">{eidAdhaTime}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>

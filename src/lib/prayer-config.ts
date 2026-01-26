@@ -92,7 +92,7 @@ export interface EidConfig {
  *
  * Current settings:
  * - Fajr iqamah: Fixed at 5:15 AM
- * - Sunrise (Shuruk): 10 minutes after sunrise
+ * - Sunrise (Shuruk): 15 minutes after sunrise
  * - Dhuhr, Asr, Isha: 10 minutes after athan
  * - Maghrib: 5 minutes after athan
  */
@@ -106,7 +106,7 @@ export const DAILY_PRAYERS_CONFIG: DailyPrayersConfig = {
   sunrise: {
     athanMode: "calculated",
     iqamahMode: "calculated",
-    iqamahDelayMinutes: 10, // Shuruk: 10 min after sunrise
+    iqamahDelayMinutes: 15, // Shuruk: 15 min after sunrise
   },
   dhuhr: {
     athanMode: "calculated",

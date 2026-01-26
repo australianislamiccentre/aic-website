@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { aicInfo } from "@/data/content";
+import { SanitySiteSettings } from "@/types/sanity";
 import {
   MapPin,
   Phone,
@@ -18,42 +19,71 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
-const footerLinks = {
-  explore: [
-    { name: "About Us", href: "/about" },
-    { name: "Services", href: "/services" },
-    { name: "Programs", href: "/programs" },
-    { name: "Events", href: "/events" },
-    { name: "News & Media", href: "/media" },
-    { name: "Architecture", href: "/architecture" },
-  ],
-  worship: [
-    { name: "Prayer Times", href: "/#prayer-times" },
-    { name: "Friday Jumu'ah", href: "/worshippers#jumuah" },
-    { name: "Mosque Etiquette", href: "/worshippers#etiquette" },
-    { name: "For Worshippers", href: "/worshippers" },
-    { name: "For Visitors", href: "/visit" },
-  ],
-  getInvolved: [
-    { name: "Book a Visit", href: "/visit#book" },
-    { name: "Donate", href: "/donate" },
-    { name: "Volunteer", href: "/contact" },
-    { name: "Contact Us", href: "/contact" },
-  ],
-  external: [
-    { name: "AIC College", href: aicInfo.externalLinks.college },
-    { name: "AIC Bookstore", href: aicInfo.externalLinks.bookstore },
-    { name: "Newport Storm FC", href: aicInfo.externalLinks.newportStorm },
-  ],
-};
+interface FooterProps {
+  siteSettings?: SanitySiteSettings | null;
+}
 
-const socialLinks = [
-  { name: "Facebook", icon: Facebook, href: aicInfo.socialMedia.facebook },
-  { name: "Instagram", icon: Instagram, href: aicInfo.socialMedia.instagram },
-  { name: "Youtube", icon: Youtube, href: aicInfo.socialMedia.youtube },
-];
+export function Footer({ siteSettings }: FooterProps) {
+  // Use Sanity data if available, fallback to hardcoded values
+  const info = {
+    name: siteSettings?.organizationName ?? aicInfo.name,
+    shortName: siteSettings?.shortName ?? aicInfo.shortName,
+    tagline: siteSettings?.tagline ?? aicInfo.tagline,
+    address: {
+      street: siteSettings?.address?.street ?? aicInfo.address.street,
+      suburb: siteSettings?.address?.suburb ?? aicInfo.address.suburb,
+      state: siteSettings?.address?.state ?? aicInfo.address.state,
+      postcode: siteSettings?.address?.postcode ?? aicInfo.address.postcode,
+      country: siteSettings?.address?.country ?? aicInfo.address.country,
+    },
+    phone: siteSettings?.phone ?? aicInfo.phone,
+    email: siteSettings?.email ?? aicInfo.email,
+    socialMedia: {
+      facebook: siteSettings?.socialMedia?.facebook ?? aicInfo.socialMedia.facebook,
+      instagram: siteSettings?.socialMedia?.instagram ?? aicInfo.socialMedia.instagram,
+      youtube: siteSettings?.socialMedia?.youtube ?? aicInfo.socialMedia.youtube,
+    },
+    externalLinks: {
+      college: siteSettings?.externalLinks?.college ?? aicInfo.externalLinks.college,
+      bookstore: siteSettings?.externalLinks?.bookstore ?? aicInfo.externalLinks.bookstore,
+      newportStorm: siteSettings?.externalLinks?.sportsClub ?? aicInfo.externalLinks.newportStorm,
+    },
+  };
 
-export function Footer() {
+  const footerLinks = {
+    explore: [
+      { name: "About Us", href: "/about" },
+      { name: "Services", href: "/services" },
+      { name: "Programs", href: "/programs" },
+      { name: "Events", href: "/events" },
+      { name: "News & Media", href: "/media" },
+      { name: "Architecture", href: "/architecture" },
+    ],
+    worship: [
+      { name: "Prayer Times", href: "/#prayer-times" },
+      { name: "Friday Jumu'ah", href: "/worshippers#jumuah" },
+      { name: "Mosque Etiquette", href: "/worshippers#etiquette" },
+      { name: "For Worshippers", href: "/worshippers" },
+      { name: "For Visitors", href: "/visit" },
+    ],
+    getInvolved: [
+      { name: "Book a Visit", href: "/visit#book" },
+      { name: "Donate", href: "/donate" },
+      { name: "Volunteer", href: "/contact" },
+      { name: "Contact Us", href: "/contact" },
+    ],
+    external: [
+      { name: "AIC College", href: info.externalLinks.college },
+      { name: "AIC Bookstore", href: info.externalLinks.bookstore },
+      { name: "Newport Storm FC", href: info.externalLinks.newportStorm },
+    ],
+  };
+
+  const socialLinks = [
+    { name: "Facebook", icon: Facebook, href: info.socialMedia.facebook },
+    { name: "Instagram", icon: Instagram, href: info.socialMedia.instagram },
+    { name: "Youtube", icon: Youtube, href: info.socialMedia.youtube },
+  ];
   const currentYear = new Date().getFullYear();
 
   return (
@@ -126,28 +156,28 @@ export function Footer() {
             </Link>
 
             <p className="text-white/70 mb-6 leading-relaxed">
-              {aicInfo.tagline}. A centre for prayer, education, and community building, welcoming all who seek knowledge and spiritual growth.
+              {info.tagline}. A centre for prayer, education, and community building, welcoming all who seek knowledge and spiritual growth.
             </p>
 
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
                 <p className="text-white/80">
-                  {aicInfo.address.street}<br />
-                  {aicInfo.address.suburb}, {aicInfo.address.state} {aicInfo.address.postcode}<br />
-                  {aicInfo.address.country}
+                  {info.address.street}<br />
+                  {info.address.suburb}, {info.address.state} {info.address.postcode}<br />
+                  {info.address.country}
                 </p>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-teal-400 flex-shrink-0" />
-                <a href={`tel:${aicInfo.phone}`} className="text-white/80 hover:text-teal-400 transition-colors">
-                  {aicInfo.phone}
+                <a href={`tel:${info.phone}`} className="text-white/80 hover:text-teal-400 transition-colors">
+                  {info.phone}
                 </a>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-teal-400 flex-shrink-0" />
-                <a href={`mailto:${aicInfo.email}?subject=${encodeURIComponent('General Enquiry - Australian Islamic Centre')}`} target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-teal-400 transition-colors">
-                  {aicInfo.email}
+                <a href={`mailto:${info.email}?subject=${encodeURIComponent('General Enquiry - Australian Islamic Centre')}`} target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-teal-400 transition-colors">
+                  {info.email}
                 </a>
               </div>
               <div className="flex items-start gap-3">
@@ -276,7 +306,7 @@ export function Footer() {
       <div className="relative border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/50">
-            <p>&copy; {currentYear} {aicInfo.name}. All rights reserved.</p>
+            <p>&copy; {currentYear} {info.name}. All rights reserved.</p>
             <div className="flex items-center gap-6">
               <Link href="/privacy" className="hover:text-teal-400 transition-colors">
                 Privacy Policy

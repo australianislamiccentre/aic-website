@@ -1,5 +1,5 @@
-import { getTourTypes, getEtiquette } from "@/sanity/lib/fetch";
-import { SanityTourType, SanityEtiquette } from "@/types/sanity";
+import { getTourTypes, getEtiquette, getFaqsByCategory } from "@/sanity/lib/fetch";
+import { SanityTourType, SanityEtiquette, SanityFaq } from "@/types/sanity";
 import VisitContent from "./VisitContent";
 
 export const metadata = {
@@ -8,10 +8,11 @@ export const metadata = {
 };
 
 export default async function VisitPage() {
-  const [tourTypes, etiquette] = await Promise.all([
+  const [tourTypes, etiquette, faqs] = await Promise.all([
     getTourTypes() as Promise<SanityTourType[]>,
     getEtiquette() as Promise<SanityEtiquette[]>,
+    getFaqsByCategory("visiting") as Promise<SanityFaq[]>,
   ]);
 
-  return <VisitContent tourTypes={tourTypes} etiquette={etiquette} />;
+  return <VisitContent tourTypes={tourTypes} etiquette={etiquette} faqs={faqs} />;
 }

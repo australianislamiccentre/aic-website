@@ -28,6 +28,25 @@ function getImageUrl(image: SanityProgram["image"] | string | undefined): string
   return urlFor(image).width(800).height(600).url();
 }
 
+// Helper to format schedule from event fields
+function getSchedule(program: SanityProgram): string {
+  if (!program.recurringDay) return "Contact for schedule";
+  const day = program.recurringDay;
+  const time = program.time || "";
+  const endTime = program.endTime ? ` - ${program.endTime}` : "";
+  return `${day} ${time}${endTime}`.trim();
+}
+
+// Helper to get primary category
+function getPrimaryCategory(program: SanityProgram): string {
+  return program.categories?.[0] || "Program";
+}
+
+// Helper to get description
+function getDescription(program: SanityProgram): string {
+  return program.shortDescription || program.description || "";
+}
+
 interface ProgramCardProps {
   program: SanityProgram;
 }
@@ -65,7 +84,7 @@ function ProgramCard({ program }: ProgramCardProps) {
             transition={{ duration: 0.2 }}
             className="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded-full"
           >
-            {program.category}
+            {getPrimaryCategory(program)}
           </motion.span>
           {program.externalLink && (
             <motion.span
@@ -86,7 +105,7 @@ function ProgramCard({ program }: ProgramCardProps) {
         >
           <div className="text-center text-white">
             <Clock className="w-8 h-8 mx-auto mb-2" />
-            <p className="font-semibold">{program.schedule || "Contact for schedule"}</p>
+            <p className="font-semibold">{getSchedule(program)}</p>
           </div>
         </motion.div>
       </div>
@@ -100,7 +119,7 @@ function ProgramCard({ program }: ProgramCardProps) {
           {program.title}
         </motion.h3>
         <p className="text-gray-600 mb-4 flex-1 line-clamp-2">
-          {program.description}
+          {getDescription(program)}
         </p>
 
         <AnimatePresence>
@@ -184,8 +203,11 @@ interface ProgramsContentProps {
 }
 
 export default function ProgramsContent({ programs }: ProgramsContentProps) {
-  const educationPrograms = programs.filter((p) => p.category === "Education");
-  const youthPrograms = programs.filter((p) => p.category === "Sports & Youth");
+  const educationPrograms = programs.filter((p) => p.categories?.includes("Education"));
+  const youthPrograms = programs.filter((p) =>
+    p.categories?.includes("Sports") || p.categories?.includes("Youth")
+  );
+  const hasPrograms = programs.length > 0;
 
   return (
     <>
@@ -222,7 +244,43 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
         </div>
       </section>
 
+      {/* Empty State */}
+      {!hasPrograms && (
+        <section className="py-20 bg-neutral-50">
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <FadeIn>
+              <GraduationCap className="w-16 h-16 mx-auto text-gray-300 mb-6" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Programs Coming Soon
+              </h2>
+              <p className="text-gray-600 mb-8 max-w-xl mx-auto">
+                We&apos;re currently updating our program offerings. Contact us to learn about
+                our education and youth programs.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Button
+                  href="/contact"
+                  variant="primary"
+                  icon={<ArrowRight className="w-5 h-5" />}
+                >
+                  Contact Us
+                </Button>
+                <Button
+                  href={aicInfo.externalLinks.college}
+                  target="_blank"
+                  variant="outline"
+                  icon={<ExternalLink className="w-5 h-5" />}
+                >
+                  Visit AIC College
+                </Button>
+              </div>
+            </FadeIn>
+          </div>
+        </section>
+      )}
+
       {/* Quick Navigation */}
+      {hasPrograms && (
       <section className="py-8 bg-white border-b border-gray-100 sticky top-20 z-40">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-wrap items-center justify-center gap-3">
@@ -250,8 +308,10 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
           </div>
         </div>
       </section>
+      )}
 
       {/* Education Programs Section */}
+      {educationPrograms.length > 0 && (
       <section id="education" className="py-20 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
@@ -300,10 +360,10 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
                         <div className="absolute bottom-6 left-6 right-6">
                           <div className="flex items-center gap-3">
                             <span className="px-3 py-1 bg-green-500 text-white text-sm font-medium rounded-full">
-                              {program.category}
+                              {getPrimaryCategory(program)}
                             </span>
                             <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full">
-                              {program.schedule || "Contact for schedule"}
+                              {getSchedule(program)}
                             </span>
                           </div>
                         </div>
@@ -322,7 +382,7 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
                       </h3>
 
                       <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                        {program.description}
+                        {getDescription(program)}
                       </p>
 
                       <div className="flex items-center gap-3 mb-6 p-4 bg-white rounded-xl shadow-sm">
@@ -331,7 +391,7 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
                         </div>
                         <div>
                           <p className="text-sm text-gray-500">Schedule</p>
-                          <p className="font-semibold text-gray-900">{program.schedule || "Contact for details"}</p>
+                          <p className="font-semibold text-gray-900">{getSchedule(program)}</p>
                         </div>
                       </div>
 
@@ -370,6 +430,7 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
           </div>
         </div>
       </section>
+      )}
 
       {/* AIC College CTA */}
       <section className="py-16 bg-white">
@@ -418,6 +479,7 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
       </section>
 
       {/* Sports & Youth Section */}
+      {youthPrograms.length > 0 && (
       <section id="youth" className="py-20 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
@@ -445,8 +507,10 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
           </StaggerContainer>
         </div>
       </section>
+      )}
 
       {/* Stats Section */}
+      {hasPrograms && (
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
@@ -485,8 +549,10 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
           </FadeIn>
         </div>
       </section>
+      )}
 
       {/* Enrollment CTA */}
+      {hasPrograms && (
       <section className="py-20 bg-neutral-50">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <FadeIn>
@@ -522,6 +588,7 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
           </FadeIn>
         </div>
       </section>
+      )}
     </>
   );
 }

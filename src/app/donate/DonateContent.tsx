@@ -202,43 +202,60 @@ function DonateForm({ donationCauses }: DonateFormProps) {
                     <h2 className="text-xl font-bold text-gray-900">Choose a Cause</h2>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {donationCauses.map((cause) => {
-                      const Icon = causeIcons[cause.icon] || Heart;
-                      const isSelected = selectedCause === cause._id;
+                  {donationCauses.length === 0 ? (
+                    <div className="p-6 rounded-xl border-2 border-teal-500 bg-teal-50">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-teal-600 text-white">
+                          <Heart className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 mb-1">General Fund</h3>
+                          <p className="text-sm text-gray-500">
+                            Your donation will support the Australian Islamic Centre&apos;s operations and community programs.
+                          </p>
+                        </div>
+                        <CheckCircle2 className="w-5 h-5 text-teal-600 flex-shrink-0" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {donationCauses.map((cause) => {
+                        const Icon = causeIcons[cause.icon] || Heart;
+                        const isSelected = selectedCause === cause._id;
 
-                      return (
-                        <motion.button
-                          key={cause._id}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setSelectedCause(cause._id)}
-                          className={`p-5 rounded-xl border-2 text-left transition-all ${
-                            isSelected
-                              ? "border-teal-500 bg-teal-50"
-                              : "border-gray-200 hover:border-teal-200"
-                          }`}
-                        >
-                          <div className="flex items-start gap-4">
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                        return (
+                          <motion.button
+                            key={cause._id}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setSelectedCause(cause._id)}
+                            className={`p-5 rounded-xl border-2 text-left transition-all ${
                               isSelected
-                                ? "bg-teal-600 text-white"
-                                : "bg-gray-100 text-gray-600"
-                            }`}>
-                              <Icon className="w-6 h-6" />
+                                ? "border-teal-500 bg-teal-50"
+                                : "border-gray-200 hover:border-teal-200"
+                            }`}
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                                isSelected
+                                  ? "bg-teal-600 text-white"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}>
+                                <Icon className="w-6 h-6" />
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-gray-900 mb-1">{cause.title}</h3>
+                                <p className="text-sm text-gray-500">{cause.description}</p>
+                              </div>
+                              {isSelected && (
+                                <CheckCircle2 className="w-5 h-5 text-teal-600 flex-shrink-0" />
+                              )}
                             </div>
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-gray-900 mb-1">{cause.title}</h3>
-                              <p className="text-sm text-gray-500">{cause.description}</p>
-                            </div>
-                            {isSelected && (
-                              <CheckCircle2 className="w-5 h-5 text-teal-600 flex-shrink-0" />
-                            )}
-                          </div>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Step 2: Donation Frequency */}

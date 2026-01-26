@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, Amiri } from "next/font/google";
+import { draftMode } from "next/headers";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
+import { PreviewBanner } from "@/components/PreviewBanner";
+import { getSiteSettings } from "@/sanity/lib/fetch";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -85,20 +88,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [{ isEnabled: isDraftMode }, siteSettings] = await Promise.all([
+    draftMode(),
+    getSiteSettings(),
+  ]);
+
   return (
     <html lang="en" className="scroll-smooth">
       <body
         className={`${inter.variable} ${playfair.variable} ${amiri.variable} antialiased bg-neutral-50 text-gray-900 overflow-x-hidden`}
       >
         <ScrollProgress />
-        <Header />
+        <Header siteSettings={siteSettings} />
         <main className="overflow-x-hidden">{children}</main>
-        <Footer />
+        <Footer siteSettings={siteSettings} />
+        {isDraftMode && <PreviewBanner />}
       </body>
     </html>
   );

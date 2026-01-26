@@ -5,8 +5,9 @@ import Image from "next/image";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { aicInfo, visitorFAQs } from "@/data/content";
-import { SanityTourType, SanityEtiquette } from "@/types/sanity";
+import { aicInfo } from "@/data/content";
+import { SanityTourType, SanityEtiquette, SanityFaq } from "@/types/sanity";
+import { PortableText } from "@portabletext/react";
 import {
   MapPin,
   Clock,
@@ -69,9 +70,10 @@ const tourTypeIcons: Record<string, React.ComponentType<{ className?: string }>>
 interface VisitContentProps {
   tourTypes: SanityTourType[];
   etiquette: SanityEtiquette[];
+  faqs: SanityFaq[];
 }
 
-export default function VisitContent({ tourTypes, etiquette }: VisitContentProps) {
+export default function VisitContent({ tourTypes, etiquette, faqs }: VisitContentProps) {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
   return (
@@ -223,25 +225,27 @@ export default function VisitContent({ tourTypes, etiquette }: VisitContentProps
             </div>
           </FadeIn>
 
-          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {tourTypes.map((tour) => {
-              const Icon = tourTypeIcons[tour.icon] || Building;
-              return (
-                <StaggerItem key={tour._id}>
-                  <motion.div
-                    whileHover={{ y: -4 }}
-                    className="bg-white rounded-2xl p-6 shadow-lg"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{tour.title}</h3>
-                    <p className="text-gray-600 text-sm">{tour.description}</p>
-                  </motion.div>
-                </StaggerItem>
-              );
-            })}
-          </StaggerContainer>
+          {tourTypes.length > 0 && (
+            <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              {tourTypes.map((tour) => {
+                const Icon = tourTypeIcons[tour.icon] || Building;
+                return (
+                  <StaggerItem key={tour._id}>
+                    <motion.div
+                      whileHover={{ y: -4 }}
+                      className="bg-white rounded-2xl p-6 shadow-lg"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center mb-4">
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">{tour.title}</h3>
+                      <p className="text-gray-600 text-sm">{tour.description}</p>
+                    </motion.div>
+                  </StaggerItem>
+                );
+              })}
+            </StaggerContainer>
+          )}
 
           <FadeIn>
             <div className="text-center">
@@ -279,25 +283,33 @@ export default function VisitContent({ tourTypes, etiquette }: VisitContentProps
             </div>
           </FadeIn>
 
-          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {etiquette.map((item) => {
-              const Icon = etiquetteIcons[item.icon] || CheckCircle2;
-              return (
-                <StaggerItem key={item._id}>
-                  <motion.div
-                    whileHover={{ y: -4 }}
-                    className="bg-neutral-50 rounded-xl p-6 border border-gray-100"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-                    <p className="text-gray-600">{item.description}</p>
-                  </motion.div>
-                </StaggerItem>
-              );
-            })}
-          </StaggerContainer>
+          {etiquette.length > 0 ? (
+            <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {etiquette.map((item) => {
+                const Icon = etiquetteIcons[item.icon] || CheckCircle2;
+                return (
+                  <StaggerItem key={item._id}>
+                    <motion.div
+                      whileHover={{ y: -4 }}
+                      className="bg-neutral-50 rounded-xl p-6 border border-gray-100"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center mb-4">
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
+                      <p className="text-gray-600">{item.description}</p>
+                    </motion.div>
+                  </StaggerItem>
+                );
+              })}
+            </StaggerContainer>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500">
+                Please contact us for visitor guidelines before your visit.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -422,35 +434,46 @@ export default function VisitContent({ tourTypes, etiquette }: VisitContentProps
             </div>
           </FadeIn>
 
-          <div className="space-y-4">
-            {visitorFAQs.map((faq, index) => (
-              <FadeIn key={index} delay={index * 0.05}>
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <button
-                    onClick={() => setOpenFAQ(openFAQ === index ? null : index)}
-                    className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
-                  >
-                    <span className="font-semibold text-gray-900">{faq.question}</span>
-                    <ChevronDown
-                      className={`w-5 h-5 text-gray-500 transition-transform ${
-                        openFAQ === index ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  {openFAQ === index && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="px-6 pb-4"
+          {faqs.length > 0 ? (
+            <div className="space-y-4">
+              {faqs.map((faq, index) => (
+                <FadeIn key={faq._id} delay={index * 0.05}>
+                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <button
+                      onClick={() => setOpenFAQ(openFAQ === index ? null : index)}
+                      className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
                     >
-                      <p className="text-gray-600">{faq.answer}</p>
-                    </motion.div>
-                  )}
-                </div>
-              </FadeIn>
-            ))}
-          </div>
+                      <span className="font-semibold text-gray-900">{faq.question}</span>
+                      <ChevronDown
+                        className={`w-5 h-5 text-gray-500 transition-transform ${
+                          openFAQ === index ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {openFAQ === index && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="px-6 pb-4"
+                      >
+                        <div className="text-gray-600 prose prose-sm max-w-none">
+                          <PortableText value={faq.answer} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+                </FadeIn>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
+              <HelpCircle className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+              <p className="text-gray-500">
+                Have questions? Contact us and we&apos;ll be happy to help.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

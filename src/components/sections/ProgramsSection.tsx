@@ -4,19 +4,55 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { programs } from "@/data/content";
+import { SanityProgram } from "@/types/sanity";
+import { urlFor } from "@/sanity/lib/image";
 import { ArrowRight, BookOpen, Trophy, Clock, CheckCircle2, GraduationCap, ExternalLink } from "lucide-react";
 import Image from "next/image";
 
 const categoryIcons: Record<string, React.ReactNode> = {
   Education: <BookOpen className="w-4 h-4" />,
-  "Sports & Youth": <Trophy className="w-4 h-4" />,
+  Youth: <Trophy className="w-4 h-4" />,
+  Sports: <Trophy className="w-4 h-4" />,
 };
 
-export function ProgramsSection() {
+// Helper functions for merged Program/Event structure
+function getPrimaryCategory(program: SanityProgram): string {
+  return program.categories?.[0] || "Program";
+}
+
+function getSchedule(program: SanityProgram): string {
+  if (!program.recurringDay) return "Contact for schedule";
+  const day = program.recurringDay;
+  const time = program.time || "";
+  const endTime = program.endTime ? ` - ${program.endTime}` : "";
+  return `${day} ${time}${endTime}`.trim();
+}
+
+function getDescription(program: SanityProgram): string {
+  return program.shortDescription || program.description || "";
+}
+
+interface ProgramsSectionProps {
+  programs: SanityProgram[];
+}
+
+export function ProgramsSection({ programs }: ProgramsSectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const displayPrograms = programs.slice(0, 5);
   const activeProgram = displayPrograms[activeIndex];
+
+  // Show nothing if no programs
+  if (displayPrograms.length === 0) {
+    return null;
+  }
+
+  // Get image URL - handle both Sanity images and static paths
+  const getImageUrl = (program: SanityProgram) => {
+    if (program.image) {
+      return urlFor(program.image).width(800).height(600).url();
+    }
+    return "/images/aic start.jpg"; // Fallback image
+  };
 
   return (
     <section className="py-20 md:py-28 bg-neutral-950 relative overflow-hidden">
@@ -70,7 +106,7 @@ export function ProgramsSection() {
             <div className="space-y-2">
               {displayPrograms.map((program, index) => (
                 <motion.button
-                  key={program.id}
+                  key={program._id}
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
@@ -98,7 +134,7 @@ export function ProgramsSection() {
                           : "bg-neutral-700 text-neutral-400 group-hover:text-neutral-300"
                       }`}
                     >
-                      {categoryIcons[program.category] || <BookOpen className="w-4 h-4" />}
+                      {categoryIcons[getPrimaryCategory(program)] || <BookOpen className="w-4 h-4" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3
@@ -109,7 +145,7 @@ export function ProgramsSection() {
                         {program.title}
                       </h3>
                       <p className="text-sm text-neutral-500 truncate">
-                        {program.schedule}
+                        {getSchedule(program)}
                       </p>
                     </div>
                     <ArrowRight
@@ -140,84 +176,88 @@ export function ProgramsSection() {
           {/* Right: Detail Card */}
           <div className="lg:sticky lg:top-8">
             <AnimatePresence mode="wait">
-              <motion.div
-                key={activeProgram.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-800"
-              >
-                {/* Image */}
-                <div className="relative h-52 md:h-64">
-                  <Image
-                    src={activeProgram.image}
-                    alt={activeProgram.title}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/40 to-transparent" />
+              {activeProgram && (
+                <motion.div
+                  key={activeProgram._id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-800"
+                >
+                  {/* Image */}
+                  <div className="relative h-52 md:h-64">
+                    <Image
+                      src={getImageUrl(activeProgram)}
+                      alt={activeProgram.title}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/40 to-transparent" />
 
-                  {/* Category badge */}
-                  <div className="absolute top-4 left-4">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-                      activeProgram.category === "Education"
-                        ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-                        : "bg-orange-500/20 text-orange-300 border border-orange-500/30"
-                    }`}>
-                      {categoryIcons[activeProgram.category]}
-                      {activeProgram.category}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-6 md:p-8 -mt-8 relative">
-                  <h3 className="text-2xl font-bold text-white mb-3">
-                    {activeProgram.title}
-                  </h3>
-                  <p className="text-neutral-400 mb-6 leading-relaxed">
-                    {activeProgram.description}
-                  </p>
-
-                  {/* Features */}
-                  <div className="space-y-2.5 mb-6">
-                    {activeProgram.features.slice(0, 4).map((feature) => (
-                      <div key={feature} className="flex items-center gap-3">
-                        <CheckCircle2 className="w-4 h-4 text-teal-500 shrink-0" />
-                        <span className="text-sm text-neutral-300">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between pt-6 border-t border-neutral-800">
-                    <div className="flex items-center gap-2 text-neutral-400">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-sm">{activeProgram.schedule}</span>
+                    {/* Category badge */}
+                    <div className="absolute top-4 left-4">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
+                        getPrimaryCategory(activeProgram) === "Education"
+                          ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                          : "bg-orange-500/20 text-orange-300 border border-orange-500/30"
+                      }`}>
+                        {categoryIcons[getPrimaryCategory(activeProgram)]}
+                        {getPrimaryCategory(activeProgram)}
+                      </span>
                     </div>
-                    {"externalLink" in activeProgram && activeProgram.externalLink ? (
-                      <Button
-                        href={activeProgram.externalLink as string}
-                        variant="primary"
-                        size="sm"
-                        icon={<ExternalLink className="w-4 h-4" />}
-                      >
-                        Visit
-                      </Button>
-                    ) : (
-                      <Button
-                        href={`/programs#${activeProgram.id}`}
-                        variant="primary"
-                        size="sm"
-                        icon={<ArrowRight className="w-4 h-4" />}
-                      >
-                        Learn More
-                      </Button>
-                    )}
                   </div>
-                </div>
-              </motion.div>
+
+                  {/* Content */}
+                  <div className="p-6 md:p-8 -mt-8 relative">
+                    <h3 className="text-2xl font-bold text-white mb-3">
+                      {activeProgram.title}
+                    </h3>
+                    <p className="text-neutral-400 mb-6 leading-relaxed">
+                      {getDescription(activeProgram)}
+                    </p>
+
+                    {/* Features */}
+                    {activeProgram.features && activeProgram.features.length > 0 && (
+                      <div className="space-y-2.5 mb-6">
+                        {activeProgram.features.slice(0, 4).map((feature) => (
+                          <div key={feature} className="flex items-center gap-3">
+                            <CheckCircle2 className="w-4 h-4 text-teal-500 shrink-0" />
+                            <span className="text-sm text-neutral-300">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between pt-6 border-t border-neutral-800">
+                      <div className="flex items-center gap-2 text-neutral-400">
+                        <Clock className="w-4 h-4" />
+                        <span className="text-sm">{getSchedule(activeProgram)}</span>
+                      </div>
+                      {activeProgram.externalLink ? (
+                        <Button
+                          href={activeProgram.externalLink}
+                          variant="primary"
+                          size="sm"
+                          icon={<ExternalLink className="w-4 h-4" />}
+                        >
+                          Visit
+                        </Button>
+                      ) : (
+                        <Button
+                          href={`/programs#${activeProgram.slug}`}
+                          variant="primary"
+                          size="sm"
+                          icon={<ArrowRight className="w-4 h-4" />}
+                        >
+                          Learn More
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
         </div>

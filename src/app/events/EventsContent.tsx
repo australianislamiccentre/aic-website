@@ -44,12 +44,40 @@ function isValidDate(dateStr: string | undefined): boolean {
   return !isNaN(date.getTime());
 }
 
-// Helper to format display date
+// Helper to format display date (handles multi-day events)
 function getDisplayDate(event: SanityEvent): string {
   if (event.recurring) {
     return event.recurringDay || event.date || "";
   }
-  return event.date ? formatDate(event.date) : "";
+  if (!event.date) return "";
+
+  // Check for multi-day events
+  if (event.endDate && event.endDate !== event.date) {
+    return `${formatDate(event.date)} - ${formatDate(event.endDate)}`;
+  }
+
+  return formatDate(event.date);
+}
+
+// Helper to format time display (handles end time)
+function getDisplayTime(event: SanityEvent): string {
+  if (!event.time) return "";
+  if (event.endTime) {
+    return `${event.time} - ${event.endTime}`;
+  }
+  return event.time;
+}
+
+// Helper to get card description (short description or truncated full description)
+function getCardDescription(event: SanityEvent): string {
+  if (event.shortDescription) {
+    return event.shortDescription;
+  }
+  // Fallback to truncated full description
+  if (event.description && event.description.length > 120) {
+    return event.description.substring(0, 117) + "...";
+  }
+  return event.description || "";
 }
 
 function EventCard({ event, viewMode, index }: EventCardProps) {
@@ -89,9 +117,18 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
                 Recurring
               </motion.span>
             )}
-            <span className="absolute top-4 right-4 px-3 py-1 bg-white/90 text-neutral-700 text-sm font-medium rounded-full">
-              {event.category}
-            </span>
+            <div className="absolute top-4 right-4 flex flex-wrap gap-1 justify-end max-w-[60%]">
+              {event.categories?.slice(0, 2).map((cat, idx) => (
+                <span key={idx} className="px-2 py-1 bg-white/90 text-neutral-700 text-xs font-medium rounded-full">
+                  {cat}
+                </span>
+              ))}
+              {event.categories && event.categories.length > 2 && (
+                <span className="px-2 py-1 bg-white/90 text-neutral-500 text-xs font-medium rounded-full">
+                  +{event.categories.length - 2}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -102,7 +139,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
           >
             {event.title}
           </motion.h3>
-          <p className="text-gray-600 mb-4 line-clamp-2">{event.description}</p>
+          <p className="text-gray-600 mb-4 line-clamp-2">{getCardDescription(event)}</p>
 
           <div className="flex flex-wrap gap-4 mb-4">
             <motion.div
@@ -119,7 +156,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
               className="flex items-center gap-2 text-sm text-gray-500"
             >
               <Clock className="w-4 h-4 text-green-600" />
-              <span>{event.time}</span>
+              <span>{getDisplayTime(event)}</span>
             </motion.div>
             <motion.div
               animate={{ x: isHovered ? 4 : 0 }}
@@ -127,7 +164,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
               className="flex items-center gap-2 text-sm text-gray-500"
             >
               <MapPin className="w-4 h-4 text-green-600" />
-              <span>{event.location}</span>
+              <span>{event.locationDetails || event.location}</span>
             </motion.div>
           </div>
 
@@ -190,12 +227,21 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
             Recurring
           </motion.span>
         )}
-        <motion.span
+        <motion.div
           animate={{ y: isHovered ? -2 : 0 }}
-          className="absolute top-4 right-4 px-3 py-1 bg-white/90 text-neutral-700 text-sm font-medium rounded-full"
+          className="absolute top-4 right-4 flex flex-wrap gap-1 justify-end max-w-[60%]"
         >
-          {event.category}
-        </motion.span>
+          {event.categories?.slice(0, 2).map((cat, idx) => (
+            <span key={idx} className="px-2 py-1 bg-white/90 text-neutral-700 text-xs font-medium rounded-full">
+              {cat}
+            </span>
+          ))}
+          {event.categories && event.categories.length > 2 && (
+            <span className="px-2 py-1 bg-white/90 text-neutral-500 text-xs font-medium rounded-full">
+              +{event.categories.length - 2}
+            </span>
+          )}
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -243,7 +289,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <p className="text-gray-600 mb-4 line-clamp-2">{event.description}</p>
+              <p className="text-gray-600 mb-4 line-clamp-2">{getCardDescription(event)}</p>
 
               <div className="space-y-2 mb-4">
                 <motion.div
@@ -253,7 +299,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
                   className="flex items-center gap-2 text-sm text-gray-500"
                 >
                   <Clock className="w-4 h-4 text-green-600" />
-                  <span>{event.time}</span>
+                  <span>{getDisplayTime(event)}</span>
                 </motion.div>
                 <motion.div
                   initial={{ x: -10, opacity: 0 }}
@@ -262,7 +308,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
                   className="flex items-center gap-2 text-sm text-gray-500"
                 >
                   <MapPin className="w-4 h-4 text-green-600" />
-                  <span>{event.location}</span>
+                  <span>{event.locationDetails || event.location}</span>
                 </motion.div>
               </div>
 
@@ -290,7 +336,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4 text-green-600" />
-                  <span>{event.time}</span>
+                  <span>{getDisplayTime(event)}</span>
                 </div>
               </div>
 
@@ -313,7 +359,18 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
   );
 }
 
-const categories = ["All", "Prayer", "Education", "Community", "Youth", "Special Event"];
+// Categories must match the values in Sanity schema
+const categories = [
+  "All",
+  "Prayer",
+  "Education",
+  "Community",
+  "Youth",
+  "Sports",
+  "Women",
+  "Charity",
+  "Special Event",
+];
 
 const months = [
   "January", "February", "March", "April", "May", "June",
@@ -331,13 +388,23 @@ export default function EventsContent({ events }: EventsContentProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
+  // Separate recurring and non-recurring events
+  const recurringEvents = events.filter((event) => event.recurring);
+  const upcomingEvents = events.filter((event) => !event.recurring);
+
   const filteredEvents = events.filter((event) => {
-    const matchesCategory = selectedCategory === "All" || event.category === selectedCategory;
+    const matchesCategory = selectedCategory === "All" ||
+      (event.categories && event.categories.includes(selectedCategory));
+    const searchLower = searchQuery.toLowerCase();
     const matchesSearch =
-      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.description.toLowerCase().includes(searchQuery.toLowerCase());
+      event.title.toLowerCase().includes(searchLower) ||
+      (event.shortDescription || "").toLowerCase().includes(searchLower) ||
+      event.description.toLowerCase().includes(searchLower);
     return matchesCategory && matchesSearch;
   });
+
+  const filteredUpcomingEvents = filteredEvents.filter((e) => !e.recurring);
+  const filteredRecurringEvents = filteredEvents.filter((e) => e.recurring);
 
   const goToPreviousMonth = () => {
     if (currentMonth === 0) {
@@ -533,13 +600,14 @@ export default function EventsContent({ events }: EventsContentProps) {
         </div>
       </section>
 
-      {/* Events Grid */}
+      {/* Upcoming Events Section */}
       <section className="py-16 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Upcoming Events</h2>
           <AnimatePresence mode="wait">
-            {filteredEvents.length > 0 ? (
+            {filteredUpcomingEvents.length > 0 ? (
               <motion.div
-                key={selectedCategory + viewMode}
+                key={selectedCategory + viewMode + "upcoming"}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -549,7 +617,7 @@ export default function EventsContent({ events }: EventsContentProps) {
                     : "space-y-6"
                 }
               >
-                {filteredEvents.map((event, index) => (
+                {filteredUpcomingEvents.map((event, index) => (
                   <EventCard
                     key={event._id}
                     event={event}
@@ -562,18 +630,52 @@ export default function EventsContent({ events }: EventsContentProps) {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center py-16"
+                className="text-center py-12 bg-white rounded-2xl border border-gray-100"
               >
-                <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Events Found</h3>
-                <p className="text-gray-500">
-                  Try adjusting your filters or search query to find events.
+                <Calendar className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Upcoming Events</h3>
+                <p className="text-gray-500 max-w-md mx-auto">
+                  Subscribe to our mailing list for the latest updates on upcoming events and community gatherings.
                 </p>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </section>
+
+      {/* Recurring Events Section */}
+      {filteredRecurringEvents.length > 0 && (
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center gap-3 mb-8">
+              <Sparkles className="w-6 h-6 text-green-600" />
+              <h2 className="text-2xl font-bold text-gray-900">Regular Programs</h2>
+            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedCategory + viewMode + "recurring"}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className={
+                  viewMode === "grid"
+                    ? "grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+                    : "space-y-6"
+                }
+              >
+                {filteredRecurringEvents.map((event, index) => (
+                  <EventCard
+                    key={event._id}
+                    event={event}
+                    viewMode={viewMode}
+                    index={index}
+                  />
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </section>
+      )}
 
       {/* Subscribe CTA */}
       <section className="py-16 bg-white">

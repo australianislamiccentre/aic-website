@@ -1,102 +1,512 @@
 import "server-only";
 
-import { client } from "./client";
+import { draftMode } from "next/headers";
+import { client, previewClient } from "./client";
 import {
+  eventBySlugQuery,
   eventsQuery,
   featuredEventsQuery,
+  pastEventsQuery,
   announcementsQuery,
+  announcementBySlugQuery,
   featuredAnnouncementsQuery,
+  urgentAnnouncementsQuery,
   programsQuery,
   servicesQuery,
+  serviceBySlugQuery,
+  featuredServicesQuery,
   donationCausesQuery,
+  donationCauseBySlugQuery,
+  featuredDonationCausesQuery,
   galleryQuery,
   featuredGalleryQuery,
   testimonialsQuery,
   faqsQuery,
   faqsByCategoryQuery,
+  featuredFaqsQuery,
   etiquetteQuery,
   tourTypesQuery,
+  siteSettingsQuery,
+  prayerSettingsQuery,
+  // New queries
+  teamMembersQuery,
+  teamMemberBySlugQuery,
+  teamMembersByCategoryQuery,
+  featuredTeamMembersQuery,
+  pageContentQuery,
+  pageContentBySlugQuery,
+  pageContentByTypeQuery,
+  navigationPagesQuery,
+  resourcesQuery,
+  resourceBySlugQuery,
+  resourcesByCategoryQuery,
+  resourcesByTypeQuery,
+  featuredResourcesQuery,
 } from "./queries";
+import {
+  SanityEvent,
+  SanityAnnouncement,
+  SanityProgram,
+  SanityService,
+  SanityDonationCause,
+  SanityGalleryImage,
+  SanityTestimonial,
+  SanityFaq,
+  SanityEtiquette,
+  SanityTourType,
+  SanitySiteSettings,
+  SanityPrayerSettings,
+  SanityTeamMember,
+  SanityPageContent,
+  SanityResource,
+} from "@/types/sanity";
 
 // Revalidation time in seconds (5 minutes)
 const REVALIDATE_TIME = 300;
 
-// Generic fetch function with caching
+// Generic fetch function with caching and draft mode support
 async function sanityFetch<T>(
   query: string,
   params: Record<string, unknown> = {},
   tags: string[] = []
 ): Promise<T> {
+  const { isEnabled: isDraftMode } = await draftMode();
+
+  // In draft mode, use preview client with no caching
+  if (isDraftMode) {
+    return previewClient.fetch<T>(query, params);
+  }
+
+  // In production mode, use regular client with caching
   return client.fetch<T>(query, params, {
     next: {
       revalidate: REVALIDATE_TIME,
-      tags,
+      tags: ["sanity", ...tags],
     },
   });
 }
 
 // Events
-export async function getEvents() {
-  return sanityFetch(eventsQuery, {}, ["events"]);
+export async function getEvents(): Promise<SanityEvent[]> {
+  try {
+    const result = await sanityFetch<SanityEvent[]>(eventsQuery, {}, ["events"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch events from Sanity:", error);
+    return [];
+  }
 }
 
-export async function getFeaturedEvents() {
-  return sanityFetch(featuredEventsQuery, {}, ["events"]);
+// For static generation (no draft mode check - used in generateStaticParams)
+export async function getEventsForStaticGeneration(): Promise<SanityEvent[]> {
+  try {
+    const result = await client.fetch<SanityEvent[]>(eventsQuery, {}, {
+      next: {
+        revalidate: REVALIDATE_TIME,
+        tags: ["sanity", "events"],
+      },
+    });
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch events for static generation:", error);
+    return [];
+  }
+}
+
+export async function getFeaturedEvents(): Promise<SanityEvent[]> {
+  try {
+    const result = await sanityFetch<SanityEvent[]>(featuredEventsQuery, {}, ["events"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch featured events from Sanity:", error);
+    return [];
+  }
+}
+
+export async function getEventBySlug(slug: string): Promise<SanityEvent | null> {
+  try {
+    return await sanityFetch<SanityEvent | null>(eventBySlugQuery, { slug }, ["events"]);
+  } catch (error) {
+    console.error(`Failed to fetch event "${slug}" from Sanity:`, error);
+    return null;
+  }
+}
+
+export async function getPastEvents(): Promise<SanityEvent[]> {
+  try {
+    const result = await sanityFetch<SanityEvent[]>(pastEventsQuery, {}, ["events"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch past events from Sanity:", error);
+    return [];
+  }
 }
 
 // Announcements
-export async function getAnnouncements() {
-  return sanityFetch(announcementsQuery, {}, ["announcements"]);
+export async function getAnnouncements(): Promise<SanityAnnouncement[]> {
+  try {
+    const result = await sanityFetch<SanityAnnouncement[]>(announcementsQuery, {}, ["announcements"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch announcements from Sanity:", error);
+    return [];
+  }
 }
 
-export async function getFeaturedAnnouncements() {
-  return sanityFetch(featuredAnnouncementsQuery, {}, ["announcements"]);
+export async function getAnnouncementBySlug(slug: string): Promise<SanityAnnouncement | null> {
+  try {
+    return await sanityFetch<SanityAnnouncement | null>(announcementBySlugQuery, { slug }, ["announcements"]);
+  } catch (error) {
+    console.error(`Failed to fetch announcement "${slug}" from Sanity:`, error);
+    return null;
+  }
+}
+
+// For static generation (no draft mode check - used in generateStaticParams)
+export async function getAnnouncementsForStaticGeneration(): Promise<SanityAnnouncement[]> {
+  try {
+    const result = await client.fetch<SanityAnnouncement[]>(announcementsQuery, {}, {
+      next: {
+        revalidate: REVALIDATE_TIME,
+        tags: ["sanity", "announcements"],
+      },
+    });
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch announcements for static generation:", error);
+    return [];
+  }
+}
+
+export async function getFeaturedAnnouncements(): Promise<SanityAnnouncement[]> {
+  try {
+    const result = await sanityFetch<SanityAnnouncement[]>(featuredAnnouncementsQuery, {}, ["announcements"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch featured announcements from Sanity:", error);
+    return [];
+  }
+}
+
+export async function getUrgentAnnouncements(): Promise<SanityAnnouncement[]> {
+  try {
+    const result = await sanityFetch<SanityAnnouncement[]>(urgentAnnouncementsQuery, {}, ["announcements"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch urgent announcements from Sanity:", error);
+    return [];
+  }
 }
 
 // Programs
-export async function getPrograms() {
-  return sanityFetch(programsQuery, {}, ["programs"]);
+export async function getPrograms(): Promise<SanityProgram[]> {
+  try {
+    const result = await sanityFetch<SanityProgram[]>(programsQuery, {}, ["programs"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch programs from Sanity:", error);
+    return [];
+  }
 }
 
 // Services
-export async function getServices() {
-  return sanityFetch(servicesQuery, {}, ["services"]);
+export async function getServices(): Promise<SanityService[]> {
+  try {
+    const result = await sanityFetch<SanityService[]>(servicesQuery, {}, ["services"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch services from Sanity:", error);
+    return [];
+  }
+}
+
+export async function getServiceBySlug(slug: string): Promise<SanityService | null> {
+  try {
+    return await sanityFetch<SanityService | null>(serviceBySlugQuery, { slug }, ["services"]);
+  } catch (error) {
+    console.error(`Failed to fetch service "${slug}" from Sanity:`, error);
+    return null;
+  }
+}
+
+export async function getFeaturedServices(): Promise<SanityService[]> {
+  try {
+    const result = await sanityFetch<SanityService[]>(featuredServicesQuery, {}, ["services"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch featured services from Sanity:", error);
+    return [];
+  }
 }
 
 // Donation Causes
-export async function getDonationCauses() {
-  return sanityFetch(donationCausesQuery, {}, ["donationCauses"]);
+export async function getDonationCauses(): Promise<SanityDonationCause[]> {
+  try {
+    const result = await sanityFetch<SanityDonationCause[]>(donationCausesQuery, {}, ["donationCauses"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch donation causes from Sanity:", error);
+    return [];
+  }
+}
+
+export async function getDonationCauseBySlug(slug: string): Promise<SanityDonationCause | null> {
+  try {
+    return await sanityFetch<SanityDonationCause | null>(donationCauseBySlugQuery, { slug }, ["donationCauses"]);
+  } catch (error) {
+    console.error(`Failed to fetch donation cause "${slug}" from Sanity:`, error);
+    return null;
+  }
+}
+
+export async function getFeaturedDonationCauses(): Promise<SanityDonationCause[]> {
+  try {
+    const result = await sanityFetch<SanityDonationCause[]>(featuredDonationCausesQuery, {}, ["donationCauses"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch featured donation causes from Sanity:", error);
+    return [];
+  }
 }
 
 // Gallery
-export async function getGalleryImages() {
-  return sanityFetch(galleryQuery, {}, ["gallery"]);
+export async function getGalleryImages(): Promise<SanityGalleryImage[]> {
+  try {
+    const result = await sanityFetch<SanityGalleryImage[]>(galleryQuery, {}, ["gallery"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch gallery images from Sanity:", error);
+    return [];
+  }
 }
 
-export async function getFeaturedGalleryImages() {
-  return sanityFetch(featuredGalleryQuery, {}, ["gallery"]);
+export async function getFeaturedGalleryImages(): Promise<SanityGalleryImage[]> {
+  try {
+    const result = await sanityFetch<SanityGalleryImage[]>(featuredGalleryQuery, {}, ["gallery"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch featured gallery images from Sanity:", error);
+    return [];
+  }
 }
 
 // Testimonials
-export async function getTestimonials() {
-  return sanityFetch(testimonialsQuery, {}, ["testimonials"]);
+export async function getTestimonials(): Promise<SanityTestimonial[]> {
+  try {
+    const result = await sanityFetch<SanityTestimonial[]>(testimonialsQuery, {}, ["testimonials"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch testimonials from Sanity:", error);
+    return [];
+  }
 }
 
 // FAQs
-export async function getFaqs() {
-  return sanityFetch(faqsQuery, {}, ["faqs"]);
+export async function getFaqs(): Promise<SanityFaq[]> {
+  try {
+    const result = await sanityFetch<SanityFaq[]>(faqsQuery, {}, ["faqs"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch FAQs from Sanity:", error);
+    return [];
+  }
 }
 
-export async function getFaqsByCategory(category: string) {
-  return sanityFetch(faqsByCategoryQuery, { category }, ["faqs"]);
+export async function getFaqsByCategory(category: string): Promise<SanityFaq[]> {
+  try {
+    const result = await sanityFetch<SanityFaq[]>(faqsByCategoryQuery, { category }, ["faqs"]);
+    return result ?? [];
+  } catch (error) {
+    console.error(`Failed to fetch FAQs for category "${category}" from Sanity:`, error);
+    return [];
+  }
+}
+
+export async function getFeaturedFaqs(): Promise<SanityFaq[]> {
+  try {
+    const result = await sanityFetch<SanityFaq[]>(featuredFaqsQuery, {}, ["faqs"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch featured FAQs from Sanity:", error);
+    return [];
+  }
 }
 
 // Etiquette
-export async function getEtiquette() {
-  return sanityFetch(etiquetteQuery, {}, ["etiquette"]);
+export async function getEtiquette(): Promise<SanityEtiquette[]> {
+  try {
+    const result = await sanityFetch<SanityEtiquette[]>(etiquetteQuery, {}, ["etiquette"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch etiquette from Sanity:", error);
+    return [];
+  }
 }
 
 // Tour Types
-export async function getTourTypes() {
-  return sanityFetch(tourTypesQuery, {}, ["tourTypes"]);
+export async function getTourTypes(): Promise<SanityTourType[]> {
+  try {
+    const result = await sanityFetch<SanityTourType[]>(tourTypesQuery, {}, ["tourTypes"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch tour types from Sanity:", error);
+    return [];
+  }
+}
+
+// ============================================
+// NEW: Team Members
+// ============================================
+export async function getTeamMembers(): Promise<SanityTeamMember[]> {
+  try {
+    const result = await sanityFetch<SanityTeamMember[]>(teamMembersQuery, {}, ["teamMembers"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch team members from Sanity:", error);
+    return [];
+  }
+}
+
+export async function getTeamMemberBySlug(slug: string): Promise<SanityTeamMember | null> {
+  try {
+    return await sanityFetch<SanityTeamMember | null>(teamMemberBySlugQuery, { slug }, ["teamMembers"]);
+  } catch (error) {
+    console.error(`Failed to fetch team member "${slug}" from Sanity:`, error);
+    return null;
+  }
+}
+
+export async function getTeamMembersByCategory(category: string): Promise<SanityTeamMember[]> {
+  try {
+    const result = await sanityFetch<SanityTeamMember[]>(teamMembersByCategoryQuery, { category }, ["teamMembers"]);
+    return result ?? [];
+  } catch (error) {
+    console.error(`Failed to fetch team members for category "${category}" from Sanity:`, error);
+    return [];
+  }
+}
+
+export async function getFeaturedTeamMembers(): Promise<SanityTeamMember[]> {
+  try {
+    const result = await sanityFetch<SanityTeamMember[]>(featuredTeamMembersQuery, {}, ["teamMembers"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch featured team members from Sanity:", error);
+    return [];
+  }
+}
+
+// ============================================
+// NEW: Page Content
+// ============================================
+export async function getPageContent(): Promise<SanityPageContent[]> {
+  try {
+    const result = await sanityFetch<SanityPageContent[]>(pageContentQuery, {}, ["pageContent"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch page content from Sanity:", error);
+    return [];
+  }
+}
+
+export async function getPageContentBySlug(slug: string): Promise<SanityPageContent | null> {
+  try {
+    return await sanityFetch<SanityPageContent | null>(pageContentBySlugQuery, { slug }, ["pageContent"]);
+  } catch (error) {
+    console.error(`Failed to fetch page content "${slug}" from Sanity:`, error);
+    return null;
+  }
+}
+
+export async function getPageContentByType(pageType: string): Promise<SanityPageContent | null> {
+  try {
+    return await sanityFetch<SanityPageContent | null>(pageContentByTypeQuery, { pageType }, ["pageContent"]);
+  } catch (error) {
+    console.error(`Failed to fetch page content for type "${pageType}" from Sanity:`, error);
+    return null;
+  }
+}
+
+export async function getNavigationPages(): Promise<SanityPageContent[]> {
+  try {
+    const result = await sanityFetch<SanityPageContent[]>(navigationPagesQuery, {}, ["pageContent"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch navigation pages from Sanity:", error);
+    return [];
+  }
+}
+
+// ============================================
+// NEW: Resources
+// ============================================
+export async function getResources(): Promise<SanityResource[]> {
+  try {
+    const result = await sanityFetch<SanityResource[]>(resourcesQuery, {}, ["resources"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch resources from Sanity:", error);
+    return [];
+  }
+}
+
+export async function getResourceBySlug(slug: string): Promise<SanityResource | null> {
+  try {
+    return await sanityFetch<SanityResource | null>(resourceBySlugQuery, { slug }, ["resources"]);
+  } catch (error) {
+    console.error(`Failed to fetch resource "${slug}" from Sanity:`, error);
+    return null;
+  }
+}
+
+export async function getResourcesByCategory(category: string): Promise<SanityResource[]> {
+  try {
+    const result = await sanityFetch<SanityResource[]>(resourcesByCategoryQuery, { category }, ["resources"]);
+    return result ?? [];
+  } catch (error) {
+    console.error(`Failed to fetch resources for category "${category}" from Sanity:`, error);
+    return [];
+  }
+}
+
+export async function getResourcesByType(resourceType: string): Promise<SanityResource[]> {
+  try {
+    const result = await sanityFetch<SanityResource[]>(resourcesByTypeQuery, { resourceType }, ["resources"]);
+    return result ?? [];
+  } catch (error) {
+    console.error(`Failed to fetch resources of type "${resourceType}" from Sanity:`, error);
+    return [];
+  }
+}
+
+export async function getFeaturedResources(): Promise<SanityResource[]> {
+  try {
+    const result = await sanityFetch<SanityResource[]>(featuredResourcesQuery, {}, ["resources"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch featured resources from Sanity:", error);
+    return [];
+  }
+}
+
+// ============================================
+// Site Settings (singleton)
+// ============================================
+export async function getSiteSettings(): Promise<SanitySiteSettings | null> {
+  try {
+    return await sanityFetch<SanitySiteSettings | null>(siteSettingsQuery, {}, ["siteSettings"]);
+  } catch (error) {
+    console.error("Failed to fetch site settings from Sanity:", error);
+    return null;
+  }
+}
+
+// Prayer Settings (singleton)
+export async function getPrayerSettings(): Promise<SanityPrayerSettings | null> {
+  try {
+    return await sanityFetch<SanityPrayerSettings | null>(prayerSettingsQuery, {}, ["prayerSettings"]);
+  } catch (error) {
+    console.error("Failed to fetch prayer settings from Sanity:", error);
+    return null;
+  }
 }

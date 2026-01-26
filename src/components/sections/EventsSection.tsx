@@ -3,50 +3,85 @@
 import { motion } from "framer-motion";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { upcomingEvents } from "@/data/content";
 import { ArrowRight, Calendar, Clock, MapPin, Repeat } from "lucide-react";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { formatDate } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import { SanityEvent, SanityImage } from "@/types/sanity";
+import { urlFor } from "@/sanity/lib/image";
 
-// Curated recurring programs to display (3 cards)
-const recurringPrograms = [
+// Fallback data for when Sanity returns no events
+const fallbackRecurringPrograms = [
   {
-    id: "jumuah",
+    _id: "jumuah",
     title: "Jumu'ah Prayer",
-    day: "Fridays",
-    times: ["1:00 PM (Arabic)", "2:15 PM (English)"],
+    recurring: true,
+    recurringDay: "Fridays",
+    time: "1:00 PM (Arabic) / 2:15 PM (English)",
     location: "Main Prayer Hall",
-    image: "/images/aic start.jpg",
+    slug: "jumuah-prayer",
+    categories: ["Prayer"],
     description: "Weekly congregational Friday prayer with khutbah in Arabic and English sessions.",
-    category: "Prayer",
   },
   {
-    id: "iqra-academy",
+    _id: "iqra-academy",
     title: "IQRA Academy",
-    day: "Saturdays",
-    times: ["9:00 AM - 1:00 PM"],
+    recurring: true,
+    recurringDay: "Saturdays",
+    time: "9:00 AM - 1:00 PM",
     location: "Education Centre",
-    image: "/images/aic 1.jpg",
+    slug: "iqra-academy",
+    categories: ["Education"],
     description: "Quran recitation, Islamic studies, and memorization classes for children aged 5-12.",
-    category: "Education",
   },
   {
-    id: "salam-arabic",
+    _id: "salam-arabic",
     title: "Salam Arabic School",
-    day: "Weekends",
-    times: ["Various Sessions"],
+    recurring: true,
+    recurringDay: "Weekends",
+    time: "Various Sessions",
     location: "Education Centre",
-    image: "/images/aic end.jpg",
+    slug: "salam-arabic",
+    categories: ["Education"],
     description: "Comprehensive Arabic language instruction for all levels.",
-    category: "Education",
   },
 ];
 
+interface EventsSectionProps {
+  events?: SanityEvent[];
+}
+
+// Helper to get image URL from Sanity or fallback to static path
+function getImageUrl(image: SanityImage | string | undefined, fallbackIndex: number): string {
+  const fallbacks = ["/images/aic start.jpg", "/images/aic 1.jpg", "/images/aic end.jpg"];
+  if (!image) return fallbacks[fallbackIndex % fallbacks.length];
+  if (typeof image === "string") return image;
+  return urlFor(image).width(400).height(300).url();
+}
+
+// Helper to check if a date string is a valid date
+function isValidDate(dateStr: string | undefined): boolean {
+  if (!dateStr) return false;
+  const date = new Date(dateStr);
+  return !isNaN(date.getTime());
+}
+
+// Helper to get card description (short description or truncated full description)
+function getCardDescription(event: SanityEvent): string {
+  if (event.shortDescription) {
+    return event.shortDescription;
+  }
+  // Fallback to truncated full description
+  if (event.description && event.description.length > 100) {
+    return event.description.substring(0, 97) + "...";
+  }
+  return event.description || "";
+}
+
 // Dated Event Card - Clean modern design with consistent styling
-function DatedEventCard({ event, index }: { event: typeof upcomingEvents[0]; index: number }) {
-  const eventDate = new Date(event.date);
+function DatedEventCard({ event, index }: { event: SanityEvent; index: number }) {
+  const imageUrl = getImageUrl(event.image, index);
+  const eventDate = event.date ? new Date(event.date) : null;
 
   return (
     <motion.div
@@ -55,12 +90,12 @@ function DatedEventCard({ event, index }: { event: typeof upcomingEvents[0]; ind
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
     >
-      <Link href={`/events#${event.id}`} className="block group">
+      <Link href={`/events/${event.slug || event._id}`} className="block group">
         <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100">
           {/* Image with date overlay */}
           <div className="relative h-44 overflow-hidden">
             <Image
-              src={event.image}
+              src={imageUrl}
               alt={event.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -68,19 +103,30 @@ function DatedEventCard({ event, index }: { event: typeof upcomingEvents[0]; ind
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
             {/* Date badge */}
-            <div className="absolute top-4 left-4 bg-white rounded-xl px-3 py-2 shadow-md">
-              <p className="text-xs font-medium text-gray-500 uppercase">
-                {eventDate.toLocaleDateString('en-AU', { month: 'short' })}
-              </p>
-              <p className="text-2xl font-bold text-teal-600 leading-none">
-                {eventDate.getDate()}
-              </p>
-            </div>
+            {eventDate && isValidDate(event.date) && (
+              <div className="absolute top-4 left-4 bg-white rounded-xl px-3 py-2 shadow-md">
+                <p className="text-xs font-medium text-gray-500 uppercase">
+                  {eventDate.toLocaleDateString('en-AU', { month: 'short' })}
+                </p>
+                <p className="text-2xl font-bold text-teal-600 leading-none">
+                  {eventDate.getDate()}
+                </p>
+              </div>
+            )}
 
-            {/* Category badge */}
-            <span className="absolute top-4 right-4 px-3 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full">
-              {event.category}
-            </span>
+            {/* Category badges */}
+            <div className="absolute top-4 right-4 flex flex-wrap gap-1 justify-end max-w-[50%]">
+              {event.categories?.slice(0, 2).map((cat, idx) => (
+                <span key={idx} className="px-2 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full">
+                  {cat}
+                </span>
+              ))}
+              {event.categories && event.categories.length > 2 && (
+                <span className="px-2 py-1 bg-amber-400 text-white text-xs font-medium rounded-full">
+                  +{event.categories.length - 2}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Content */}
@@ -89,7 +135,7 @@ function DatedEventCard({ event, index }: { event: typeof upcomingEvents[0]; ind
               {event.title}
             </h3>
             <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-              {event.description}
+              {getCardDescription(event)}
             </p>
             <div className="flex items-center gap-4 text-sm text-gray-500">
               <div className="flex items-center gap-1.5">
@@ -98,7 +144,7 @@ function DatedEventCard({ event, index }: { event: typeof upcomingEvents[0]; ind
               </div>
               <div className="flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 text-teal-500" />
-                <span className="truncate">{event.location}</span>
+                <span className="truncate">{event.locationDetails || event.location}</span>
               </div>
             </div>
           </div>
@@ -109,7 +155,9 @@ function DatedEventCard({ event, index }: { event: typeof upcomingEvents[0]; ind
 }
 
 // Recurring Program Card - Clean consistent design
-function RecurringCard({ program, index }: { program: typeof recurringPrograms[0]; index: number }) {
+function RecurringCard({ event, index }: { event: SanityEvent; index: number }) {
+  const imageUrl = getImageUrl(event.image, index);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -117,14 +165,14 @@ function RecurringCard({ program, index }: { program: typeof recurringPrograms[0
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
     >
-      <Link href="/events" className="block group">
+      <Link href={`/events/${event.slug || event._id}`} className="block group">
         <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 h-full">
           <div className="flex flex-col sm:flex-row h-full">
             {/* Image */}
             <div className="relative w-full sm:w-32 h-32 sm:h-auto flex-shrink-0 overflow-hidden">
               <Image
-                src={program.image}
-                alt={program.title}
+                src={imageUrl}
+                alt={event.title}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
@@ -133,32 +181,39 @@ function RecurringCard({ program, index }: { program: typeof recurringPrograms[0
 
             {/* Content */}
             <div className="flex-1 p-4 flex flex-col justify-center">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
                 <div className="flex items-center gap-1.5 px-2 py-1 bg-teal-50 rounded-full">
                   <Repeat className="w-3 h-3 text-teal-600" />
-                  <span className="text-xs font-semibold text-teal-700">{program.day}</span>
+                  <span className="text-xs font-semibold text-teal-700">{event.recurringDay}</span>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  program.category === "Prayer"
-                    ? "bg-green-50 text-green-700"
-                    : "bg-blue-50 text-blue-700"
-                }`}>
-                  {program.category}
-                </span>
+                {event.categories?.slice(0, 2).map((cat, idx) => (
+                  <span key={idx} className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    cat === "Prayer"
+                      ? "bg-green-50 text-green-700"
+                      : "bg-blue-50 text-blue-700"
+                  }`}>
+                    {cat}
+                  </span>
+                ))}
+                {event.categories && event.categories.length > 2 && (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                    +{event.categories.length - 2}
+                  </span>
+                )}
               </div>
 
               <h3 className="text-base font-bold text-gray-900 mb-1 group-hover:text-teal-600 transition-colors">
-                {program.title}
+                {event.title}
               </h3>
 
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
                 <div className="flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5 text-teal-500" />
-                  <span>{program.times.join(" / ")}</span>
+                  <span>{event.time}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-teal-500" />
-                  <span>{program.location}</span>
+                  <span>{event.locationDetails || event.location}</span>
                 </div>
               </div>
             </div>
@@ -169,12 +224,17 @@ function RecurringCard({ program, index }: { program: typeof recurringPrograms[0
   );
 }
 
-export function EventsSection() {
-  // Get dated events (non-recurring), sorted by date
-  const datedEvents = upcomingEvents
+export function EventsSection({ events = [] }: EventsSectionProps) {
+  // Separate dated events (non-recurring) and recurring events
+  const datedEvents = events
     .filter((e) => !e.recurring)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 2); // Show only first 2 dated events
+
+  // Get recurring events from Sanity or use fallback
+  const recurringEvents = events.filter((e) => e.recurring);
+  const displayRecurring = recurringEvents.length > 0
+    ? recurringEvents.slice(0, 3)
+    : fallbackRecurringPrograms;
 
   return (
     <section className="py-16 md:py-24 bg-gradient-to-br from-teal-50/50 via-white to-teal-50/30 relative overflow-hidden">
@@ -224,12 +284,12 @@ export function EventsSection() {
                 </h3>
               </div>
               {datedEvents.map((event, index) => (
-                <DatedEventCard key={event.id} event={event} index={index} />
+                <DatedEventCard key={event._id} event={event} index={index} />
               ))}
             </div>
           )}
 
-          {/* Recurring Programs - Takes up 3 columns */}
+          {/* Recurring Programs - Takes up 3 columns (or 5 if no dated events) */}
           <div className={`${datedEvents.length > 0 ? 'lg:col-span-3' : 'lg:col-span-5'}`}>
             <div className="flex items-center gap-2 mb-4">
               <Repeat className="w-4 h-4 text-neutral-500" />
@@ -238,12 +298,28 @@ export function EventsSection() {
               </h3>
             </div>
             <div className="space-y-4">
-              {recurringPrograms.map((program, index) => (
-                <RecurringCard key={program.id} program={program} index={index} />
+              {displayRecurring.map((event, index) => (
+                <RecurringCard key={event._id} event={event as SanityEvent} index={index} />
               ))}
             </div>
           </div>
         </div>
+
+        {/* Empty state for when there are no events at all */}
+        {datedEvents.length === 0 && recurringEvents.length === 0 && events.length === 0 && (
+          <FadeIn>
+            <div className="text-center py-8 bg-white rounded-2xl border border-gray-100 mt-8">
+              <Calendar className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Stay Connected</h3>
+              <p className="text-gray-500 max-w-md mx-auto mb-4">
+                Check our events page for the latest community gatherings and programs.
+              </p>
+              <Button href="/events" variant="primary">
+                View Events Calendar
+              </Button>
+            </div>
+          </FadeIn>
+        )}
       </div>
     </section>
   );
