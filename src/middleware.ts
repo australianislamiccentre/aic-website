@@ -1,11 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export function middleware() {
+export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // Security headers
-  // Prevent clickjacking - don't allow embedding in iframes
-  response.headers.set('X-Frame-Options', 'DENY');
+  // Allow embedding in iframes only from same origin (for Sanity Presentation tool)
+  // SAMEORIGIN allows the site to be embedded in iframes on the same domain
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
 
   // Prevent MIME type sniffing
   response.headers.set('X-Content-Type-Options', 'nosniff');
