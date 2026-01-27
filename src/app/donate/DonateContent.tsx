@@ -23,6 +23,7 @@ import {
   Clock,
   Calendar,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 
 const causeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -46,7 +47,6 @@ function DonateForm({ donationCauses }: DonateFormProps) {
   const [selectedFrequency, setSelectedFrequency] = useState("once");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(100);
   const [customAmount, setCustomAmount] = useState("");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [donorInfo, setDonorInfo] = useState({
@@ -61,7 +61,6 @@ function DonateForm({ donationCauses }: DonateFormProps) {
   const parsedCustom = parseFloat(customAmount);
   const amount = customAmount && !isNaN(parsedCustom) ? parsedCustom : selectedAmount || 0;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleDonate = async () => {
     if (amount < 1) {
       setError("Please enter a valid donation amount (minimum $1)");
@@ -447,28 +446,19 @@ function DonateForm({ donationCauses }: DonateFormProps) {
                     </div>
                   </div>
 
-                  <div className="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-xl">
-                    <div className="flex items-start gap-3">
-                      <Clock className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-semibold text-teal-800">Online Donations Coming Soon</p>
-                        <p className="text-teal-700 text-sm mt-1">
-                          Our secure online payment system is currently being set up and will be available shortly.
-                          In the meantime, please use the alternative donation methods below or contact us directly.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
                   <Button
                     type="button"
                     variant="gold"
                     size="xl"
-                    className="w-full opacity-50 cursor-not-allowed"
-                    disabled={true}
-                    icon={<CreditCard className="w-5 h-5" />}
+                    className="w-full"
+                    disabled={isProcessing || amount < 1 || !donorInfo.email}
+                    onClick={handleDonate}
+                    icon={isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CreditCard className="w-5 h-5" />}
                   >
-                    Donate ${amount.toFixed(2)} {selectedFrequency !== "once" ? selectedFrequency : ""}
+                    {isProcessing
+                      ? "Processing..."
+                      : `Donate $${amount.toFixed(2)} ${selectedFrequency !== "once" ? selectedFrequency : ""}`
+                    }
                   </Button>
 
                   <div className="flex items-center justify-center gap-4 mt-6 text-sm text-gray-500">
