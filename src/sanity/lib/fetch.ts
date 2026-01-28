@@ -18,6 +18,10 @@ import {
   donationCausesQuery,
   donationCauseBySlugQuery,
   featuredDonationCausesQuery,
+  // Donation Campaigns
+  donationCampaignsQuery,
+  donationCampaignBySlugQuery,
+  featuredDonationCampaignsQuery,
   galleryQuery,
   featuredGalleryQuery,
   testimonialsQuery,
@@ -49,6 +53,7 @@ import {
   SanityProgram,
   SanityService,
   SanityDonationCause,
+  SanityDonationCampaign,
   SanityGalleryImage,
   SanityTestimonial,
   SanityFaq,
@@ -61,8 +66,8 @@ import {
   SanityResource,
 } from "@/types/sanity";
 
-// Revalidation time in seconds (5 minutes)
-const REVALIDATE_TIME = 300;
+// Revalidation time in seconds (1 minute for faster updates)
+const REVALIDATE_TIME = 60;
 
 // Generic fetch function with caching and draft mode support
 async function sanityFetch<T>(
@@ -265,6 +270,72 @@ export async function getFeaturedDonationCauses(): Promise<SanityDonationCause[]
     return result ?? [];
   } catch (error) {
     console.error("Failed to fetch featured donation causes from Sanity:", error);
+    return [];
+  }
+}
+
+// ============================================
+// Donation Campaigns (Scheduled Daily Billing)
+// ============================================
+export async function getDonationCampaigns(): Promise<SanityDonationCampaign[]> {
+  try {
+    const result = await sanityFetch<SanityDonationCampaign[]>(
+      donationCampaignsQuery,
+      {},
+      ["donationCampaigns"]
+    );
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch donation campaigns from Sanity:", error);
+    return [];
+  }
+}
+
+export async function getDonationCampaignBySlug(
+  slug: string
+): Promise<SanityDonationCampaign | null> {
+  try {
+    return await sanityFetch<SanityDonationCampaign | null>(
+      donationCampaignBySlugQuery,
+      { slug },
+      ["donationCampaigns"]
+    );
+  } catch (error) {
+    console.error(`Failed to fetch campaign "${slug}" from Sanity:`, error);
+    return null;
+  }
+}
+
+export async function getFeaturedDonationCampaigns(): Promise<SanityDonationCampaign[]> {
+  try {
+    const result = await sanityFetch<SanityDonationCampaign[]>(
+      featuredDonationCampaignsQuery,
+      {},
+      ["donationCampaigns"]
+    );
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch featured campaigns from Sanity:", error);
+    return [];
+  }
+}
+
+// For static generation (no draft mode check - used in generateStaticParams)
+export async function getDonationCampaignsForStaticGeneration(): Promise<SanityDonationCampaign[]> {
+  try {
+    const result = await client.fetch<SanityDonationCampaign[]>(
+      donationCampaignsQuery,
+      {},
+      {
+        next: {
+          revalidate: REVALIDATE_TIME,
+          tags: ["sanity", "donationCampaigns"],
+        },
+      }
+    );
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch campaigns for static generation:", error);
     return [];
   }
 }

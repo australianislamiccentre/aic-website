@@ -2,6 +2,7 @@ import event from "./event";
 import announcement from "./announcement";
 import service from "./service";
 import donationCause from "./donationCause";
+import donationCampaign from "./donationCampaign";
 import galleryImage from "./gallery";
 import testimonial from "./testimonial";
 import faq from "./faq";
@@ -23,6 +24,7 @@ export const schemaTypes = [
   announcement,
   service,
   donationCause,
+  donationCampaign,
   teamMember,
   pageContent,
   resource,

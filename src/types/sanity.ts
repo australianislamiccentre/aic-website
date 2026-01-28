@@ -114,6 +114,64 @@ export interface SanityDonationCause {
   order?: number;
 }
 
+// Donation Campaign - for scheduled daily donation campaigns (e.g., Ramadan)
+export interface SanityDonationCampaign {
+  _id: string;
+  title: string;
+  slug: string;
+  description: string;
+  fullDescription?: PortableTextBlock[];
+  image?: SanityImage;
+  icon?: string;
+  // Schedule
+  startDate: string; // ISO date string YYYY-MM-DD
+  endDate?: string; // Optional - leave empty for ongoing campaigns
+  isOngoing?: boolean; // True for campaigns that run indefinitely
+  signupStartDate?: string;
+  signupEndDate?: string;
+  // Payment
+  presetAmounts: number[];
+  allowCustomAmount?: boolean;
+  minimumAmount: number;
+  maximumAmount?: number;
+  // Settings
+  active?: boolean;
+  featured?: boolean;
+  goal?: number;
+  raised?: number;
+  subscriberCount?: number;
+  order?: number;
+}
+
+// Campaign subscription request (client to server)
+export interface CampaignSubscriptionRequest {
+  campaignSlug: string;
+  dailyAmount: number;
+  donorInfo: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    anonymous?: boolean;
+    message?: string;
+  };
+}
+
+// Campaign subscription response (server to client)
+export interface CampaignSubscriptionResponse {
+  sessionId: string;
+  url: string;
+  billingInfo: {
+    startDate: string;
+    endDate?: string; // Optional for ongoing campaigns
+    remainingDays?: number; // Optional for ongoing campaigns
+    dailyAmount: number;
+    totalAmount?: number; // Optional for ongoing campaigns
+    isLateJoin: boolean;
+    isOngoing?: boolean; // True for ongoing campaigns
+  };
+}
+
 export interface SanityGalleryImage {
   _id: string;
   image: SanityImage;

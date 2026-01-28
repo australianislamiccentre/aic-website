@@ -326,6 +326,86 @@ export const featuredDonationCausesQuery = groq`
   }
 `;
 
+// ============================================
+// Donation Campaigns - Scheduled Daily Billing
+// ============================================
+
+// Active campaigns where signup is currently open
+export const donationCampaignsQuery = groq`
+  *[_type == "donationCampaign" && active != false && (
+    signupStartDate == null || signupStartDate <= now()
+  ) && (
+    signupEndDate == null || signupEndDate >= now()
+  ) && endDate >= now()] | order(startDate asc, order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    description,
+    fullDescription,
+    image,
+    icon,
+    startDate,
+    endDate,
+    signupStartDate,
+    signupEndDate,
+    presetAmounts,
+    allowCustomAmount,
+    minimumAmount,
+    maximumAmount,
+    featured,
+    goal,
+    raised,
+    subscriberCount
+  }
+`;
+
+// Single campaign by slug (includes all fields for detail page)
+export const donationCampaignBySlugQuery = groq`
+  *[_type == "donationCampaign" && slug.current == $slug][0] {
+    _id,
+    title,
+    "slug": slug.current,
+    description,
+    fullDescription,
+    image,
+    icon,
+    startDate,
+    endDate,
+    signupStartDate,
+    signupEndDate,
+    presetAmounts,
+    allowCustomAmount,
+    minimumAmount,
+    maximumAmount,
+    active,
+    featured,
+    goal,
+    raised,
+    subscriberCount
+  }
+`;
+
+// Featured campaigns for homepage display
+export const featuredDonationCampaignsQuery = groq`
+  *[_type == "donationCampaign" && active != false && featured == true && (
+    signupStartDate == null || signupStartDate <= now()
+  ) && (
+    signupEndDate == null || signupEndDate >= now()
+  ) && endDate >= now()] | order(startDate asc) [0...3] {
+    _id,
+    title,
+    "slug": slug.current,
+    description,
+    image,
+    icon,
+    startDate,
+    endDate,
+    presetAmounts,
+    goal,
+    raised
+  }
+`;
+
 // Gallery
 export const galleryQuery = groq`
   *[_type == "galleryImage"] | order(order asc) {

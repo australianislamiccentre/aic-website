@@ -60,6 +60,11 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getFeaturedResources: vi.fn().mockResolvedValue([]),
   getSiteSettings: vi.fn().mockResolvedValue(null),
   getPrayerSettings: vi.fn().mockResolvedValue(null),
+  // Campaign functions
+  getDonationCampaigns: vi.fn().mockResolvedValue([]),
+  getDonationCampaignBySlug: vi.fn().mockResolvedValue(null),
+  getDonationCampaignsForStaticGeneration: vi.fn().mockResolvedValue([]),
+  getFeaturedDonationCampaigns: vi.fn().mockResolvedValue([]),
 }));
 
 // Mock next/navigation
