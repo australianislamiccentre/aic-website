@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, Amiri } from "next/font/google";
 import { draftMode } from "next/headers";
+import { VisualEditing } from "next-sanity";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -107,7 +108,12 @@ export default async function RootLayout({
         <Header siteSettings={siteSettings} />
         <main className="overflow-x-hidden">{children}</main>
         <Footer siteSettings={siteSettings} />
-        {isDraftMode && <PreviewBanner />}
+        {isDraftMode && (
+          <>
+            <PreviewBanner />
+            <VisualEditing />
+          </>
+        )}
       </body>
     </html>
   );
