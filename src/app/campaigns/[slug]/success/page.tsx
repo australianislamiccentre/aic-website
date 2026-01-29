@@ -13,6 +13,10 @@ import {
 import { getDonationCampaignBySlug } from "@/sanity/lib/fetch";
 import { Button } from "@/components/ui/Button";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
+import {
+  getMelbourneToday,
+  formatDateRange,
+} from "@/lib/campaign-utils";
 
 interface SuccessPageProps {
   params: Promise<{ slug: string }>;
@@ -37,23 +41,33 @@ export default async function CampaignSuccessPage({
     notFound();
   }
 
-  // Calculate campaign details
-  const startDate = new Date(campaign.startDate);
-  const endDate = campaign.endDate ? new Date(campaign.endDate) : null;
+  // Calculate campaign details using Melbourne timezone
+  const today = getMelbourneToday();
+  const isLateJoin = today >= campaign.startDate;
 
-  const formatDate = (date: Date) =>
-    date.toLocaleDateString("en-AU", {
+  // Format a date string (YYYY-MM-DD) for display in Melbourne timezone
+  const formatDateStr = (dateStr: string) => {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0)); // Noon UTC to avoid edge cases
+    return date.toLocaleDateString("en-AU", {
       weekday: "long",
       day: "numeric",
       month: "long",
       year: "numeric",
+      timeZone: "Australia/Melbourne",
     });
+  };
 
-  const now = new Date();
-  const isLateJoin = now > startDate;
-  const billingStartDate = isLateJoin
-    ? new Date(now.setDate(now.getDate() + 1))
-    : startDate;
+  // Calculate billing start date in Melbourne timezone
+  let billingStartDateStr: string;
+  if (isLateJoin) {
+    // Tomorrow in Melbourne time
+    const [year, month, day] = today.split("-").map(Number);
+    const tomorrowDate = new Date(Date.UTC(year, month - 1, day + 1));
+    billingStartDateStr = getMelbourneToday(tomorrowDate);
+  } else {
+    billingStartDateStr = campaign.startDate;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-teal-50 py-16">
@@ -90,9 +104,7 @@ export default async function CampaignSuccessPage({
                     <div>
                       <p className="font-medium text-gray-900">Campaign Period</p>
                       <p className="text-sm text-gray-600">
-                        {isOngoing
-                          ? `From ${formatDate(startDate)} (Ongoing)`
-                          : `${formatDate(startDate)} to ${formatDate(endDate!)}`}
+                        {formatDateRange(campaign.startDate, campaign.endDate, isOngoing)}
                       </p>
                     </div>
                   </div>
@@ -109,8 +121,8 @@ export default async function CampaignSuccessPage({
                         {isUpfront
                           ? "One-time payment - Your full donation has been processed"
                           : isLateJoin
-                          ? `Tomorrow (${formatDate(billingStartDate)})`
-                          : `Campaign start date (${formatDate(startDate)})`}
+                          ? `Tomorrow (${formatDateStr(billingStartDateStr)})`
+                          : `Campaign start date (${formatDateStr(campaign.startDate)})`}
                       </p>
                     </div>
                   </div>
@@ -156,7 +168,7 @@ export default async function CampaignSuccessPage({
                         <span className="text-xs font-bold text-teal-600">3</span>
                       </span>
                       <span>
-                        Your donation will support the campaign from {formatDate(startDate)} to {formatDate(endDate!)}.
+                        Your donation will support the campaign from {formatDateStr(campaign.startDate)} to {formatDateStr(campaign.endDate!)}.
                       </span>
                     </li>
                   </ul>
@@ -220,7 +232,7 @@ export default async function CampaignSuccessPage({
                         <span className="text-xs font-bold text-teal-600">3</span>
                       </span>
                       <span>
-                        The subscription will automatically end on {formatDate(endDate!)}.
+                        The subscription will automatically end on {formatDateStr(campaign.endDate!)}.
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
