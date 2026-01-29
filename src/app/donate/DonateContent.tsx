@@ -61,14 +61,38 @@ function DonateForm({ donationCauses }: DonateFormProps) {
   const parsedCustom = parseFloat(customAmount);
   const amount = customAmount && !isNaN(parsedCustom) ? parsedCustom : selectedAmount || 0;
 
+  // Email validation regex
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleDonate = async () => {
+    // Validate amount
     if (amount < 1) {
       setError("Please enter a valid donation amount (minimum $1)");
       return;
     }
 
-    if (!donorInfo.email) {
+    // Validate required name fields
+    if (!donorInfo.firstName.trim()) {
+      setError("Please enter your first name");
+      return;
+    }
+
+    if (!donorInfo.lastName.trim()) {
+      setError("Please enter your last name");
+      return;
+    }
+
+    // Validate email
+    if (!donorInfo.email.trim()) {
       setError("Please enter your email address");
+      return;
+    }
+
+    if (!isValidEmail(donorInfo.email)) {
+      setError("Please enter a valid email address (e.g., name@example.com)");
       return;
     }
 
@@ -451,7 +475,7 @@ function DonateForm({ donationCauses }: DonateFormProps) {
                     variant="gold"
                     size="xl"
                     className="w-full"
-                    disabled={isProcessing || amount < 1 || !donorInfo.email}
+                    disabled={isProcessing || amount < 1 || !donorInfo.email || !donorInfo.firstName.trim() || !donorInfo.lastName.trim()}
                     onClick={handleDonate}
                     icon={isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CreditCard className="w-5 h-5" />}
                   >

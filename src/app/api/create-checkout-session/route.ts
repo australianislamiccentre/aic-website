@@ -17,6 +17,13 @@ function getStripe(): Stripe {
   return stripe;
 }
 
+// Sanitize strings to remove hidden Unicode characters that can exceed Stripe's 500 char limit
+function sanitizeMetadata(str: string | undefined): string {
+  if (!str) return '';
+  // Remove non-printable ASCII characters and trim
+  return str.replace(/[^\x20-\x7E]/g, '').trim().slice(0, 500);
+}
+
 // Frequency mapping for Stripe recurring intervals
 const frequencyToInterval: Record<string, { interval: 'day' | 'week' | 'month' | 'year'; interval_count: number } | null> = {
   once: null,
@@ -52,13 +59,13 @@ export async function POST(request: NextRequest) {
       payment_method_types: ['card'],
       customer_email: donorInfo?.email || undefined,
       metadata: {
-        cause,
-        causeTitle,
-        frequency,
-        donorFirstName: donorInfo?.firstName || '',
-        donorLastName: donorInfo?.lastName || '',
-        donorPhone: donorInfo?.phone || '',
-        donorMessage: donorInfo?.message || '',
+        cause: sanitizeMetadata(cause),
+        causeTitle: sanitizeMetadata(causeTitle),
+        frequency: sanitizeMetadata(frequency),
+        donorFirstName: sanitizeMetadata(donorInfo?.firstName),
+        donorLastName: sanitizeMetadata(donorInfo?.lastName),
+        donorPhone: sanitizeMetadata(donorInfo?.phone),
+        donorMessage: sanitizeMetadata(donorInfo?.message),
         anonymous: donorInfo?.anonymous ? 'true' : 'false',
       },
       success_url: `${baseUrl}/donate/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -116,8 +123,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error) {
     console.error('Stripe checkout error:', error);
+
+    // Handle Stripe-specific errors with user-friendly messages
+    if (error instanceof Stripe.errors.StripeError) {
+      let userMessage = 'Failed to create checkout session';
+
+      if (error.code === 'email_invalid') {
+        userMessage = 'Please enter a valid email address';
+      } else if (error.code === 'amount_too_small') {
+        userMessage = 'Donation amount is too small. Minimum is $1.';
+      } else if (error.type === 'StripeInvalidRequestError') {
+        userMessage = 'Invalid request. Please check your information and try again.';
+      }
+
+      return NextResponse.json(
+        { error: userMessage },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { error: 'Failed to create checkout session. Please try again.' },
       { status: 500 }
     );
   }

@@ -21,6 +21,11 @@ import { SanityDonationCampaign } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
 import { Button } from "@/components/ui/Button";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
+import {
+  getMelbourneToday,
+  getDaysDifference,
+  formatDateRange as formatDateRangeUtil,
+} from "@/lib/campaign-utils";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -43,16 +48,14 @@ function getCampaignStatus(campaign: SanityDonationCampaign): {
   label: string;
   color: string;
 } {
-  const now = new Date();
-  const today = now.toISOString().split("T")[0];
+  // Use Melbourne timezone for all date comparisons
+  const today = getMelbourneToday();
   const startDate = campaign.startDate;
   const endDate = campaign.endDate;
   const isOngoing = campaign.isOngoing || !campaign.endDate;
 
   if (today < startDate) {
-    const daysUntil = Math.ceil(
-      (new Date(startDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const daysUntil = getDaysDifference(today, startDate);
     return {
       status: "upcoming",
       label: daysUntil === 1 ? "Starts tomorrow" : `Starts in ${daysUntil} days`,
@@ -78,16 +81,13 @@ function getCampaignStatus(campaign: SanityDonationCampaign): {
     };
   }
 
-  // Calculate remaining days including today and end date (inclusive)
-  const endDateTime = new Date(endDate + "T23:59:59Z");
-  const daysRemaining = Math.ceil(
-    (endDateTime.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-  );
+  // Calculate remaining days including today (today to endDate inclusive)
+  const daysRemaining = getDaysDifference(today, endDate!) + 1;
 
   if (daysRemaining <= 3) {
     return {
       status: "ending-soon",
-      label: daysRemaining === 1 ? "Ends tomorrow" : `${daysRemaining} days left`,
+      label: daysRemaining === 1 ? "Ends today" : `${daysRemaining} days left`,
       color: "bg-amber-100 text-amber-700",
     };
   }
@@ -99,23 +99,9 @@ function getCampaignStatus(campaign: SanityDonationCampaign): {
   };
 }
 
+// Use the shared formatDateRange utility for Melbourne timezone consistency
 function formatDateRange(startDate: string, endDate?: string, isOngoing?: boolean): string {
-  const start = new Date(startDate);
-  const options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
-
-  const startStr = start.toLocaleDateString("en-AU", options);
-
-  if (isOngoing || !endDate) {
-    return `From ${startStr} (Ongoing)`;
-  }
-
-  const end = new Date(endDate);
-  const endStr = end.toLocaleDateString("en-AU", {
-    ...options,
-    year: "numeric",
-  });
-
-  return `${startStr} - ${endStr}`;
+  return formatDateRangeUtil(startDate, endDate, isOngoing);
 }
 
 function CampaignCard({ campaign }: { campaign: SanityDonationCampaign }) {
@@ -231,18 +217,19 @@ function CampaignCard({ campaign }: { campaign: SanityDonationCampaign }) {
 }
 
 export default function CampaignsContent({ campaigns }: CampaignsContentProps) {
+  // Use Melbourne timezone for filtering
+  const today = getMelbourneToday();
+
   // Separate active/upcoming/ongoing from ended campaigns
   const activeCampaigns = campaigns.filter((c) => {
     // Ongoing campaigns are always active
     if (c.isOngoing || !c.endDate) return true;
-    const today = new Date().toISOString().split("T")[0];
     return c.endDate >= today;
   });
 
   const endedCampaigns = campaigns.filter((c) => {
     // Ongoing campaigns never end
     if (c.isOngoing || !c.endDate) return false;
-    const today = new Date().toISOString().split("T")[0];
     return c.endDate < today;
   });
 
