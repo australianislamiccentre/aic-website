@@ -6,14 +6,50 @@ import {
   isSignupOpen,
   validateAmount,
   sanitizeMetadata,
+  getMelbourneToday,
+  toMelbourneMidnight,
+  getDaysDifference,
 } from "./campaign-utils";
 
 describe("Campaign Utilities", () => {
+  describe("Melbourne Timezone Helpers", () => {
+    it("getMelbourneToday returns correct format", () => {
+      // Melbourne is UTC+10 or UTC+11 (DST)
+      // At 2025-03-15T12:00:00Z, Melbourne is 2025-03-15T22:00:00 or 2025-03-15T23:00:00
+      const date = new Date("2025-03-15T12:00:00Z");
+      const result = getMelbourneToday(date);
+      // Should be YYYY-MM-DD format
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(result).toBe("2025-03-15");
+    });
+
+    it("getMelbourneToday handles date boundary crossing", () => {
+      // At 2025-03-15T14:00:00Z, Melbourne is already 2025-03-16 (after midnight AEDT)
+      const date = new Date("2025-03-15T14:00:00Z");
+      const result = getMelbourneToday(date);
+      expect(result).toBe("2025-03-16");
+    });
+
+    it("toMelbourneMidnight creates correct timestamp", () => {
+      const result = toMelbourneMidnight("2025-03-15");
+      // Melbourne midnight should be UTC-10 or UTC-11 depending on DST
+      // March 15 is during AEDT (UTC+11), so midnight Melbourne = 13:00 UTC previous day
+      expect(result.getUTCDate()).toBeGreaterThanOrEqual(14);
+    });
+
+    it("getDaysDifference calculates correctly", () => {
+      expect(getDaysDifference("2025-03-15", "2025-03-20")).toBe(5);
+      expect(getDaysDifference("2025-03-15", "2025-03-15")).toBe(0);
+      expect(getDaysDifference("2025-03-20", "2025-03-15")).toBe(-5);
+    });
+  });
+
   describe("getCampaignStatus", () => {
     beforeEach(() => {
-      // Mock current date to 2025-03-15
+      // Mock current date to 2025-03-15 midday Melbourne time
+      // Melbourne is UTC+11 (AEDT) in March, so we use UTC 01:00 = Melbourne 12:00
       vi.useFakeTimers();
-      vi.setSystemTime(new Date("2025-03-15T12:00:00Z"));
+      vi.setSystemTime(new Date("2025-03-15T01:00:00Z")); // 12:00 PM Melbourne
     });
 
     afterEach(() => {
@@ -126,7 +162,8 @@ describe("Campaign Utilities", () => {
     });
 
     it("calculates pre-signup billing correctly", () => {
-      vi.setSystemTime(new Date("2025-03-01T12:00:00Z"));
+      // March 1, midday Melbourne time (UTC+11 AEDT)
+      vi.setSystemTime(new Date("2025-03-01T01:00:00Z")); // 12:00 PM Melbourne
 
       const result = calculateBillingInfo(
         { startDate: "2025-03-10", endDate: "2025-03-20" },
@@ -134,15 +171,14 @@ describe("Campaign Utilities", () => {
       );
 
       expect(result.isLateJoin).toBe(false);
-      expect(result.billingStartDate.toISOString().split("T")[0]).toBe("2025-03-10");
-      // The calculation includes end date (inclusive) + 1, so 12 days
-      expect(result.remainingDays).toBeGreaterThanOrEqual(11);
-      expect(result.remainingDays).toBeLessThanOrEqual(12);
-      expect(result.totalAmount).toBe((result.remainingDays as number) * 10);
+      // 10 days from Mar 10 to Mar 20 inclusive = 11 days
+      expect(result.remainingDays).toBe(11);
+      expect(result.totalAmount).toBe(110);
     });
 
     it("calculates late join billing correctly", () => {
-      vi.setSystemTime(new Date("2025-03-15T12:00:00Z"));
+      // March 15, midday Melbourne time
+      vi.setSystemTime(new Date("2025-03-15T01:00:00Z")); // 12:00 PM Melbourne
 
       const result = calculateBillingInfo(
         { startDate: "2025-03-10", endDate: "2025-03-20" },
@@ -150,17 +186,13 @@ describe("Campaign Utilities", () => {
       );
 
       expect(result.isLateJoin).toBe(true);
-      // Billing start date should be tomorrow (Mar 15 or 16 depending on timezone)
-      const billingDate = result.billingStartDate.toISOString().split("T")[0];
-      expect(["2025-03-15", "2025-03-16"]).toContain(billingDate);
-      // Remaining days should be approximately 5-6
-      expect(result.remainingDays).toBeGreaterThanOrEqual(5);
-      expect(result.remainingDays).toBeLessThanOrEqual(7);
-      expect(result.totalAmount).toBe((result.remainingDays as number) * 10);
+      // Billing starts tomorrow Mar 16, so Mar 16-20 = 5 days
+      expect(result.remainingDays).toBe(5);
+      expect(result.totalAmount).toBe(50);
     });
 
     it("handles ongoing campaigns without end date", () => {
-      vi.setSystemTime(new Date("2025-03-01T12:00:00Z"));
+      vi.setSystemTime(new Date("2025-03-01T01:00:00Z")); // 12:00 PM Melbourne
 
       const result = calculateBillingInfo(
         { startDate: "2025-03-10", isOngoing: true },
@@ -173,7 +205,7 @@ describe("Campaign Utilities", () => {
     });
 
     it("handles ongoing campaign with late join", () => {
-      vi.setSystemTime(new Date("2025-03-15T12:00:00Z"));
+      vi.setSystemTime(new Date("2025-03-15T01:00:00Z")); // 12:00 PM Melbourne
 
       const result = calculateBillingInfo(
         { startDate: "2025-03-10", isOngoing: true },
@@ -189,7 +221,8 @@ describe("Campaign Utilities", () => {
   describe("isSignupOpen", () => {
     beforeEach(() => {
       vi.useFakeTimers();
-      vi.setSystemTime(new Date("2025-03-15T12:00:00Z"));
+      // March 15, midday Melbourne time
+      vi.setSystemTime(new Date("2025-03-15T01:00:00Z")); // 12:00 PM Melbourne
     });
 
     afterEach(() => {
@@ -337,7 +370,8 @@ describe("Campaign Status Edge Cases", () => {
   });
 
   it("handles campaign starting exactly today", () => {
-    vi.setSystemTime(new Date("2025-03-15T12:00:00Z"));
+    // March 15, midday Melbourne time
+    vi.setSystemTime(new Date("2025-03-15T01:00:00Z")); // 12:00 PM Melbourne
 
     const result = getCampaignStatus({
       startDate: "2025-03-15",
@@ -349,19 +383,22 @@ describe("Campaign Status Edge Cases", () => {
   });
 
   it("handles campaign ending exactly today", () => {
-    vi.setSystemTime(new Date("2025-03-15T12:00:00Z"));
+    // March 15, midday Melbourne time
+    vi.setSystemTime(new Date("2025-03-15T01:00:00Z")); // 12:00 PM Melbourne
 
     const result = getCampaignStatus({
       startDate: "2025-03-01",
       endDate: "2025-03-15",
     });
 
-    // Should be ending-soon or active, not ended
-    expect(result.status).not.toBe("ended");
+    // Should be ending-soon (1 day left = "Ends today"), not ended
+    expect(result.status).toBe("ending-soon");
+    expect(result.label).toBe("Ends today");
   });
 
   it("handles isOngoing true with endDate set", () => {
-    vi.setSystemTime(new Date("2025-03-15T12:00:00Z"));
+    // March 15, midday Melbourne time
+    vi.setSystemTime(new Date("2025-03-15T01:00:00Z")); // 12:00 PM Melbourne
 
     const result = getCampaignStatus({
       startDate: "2025-03-01",
@@ -385,29 +422,30 @@ describe("Billing Info Edge Cases", () => {
   });
 
   it("handles single day campaign", () => {
-    vi.setSystemTime(new Date("2025-03-01T12:00:00Z"));
+    // March 1, midday Melbourne time
+    vi.setSystemTime(new Date("2025-03-01T01:00:00Z")); // 12:00 PM Melbourne
 
     const result = calculateBillingInfo(
       { startDate: "2025-03-10", endDate: "2025-03-10" },
       10
     );
 
-    // Due to inclusive calculation, single day can show as 1 or 2
-    expect(result.remainingDays).toBeGreaterThanOrEqual(1);
-    expect(result.remainingDays).toBeLessThanOrEqual(2);
-    expect(result.totalAmount).toBe((result.remainingDays as number) * 10);
+    // Single day campaign = 1 day
+    expect(result.remainingDays).toBe(1);
+    expect(result.totalAmount).toBe(10);
   });
 
   it("handles campaign with zero remaining days for late joiner", () => {
-    vi.setSystemTime(new Date("2025-03-20T12:00:00Z"));
+    // March 20, midday Melbourne time - campaign ended Mar 19
+    vi.setSystemTime(new Date("2025-03-20T01:00:00Z")); // 12:00 PM Melbourne
 
     const result = calculateBillingInfo(
       { startDate: "2025-03-10", endDate: "2025-03-19" },
       10
     );
 
-    // Campaign ended yesterday - remaining days can be 0, 1, or negative depending on timezone
-    // The API route handles this case by rejecting the signup
-    expect(result.remainingDays).toBeLessThanOrEqual(2);
+    // Campaign ended yesterday - billing would start Mar 21 but end was Mar 19
+    // Remaining days should be 0 or negative
+    expect(result.remainingDays).toBeLessThanOrEqual(0);
   });
 });
