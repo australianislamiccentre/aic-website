@@ -663,8 +663,8 @@ export default function CampaignDetailContent({ campaign }: CampaignDetailConten
                         )}
                       </div>
 
-                      {/* Billing Type Selection - Only show for time-bound campaigns */}
-                      {effectiveAmount && !billingInfo.isOngoing && (
+                      {/* Billing Type Selection - Only show for time-bound campaigns with upfront payment enabled */}
+                      {effectiveAmount && !billingInfo.isOngoing && campaign.allowUpfrontPayment && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-3">
                             Payment Option

@@ -132,6 +132,7 @@ export interface SanityDonationCampaign {
   // Payment
   presetAmounts: number[];
   allowCustomAmount?: boolean;
+  allowUpfrontPayment?: boolean;
   minimumAmount: number;
   maximumAmount?: number;
   // Settings
