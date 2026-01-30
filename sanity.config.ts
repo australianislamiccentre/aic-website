@@ -1,10 +1,128 @@
 "use client";
 
 import { defineConfig } from "sanity";
-import { structureTool } from "sanity/structure";
+import { structureTool, type StructureBuilder } from "sanity/structure";
 import { visionTool } from "@sanity/vision";
 import { presentationTool } from "sanity/presentation";
 import { schemaTypes } from "./src/sanity/schemas";
+
+// Custom structure for document organization
+const structure = (S: StructureBuilder) =>
+  S.list()
+    .title("Content")
+    .items([
+      // Events with Published/Draft/Expired tabs
+      S.listItem()
+        .title("Events")
+        .child(
+          S.list()
+            .title("Events")
+            .items([
+              S.listItem()
+                .title("Published")
+                .child(
+                  S.documentList()
+                    .title("Published Events")
+                    .filter('_type == "event" && !(_id in path("drafts.**")) && active == true')
+                ),
+              S.listItem()
+                .title("Drafts")
+                .child(
+                  S.documentList()
+                    .title("Draft Events")
+                    .filter('_type == "event" && _id in path("drafts.**")')
+                ),
+              S.listItem()
+                .title("Inactive")
+                .child(
+                  S.documentList()
+                    .title("Inactive Events")
+                    .filter('_type == "event" && !(_id in path("drafts.**")) && active == false')
+                ),
+              S.divider(),
+              S.listItem()
+                .title("All Events")
+                .child(S.documentTypeList("event").title("All Events")),
+            ])
+        ),
+
+      // Announcements with Published/Draft/Inactive tabs
+      S.listItem()
+        .title("Announcements")
+        .child(
+          S.list()
+            .title("Announcements")
+            .items([
+              S.listItem()
+                .title("Published")
+                .child(
+                  S.documentList()
+                    .title("Published Announcements")
+                    .filter('_type == "announcement" && !(_id in path("drafts.**")) && active == true')
+                ),
+              S.listItem()
+                .title("Drafts")
+                .child(
+                  S.documentList()
+                    .title("Draft Announcements")
+                    .filter('_type == "announcement" && _id in path("drafts.**")')
+                ),
+              S.listItem()
+                .title("Inactive")
+                .child(
+                  S.documentList()
+                    .title("Inactive Announcements")
+                    .filter('_type == "announcement" && !(_id in path("drafts.**")) && active == false')
+                ),
+              S.divider(),
+              S.listItem()
+                .title("All Announcements")
+                .child(S.documentTypeList("announcement").title("All Announcements")),
+            ])
+        ),
+
+      // Donation Campaigns with Active/Draft/Inactive tabs
+      S.listItem()
+        .title("Donation Campaigns")
+        .child(
+          S.list()
+            .title("Donation Campaigns")
+            .items([
+              S.listItem()
+                .title("Active")
+                .child(
+                  S.documentList()
+                    .title("Active Campaigns")
+                    .filter('_type == "donationCampaign" && !(_id in path("drafts.**")) && active == true')
+                ),
+              S.listItem()
+                .title("Drafts")
+                .child(
+                  S.documentList()
+                    .title("Draft Campaigns")
+                    .filter('_type == "donationCampaign" && _id in path("drafts.**")')
+                ),
+              S.listItem()
+                .title("Inactive")
+                .child(
+                  S.documentList()
+                    .title("Inactive Campaigns")
+                    .filter('_type == "donationCampaign" && !(_id in path("drafts.**")) && active == false')
+                ),
+              S.divider(),
+              S.listItem()
+                .title("All Campaigns")
+                .child(S.documentTypeList("donationCampaign").title("All Campaigns")),
+            ])
+        ),
+
+      S.divider(),
+
+      // Rest of the document types (exclude the ones we customized)
+      ...S.documentTypeListItems().filter(
+        (item) => !["event", "announcement", "donationCampaign"].includes(item.getId() || "")
+      ),
+    ]);
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET!;
@@ -20,14 +138,14 @@ const previewPaths: Record<string, (slug?: string) => string> = {
   service: () => "/services",
   program: () => "/programs",
   donationCause: () => "/donate",
+  donationCampaign: (slug) => `/campaigns${slug ? `/${slug}` : ""}`,
   galleryImage: () => "/media",
-  testimonial: () => "/",
   faq: () => "/resources",
   etiquette: () => "/visit",
   tourType: () => "/visit",
   siteSettings: () => "/",
   prayerSettings: () => "/worshippers",
-  teamMember: () => "/about",
+  teamMember: (slug) => `/imams${slug ? `/${slug}` : ""}`,
   pageContent: () => "/",
   resource: () => "/resources",
 };
@@ -52,7 +170,7 @@ export default defineConfig({
   basePath: "/studio",
 
   plugins: [
-    structureTool(),
+    structureTool({ structure }),
     presentationTool({
       previewUrl: {
         initial: baseUrl,

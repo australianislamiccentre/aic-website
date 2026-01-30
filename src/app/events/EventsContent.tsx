@@ -15,8 +15,6 @@ import {
   MapPin,
   Filter,
   Search,
-  ChevronLeft,
-  ChevronRight,
   Grid,
   List,
   ArrowRight,
@@ -372,11 +370,6 @@ const categories = [
   "Special Event",
 ];
 
-const months = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
-
 interface EventsContentProps {
   events: SanityEvent[];
 }
@@ -385,12 +378,6 @@ export default function EventsContent({ events }: EventsContentProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-
-  // Separate recurring and non-recurring events
-  const recurringEvents = events.filter((event) => event.recurring);
-  const upcomingEvents = events.filter((event) => !event.recurring);
 
   const filteredEvents = events.filter((event) => {
     const matchesCategory = selectedCategory === "All" ||
@@ -405,24 +392,6 @@ export default function EventsContent({ events }: EventsContentProps) {
 
   const filteredUpcomingEvents = filteredEvents.filter((e) => !e.recurring);
   const filteredRecurringEvents = filteredEvents.filter((e) => e.recurring);
-
-  const goToPreviousMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
-    } else {
-      setCurrentMonth(currentMonth - 1);
-    }
-  };
-
-  const goToNextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
-    } else {
-      setCurrentMonth(currentMonth + 1);
-    }
-  };
 
   return (
     <>
@@ -508,93 +477,6 @@ export default function EventsContent({ events }: EventsContentProps) {
               >
                 <List className="w-5 h-5" />
               </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Calendar Mini */}
-      <section className="py-8 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <button
-                onClick={goToPreviousMonth}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <h3 className="text-xl font-bold text-gray-900">
-                {months[currentMonth]} {currentYear}
-              </h3>
-              <button
-                onClick={goToNextMonth}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center">
-              {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
-                <div key={i} className="text-xs sm:text-sm font-medium text-gray-500 py-1 sm:py-2">
-                  <span className="sm:hidden">{day}</span>
-                  <span className="hidden sm:inline">{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][i]}</span>
-                </div>
-              ))}
-              {Array.from({ length: 35 }, (_, i) => {
-                const day = i - new Date(currentYear, currentMonth, 1).getDay() + 1;
-                const isValidDay = day > 0 && day <= new Date(currentYear, currentMonth + 1, 0).getDate();
-
-                const hasEvent = events.some((event) => {
-                  if (event.recurring) return false;
-                  if (!isValidDate(event.date)) return false;
-                  const eventDate = new Date(event.date!);
-                  return (
-                    eventDate.getDate() === day &&
-                    eventDate.getMonth() === currentMonth &&
-                    eventDate.getFullYear() === currentYear
-                  );
-                });
-
-                const dayOfWeek = new Date(currentYear, currentMonth, day).getDay();
-                const dayNames = ["Sundays", "Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays"];
-                const hasRecurringEvent = isValidDay && events.some((event) => {
-                  if (!event.recurring) return false;
-                  const recurringDay = event.recurringDay || event.date;
-                  return recurringDay === dayNames[dayOfWeek] ||
-                         recurringDay === "Weekends" && (dayOfWeek === 0 || dayOfWeek === 6);
-                });
-
-                const isToday =
-                  day === new Date().getDate() &&
-                  currentMonth === new Date().getMonth() &&
-                  currentYear === new Date().getFullYear();
-
-                return (
-                  <div
-                    key={i}
-                    className={`relative py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-colors ${
-                      isValidDay
-                        ? isToday
-                          ? "bg-green-600 text-white font-bold"
-                          : hasEvent
-                          ? "bg-green-100 text-green-800 font-medium cursor-pointer hover:bg-green-200"
-                          : hasRecurringEvent
-                          ? "bg-neutral-100 text-neutral-700 font-medium cursor-pointer hover:bg-neutral-200"
-                          : "text-gray-700 hover:bg-gray-100"
-                        : "text-gray-300"
-                    }`}
-                  >
-                    {isValidDay ? day : ""}
-                    {hasEvent && isValidDay && (
-                      <div className="absolute bottom-0.5 sm:bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-green-500" />
-                    )}
-                    {hasRecurringEvent && !hasEvent && isValidDay && (
-                      <div className="absolute bottom-0.5 sm:bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-neutral-400" />
-                    )}
-                  </div>
-                );
-              })}
             </div>
           </div>
         </div>

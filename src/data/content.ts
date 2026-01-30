@@ -447,6 +447,7 @@ export const donationCauses = [
 
 export const donationFrequencies = [
   { value: "once", label: "One-time" },
+  { value: "daily", label: "Daily" },
   { value: "weekly", label: "Weekly" },
   { value: "fortnightly", label: "Fortnightly" },
   { value: "monthly", label: "Monthly" },

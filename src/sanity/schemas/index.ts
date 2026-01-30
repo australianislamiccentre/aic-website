@@ -4,7 +4,6 @@ import service from "./service";
 import donationCause from "./donationCause";
 import donationCampaign from "./donationCampaign";
 import galleryImage from "./gallery";
-import testimonial from "./testimonial";
 import faq from "./faq";
 import etiquette from "./etiquette";
 import tourType from "./tourType";
@@ -29,7 +28,6 @@ export const schemaTypes = [
   pageContent,
   resource,
   galleryImage,
-  testimonial,
   faq,
   etiquette,
   tourType,

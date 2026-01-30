@@ -151,6 +151,17 @@ export default defineType({
       of: [{ type: "string" }],
       description: "Highlights or bullet points (e.g., 'Qualified instructors', 'All skill levels welcome')",
     }),
+    defineField({
+      name: "tags",
+      title: "Tags",
+      type: "array",
+      group: "basic",
+      of: [{ type: "string" }],
+      options: {
+        layout: "tags",
+      },
+      description: "Optional tags for filtering and categorization",
+    }),
 
     // Schedule
     defineField({
@@ -178,12 +189,21 @@ export default defineType({
         }),
     }),
     defineField({
+      name: "isOneDayEvent",
+      title: "One Day Event",
+      type: "boolean",
+      group: "schedule",
+      initialValue: true,
+      description: "Toggle on if the event starts and ends on the same day (no end date needed)",
+      hidden: ({ document }) => document?.recurring === true,
+    }),
+    defineField({
       name: "endDate",
       title: "End Date",
       type: "date",
       group: "schedule",
-      description: "Optional - for multi-day events",
-      hidden: ({ document }) => document?.recurring === true,
+      description: "For multi-day events only",
+      hidden: ({ document }) => document?.recurring === true || document?.isOneDayEvent === true,
     }),
     defineField({
       name: "recurringDay",
@@ -227,10 +247,10 @@ export default defineType({
       title: "Start Time",
       type: "string",
       group: "schedule",
+      description: "Optional - leave blank if time is flexible or TBA",
       options: {
         list: timeOptions,
       },
-      validation: (Rule) => Rule.required().error("Start time is required"),
     }),
     defineField({
       name: "endTime",
@@ -273,6 +293,7 @@ export default defineType({
       type: "string",
       group: "details",
       description: "Email for inquiries about this event",
+      initialValue: "contact@australianislamiccentre.org",
     }),
     defineField({
       name: "contactPhone",
@@ -280,6 +301,7 @@ export default defineType({
       type: "string",
       group: "details",
       description: "Phone number for inquiries",
+      initialValue: "03 9000 0177",
     }),
     defineField({
       name: "ageGroup",
@@ -298,20 +320,29 @@ export default defineType({
 
     // Settings
     defineField({
-      name: "featured",
-      title: "Featured on Homepage",
-      type: "boolean",
-      group: "settings",
-      initialValue: false,
-      description: "Show this event prominently on the homepage",
-    }),
-    defineField({
       name: "active",
       title: "Active",
       type: "boolean",
       group: "settings",
       description: "Show this event on the website",
       initialValue: true,
+    }),
+    defineField({
+      name: "featured",
+      title: "Featured on Homepage",
+      type: "boolean",
+      group: "settings",
+      initialValue: false,
+      description: "Show this event prominently. Disabled when event is inactive.",
+      readOnly: ({ document }) => document?.active === false,
+      validation: (Rule) =>
+        Rule.custom((featured, context) => {
+          const doc = context.document as { active?: boolean } | undefined;
+          if (featured && doc?.active === false) {
+            return "Cannot feature an inactive event. Enable 'Active' first.";
+          }
+          return true;
+        }),
     }),
   ],
   preview: {

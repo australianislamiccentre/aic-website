@@ -157,6 +157,14 @@ export default defineType({
       group: "payment",
       description: "Optional cap on daily donation",
     }),
+    defineField({
+      name: "allowUpfrontPayment",
+      title: "Allow Upfront Payment",
+      type: "boolean",
+      group: "payment",
+      initialValue: false,
+      description: "Allow donors to pay the full campaign amount upfront instead of daily donations",
+    }),
 
     // Settings Group
     defineField({
@@ -173,7 +181,16 @@ export default defineType({
       type: "boolean",
       group: "settings",
       initialValue: false,
-      description: "Show prominently on homepage",
+      description: "Show prominently on homepage. Disabled when campaign is inactive.",
+      readOnly: ({ document }) => document?.active === false,
+      validation: (Rule) =>
+        Rule.custom((featured, context) => {
+          const doc = context.document as { active?: boolean } | undefined;
+          if (featured && doc?.active === false) {
+            return "Cannot feature an inactive campaign. Enable 'Active' first.";
+          }
+          return true;
+        }),
     }),
     defineField({
       name: "goal",
