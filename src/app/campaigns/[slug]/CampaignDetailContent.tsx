@@ -226,7 +226,6 @@ export default function CampaignDetailContent({ campaign }: CampaignDetailConten
   // Form state
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
-  const [billingType, setBillingType] = useState<"daily" | "upfront">("daily");
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -360,7 +359,7 @@ export default function CampaignDetailContent({ campaign }: CampaignDetailConten
         body: JSON.stringify({
           campaignSlug: campaign.slug,
           dailyAmount: effectiveAmount,
-          billingType,
+          billingType: "daily",
           donorInfo: {
             firstName: formData.firstName.trim(),
             lastName: formData.lastName.trim(),
@@ -663,56 +662,6 @@ export default function CampaignDetailContent({ campaign }: CampaignDetailConten
                         )}
                       </div>
 
-                      {/* Billing Type Selection - Only show for time-bound campaigns with upfront payment enabled */}
-                      {effectiveAmount && !billingInfo.isOngoing && campaign.allowUpfrontPayment && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
-                            Payment Option
-                          </label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setBillingType("daily")}
-                              className={`p-3 rounded-lg border-2 text-left transition-all ${
-                                billingType === "daily"
-                                  ? "border-teal-500 bg-teal-50"
-                                  : "border-gray-200 hover:border-gray-300"
-                              }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-teal-600" />
-                                <span className="font-medium text-sm">Daily</span>
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1">
-                                ${effectiveAmount?.toFixed(2)}/day
-                              </p>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setBillingType("upfront")}
-                              className={`p-3 rounded-lg border-2 text-left transition-all ${
-                                billingType === "upfront"
-                                  ? "border-teal-500 bg-teal-50"
-                                  : "border-gray-200 hover:border-gray-300"
-                              }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                <CheckCircle className="w-4 h-4 text-teal-600" />
-                                <span className="font-medium text-sm">Pay Upfront</span>
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1">
-                                ${totalCommitment?.toFixed(2)} total
-                              </p>
-                            </button>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-2">
-                            {billingType === "daily"
-                              ? "You'll be charged daily throughout the campaign"
-                              : "Pay the full amount now in one payment"}
-                          </p>
-                        </div>
-                      )}
-
                       {/* Commitment Summary */}
                       {effectiveAmount && (
                         <motion.div
@@ -749,19 +698,10 @@ export default function CampaignDetailContent({ campaign }: CampaignDetailConten
                                   </span>
                                   <span className="font-medium">{billingInfo.remainingDays}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-600">Payment type</span>
-                                  <span className="font-medium">
-                                    {billingType === "daily" ? "Daily charges" : "One-time payment"}
-                                  </span>
-                                </div>
                                 <div className="border-t border-teal-200 pt-1 mt-1">
-                                  <div className="flex justify-between">
-                                    <span className="font-semibold text-teal-800">Total</span>
-                                    <span className="font-bold text-teal-800">
-                                      ${totalCommitment?.toFixed(2)}
-                                    </span>
-                                  </div>
+                                  <p className="text-xs text-gray-500">
+                                    You&apos;ll be charged ${effectiveAmount.toFixed(2)} daily for {billingInfo.remainingDays} days (${totalCommitment?.toFixed(2)} total).
+                                  </p>
                                 </div>
                               </>
                             )}
@@ -870,10 +810,8 @@ export default function CampaignDetailContent({ campaign }: CampaignDetailConten
                       >
                         {isSubmitting
                           ? "Processing..."
-                          : billingInfo.isOngoing && effectiveAmount
-                          ? `Start Daily Donation - $${effectiveAmount.toFixed(2)}/day`
-                          : totalCommitment
-                          ? `Continue to Payment - $${totalCommitment.toFixed(2)} total`
+                          : effectiveAmount
+                          ? `Start Daily Donation - $${effectiveAmount.toFixed(2)} today`
                           : "Select an Amount"}
                       </Button>
 

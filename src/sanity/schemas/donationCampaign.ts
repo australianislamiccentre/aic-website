@@ -157,14 +157,6 @@ export default defineType({
       group: "payment",
       description: "Optional cap on daily donation",
     }),
-    defineField({
-      name: "allowUpfrontPayment",
-      title: "Allow Upfront Payment",
-      type: "boolean",
-      group: "payment",
-      initialValue: false,
-      description: "Allow donors to pay the full campaign amount upfront instead of daily donations",
-    }),
 
     // Settings Group
     defineField({

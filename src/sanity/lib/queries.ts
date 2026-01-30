@@ -376,7 +376,6 @@ export const donationCampaignBySlugQuery = groq`
     isOngoing,
     presetAmounts,
     allowCustomAmount,
-    allowUpfrontPayment,
     minimumAmount,
     maximumAmount,
     active,
