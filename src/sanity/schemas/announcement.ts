@@ -115,14 +115,50 @@ export default defineType({
           description: "e.g., 'Register Now', 'Learn More', 'Donate'",
         }),
         defineField({
+          name: "linkType",
+          title: "Link Type",
+          type: "string",
+          options: {
+            list: [
+              { title: "Internal Page", value: "internal" },
+              { title: "External URL", value: "external" },
+            ],
+            layout: "radio",
+          },
+          initialValue: "internal",
+        }),
+        defineField({
+          name: "internalPage",
+          title: "Internal Page",
+          type: "string",
+          options: {
+            list: [
+              { title: "Contact", value: "/contact" },
+              { title: "Donate", value: "/donate" },
+              { title: "Events", value: "/events" },
+              { title: "Programs", value: "/programs" },
+              { title: "Services", value: "/services" },
+              { title: "Worshippers", value: "/worshippers" },
+              { title: "Visit", value: "/visit" },
+              { title: "About", value: "/about" },
+              { title: "Media", value: "/media" },
+              { title: "Architecture", value: "/architecture" },
+              { title: "Announcements", value: "/announcements" },
+              { title: "Campaigns", value: "/campaigns" },
+            ],
+          },
+          hidden: ({ parent }) => parent?.linkType !== "internal",
+        }),
+        defineField({
           name: "url",
-          title: "Button URL",
+          title: "External URL",
           type: "url",
           validation: (Rule) =>
             Rule.uri({
-              allowRelative: true,
+              allowRelative: false,
               scheme: ["http", "https", "mailto", "tel"],
             }),
+          hidden: ({ parent }) => parent?.linkType !== "external",
         }),
       ],
     }),
@@ -143,20 +179,29 @@ export default defineType({
       description: "Urgent announcements display as an alert banner at the top of the homepage",
     }),
     defineField({
-      name: "featured",
-      title: "Featured",
-      type: "boolean",
-      group: "settings",
-      description: "Show prominently on homepage announcements section",
-      initialValue: false,
-    }),
-    defineField({
       name: "active",
       title: "Active",
       type: "boolean",
       group: "settings",
       description: "Show this announcement on the website",
       initialValue: true,
+    }),
+    defineField({
+      name: "featured",
+      title: "Featured",
+      type: "boolean",
+      group: "settings",
+      description: "Show prominently on homepage. Disabled when announcement is inactive.",
+      initialValue: false,
+      readOnly: ({ document }) => document?.active === false,
+      validation: (Rule) =>
+        Rule.custom((featured, context) => {
+          const doc = context.document as { active?: boolean } | undefined;
+          if (featured && doc?.active === false) {
+            return "Cannot feature an inactive announcement. Enable 'Active' first.";
+          }
+          return true;
+        }),
     }),
     defineField({
       name: "expiresAt",

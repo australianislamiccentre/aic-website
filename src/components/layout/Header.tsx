@@ -95,13 +95,15 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       name: "News & Media",
       href: "/media",
       children: [
-        { name: "Latest Updates", href: "/media#updates" },
-        { name: "Social Media", href: "/media#social" },
-        { name: "Podcasts", href: "/media#podcasts" },
+        { name: "Announcements", href: "/announcements" },
         { name: "Gallery", href: "/media#gallery" },
+        { name: "Videos", href: "/media#videos" },
+        { name: "Podcasts", href: "/media#podcasts" },
+        { name: "Social Media", href: "/media#social" },
       ],
     },
     { name: "Architecture", href: "/architecture" },
+    { name: "Our Imams", href: "/imams" },
     { name: "Contact", href: "/contact" },
   ];
 }

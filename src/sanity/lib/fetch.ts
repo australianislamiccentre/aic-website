@@ -24,7 +24,6 @@ import {
   featuredDonationCampaignsQuery,
   galleryQuery,
   featuredGalleryQuery,
-  testimonialsQuery,
   faqsQuery,
   faqsByCategoryQuery,
   featuredFaqsQuery,
@@ -46,6 +45,7 @@ import {
   resourcesByCategoryQuery,
   resourcesByTypeQuery,
   featuredResourcesQuery,
+  latestUpdatesQuery,
 } from "./queries";
 import {
   SanityEvent,
@@ -55,7 +55,6 @@ import {
   SanityDonationCause,
   SanityDonationCampaign,
   SanityGalleryImage,
-  SanityTestimonial,
   SanityFaq,
   SanityEtiquette,
   SanityTourType,
@@ -361,17 +360,6 @@ export async function getFeaturedGalleryImages(): Promise<SanityGalleryImage[]> 
   }
 }
 
-// Testimonials
-export async function getTestimonials(): Promise<SanityTestimonial[]> {
-  try {
-    const result = await sanityFetch<SanityTestimonial[]>(testimonialsQuery, {}, ["testimonials"]);
-    return result ?? [];
-  } catch (error) {
-    console.error("Failed to fetch testimonials from Sanity:", error);
-    return [];
-  }
-}
-
 // FAQs
 export async function getFaqs(): Promise<SanityFaq[]> {
   try {
@@ -579,5 +567,45 @@ export async function getPrayerSettings(): Promise<SanityPrayerSettings | null> 
   } catch (error) {
     console.error("Failed to fetch prayer settings from Sanity:", error);
     return null;
+  }
+}
+
+// ============================================
+// Latest Updates - Combined feed
+// ============================================
+export interface LatestUpdateItem {
+  _id: string;
+  _type: "announcement" | "event" | "donationCampaign";
+  title: string;
+  slug: string;
+  description: string;
+  date: string;
+  image?: { asset: { _ref: string } };
+  category?: string;
+  priority?: string;
+  callToAction?: { label?: string; linkType?: string; internalPage?: string; url?: string };
+  time?: string;
+  location?: string;
+  icon?: string;
+  goal?: number;
+  raised?: number;
+  startDate?: string;
+  endDate?: string;
+  isOngoing?: boolean;
+}
+
+export interface LatestUpdatesResult {
+  announcements: LatestUpdateItem[];
+  events: LatestUpdateItem[];
+  campaigns: LatestUpdateItem[];
+}
+
+export async function getLatestUpdates(): Promise<LatestUpdatesResult> {
+  try {
+    const result = await sanityFetch<LatestUpdatesResult>(latestUpdatesQuery, {}, ["announcements", "events", "donationCampaigns"]);
+    return result ?? { announcements: [], events: [], campaigns: [] };
+  } catch (error) {
+    console.error("Failed to fetch latest updates from Sanity:", error);
+    return { announcements: [], events: [], campaigns: [] };
   }
 }

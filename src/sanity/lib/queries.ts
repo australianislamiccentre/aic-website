@@ -428,17 +428,6 @@ export const featuredGalleryQuery = groq`
   }
 `;
 
-// Testimonials
-export const testimonialsQuery = groq`
-  *[_type == "testimonial" && featured == true] | order(order asc) {
-    _id,
-    quote,
-    author,
-    role,
-    image
-  }
-`;
-
 // FAQs - enhanced with rich text answer and related links
 export const faqsQuery = groq`
   *[_type == "faq"] | order(order asc) {
@@ -780,3 +769,49 @@ export const prayerSettingsQuery = groq`
     eidAdhaActive, eidAdhaTime
   }
 `;
+
+// ============================================
+// Latest Updates - Combined feed of announcements, events, and campaigns
+// ============================================
+export const latestUpdatesQuery = groq`
+{
+  "announcements": *[_type == "announcement" && active != false && (expiresAt == null || expiresAt > now())] | order(date desc) [0...4] {
+    _id,
+    _type,
+    title,
+    "slug": slug.current,
+    "description": excerpt,
+    "date": date,
+    image,
+    category,
+    priority,
+    callToAction
+  },
+  "events": *[_type == "event" && active != false && recurring != true && (date >= now() || endDate >= now())] | order(date asc) [0...4] {
+    _id,
+    _type,
+    title,
+    "slug": slug.current,
+    "description": coalesce(shortDescription, description),
+    "date": date,
+    image,
+    "category": categories[0],
+    time,
+    location
+  },
+  "campaigns": *[_type == "donationCampaign" && active == true && (isOngoing == true || endDate >= now() || !defined(endDate))] | order(startDate asc) [0...2] {
+    _id,
+    _type,
+    title,
+    "slug": slug.current,
+    description,
+    "date": startDate,
+    image,
+    icon,
+    goal,
+    raised,
+    startDate,
+    endDate,
+    isOngoing
+  }
+}`;

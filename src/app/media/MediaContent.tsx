@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { FadeIn, StaggerContainer, StaggerItem, StaggerGrid, StaggerGridItem } from "@/components/animations/FadeIn";
+import { FadeIn, StaggerGrid, StaggerGridItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { aicInfo } from "@/data/content";
@@ -15,19 +15,11 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Newspaper,
-  ArrowRight,
-  Calendar,
   LayoutGrid,
-  Image as ImageIcon,
+  ImageIcon,
   Video,
   Podcast,
-  Facebook,
-  Instagram,
   Youtube,
-  ExternalLink,
-  Rss,
-  Bell,
 } from "lucide-react";
 
 const categories = ["All", "Prayer Hall", "Architecture", "Education", "Events", "Community"];
@@ -84,78 +76,6 @@ const podcasts = [
     description: "Islamic guidance for modern parents navigating technology",
     duration: "52 min",
     date: "Popular",
-  },
-];
-
-const latestNews = [
-  {
-    id: "1",
-    title: "Ramadan Prayer Schedule",
-    excerpt: "Special Taraweeh prayers and Iftar programs throughout the blessed month. Join us for spiritual growth and community gatherings.",
-    date: "Upcoming",
-    category: "Announcement",
-    image: "/images/aic 10.webp",
-    featured: true,
-  },
-  {
-    id: "2",
-    title: "IQRA Academy Enrolments Open",
-    excerpt: "Enrolments now open for the new term. Limited spots available for Quran and Islamic studies classes for children aged 5-12.",
-    date: "Now Open",
-    category: "Education",
-    image: "/images/aic 1.jpg",
-    featured: true,
-  },
-  {
-    id: "3",
-    title: "Community Eid Celebration",
-    excerpt: "Join us for Eid prayers followed by community breakfast and festivities for all ages at the Australian Islamic Centre.",
-    date: "Save the Date",
-    category: "Event",
-    image: "/images/aic 8.jpg",
-    featured: false,
-  },
-  {
-    id: "4",
-    title: "Newport Storm FC Season Registration",
-    excerpt: "Registration is now open for the new football season. Join our community football club for all age groups.",
-    date: "Registration Open",
-    category: "Sports",
-    image: "/images/aic 4.jpg",
-    featured: false,
-  },
-  {
-    id: "5",
-    title: "New Arabic Classes at Salam School",
-    excerpt: "Salam Arabic School introduces new beginner and intermediate Arabic classes for adults.",
-    date: "Starting Soon",
-    category: "Education",
-    image: "/images/aic 5.jpg",
-    featured: false,
-  },
-];
-
-const socialLinks = [
-  {
-    name: "Facebook",
-    icon: Facebook,
-    href: aicInfo.socialMedia.facebook,
-    followers: "10K+",
-    description: "Community updates, events, and announcements"
-  },
-  {
-    name: "Instagram",
-    icon: Instagram,
-    href: aicInfo.socialMedia.instagram,
-    followers: "5K+",
-    description: "Photos from events and daily mosque life"
-  },
-  {
-    name: "YouTube",
-    icon: Youtube,
-    href: aicInfo.socialMedia.youtube,
-    followers: "2K+",
-    description: "Khutbahs, lectures, and educational content"
   },
 ];
 
@@ -249,7 +169,7 @@ interface MediaContentProps {
 
 export default function MediaContent({ galleryImages }: MediaContentProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedTab, setSelectedTab] = useState<"news" | "photos" | "videos" | "podcasts">("news");
+  const [selectedTab, setSelectedTab] = useState<"photos" | "videos" | "podcasts">("photos");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
@@ -318,14 +238,14 @@ export default function MediaContent({ galleryImages }: MediaContentProps) {
           <FadeIn>
             <div className="text-center">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-lime-400 text-sm font-medium mb-6">
-                <Newspaper className="w-4 h-4" />
-                News & Media
+                <Camera className="w-4 h-4" />
+                Media Gallery
               </div>
               <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                News & <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-lime-400">Media</span>
+                Media <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-lime-400">Gallery</span>
               </h1>
               <p className="text-xl text-white/80 max-w-2xl mx-auto">
-                Stay updated with the latest news, events, and media from the
+                Explore photos, videos, and podcasts from the
                 Australian Islamic Centre community.
               </p>
             </div>
@@ -338,7 +258,6 @@ export default function MediaContent({ galleryImages }: MediaContentProps) {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-center gap-2 flex-wrap">
             {[
-              { id: "news", label: "Latest Updates", icon: Newspaper },
               { id: "photos", label: "Gallery", icon: ImageIcon },
               { id: "videos", label: "Videos", icon: Video },
               { id: "podcasts", label: "Podcasts", icon: Podcast },
@@ -362,209 +281,6 @@ export default function MediaContent({ galleryImages }: MediaContentProps) {
 
       {/* Content Sections */}
       <AnimatePresence mode="wait">
-        {/* News / Latest Updates Section */}
-        {selectedTab === "news" && (
-          <motion.div
-            key="news"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            {/* Featured News */}
-            <section className="py-12 bg-white">
-              <div className="max-w-7xl mx-auto px-6">
-                <FadeIn>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-8">Featured Updates</h2>
-                </FadeIn>
-
-                <div className="grid md:grid-cols-2 gap-8">
-                  {latestNews.filter(n => n.featured).map((news, index) => (
-                    <FadeIn key={news.id} delay={index * 0.1}>
-                      <motion.article
-                        whileHover={{ y: -8 }}
-                        className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all border border-gray-100"
-                      >
-                        <div className="relative h-56">
-                          <Image
-                            src={news.image}
-                            alt={news.title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                          <div className="absolute top-4 left-4">
-                            <span className="px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-full">
-                              {news.category}
-                            </span>
-                          </div>
-                          <div className="absolute bottom-4 left-4 right-4">
-                            <span className="text-white/80 text-sm flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              {news.date}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-6">
-                          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-neutral-700 transition-colors">
-                            {news.title}
-                          </h3>
-                          <p className="text-gray-600 mb-4 line-clamp-2">
-                            {news.excerpt}
-                          </p>
-                          <Button
-                            href="/contact"
-                            variant="outline"
-                            size="sm"
-                            icon={<ArrowRight className="w-4 h-4" />}
-                          >
-                            Learn More
-                          </Button>
-                        </div>
-                      </motion.article>
-                    </FadeIn>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* All News */}
-            <section className="py-12 bg-neutral-50">
-              <div className="max-w-7xl mx-auto px-6">
-                <FadeIn>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-8">All Updates</h2>
-                </FadeIn>
-
-                <StaggerContainer className="grid md:grid-cols-3 gap-6">
-                  {latestNews.filter(n => !n.featured).map((news) => (
-                    <StaggerItem key={news.id}>
-                      <motion.article
-                        whileHover={{ y: -4 }}
-                        className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all"
-                      >
-                        <div className="relative h-40">
-                          <Image
-                            src={news.image}
-                            alt={news.title}
-                            fill
-                            className="object-cover"
-                          />
-                          <div className="absolute top-3 left-3">
-                            <span className="px-2 py-0.5 bg-green-600 text-white text-xs font-medium rounded-full">
-                              {news.category}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-5">
-                          <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                            <Calendar className="w-3.5 h-3.5" />
-                            {news.date}
-                          </div>
-                          <h3 className="font-bold text-gray-900 mb-2 line-clamp-1">
-                            {news.title}
-                          </h3>
-                          <p className="text-gray-600 text-sm line-clamp-2">
-                            {news.excerpt}
-                          </p>
-                        </div>
-                      </motion.article>
-                    </StaggerItem>
-                  ))}
-                </StaggerContainer>
-              </div>
-            </section>
-
-            {/* Social Media Section */}
-            <section className="py-16 bg-white">
-              <div className="max-w-7xl mx-auto px-6">
-                <FadeIn>
-                  <div className="text-center mb-12">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
-                      <Rss className="w-4 h-4" />
-                      Stay Connected
-                    </div>
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                      Follow Us on Social Media
-                    </h2>
-                    <p className="text-gray-600 max-w-xl mx-auto">
-                      Connect with us on social media for daily updates, live streams,
-                      and community engagement.
-                    </p>
-                  </div>
-                </FadeIn>
-
-                <StaggerContainer className="grid md:grid-cols-3 gap-6">
-                  {socialLinks.map((social) => (
-                    <StaggerItem key={social.name}>
-                      <motion.a
-                        href={social.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        whileHover={{ y: -8, scale: 1.02 }}
-                        className="block bg-gradient-to-br from-green-50 to-neutral-50 rounded-2xl p-6 border border-neutral-100 hover:border-green-200 transition-colors"
-                      >
-                        <div className="flex items-center gap-4 mb-4">
-                          <div className="w-14 h-14 rounded-xl bg-neutral-100 flex items-center justify-center">
-                            <social.icon className="w-7 h-7 text-green-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-gray-900">{social.name}</h3>
-                            <p className="text-green-600 font-medium">{social.followers} followers</p>
-                          </div>
-                        </div>
-                        <p className="text-gray-600 text-sm mb-4">{social.description}</p>
-                        <div className="flex items-center text-green-600 font-medium text-sm">
-                          Follow Us <ExternalLink className="w-4 h-4 ml-2" />
-                        </div>
-                      </motion.a>
-                    </StaggerItem>
-                  ))}
-                </StaggerContainer>
-              </div>
-            </section>
-
-            {/* Newsletter CTA */}
-            <section className="py-16 bg-gradient-to-br from-neutral-800 via-neutral-700 to-sage-700">
-              <div className="max-w-3xl mx-auto px-6 text-center">
-                <FadeIn>
-                  <div className="w-16 h-16 mx-auto rounded-2xl bg-white/10 flex items-center justify-center mb-6">
-                    <Bell className="w-8 h-8 text-lime-400" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-white mb-4">
-                    Subscribe to Our Newsletter
-                  </h2>
-                  <p className="text-white/70 mb-8">
-                    Get the latest news, event announcements, and community updates
-                    delivered directly to your inbox.
-                  </p>
-                  <form
-                    className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const emailInput = e.currentTarget.querySelector('input[type="email"]') as HTMLInputElement;
-                      const email = emailInput?.value;
-                      if (email) {
-                        const mailtoLink = `mailto:contact@australianislamiccentre.org?subject=${encodeURIComponent('Newsletter Subscription Request - Media Page')}&body=${encodeURIComponent(`Please add me to the AIC newsletter.\n\nEmail: ${email}`)}`;
-                        window.open(mailtoLink, '_blank');
-                        emailInput.value = '';
-                      }
-                    }}
-                  >
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      required
-                      className="flex-1 px-5 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-green-400"
-                    />
-                    <Button type="submit" variant="gold" className="whitespace-nowrap">
-                      Subscribe
-                    </Button>
-                  </form>
-                </FadeIn>
-              </div>
-            </section>
-          </motion.div>
-        )}
-
         {/* Photos Gallery */}
         {selectedTab === "photos" && (
           <motion.section
