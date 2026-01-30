@@ -11,7 +11,7 @@ const structure = (S: StructureBuilder) =>
   S.list()
     .title("Content")
     .items([
-      // Events with Published/Draft/Expired tabs
+      // Events with Active/Draft/Inactive tabs
       S.listItem()
         .title("Events")
         .child(
@@ -19,11 +19,11 @@ const structure = (S: StructureBuilder) =>
             .title("Events")
             .items([
               S.listItem()
-                .title("Published")
+                .title("Active")
                 .child(
                   S.documentList()
-                    .title("Published Events")
-                    .filter('_type == "event" && !(_id in path("drafts.**")) && active == true')
+                    .title("Active Events")
+                    .filter('_type == "event" && active == true')
                 ),
               S.listItem()
                 .title("Drafts")
@@ -46,7 +46,7 @@ const structure = (S: StructureBuilder) =>
             ])
         ),
 
-      // Announcements with Published/Draft/Inactive tabs
+      // Announcements with Active/Draft/Inactive tabs
       S.listItem()
         .title("Announcements")
         .child(
@@ -54,11 +54,11 @@ const structure = (S: StructureBuilder) =>
             .title("Announcements")
             .items([
               S.listItem()
-                .title("Published")
+                .title("Active")
                 .child(
                   S.documentList()
-                    .title("Published Announcements")
-                    .filter('_type == "announcement" && !(_id in path("drafts.**")) && active == true')
+                    .title("Active Announcements")
+                    .filter('_type == "announcement" && active == true')
                 ),
               S.listItem()
                 .title("Drafts")
@@ -93,7 +93,7 @@ const structure = (S: StructureBuilder) =>
                 .child(
                   S.documentList()
                     .title("Active Campaigns")
-                    .filter('_type == "donationCampaign" && !(_id in path("drafts.**")) && active == true')
+                    .filter('_type == "donationCampaign" && active == true')
                 ),
               S.listItem()
                 .title("Drafts")
