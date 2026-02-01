@@ -1,12 +1,11 @@
 import { HeroSection } from "@/components/sections/HeroSection";
 import { QuickAccessSection } from "@/components/sections/QuickAccessSection";
+import { DonationCTASection } from "@/components/sections/DonationCTASection";
+import { LatestUpdatesSection } from "@/components/sections/LatestUpdatesSection";
+import { EventsSection } from "@/components/sections/EventsSection";
 import { AboutPreviewSection } from "@/components/sections/AboutPreviewSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
-import { EventsSection } from "@/components/sections/EventsSection";
-import { LatestUpdatesSection } from "@/components/sections/LatestUpdatesSection";
 import { ProgramsSection } from "@/components/sections/ProgramsSection";
-import { SocialMediaSection } from "@/components/sections/SocialMediaSection";
-import { DonationCTASection } from "@/components/sections/DonationCTASection";
 import { getEvents, getFeaturedEvents, getUrgentAnnouncements, getServices, getPrograms, getPrayerSettings, getLatestUpdates } from "@/sanity/lib/fetch";
 import { SanityEvent, SanityAnnouncement, SanityService, SanityProgram, SanityPrayerSettings } from "@/types/sanity";
 
@@ -33,19 +32,18 @@ export default async function HomePage() {
   return (
     <>
       <HeroSection prayerSettings={prayerSettings} />
+      <QuickAccessSection />
+      <DonationCTASection />
       <LatestUpdatesSection
         announcements={latestUpdates.announcements}
         events={latestUpdates.events}
         campaigns={latestUpdates.campaigns}
         urgentAnnouncement={urgentAnnouncement}
       />
-      <QuickAccessSection />
+      <EventsSection events={eventsForHomepage} />
       <AboutPreviewSection />
       <ServicesSection services={services} />
-      <EventsSection events={eventsForHomepage} />
       <ProgramsSection programs={programs} />
-      <SocialMediaSection />
-      <DonationCTASection />
     </>
   );
 }
