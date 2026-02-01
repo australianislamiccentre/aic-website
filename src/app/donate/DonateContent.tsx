@@ -67,6 +67,12 @@ function DonateForm({ donationCauses }: DonateFormProps) {
     return emailRegex.test(email);
   };
 
+  // Phone validation - minimum 8 digits (allows Australian and international formats)
+  const isValidPhone = (phone: string) => {
+    const digitsOnly = phone.replace(/\D/g, '');
+    return digitsOnly.length >= 8;
+  };
+
   const handleDonate = async () => {
     // Validate amount
     if (amount < 1) {
@@ -93,6 +99,17 @@ function DonateForm({ donationCauses }: DonateFormProps) {
 
     if (!isValidEmail(donorInfo.email)) {
       setError("Please enter a valid email address (e.g., name@example.com)");
+      return;
+    }
+
+    // Validate phone
+    if (!donorInfo.phone.trim()) {
+      setError("Please enter your phone number");
+      return;
+    }
+
+    if (!isValidPhone(donorInfo.phone)) {
+      setError("Please enter a valid phone number (minimum 8 digits)");
       return;
     }
 
@@ -400,11 +417,12 @@ function DonateForm({ donationCauses }: DonateFormProps) {
                       required
                     />
                     <Input
-                      label="Phone (Optional)"
+                      label="Phone"
                       type="tel"
                       placeholder="+61 400 000 000"
                       value={donorInfo.phone}
                       onChange={(e) => setDonorInfo({ ...donorInfo, phone: e.target.value })}
+                      required
                     />
                   </div>
 
@@ -475,7 +493,7 @@ function DonateForm({ donationCauses }: DonateFormProps) {
                     variant="gold"
                     size="xl"
                     className="w-full"
-                    disabled={isProcessing || amount < 1 || !donorInfo.email || !donorInfo.firstName.trim() || !donorInfo.lastName.trim()}
+                    disabled={isProcessing || amount < 1 || !donorInfo.email || !donorInfo.firstName.trim() || !donorInfo.lastName.trim() || !donorInfo.phone.trim()}
                     onClick={handleDonate}
                     icon={isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CreditCard className="w-5 h-5" />}
                   >
