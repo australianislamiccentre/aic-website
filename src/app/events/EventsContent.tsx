@@ -278,72 +278,35 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
           {event.title}
         </motion.h3>
 
-        <AnimatePresence mode="wait">
-          {isHovered ? (
-            <motion.div
-              key="details"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <p className="text-gray-600 mb-4 line-clamp-2">{getCardDescription(event)}</p>
+        {/* Always visible content - no hover-to-reveal */}
+        <div>
+          <p className="text-gray-600 mb-4 line-clamp-2">{getCardDescription(event)}</p>
 
-              <div className="space-y-2 mb-4">
-                <motion.div
-                  initial={{ x: -10, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0 }}
-                  className="flex items-center gap-2 text-sm text-gray-500"
-                >
-                  <Clock className="w-4 h-4 text-green-600" />
-                  <span>{getDisplayTime(event)}</span>
-                </motion.div>
-                <motion.div
-                  initial={{ x: -10, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.05 }}
-                  className="flex items-center gap-2 text-sm text-gray-500"
-                >
-                  <MapPin className="w-4 h-4 text-green-600" />
-                  <span>{event.locationDetails || event.location}</span>
-                </motion.div>
-              </div>
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Calendar className="w-4 h-4 text-green-600" />
+              <span>{getDisplayDate(event)}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Clock className="w-4 h-4 text-green-600" />
+              <span>{getDisplayTime(event)}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <MapPin className="w-4 h-4 text-green-600" />
+              <span>{event.locationDetails || event.location}</span>
+            </div>
+          </div>
 
-              <Button
-                href={`/events/${event.slug || event._id}`}
-                variant="primary"
-                size="sm"
-                icon={<ArrowRight className="w-4 h-4" />}
-                className="w-full"
-              >
-                View Details
-              </Button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="preview"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4 text-green-600" />
-                  <span>{getDisplayDate(event)}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4 text-green-600" />
-                  <span>{getDisplayTime(event)}</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-gray-400 text-center">
-                Hover for more details
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          <Button
+            href={`/events/${event.slug || event._id}`}
+            variant="primary"
+            size="sm"
+            icon={<ArrowRight className="w-4 h-4" />}
+            className="w-full"
+          >
+            View Details
+          </Button>
+        </div>
       </div>
 
       <motion.div
