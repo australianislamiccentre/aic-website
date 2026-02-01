@@ -216,28 +216,14 @@ export function ImageCard({
               {title}
             </motion.h3>
             {description && (
-              <motion.p
-                className="text-white/80 text-sm line-clamp-2"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{
-                  height: isHovered ? "auto" : 0,
-                  opacity: isHovered ? 1 : 0,
-                  marginBottom: isHovered ? 12 : 0
-                }}
-                transition={{ duration: 0.3 }}
-              >
+              <p className="text-white/80 text-sm line-clamp-2 mb-3">
                 {description}
-              </motion.p>
+              </p>
             )}
             {href && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
-                transition={{ duration: 0.3 }}
-                className="flex items-center gap-2 text-lime-400 text-sm font-medium"
-              >
+              <div className="flex items-center gap-2 text-lime-400 text-sm font-medium">
                 Learn more <ArrowRight className="w-4 h-4" />
-              </motion.div>
+              </div>
             )}
           </div>
         )}
@@ -388,45 +374,26 @@ export function ExpandableCard({
         {/* Description - always visible */}
         <p className="text-gray-600 text-sm mb-4">{description}</p>
 
-        {/* Features - expand on hover */}
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{
-            height: isExpanded ? "auto" : 0,
-            opacity: isExpanded ? 1 : 0
-          }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className="overflow-hidden"
-        >
+        {/* Features - always visible */}
+        {features.length > 0 && (
           <div className="space-y-2 pt-4 border-t border-gray-100">
-            {features.map((feature, index) => (
-              <motion.div
+            {features.map((feature) => (
+              <div
                 key={feature}
-                initial={{ x: -10, opacity: 0 }}
-                animate={{
-                  x: isExpanded ? 0 : -10,
-                  opacity: isExpanded ? 1 : 0
-                }}
-                transition={{ delay: index * 0.05 + 0.1 }}
                 className="flex items-center gap-2 text-sm text-gray-700"
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                 {feature}
-              </motion.div>
+              </div>
             ))}
           </div>
+        )}
 
-          {href && (
-            <motion.div
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: isExpanded ? 0 : 10, opacity: isExpanded ? 1 : 0 }}
-              transition={{ delay: 0.2 }}
-              className="mt-4 flex items-center gap-2 text-green-600 font-medium text-sm"
-            >
-              Learn more <ArrowRight className="w-4 h-4" />
-            </motion.div>
-          )}
-        </motion.div>
+        {href && (
+          <div className="mt-4 flex items-center gap-2 text-green-600 font-medium text-sm">
+            Learn more <ArrowRight className="w-4 h-4" />
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -502,14 +469,9 @@ export function FeatureCard({
         </p>
 
         {href && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
-            transition={{ duration: 0.3 }}
-            className="mt-4 flex items-center gap-2 text-teal-600 font-medium text-sm"
-          >
+          <div className="mt-4 flex items-center gap-2 text-teal-600 font-medium text-sm">
             Learn more <ArrowRight className="w-4 h-4" />
-          </motion.div>
+          </div>
         )}
       </div>
     </motion.div>
@@ -712,43 +674,34 @@ export function ServiceCard({
           {description}
         </motion.p>
 
-        {/* Features revealed on hover */}
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{
-            height: isHovered ? "auto" : 0,
-            opacity: isHovered ? 1 : 0
-          }}
-          transition={{ duration: 0.3 }}
-          className="overflow-hidden"
-        >
-          <div className="space-y-2 pt-4 border-t border-white/20">
-            {features.slice(0, 3).map((feature, index) => (
-              <motion.div
+        {/* Features - always visible */}
+        {features.length > 0 && (
+          <div className="space-y-2 pt-4 border-t border-gray-100">
+            {features.slice(0, 3).map((feature) => (
+              <div
                 key={feature}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{
-                  x: isHovered ? 0 : -20,
-                  opacity: isHovered ? 1 : 0
-                }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center gap-2 text-white/90 text-sm"
+                className={cn(
+                  "flex items-center gap-2 text-sm transition-colors duration-300",
+                  isHovered ? "text-white/90" : "text-gray-600"
+                )}
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                <div className={cn(
+                  "w-1.5 h-1.5 rounded-full transition-colors duration-300",
+                  isHovered ? "bg-white/60" : "bg-green-500"
+                )} />
                 {feature}
-              </motion.div>
+              </div>
             ))}
           </div>
-        </motion.div>
+        )}
 
-        {/* Arrow indicator */}
-        <motion.div
-          className="absolute bottom-6 right-6"
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: isHovered ? 1 : 0, x: isHovered ? 0 : -10 }}
-        >
-          <ArrowRight className="w-5 h-5 text-white" />
-        </motion.div>
+        {/* Arrow indicator - always visible */}
+        <div className="absolute bottom-6 right-6">
+          <ArrowRight className={cn(
+            "w-5 h-5 transition-colors duration-300",
+            isHovered ? "text-white" : "text-green-600"
+          )} />
+        </div>
       </div>
     </motion.div>
   );
