@@ -57,14 +57,70 @@ function DonateForm({ donationCauses }: DonateFormProps) {
     anonymous: false,
     message: "",
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
 
   const parsedCustom = parseFloat(customAmount);
   const amount = customAmount && !isNaN(parsedCustom) ? parsedCustom : selectedAmount || 0;
+
+  // Name validation - letters, spaces, hyphens, apostrophes only (supports international names)
+  const isValidName = (name: string) => {
+    // Allow letters (including accented), spaces, hyphens, apostrophes
+    const nameRegex = /^[a-zA-ZÀ-ÿ\u0100-\u017F\u0180-\u024F\s'-]+$/;
+    return nameRegex.test(name.trim()) && name.trim().length >= 2;
+  };
 
   // Email validation regex
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  };
+
+  // Phone validation - minimum 8 digits (allows Australian and international formats)
+  const isValidPhone = (phone: string) => {
+    const digitsOnly = phone.replace(/\D/g, '');
+    return digitsOnly.length >= 8;
+  };
+
+  // Validate a single field and return error message
+  const validateField = (field: string, value: string): string => {
+    switch (field) {
+      case 'firstName':
+        if (!value.trim()) return 'First name is required';
+        if (!isValidName(value)) return 'Please enter a valid first name (letters only, min 2 characters)';
+        return '';
+      case 'lastName':
+        if (!value.trim()) return 'Last name is required';
+        if (!isValidName(value)) return 'Please enter a valid last name (letters only, min 2 characters)';
+        return '';
+      case 'email':
+        if (!value.trim()) return 'Email is required';
+        if (!isValidEmail(value)) return 'Please enter a valid email address';
+        return '';
+      case 'phone':
+        if (!value.trim()) return 'Phone number is required';
+        if (!isValidPhone(value)) return 'Please enter a valid phone number (include country code if outside Australia)';
+        return '';
+      default:
+        return '';
+    }
+  };
+
+  // Handle field blur - validate and show error if touched
+  const handleFieldBlur = (field: string) => {
+    setTouchedFields(prev => ({ ...prev, [field]: true }));
+    const error = validateField(field, donorInfo[field as keyof typeof donorInfo] as string);
+    setFieldErrors(prev => ({ ...prev, [field]: error }));
+  };
+
+  // Handle field change - clear error when user starts typing
+  const handleFieldChange = (field: string, value: string) => {
+    setDonorInfo(prev => ({ ...prev, [field]: value }));
+    // Only validate if field was already touched
+    if (touchedFields[field]) {
+      const error = validateField(field, value);
+      setFieldErrors(prev => ({ ...prev, [field]: error }));
+    }
   };
 
   const handleDonate = async () => {
@@ -74,25 +130,24 @@ function DonateForm({ donationCauses }: DonateFormProps) {
       return;
     }
 
-    // Validate required name fields
-    if (!donorInfo.firstName.trim()) {
-      setError("Please enter your first name");
-      return;
-    }
+    // Mark all required fields as touched and validate them
+    const requiredFields = ['firstName', 'lastName', 'email', 'phone'];
+    const newTouched: Record<string, boolean> = {};
+    const newErrors: Record<string, string> = {};
+    let hasErrors = false;
 
-    if (!donorInfo.lastName.trim()) {
-      setError("Please enter your last name");
-      return;
-    }
+    requiredFields.forEach(field => {
+      newTouched[field] = true;
+      const error = validateField(field, donorInfo[field as keyof typeof donorInfo] as string);
+      newErrors[field] = error;
+      if (error) hasErrors = true;
+    });
 
-    // Validate email
-    if (!donorInfo.email.trim()) {
-      setError("Please enter your email address");
-      return;
-    }
+    setTouchedFields(prev => ({ ...prev, ...newTouched }));
+    setFieldErrors(prev => ({ ...prev, ...newErrors }));
 
-    if (!isValidEmail(donorInfo.email)) {
-      setError("Please enter a valid email address (e.g., name@example.com)");
+    if (hasErrors) {
+      setError("Please fix the errors above before continuing");
       return;
     }
 
@@ -381,14 +436,18 @@ function DonateForm({ donationCauses }: DonateFormProps) {
                       label="First Name"
                       placeholder="Enter your first name"
                       value={donorInfo.firstName}
-                      onChange={(e) => setDonorInfo({ ...donorInfo, firstName: e.target.value })}
+                      onChange={(e) => handleFieldChange('firstName', e.target.value)}
+                      onBlur={() => handleFieldBlur('firstName')}
+                      error={touchedFields.firstName ? fieldErrors.firstName : undefined}
                       required
                     />
                     <Input
                       label="Last Name"
                       placeholder="Enter your last name"
                       value={donorInfo.lastName}
-                      onChange={(e) => setDonorInfo({ ...donorInfo, lastName: e.target.value })}
+                      onChange={(e) => handleFieldChange('lastName', e.target.value)}
+                      onBlur={() => handleFieldBlur('lastName')}
+                      error={touchedFields.lastName ? fieldErrors.lastName : undefined}
                       required
                     />
                     <Input
@@ -396,15 +455,20 @@ function DonateForm({ donationCauses }: DonateFormProps) {
                       type="email"
                       placeholder="your@email.com"
                       value={donorInfo.email}
-                      onChange={(e) => setDonorInfo({ ...donorInfo, email: e.target.value })}
+                      onChange={(e) => handleFieldChange('email', e.target.value)}
+                      onBlur={() => handleFieldBlur('email')}
+                      error={touchedFields.email ? fieldErrors.email : undefined}
                       required
                     />
                     <Input
-                      label="Phone (Optional)"
+                      label="Phone"
                       type="tel"
                       placeholder="+61 400 000 000"
                       value={donorInfo.phone}
-                      onChange={(e) => setDonorInfo({ ...donorInfo, phone: e.target.value })}
+                      onChange={(e) => handleFieldChange('phone', e.target.value)}
+                      onBlur={() => handleFieldBlur('phone')}
+                      error={touchedFields.phone ? fieldErrors.phone : undefined}
+                      required
                     />
                   </div>
 
@@ -475,7 +539,7 @@ function DonateForm({ donationCauses }: DonateFormProps) {
                     variant="gold"
                     size="xl"
                     className="w-full"
-                    disabled={isProcessing || amount < 1 || !donorInfo.email || !donorInfo.firstName.trim() || !donorInfo.lastName.trim()}
+                    disabled={isProcessing || amount < 1 || !donorInfo.email || !donorInfo.firstName.trim() || !donorInfo.lastName.trim() || !donorInfo.phone.trim()}
                     onClick={handleDonate}
                     icon={isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CreditCard className="w-5 h-5" />}
                   >
