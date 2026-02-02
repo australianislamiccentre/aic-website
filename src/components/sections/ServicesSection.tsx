@@ -75,8 +75,8 @@ export function ServicesSection({ services }: ServicesSectionProps) {
           </div>
         </FadeIn>
 
-        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.slice(0, 6).map((service) => {
+        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {services.slice(0, 4).map((service) => {
             const Icon = iconMap[service.icon] || Sparkles;
             return (
               <StaggerItem key={service._id}>

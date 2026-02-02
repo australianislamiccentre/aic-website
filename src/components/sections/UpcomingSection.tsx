@@ -16,6 +16,7 @@ import {
   GraduationCap,
   Trophy,
   Sparkles,
+  Repeat,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -73,6 +74,27 @@ function getDayAbbrev(day: string | undefined): string {
     sunday: "Sun",
   };
   return dayMap[day.toLowerCase()] || day.slice(0, 3);
+}
+
+// Get full day name
+function getDayFull(day: string | undefined): string {
+  if (!day) return "";
+  return day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+}
+
+// Get day order for sorting (0 = Sunday, 6 = Saturday)
+function getDayOrder(day: string | undefined): number {
+  if (!day) return 7;
+  const dayOrder: Record<string, number> = {
+    sunday: 0,
+    monday: 1,
+    tuesday: 2,
+    wednesday: 3,
+    thursday: 4,
+    friday: 5,
+    saturday: 6,
+  };
+  return dayOrder[day.toLowerCase()] ?? 7;
 }
 
 // Get program icon based on category
@@ -158,6 +180,79 @@ function EventCard({ event, index }: { event: SanityEvent; index: number }) {
   );
 }
 
+// Recurring Event Card Component (for weekly events)
+function RecurringEventCard({ event, index }: { event: SanityEvent; index: number }) {
+  const imageUrl = getImageUrl(event.image);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1 }}
+    >
+      <Link href={`/events/${event.slug}`} className="block group">
+        <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 flex flex-col sm:flex-row h-full">
+          {/* Image */}
+          {imageUrl ? (
+            <div className="relative w-full sm:w-32 h-32 sm:h-auto flex-shrink-0">
+              <Image
+                src={imageUrl}
+                alt={event.title}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/10 sm:bg-gradient-to-t sm:from-black/20 sm:to-transparent" />
+            </div>
+          ) : (
+            <div className="w-full sm:w-32 h-32 sm:h-auto bg-gradient-to-br from-teal-500 to-teal-600 flex-shrink-0 flex items-center justify-center">
+              <Repeat className="w-8 h-8 text-white/80" />
+            </div>
+          )}
+
+          {/* Content */}
+          <div className="p-4 flex-1 flex flex-col justify-center">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-700">
+                Weekly
+              </span>
+              {event.categories?.[0] && (
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                  {event.categories[0]}
+                </span>
+              )}
+            </div>
+
+            <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-teal-600 transition-colors line-clamp-2">
+              {event.title}
+            </h3>
+
+            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+              {event.recurringDay && (
+                <div className="flex items-center gap-1">
+                  <Repeat className="w-3.5 h-3.5 text-teal-500" />
+                  <span>Every {getDayFull(event.recurringDay)}</span>
+                </div>
+              )}
+              {event.time && (
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-teal-500" />
+                  <span>{event.time}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Arrow */}
+          <div className="hidden sm:flex items-center px-4">
+            <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
 // Compact Program Card Component
 function ProgramCard({ program, index }: { program: SanityProgram; index: number }) {
   const schedule = program.recurringDay
@@ -205,10 +300,19 @@ export function UpcomingSection({
   programs = [],
 }: UpcomingSectionProps) {
   // Filter events to get upcoming dated events (not recurring)
-  const upcomingEvents = events
-    .filter((event) => !event.recurring && event.date)
+  const datedEvents = events
+    .filter((event) => !event.recurring && event.date && !isPrayerProgram(event))
     .sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime())
     .slice(0, 3);
+
+  // Filter recurring/weekly events (exclude prayer-related)
+  const recurringEvents = events
+    .filter((event) => event.recurring && event.recurringDay && !isPrayerProgram(event))
+    .sort((a, b) => getDayOrder(a.recurringDay) - getDayOrder(b.recurringDay))
+    .slice(0, 3);
+
+  // Combine both types for display - dated first, then recurring
+  const allEvents = [...datedEvents, ...recurringEvents].slice(0, 4);
 
   // Filter programs (remove prayer-related ones)
   const filteredPrograms = programs
@@ -216,7 +320,7 @@ export function UpcomingSection({
     .slice(0, 6);
 
   // Don't render if nothing to show
-  if (upcomingEvents.length === 0 && filteredPrograms.length === 0) {
+  if (allEvents.length === 0 && filteredPrograms.length === 0) {
     return null;
   }
 
@@ -275,10 +379,14 @@ export function UpcomingSection({
               </Button>
             </div>
 
-            {upcomingEvents.length > 0 ? (
+            {allEvents.length > 0 ? (
               <div className="space-y-4">
-                {upcomingEvents.map((event, index) => (
-                  <EventCard key={event._id} event={event} index={index} />
+                {allEvents.map((event, index) => (
+                  event.recurring ? (
+                    <RecurringEventCard key={event._id} event={event} index={index} />
+                  ) : (
+                    <EventCard key={event._id} event={event} index={index} />
+                  )
                 ))}
               </div>
             ) : (

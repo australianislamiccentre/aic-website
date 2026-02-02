@@ -3,6 +3,7 @@ import { QuickAccessSection } from "@/components/sections/QuickAccessSection";
 import { QuickDonateSection } from "@/components/sections/QuickDonateSection";
 import { LatestUpdatesSection } from "@/components/sections/LatestUpdatesSection";
 import { UpcomingSection } from "@/components/sections/UpcomingSection";
+import { MediaHighlightSection } from "@/components/sections/MediaHighlightSection";
 import { AboutPreviewSection } from "@/components/sections/AboutPreviewSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
 import { getEvents, getUrgentAnnouncements, getServices, getPrayerSettings, getLatestUpdates, getPrograms } from "@/sanity/lib/fetch";
@@ -34,6 +35,7 @@ export default async function HomePage() {
       />
       <QuickDonateSection />
       <UpcomingSection events={allEvents} programs={programs} />
+      <MediaHighlightSection />
       <AboutPreviewSection />
       <ServicesSection services={services} />
     </>
