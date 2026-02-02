@@ -463,7 +463,7 @@ function DonateForm({ donationCauses }: DonateFormProps) {
                     <Input
                       label="Phone"
                       type="tel"
-                      placeholder="e.g. 0400 000 000"
+                      placeholder="+61 400 000 000"
                       value={donorInfo.phone}
                       onChange={(e) => handleFieldChange('phone', e.target.value)}
                       onBlur={() => handleFieldBlur('phone')}
