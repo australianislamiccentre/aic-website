@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
-import { ArrowRight, Play, ChevronLeft, ChevronRight, ChevronDown, Sunrise, Sun, Cloud, Sunset, Moon } from "lucide-react";
+import { ArrowRight, Play, ChevronLeft, ChevronRight, Sunrise, Sun, Cloud, Sunset, Moon } from "lucide-react";
 import { aicImages, jumuahTimes } from "@/data/content";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
 import { TARAWEEH_CONFIG, EID_CONFIG } from "@/lib/prayer-config";
@@ -79,7 +79,6 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [imagesLoaded, setImagesLoaded] = useState<boolean[]>(new Array(heroSlides.length).fill(false));
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [mobileExpanded, setMobileExpanded] = useState(false);
 
   // Check if today is Friday (for Jumu'ah display)
   const isFriday = new Date().toLocaleString("en-US", {
@@ -655,178 +654,75 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
             </div>
           </div>
 
-          {/* Mobile: Collapsible layout */}
+          {/* Mobile: Always visible prayer times */}
           <div className="md:hidden">
             <div className="px-4 py-3">
-              {/* Next Prayer with expand toggle */}
-              {/* On Friday when Dhuhr is next, show Jumu'ah instead */}
-              {isFriday && nextPrayer.key === "dhuhr" ? (
-                <>
-                  <button
-                    onClick={() => setMobileExpanded(!mobileExpanded)}
-                    className="w-full px-3 py-2 rounded-lg bg-amber-500/20 border border-amber-500/30 active:bg-amber-500/30 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Sun className="w-5 h-5 text-amber-400" />
-                        <div className="text-left">
-                          <p className="text-white/50 text-xs">Next Prayer</p>
-                          <p className="text-amber-400 font-bold text-sm">Jumu&apos;ah</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-right">
-                          <div className="flex items-center justify-end gap-2 text-xs">
-                            <span className="text-white/40">Arabic</span>
-                            <span className="text-white font-semibold">{jumuahTimes[0].time}</span>
-                          </div>
-                          <div className="flex items-center justify-end gap-2 text-xs">
-                            <span className="text-white/40">English</span>
-                            <span className="text-amber-400 font-bold">{jumuahTimes[1].time}</span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-center ml-1">
-                          <motion.div
-                            animate={{ rotate: mobileExpanded ? 180 : 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <ChevronDown className="w-5 h-5 text-white/50" />
-                          </motion.div>
-                          <span className="text-white/30 text-[10px]">All times</span>
-                        </div>
-                      </div>
+              {/* Prayer Times Grid - 3x2 - Always visible */}
+              <div className="grid grid-cols-3 gap-2">
+                {prayers.map((prayer) => {
+                  const isNext = nextPrayer.key === prayer.key;
+                  return (
+                    <div
+                      key={prayer.key}
+                      className={`rounded-lg p-2 ${
+                        isNext ? "bg-green-500/15 border border-green-500/30" : "bg-white/5"
+                      }`}
+                    >
+                      <p className={`text-xs font-medium mb-0.5 ${isNext ? "text-green-400" : "text-white/50"}`}>
+                        {prayer.name}
+                      </p>
+                      <p className={`text-sm font-semibold ${isNext ? "text-white" : "text-white/80"}`}>
+                        {prayer.adhan}
+                      </p>
+                      {prayer.key !== "sunrise" && (
+                        <p className={`text-xs font-bold ${isNext ? "text-green-400" : "text-lime-400/80"}`}>
+                          {prayer.iqamah}
+                        </p>
+                      )}
                     </div>
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => setMobileExpanded(!mobileExpanded)}
-                    className="w-full px-3 py-2 rounded-lg bg-green-500/20 border border-green-500/30 active:bg-green-500/30 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {(() => {
-                          const Icon = PRAYER_ICONS[nextPrayer.key];
-                          return <Icon className="w-5 h-5 text-green-400" />;
-                        })()}
-                        <div className="text-left">
-                          <p className="text-white/50 text-xs">Next Prayer</p>
-                          <p className="text-green-400 font-bold text-sm">{nextPrayer.name}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-right">
-                          <p className="text-white text-sm font-semibold">{nextPrayer.adhan}</p>
-                          {nextPrayer.key !== "sunrise" && (
-                            <p className="text-green-400 text-xs font-bold">Iqamah {nextPrayer.iqamah}</p>
-                          )}
-                        </div>
-                        <div className="flex flex-col items-center ml-1">
-                          <motion.div
-                            animate={{ rotate: mobileExpanded ? 180 : 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <ChevronDown className="w-5 h-5 text-white/50" />
-                          </motion.div>
-                          <span className="text-white/30 text-[10px]">All times</span>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
+                  );
+                })}
+              </div>
 
-                  {/* Friday Jumu'ah - Visible on Fridays when Dhuhr is NOT next */}
-                  {isFriday && !mobileExpanded && (
-                    <div className="flex flex-wrap items-center justify-center gap-2 mt-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                      <span className="text-amber-400/80 text-xs font-medium">Jumu&apos;ah Today</span>
-                      <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
-                        <span className="text-white/30 text-xs">Arabic</span>
-                        <span className="text-amber-400 font-semibold text-xs">{jumuahTimes[0].time}</span>
-                      </div>
-                      <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
-                        <span className="text-white/30 text-xs">English</span>
-                        <span className="text-amber-400 font-semibold text-xs">{jumuahTimes[1].time}</span>
-                      </div>
+              {/* Jumu'ah times - always visible */}
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-3 pt-3 border-t border-white/10">
+                <span className="text-white/40 text-xs">Jumu&apos;ah</span>
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
+                  <span className="text-white/30 text-xs">Arabic</span>
+                  <span className="text-lime-400 font-semibold text-xs">{jumuahTimes[0].time}</span>
+                </div>
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
+                  <span className="text-white/30 text-xs">English</span>
+                  <span className="text-lime-400 font-semibold text-xs">{jumuahTimes[1].time}</span>
+                </div>
+              </div>
+
+              {/* Taraweeh & Eid - always visible when active */}
+              {(taraweehActive || eidFitrActive || eidAdhaActive) && (
+                <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+                  {taraweehActive && (
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-purple-500/20 border border-purple-500/30">
+                      <Star className="w-3 h-3 text-purple-400" />
+                      <span className="text-purple-300 text-xs">Taraweeh</span>
+                      <span className="text-purple-400 font-semibold text-xs">{taraweehTime}</span>
                     </div>
                   )}
-                </>
+                  {eidFitrActive && (
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
+                      <Star className="w-3 h-3 text-amber-400" />
+                      <span className="text-amber-300 text-xs">Eid al-Fitr</span>
+                      <span className="text-amber-400 font-semibold text-xs">{eidFitrTime}</span>
+                    </div>
+                  )}
+                  {eidAdhaActive && (
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
+                      <Star className="w-3 h-3 text-amber-400" />
+                      <span className="text-amber-300 text-xs">Eid al-Adha</span>
+                      <span className="text-amber-400 font-semibold text-xs">{eidAdhaTime}</span>
+                    </div>
+                  )}
+                </div>
               )}
-
-              {/* Expanded: All Prayer Times */}
-              <AnimatePresence>
-                {mobileExpanded && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    {/* Prayer Times Grid - 3x2 */}
-                    <div className="grid grid-cols-3 gap-2 mt-3">
-                      {prayers.map((prayer) => {
-                        const isNext = nextPrayer.key === prayer.key;
-                        return (
-                          <div
-                            key={prayer.key}
-                            className={`rounded-lg p-2 ${
-                              isNext ? "bg-green-500/15 border border-green-500/30" : "bg-white/5"
-                            }`}
-                          >
-                            <p className={`text-xs font-medium mb-0.5 ${isNext ? "text-green-400" : "text-white/50"}`}>
-                              {prayer.name}
-                            </p>
-                            <p className={`text-sm font-semibold ${isNext ? "text-white" : "text-white/80"}`}>
-                              {prayer.adhan}
-                            </p>
-                            <p className={`text-xs font-bold ${isNext ? "text-green-400" : "text-lime-400/80"}`}>
-                              {prayer.iqamah}
-                            </p>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Jumu'ah, Taraweeh & Eid in expanded view */}
-                    <div className="flex flex-wrap items-center justify-center gap-2 mt-3 pt-3 border-t border-white/10">
-                      <span className="text-white/40 text-xs">Jumu&apos;ah</span>
-                      <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
-                        <span className="text-white/30 text-xs">Arabic</span>
-                        <span className="text-lime-400 font-semibold text-xs">{jumuahTimes[0].time}</span>
-                      </div>
-                      <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5">
-                        <span className="text-white/30 text-xs">English</span>
-                        <span className="text-lime-400 font-semibold text-xs">{jumuahTimes[1].time}</span>
-                      </div>
-                    </div>
-                    {(taraweehActive || eidFitrActive || eidAdhaActive) && (
-                      <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
-                        {taraweehActive && (
-                          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-purple-500/20 border border-purple-500/30">
-                            <Star className="w-3 h-3 text-purple-400" />
-                            <span className="text-purple-300 text-xs">Taraweeh</span>
-                            <span className="text-purple-400 font-semibold text-xs">{taraweehTime}</span>
-                          </div>
-                        )}
-                        {eidFitrActive && (
-                          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
-                            <Star className="w-3 h-3 text-amber-400" />
-                            <span className="text-amber-300 text-xs">Eid al-Fitr</span>
-                            <span className="text-amber-400 font-semibold text-xs">{eidFitrTime}</span>
-                          </div>
-                        )}
-                        {eidAdhaActive && (
-                          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
-                            <Star className="w-3 h-3 text-amber-400" />
-                            <span className="text-amber-300 text-xs">Eid al-Adha</span>
-                            <span className="text-amber-400 font-semibold text-xs">{eidAdhaTime}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
           </div>
         </div>
