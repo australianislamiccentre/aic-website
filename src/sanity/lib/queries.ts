@@ -38,7 +38,7 @@ export const eventsQuery = groq`
     (recurring == true && (recurringEndDate == null || recurringEndDate >= now())) ||
     date >= now() ||
     endDate >= now()
-  )] | order(recurring asc, date asc) {
+  )] | order(recurring asc, featured desc, date asc) {
     _id,
     title,
     "slug": slug.current,
@@ -68,7 +68,7 @@ export const featuredEventsQuery = groq`
     (recurring == true && (recurringEndDate == null || recurringEndDate >= now())) ||
     date >= now() ||
     endDate >= now()
-  )] | order(recurring asc, date asc) [0...5] {
+  )] | order(recurring asc, featured desc, date asc) [0...5] {
     _id,
     title,
     "slug": slug.current,
@@ -180,7 +180,7 @@ export const programsQuery = groq`
     "Youth" in categories ||
     "Sports" in categories ||
     "Women" in categories
-  ) && (recurringEndDate == null || recurringEndDate >= now())] | order(title asc) {
+  ) && (recurringEndDate == null || recurringEndDate >= now())] | order(featured desc, title asc) {
     _id,
     title,
     "slug": slug.current,
@@ -195,7 +195,8 @@ export const programsQuery = groq`
     time,
     endTime,
     location,
-    locationDetails
+    locationDetails,
+    featured
   }
 `;
 
@@ -336,7 +337,7 @@ export const donationCampaignsQuery = groq`
     signupStartDate == null || signupStartDate <= now()
   ) && (
     signupEndDate == null || signupEndDate >= now()
-  ) && endDate >= now()] | order(startDate asc, order asc) {
+  ) && endDate >= now()] | order(featured desc, endDate asc, order asc, startDate asc) {
     _id,
     title,
     "slug": slug.current,
@@ -391,7 +392,7 @@ export const featuredDonationCampaignsQuery = groq`
     signupStartDate == null || signupStartDate <= now()
   ) && (
     signupEndDate == null || signupEndDate >= now()
-  ) && endDate >= now()] | order(startDate asc) [0...3] {
+  ) && endDate >= now()] | order(endDate asc, startDate asc) [0...3] {
     _id,
     title,
     "slug": slug.current,
@@ -799,7 +800,7 @@ export const latestUpdatesQuery = groq`
     time,
     location
   },
-  "campaigns": *[_type == "donationCampaign" && active == true && (isOngoing == true || endDate >= now() || !defined(endDate))] | order(startDate asc) [0...2] {
+  "campaigns": *[_type == "donationCampaign" && active == true && (isOngoing == true || endDate >= now() || !defined(endDate))] | order(featured desc, isOngoing asc, endDate asc, startDate asc) [0...2] {
     _id,
     _type,
     title,
@@ -812,6 +813,7 @@ export const latestUpdatesQuery = groq`
     raised,
     startDate,
     endDate,
-    isOngoing
+    isOngoing,
+    featured
   }
 }`;
