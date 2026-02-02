@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { Input, Textarea } from "@/components/ui/Input";
+import { Input, Textarea, PhoneInput } from "@/components/ui/Input";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { donationFrequencies, donationAmounts } from "@/data/content";
 import { SanityDonationCause } from "@/types/sanity";
@@ -54,6 +54,7 @@ function DonateForm({ donationCauses }: DonateFormProps) {
     lastName: "",
     email: "",
     phone: "",
+    countryCode: "+61", // Default to Australia
     anonymous: false,
     message: "",
   });
@@ -62,6 +63,13 @@ function DonateForm({ donationCauses }: DonateFormProps) {
 
   const parsedCustom = parseFloat(customAmount);
   const amount = customAmount && !isNaN(parsedCustom) ? parsedCustom : selectedAmount || 0;
+
+  // Name validation - letters, spaces, hyphens, apostrophes only (supports international names)
+  const isValidName = (name: string) => {
+    // Allow letters (including accented), spaces, hyphens, apostrophes
+    const nameRegex = /^[a-zA-ZÀ-ÿ\u0100-\u017F\u0180-\u024F\s'-]+$/;
+    return nameRegex.test(name.trim()) && name.trim().length >= 2;
+  };
 
   // Email validation regex
   const isValidEmail = (email: string) => {
@@ -79,9 +87,13 @@ function DonateForm({ donationCauses }: DonateFormProps) {
   const validateField = (field: string, value: string): string => {
     switch (field) {
       case 'firstName':
-        return !value.trim() ? 'First name is required' : '';
+        if (!value.trim()) return 'First name is required';
+        if (!isValidName(value)) return 'Please enter a valid first name (letters only, min 2 characters)';
+        return '';
       case 'lastName':
-        return !value.trim() ? 'Last name is required' : '';
+        if (!value.trim()) return 'Last name is required';
+        if (!isValidName(value)) return 'Please enter a valid last name (letters only, min 2 characters)';
+        return '';
       case 'email':
         if (!value.trim()) return 'Email is required';
         if (!isValidEmail(value)) return 'Please enter a valid email address';
@@ -449,12 +461,13 @@ function DonateForm({ donationCauses }: DonateFormProps) {
                       error={touchedFields.email ? fieldErrors.email : undefined}
                       required
                     />
-                    <Input
+                    <PhoneInput
                       label="Phone"
-                      type="tel"
-                      placeholder="+61 400 000 000"
+                      placeholder="400 000 000"
                       value={donorInfo.phone}
-                      onChange={(e) => handleFieldChange('phone', e.target.value)}
+                      countryCode={donorInfo.countryCode}
+                      onValueChange={(value) => handleFieldChange('phone', value)}
+                      onCountryCodeChange={(code) => setDonorInfo(prev => ({ ...prev, countryCode: code }))}
                       onBlur={() => handleFieldBlur('phone')}
                       error={touchedFields.phone ? fieldErrors.phone : undefined}
                       required
