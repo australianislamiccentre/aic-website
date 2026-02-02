@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { Input, Textarea, PhoneInput } from "@/components/ui/Input";
+import { Input, Textarea } from "@/components/ui/Input";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { donationFrequencies, donationAmounts } from "@/data/content";
 import { SanityDonationCause } from "@/types/sanity";
@@ -54,7 +54,6 @@ function DonateForm({ donationCauses }: DonateFormProps) {
     lastName: "",
     email: "",
     phone: "",
-    countryCode: "+61", // Default to Australia
     anonymous: false,
     message: "",
   });
@@ -100,7 +99,7 @@ function DonateForm({ donationCauses }: DonateFormProps) {
         return '';
       case 'phone':
         if (!value.trim()) return 'Phone number is required';
-        if (!isValidPhone(value)) return 'Please enter a valid phone number (minimum 8 digits)';
+        if (!isValidPhone(value)) return 'Please enter a valid phone number (include country code if outside Australia)';
         return '';
       default:
         return '';
@@ -461,13 +460,12 @@ function DonateForm({ donationCauses }: DonateFormProps) {
                       error={touchedFields.email ? fieldErrors.email : undefined}
                       required
                     />
-                    <PhoneInput
+                    <Input
                       label="Phone"
-                      placeholder="400 000 000"
+                      type="tel"
+                      placeholder="e.g. 0400 000 000"
                       value={donorInfo.phone}
-                      countryCode={donorInfo.countryCode}
-                      onValueChange={(value) => handleFieldChange('phone', value)}
-                      onCountryCodeChange={(code) => setDonorInfo(prev => ({ ...prev, countryCode: code }))}
+                      onChange={(e) => handleFieldChange('phone', e.target.value)}
                       onBlur={() => handleFieldBlur('phone')}
                       error={touchedFields.phone ? fieldErrors.phone : undefined}
                       required
