@@ -35,9 +35,9 @@ export default async function HomePage() {
       />
       <QuickDonateSection />
       <UpcomingSection events={allEvents} programs={programs} />
-      <MediaHighlightSection />
       <AboutPreviewSection />
       <ServicesSection services={services} />
+      <MediaHighlightSection />
     </>
   );
 }

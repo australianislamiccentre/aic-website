@@ -112,7 +112,7 @@ function getProgramIcon(program: SanityProgram) {
   return <BookOpen className="w-4 h-4" />;
 }
 
-// Event Card Component
+// Event Card Component (compact vertical card with image at top)
 function EventCard({ event, index }: { event: SanityEvent; index: number }) {
   const imageUrl = getImageUrl(event.image);
 
@@ -124,37 +124,45 @@ function EventCard({ event, index }: { event: SanityEvent; index: number }) {
       transition={{ delay: index * 0.1 }}
     >
       <Link href={`/events/${event.slug}`} className="block group">
-        <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 flex flex-col sm:flex-row h-full">
-          {/* Image */}
-          {imageUrl ? (
-            <div className="relative w-full sm:w-32 h-32 sm:h-auto flex-shrink-0">
+        <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 h-full flex flex-col">
+          {/* Image at top */}
+          <div className="relative h-32 w-full overflow-hidden">
+            {imageUrl ? (
               <Image
                 src={imageUrl}
                 alt={event.title}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/10 sm:bg-gradient-to-t sm:from-black/20 sm:to-transparent" />
-            </div>
-          ) : (
-            <div className="w-full sm:w-32 h-32 sm:h-auto bg-gradient-to-br from-green-500 to-green-600 flex-shrink-0 flex items-center justify-center">
-              <CalendarDays className="w-8 h-8 text-white/80" />
-            </div>
-          )}
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                <CalendarDays className="w-8 h-8 text-white/60" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
 
-          {/* Content */}
-          <div className="p-4 flex-1 flex flex-col justify-center">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+            {/* Category badge */}
+            <div className="absolute top-2 left-2">
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500 text-white">
                 {event.categories?.[0] || "Event"}
               </span>
             </div>
+          </div>
 
+          {/* Content */}
+          <div className="p-4 flex-1 flex flex-col">
             <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-green-600 transition-colors line-clamp-2">
               {event.title}
             </h3>
 
-            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+            {/* Short description if available */}
+            {event.shortDescription && (
+              <p className="text-gray-500 text-sm line-clamp-2 mb-3 flex-1">
+                {event.shortDescription}
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 mt-auto">
               {event.date && (
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-green-500" />
@@ -169,19 +177,14 @@ function EventCard({ event, index }: { event: SanityEvent; index: number }) {
               )}
             </div>
           </div>
-
-          {/* Arrow */}
-          <div className="hidden sm:flex items-center px-4">
-            <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-green-500 group-hover:translate-x-1 transition-all" />
-          </div>
         </div>
       </Link>
     </motion.div>
   );
 }
 
-// Recurring Event Card Component (for weekly events)
-function RecurringEventCard({ event, index }: { event: SanityEvent; index: number }) {
+// Weekly Event Card Component (compact with image at top)
+function WeeklyEventCard({ event, index }: { event: SanityEvent; index: number }) {
   const imageUrl = getImageUrl(event.image);
 
   return (
@@ -192,60 +195,58 @@ function RecurringEventCard({ event, index }: { event: SanityEvent; index: numbe
       transition={{ delay: index * 0.1 }}
     >
       <Link href={`/events/${event.slug}`} className="block group">
-        <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 flex flex-col sm:flex-row h-full">
-          {/* Image */}
-          {imageUrl ? (
-            <div className="relative w-full sm:w-32 h-32 sm:h-auto flex-shrink-0">
+        <div className="bg-neutral-800/50 hover:bg-neutral-800 rounded-xl overflow-hidden transition-all duration-300 border border-neutral-700/50 hover:border-teal-500/50 h-full">
+          {/* Image at top */}
+          <div className="relative h-32 w-full overflow-hidden">
+            {imageUrl ? (
               <Image
                 src={imageUrl}
                 alt={event.title}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/10 sm:bg-gradient-to-t sm:from-black/20 sm:to-transparent" />
-            </div>
-          ) : (
-            <div className="w-full sm:w-32 h-32 sm:h-auto bg-gradient-to-br from-teal-500 to-teal-600 flex-shrink-0 flex items-center justify-center">
-              <Repeat className="w-8 h-8 text-white/80" />
-            </div>
-          )}
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-teal-600 to-teal-700 flex items-center justify-center">
+                <Repeat className="w-8 h-8 text-white/60" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-neutral-900/80 to-transparent" />
 
-          {/* Content */}
-          <div className="p-4 flex-1 flex flex-col justify-center">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-700">
+            {/* Weekly Badge */}
+            <div className="absolute top-2 left-2">
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-teal-500 text-white">
                 Weekly
               </span>
-              {event.categories?.[0] && (
-                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                  {event.categories[0]}
-                </span>
-              )}
             </div>
+          </div>
 
-            <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-teal-600 transition-colors line-clamp-2">
+          {/* Content */}
+          <div className="p-4">
+            <h4 className="font-semibold text-white mb-2 group-hover:text-teal-300 transition-colors line-clamp-2">
               {event.title}
-            </h3>
+            </h4>
 
-            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+            {/* Short description if available */}
+            {event.shortDescription && (
+              <p className="text-neutral-400 text-sm line-clamp-2 mb-3">
+                {event.shortDescription}
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center gap-2 text-sm text-neutral-400">
               {event.recurringDay && (
                 <div className="flex items-center gap-1">
-                  <Repeat className="w-3.5 h-3.5 text-teal-500" />
-                  <span>Every {getDayFull(event.recurringDay)}</span>
+                  <Repeat className="w-3.5 h-3.5 text-teal-400" />
+                  <span>{getDayFull(event.recurringDay)}</span>
                 </div>
               )}
               {event.time && (
                 <div className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-teal-500" />
+                  <Clock className="w-3.5 h-3.5 text-teal-400" />
                   <span>{event.time}</span>
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Arrow */}
-          <div className="hidden sm:flex items-center px-4">
-            <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
           </div>
         </div>
       </Link>
@@ -303,16 +304,13 @@ export function UpcomingSection({
   const datedEvents = events
     .filter((event) => !event.recurring && event.date && !isPrayerProgram(event))
     .sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime())
-    .slice(0, 3);
+    .slice(0, 4);
 
-  // Filter recurring/weekly events (exclude prayer-related)
-  const recurringEvents = events
+  // Filter recurring/weekly events separately (exclude prayer-related)
+  const weeklyEvents = events
     .filter((event) => event.recurring && event.recurringDay && !isPrayerProgram(event))
     .sort((a, b) => getDayOrder(a.recurringDay) - getDayOrder(b.recurringDay))
-    .slice(0, 3);
-
-  // Combine both types for display - dated first, then recurring
-  const allEvents = [...datedEvents, ...recurringEvents].slice(0, 4);
+    .slice(0, 4);
 
   // Filter programs (remove prayer-related ones)
   const filteredPrograms = programs
@@ -320,7 +318,7 @@ export function UpcomingSection({
     .slice(0, 6);
 
   // Don't render if nothing to show
-  if (allEvents.length === 0 && filteredPrograms.length === 0) {
+  if (datedEvents.length === 0 && weeklyEvents.length === 0 && filteredPrograms.length === 0) {
     return null;
   }
 
@@ -359,10 +357,9 @@ export function UpcomingSection({
           </div>
         </FadeIn>
 
-        {/* Two Column Layout */}
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Left Column: Events */}
-          <div>
+        {/* Row 1: Upcoming Dated Events */}
+        {datedEvents.length > 0 && (
+          <div className="mb-10">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                 <CalendarDays className="w-5 h-5 text-green-400" />
@@ -378,37 +375,17 @@ export function UpcomingSection({
                 View all
               </Button>
             </div>
-
-            {allEvents.length > 0 ? (
-              <div className="space-y-4">
-                {allEvents.map((event, index) => (
-                  event.recurring ? (
-                    <RecurringEventCard key={event._id} event={event} index={index} />
-                  ) : (
-                    <EventCard key={event._id} event={event} index={index} />
-                  )
-                ))}
-              </div>
-            ) : (
-              <div className="bg-neutral-800/30 rounded-xl p-8 text-center border border-neutral-700/50">
-                <CalendarDays className="w-10 h-10 mx-auto text-neutral-600 mb-3" />
-                <p className="text-neutral-400 text-sm">
-                  No upcoming events scheduled.
-                </p>
-                <Button
-                  href="/events"
-                  variant="ghost"
-                  size="sm"
-                  className="mt-4 text-green-400 hover:text-green-300"
-                >
-                  Browse all events
-                </Button>
-              </div>
-            )}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {datedEvents.map((event, index) => (
+                <EventCard key={event._id} event={event} index={index} />
+              ))}
+            </div>
           </div>
+        )}
 
-          {/* Right Column: Programs */}
-          <div>
+        {/* Row 2: Weekly Programs */}
+        {filteredPrograms.length > 0 && (
+          <div className="mb-10">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                 <GraduationCap className="w-5 h-5 text-teal-400" />
@@ -424,31 +401,39 @@ export function UpcomingSection({
                 View all
               </Button>
             </div>
-
-            {filteredPrograms.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {filteredPrograms.map((program, index) => (
-                  <ProgramCard key={program._id} program={program} index={index} />
-                ))}
-              </div>
-            ) : (
-              <div className="bg-neutral-800/30 rounded-xl p-8 text-center border border-neutral-700/50">
-                <GraduationCap className="w-10 h-10 mx-auto text-neutral-600 mb-3" />
-                <p className="text-neutral-400 text-sm">
-                  Programs coming soon.
-                </p>
-                <Button
-                  href="/contact"
-                  variant="ghost"
-                  size="sm"
-                  className="mt-4 text-teal-400 hover:text-teal-300"
-                >
-                  Get notified
-                </Button>
-              </div>
-            )}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {filteredPrograms.map((program, index) => (
+                <ProgramCard key={program._id} program={program} index={index} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Row 3: Weekly Events (at bottom) */}
+        {weeklyEvents.length > 0 && (
+          <div className="pt-8 border-t border-neutral-800">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Repeat className="w-5 h-5 text-teal-400" />
+                Weekly Events
+              </h3>
+              <Button
+                href="/events?type=recurring"
+                variant="ghost"
+                size="sm"
+                className="text-neutral-400 hover:text-white"
+                icon={<ArrowRight className="w-4 h-4" />}
+              >
+                View all
+              </Button>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {weeklyEvents.map((event, index) => (
+                <WeeklyEventCard key={event._id} event={event} index={index} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

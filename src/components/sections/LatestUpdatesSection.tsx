@@ -361,17 +361,43 @@ export function LatestUpdatesSection({
           ))}
         </div>
 
-        {/* Desktop: Updates Grid */}
-        {displayUpdates.length > 0 && (
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayUpdates.map((item, index) => (
-              <UpdateCard key={item._id} item={item} index={index} />
-            ))}
-          </div>
-        )}
+        {/* Desktop: Grouped Updates by Type */}
+        <div className="hidden md:block space-y-10">
+          {/* Announcements Group */}
+          {limitedAnnouncements.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Megaphone className="w-5 h-5 text-amber-500" />
+                <h3 className="text-lg font-semibold text-gray-900">Announcements</h3>
+                <span className="text-sm text-gray-400">({limitedAnnouncements.length})</span>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {limitedAnnouncements.map((item, index) => (
+                  <UpdateCard key={item._id} item={item} index={index} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Campaigns Group */}
+          {limitedCampaigns.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Heart className="w-5 h-5 text-teal-500" />
+                <h3 className="text-lg font-semibold text-gray-900">Active Campaigns</h3>
+                <span className="text-sm text-gray-400">({limitedCampaigns.length})</span>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {limitedCampaigns.map((item, index) => (
+                  <UpdateCard key={item._id} item={item} index={index} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Empty state when only urgent banner is shown */}
-        {displayUpdates.length === 0 && urgentAnnouncement && (
+        {limitedAnnouncements.length === 0 && limitedCampaigns.length === 0 && urgentAnnouncement && (
           <FadeIn>
             <div className="hidden md:block text-center py-8 bg-neutral-50 rounded-2xl">
               <Bell className="w-12 h-12 mx-auto text-gray-300 mb-4" />
