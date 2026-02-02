@@ -5,18 +5,16 @@ import { LatestUpdatesSection } from "@/components/sections/LatestUpdatesSection
 import { EventsSection } from "@/components/sections/EventsSection";
 import { AboutPreviewSection } from "@/components/sections/AboutPreviewSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
-import { ProgramsSection } from "@/components/sections/ProgramsSection";
-import { getEvents, getFeaturedEvents, getUrgentAnnouncements, getServices, getPrograms, getPrayerSettings, getLatestUpdates } from "@/sanity/lib/fetch";
-import { SanityEvent, SanityAnnouncement, SanityService, SanityProgram, SanityPrayerSettings } from "@/types/sanity";
+import { getEvents, getFeaturedEvents, getUrgentAnnouncements, getServices, getPrayerSettings, getLatestUpdates } from "@/sanity/lib/fetch";
+import { SanityEvent, SanityAnnouncement, SanityService, SanityPrayerSettings } from "@/types/sanity";
 
 export default async function HomePage() {
   // Fetch content from Sanity - single source of truth
-  const [featuredEvents, allEvents, urgentAnnouncements, services, programs, prayerSettings, latestUpdates] = await Promise.all([
+  const [featuredEvents, allEvents, urgentAnnouncements, services, prayerSettings, latestUpdates] = await Promise.all([
     getFeaturedEvents() as Promise<SanityEvent[]>,
     getEvents() as Promise<SanityEvent[]>,
     getUrgentAnnouncements() as Promise<SanityAnnouncement[]>,
     getServices() as Promise<SanityService[]>,
-    getPrograms() as Promise<SanityProgram[]>,
     getPrayerSettings() as Promise<SanityPrayerSettings | null>,
     getLatestUpdates(),
   ]);
@@ -43,7 +41,6 @@ export default async function HomePage() {
       <EventsSection events={eventsForHomepage} />
       <AboutPreviewSection />
       <ServicesSection services={services} />
-      <ProgramsSection programs={programs} />
     </>
   );
 }

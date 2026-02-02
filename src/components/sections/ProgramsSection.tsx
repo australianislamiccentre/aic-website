@@ -6,7 +6,7 @@ import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { SanityProgram } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
-import { ArrowRight, BookOpen, Trophy, Clock, CheckCircle2, GraduationCap, ExternalLink } from "lucide-react";
+import { ArrowRight, BookOpen, Trophy, Clock, CheckCircle2, GraduationCap, ExternalLink, Bell } from "lucide-react";
 import Image from "next/image";
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -41,9 +41,63 @@ export function ProgramsSection({ programs }: ProgramsSectionProps) {
   const displayPrograms = programs.slice(0, 5);
   const activeProgram = displayPrograms[activeIndex];
 
-  // Show nothing if no programs
+  // Show placeholder if no programs
   if (displayPrograms.length === 0) {
-    return null;
+    return (
+      <section className="py-20 md:py-28 bg-neutral-950 relative overflow-hidden">
+        {/* Diagonal lines pattern */}
+        <div className="absolute inset-0 opacity-[0.04]">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 40px,
+                rgba(255,255,255,0.5) 40px,
+                rgba(255,255,255,0.5) 41px
+              )`,
+            }}
+          />
+        </div>
+
+        {/* Horizontal accent lines */}
+        <div className="absolute top-20 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+        <div className="absolute bottom-20 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+        {/* Accent glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-teal-500/5 rounded-full blur-3xl" />
+
+        <div className="max-w-6xl mx-auto px-4 md:px-6 relative">
+          <FadeIn>
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-neutral-700 bg-neutral-900/50 text-teal-400 text-xs font-medium tracking-wide uppercase mb-6">
+                <GraduationCap className="w-3.5 h-3.5" />
+                Education & Youth
+              </div>
+              <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight">
+                Transformative{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-300">
+                  Programs
+                </span>
+              </h2>
+              <p className="text-neutral-400 max-w-2xl mx-auto text-lg mb-8">
+                We&apos;re preparing exciting new programs for our community. Stay tuned for educational courses, youth activities, and more.
+              </p>
+
+              <Button
+                href="/contact"
+                variant="primary"
+                size="lg"
+                icon={<Bell className="w-5 h-5" />}
+              >
+                Get Notified
+              </Button>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+    );
   }
 
   // Get image URL - handle both Sanity images and static paths
