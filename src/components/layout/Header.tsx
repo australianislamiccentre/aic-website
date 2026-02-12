@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/Button";
 import { SearchDialog } from "@/components/ui/SearchDialog";
 import { aicInfo } from "@/data/content";
 import { SanitySiteSettings } from "@/types/sanity";
@@ -68,7 +67,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       categories: [
         {
           title: "About AIC",
-          icon: <Building2 className="w-5 h-5 text-lime-500" />,
+          icon: <Building2 className="w-5 h-5 text-primary-600" />,
           items: [
             { name: "Our Story", href: "/about" },
             { name: "Our Imams", href: "/imams" },
@@ -77,7 +76,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
         {
           title: "Visit Us",
-          icon: <MapPin className="w-5 h-5 text-lime-500" />,
+          icon: <MapPin className="w-5 h-5 text-primary-600" />,
           items: [
             { name: "Plan Your Visit", href: "/visit" },
             { name: "360° Virtual Tour", href: "/visit#virtual-tour" },
@@ -98,7 +97,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       categories: [
         {
           title: "Prayer & Worship",
-          icon: <Clock className="w-5 h-5 text-lime-500" />,
+          icon: <Clock className="w-5 h-5 text-primary-600" />,
           items: [
             { name: "Prayer Times", href: "/#prayer-times" },
             { name: "Friday Sermons", href: "/worshippers#jumuah" },
@@ -107,7 +106,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
         {
           title: "Religious Services",
-          icon: <HandHeart className="w-5 h-5 text-lime-500" />,
+          icon: <HandHeart className="w-5 h-5 text-primary-600" />,
           items: [
             { name: "Nikah Services", href: "/services/nikah" },
             { name: "Funeral Services", href: "/services/funeral" },
@@ -128,7 +127,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       categories: [
         {
           title: "Education",
-          icon: <GraduationCap className="w-5 h-5 text-lime-500" />,
+          icon: <GraduationCap className="w-5 h-5 text-primary-600" />,
           items: [
             { name: "IQRA Academy", href: "/events/iqra-academy" },
             { name: "Al-Noor Institute", href: "/programs#alnoor" },
@@ -138,7 +137,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
         {
           title: "Youth & Sports",
-          icon: <Trophy className="w-5 h-5 text-lime-500" />,
+          icon: <Trophy className="w-5 h-5 text-primary-600" />,
           items: [
             { name: "Newport Storm FC", href: externalLinks.newportStorm, external: true },
             { name: "Boys Youth Nights", href: "/programs#boysynights" },
@@ -159,7 +158,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       categories: [
         {
           title: "Stay Updated",
-          icon: <Newspaper className="w-5 h-5 text-lime-500" />,
+          icon: <Newspaper className="w-5 h-5 text-primary-600" />,
           items: [
             { name: "Announcements", href: "/announcements" },
             { name: "Upcoming Events", href: "/events" },
@@ -168,7 +167,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
         {
           title: "Media",
-          icon: <Camera className="w-5 h-5 text-lime-500" />,
+          icon: <Camera className="w-5 h-5 text-primary-600" />,
           items: [
             { name: "Photo Gallery", href: "/media#gallery" },
             { name: "Videos", href: "/media#videos" },
@@ -312,187 +311,194 @@ export function Header({ siteSettings }: HeaderProps) {
             : "bg-neutral-900/90 backdrop-blur-sm"
         )}
       >
-        <nav className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <Link href="/" onClick={handleLogoClick} className="flex items-center group relative h-12">
-              {/* Logo for dark background (not scrolled) */}
-              <Image
-                src="/images/aic logo.png"
-                alt="Australian Islamic Centre"
-                width={120}
-                height={48}
-                className={cn(
-                  "h-12 w-auto object-contain transition-opacity duration-300",
-                  isScrolled ? "opacity-0" : "opacity-100"
-                )}
-              />
-              {/* Logo for white background (scrolled) */}
-              <Image
-                src="/images/aic website logo.svg"
-                alt="Australian Islamic Centre"
-                width={120}
-                height={48}
-                className={cn(
-                  "h-12 w-auto object-contain absolute left-0 top-0 transition-opacity duration-300",
-                  isScrolled ? "opacity-100" : "opacity-0"
-                )}
-              />
-            </Link>
+        {/* Nav container - full width for dropdown positioning */}
+        <div className="relative">
+          <nav className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <Link href="/" onClick={handleLogoClick} className="flex items-center group relative h-10 flex-shrink-0">
+                {/* Logo for dark background (not scrolled) */}
+                <Image
+                  src="/images/aic logo.png"
+                  alt="Australian Islamic Centre"
+                  width={100}
+                  height={40}
+                  className={cn(
+                    "h-10 w-auto object-contain transition-opacity duration-300",
+                    isScrolled ? "opacity-0" : "opacity-100"
+                  )}
+                />
+                {/* Logo for white background (scrolled) */}
+                <Image
+                  src="/images/aic website logo.svg"
+                  alt="Australian Islamic Centre"
+                  width={100}
+                  height={40}
+                  className={cn(
+                    "h-10 w-auto object-contain absolute left-0 top-0 transition-opacity duration-300",
+                    isScrolled ? "opacity-100" : "opacity-0"
+                  )}
+                />
+              </Link>
 
-            {/* Desktop Navigation - MyCentre Style */}
-            <div className="hidden lg:flex items-center gap-1">
-              {navigation.map((item) => (
-                <div
-                  key={item.name}
-                  className="relative"
-                  onMouseEnter={() => item.categories && setActiveDropdown(item.name)}
-                  onMouseLeave={() => setActiveDropdown(null)}
-                >
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-1.5 px-4 py-2.5 rounded-lg font-medium transition-all duration-200",
-                      isScrolled
-                        ? cn(
-                            "text-gray-700 hover:text-neutral-900 hover:bg-neutral-100",
-                            isActive(item.href) && "text-primary-600"
-                          )
-                        : cn(
-                            "text-white/90 hover:text-white hover:bg-white/10",
-                            isActive(item.href) && "text-lime-400"
-                          )
-                    )}
+              {/* Desktop Navigation */}
+              <div className="hidden lg:flex items-center h-full">
+                {navigation.map((item) => (
+                  <div
+                    key={item.name}
+                    className="relative h-16 flex items-center"
+                    onMouseEnter={() => item.categories && setActiveDropdown(item.name)}
+                    onMouseLeave={() => setActiveDropdown(null)}
                   >
-                    {item.name}
-                    {item.categories && (
-                      <ChevronDown className={cn(
-                        "w-4 h-4 transition-transform duration-200",
-                        activeDropdown === item.name && "rotate-180"
-                      )} />
-                    )}
-                  </Link>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-1 px-4 h-full font-semibold transition-all duration-200 border-b-2",
+                        isScrolled
+                          ? cn(
+                              "text-gray-700 hover:text-primary-600 border-transparent hover:border-primary-600",
+                              isActive(item.href) && "text-primary-600 border-primary-600"
+                            )
+                          : cn(
+                              "text-white/90 hover:text-white border-transparent hover:border-lime-400",
+                              isActive(item.href) && "text-lime-400 border-lime-400"
+                            )
+                      )}
+                    >
+                      {item.name}
+                      {item.categories && (
+                        <ChevronDown className={cn(
+                          "w-4 h-4 transition-transform duration-200",
+                          activeDropdown === item.name && "rotate-180"
+                        )} />
+                      )}
+                    </Link>
+                  </div>
+                ))}
+              </div>
 
-                  {/* Dropdown - MyCentre Style */}
-                  <AnimatePresence>
-                    {item.categories && activeDropdown === item.name && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
-                        style={{ minWidth: "600px" }}
-                      >
-                        <div className="flex">
-                          {/* Categories Section */}
-                          <div className="flex-1 p-6">
-                            <div className="grid grid-cols-2 gap-8">
-                              {item.categories.map((category) => (
-                                <div key={category.title}>
-                                  {/* Category Header */}
-                                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
-                                    {category.icon}
-                                    <h3 className="font-semibold text-gray-900">
-                                      {category.title}
-                                    </h3>
-                                  </div>
-                                  {/* Category Items */}
-                                  <ul className="space-y-1">
-                                    {category.items.map((child) => (
-                                      <li key={child.name}>
-                                        {child.external ? (
-                                          <a
-                                            href={child.href}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-2 px-2 py-2 rounded-lg text-gray-600 hover:text-primary-600 hover:bg-primary-50 transition-colors group"
-                                          >
-                                            <span>{child.name}</span>
-                                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                          </a>
-                                        ) : (
-                                          <Link
-                                            href={child.href}
-                                            className="block px-2 py-2 rounded-lg text-gray-600 hover:text-primary-600 hover:bg-primary-50 transition-colors"
-                                          >
-                                            {child.name}
-                                          </Link>
-                                        )}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
+              {/* Actions - Search + Donate + Mobile Menu */}
+              <div className="flex items-center h-16">
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className={cn(
+                    "p-2.5 rounded-lg transition-all duration-200 mx-2",
+                    isScrolled
+                      ? "text-gray-600 hover:text-neutral-900 hover:bg-neutral-100"
+                      : "text-white/90 hover:text-white hover:bg-white/10"
+                  )}
+                  aria-label="Search"
+                >
+                  <Search className="w-5 h-5" />
+                </button>
+
+                {/* Donate Button - Full height */}
+                <Link
+                  href="/donate"
+                  className="hidden sm:flex items-center gap-2 h-16 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold transition-all duration-200"
+                >
+                  <Heart className="w-4 h-4" />
+                  <span>Donate</span>
+                </Link>
+
+                <button
+                  onClick={() => setMobileMenuOpen(true)}
+                  className={cn(
+                    "lg:hidden p-2.5 rounded-lg transition-all duration-200 ml-2",
+                    isScrolled
+                      ? "text-gray-600 hover:text-neutral-900 hover:bg-neutral-100"
+                      : "text-white/90 hover:text-white hover:bg-white/10"
+                  )}
+                  aria-label="Open menu"
+                >
+                  <Menu className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+          </nav>
+
+          {/* Full-width Dropdown - positioned below nav */}
+          <AnimatePresence>
+            {activeDropdown && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute left-0 right-0 bg-white shadow-xl border-t border-gray-100 z-50"
+                onMouseEnter={() => setActiveDropdown(activeDropdown)}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
+                <div className="max-w-7xl mx-auto px-6 py-8">
+                  {navigation.map((item) => {
+                    if (item.name !== activeDropdown || !item.categories) return null;
+
+                    return (
+                      <div key={item.name} className="flex gap-12">
+                        {/* Category Columns */}
+                        {item.categories.map((category) => (
+                          <div key={category.title} className="min-w-[200px]">
+                            {/* Category Header */}
+                            <div className="flex items-center gap-2 mb-4">
+                              {category.icon}
+                              <h3 className="font-bold text-gray-900">
+                                {category.title}
+                              </h3>
+                            </div>
+                            {/* Category Items */}
+                            <ul className="space-y-1">
+                              {category.items.map((child) => (
+                                <li key={child.name}>
+                                  {child.external ? (
+                                    <a
+                                      href={child.href}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 py-2 text-gray-600 hover:text-primary-600 transition-colors group"
+                                    >
+                                      <span>{child.name}</span>
+                                      <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </a>
+                                  ) : (
+                                    <Link
+                                      href={child.href}
+                                      className="block py-2 text-gray-600 hover:text-primary-600 transition-colors"
+                                    >
+                                      {child.name}
+                                    </Link>
+                                  )}
+                                </li>
                               ))}
-                            </div>
+                            </ul>
                           </div>
+                        ))}
 
-                          {/* Promo Image Section */}
-                          {item.promoImage && (
-                            <div className="w-48 bg-gray-50 p-4 flex flex-col justify-center">
-                              <Link href={item.promoImage.href} className="group">
-                                <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-3">
-                                  <Image
-                                    src={item.promoImage.src}
-                                    alt={item.promoImage.alt}
-                                    fill
-                                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                  />
-                                </div>
-                                <p className="text-sm font-medium text-gray-900 group-hover:text-primary-600 transition-colors">
-                                  {item.promoImage.title}
-                                </p>
-                              </Link>
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                        {/* Promo Image Section */}
+                        {item.promoImage && (
+                          <div className="ml-auto">
+                            <Link href={item.promoImage.href} className="group block">
+                              <div className="relative w-48 h-32 rounded-xl overflow-hidden mb-2">
+                                <Image
+                                  src={item.promoImage.src}
+                                  alt={item.promoImage.alt}
+                                  fill
+                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              </div>
+                              <p className="text-sm font-medium text-gray-900 group-hover:text-primary-600 transition-colors">
+                                {item.promoImage.title}
+                              </p>
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setSearchOpen(true)}
-                className={cn(
-                  "p-2.5 rounded-lg transition-all duration-200",
-                  isScrolled
-                    ? "text-gray-600 hover:text-neutral-900 hover:bg-neutral-100"
-                    : "text-white/90 hover:text-white hover:bg-white/10"
-                )}
-                aria-label="Search"
-              >
-                <Search className="w-5 h-5" />
-              </button>
-
-              <Button
-                href="/donate"
-                variant="gold"
-                size="sm"
-                icon={<Heart className="w-4 h-4" />}
-                className="hidden sm:inline-flex"
-              >
-                Donate
-              </Button>
-
-              <button
-                onClick={() => setMobileMenuOpen(true)}
-                className={cn(
-                  "lg:hidden p-2.5 rounded-lg transition-all duration-200",
-                  isScrolled
-                    ? "text-gray-600 hover:text-neutral-900 hover:bg-neutral-100"
-                    : "text-white/90 hover:text-white hover:bg-white/10"
-                )}
-                aria-label="Open menu"
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-            </div>
-          </div>
-        </nav>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </header>
 
       {/* Mobile Menu - Full Screen */}
@@ -566,7 +572,7 @@ export function Header({ siteSettings }: HeaderProps) {
                                       {/* Category Header */}
                                       <div className="flex items-center gap-2 mb-2 px-2">
                                         {category.icon}
-                                        <span className="text-sm font-semibold text-white/70 uppercase tracking-wide">
+                                        <span className="text-sm font-bold text-white/70 uppercase tracking-wide">
                                           {category.title}
                                         </span>
                                       </div>
@@ -621,15 +627,14 @@ export function Header({ siteSettings }: HeaderProps) {
 
               {/* Fixed Footer */}
               <div className="sticky bottom-0 bg-neutral-900 border-t border-white/10 px-6 py-6 space-y-4">
-                <Button
+                <Link
                   href="/donate"
-                  variant="gold"
-                  className="w-full py-4 text-lg"
-                  icon={<Heart className="w-5 h-5" />}
                   onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full py-4 text-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl transition-all duration-200"
                 >
-                  Make a Donation
-                </Button>
+                  <Heart className="w-5 h-5" />
+                  <span>Make a Donation</span>
+                </Link>
 
                 <div className="flex items-center justify-center gap-6 text-sm text-white/60">
                   <a href={`tel:${info.phone}`} className="flex items-center gap-2 hover:text-white transition-colors">
