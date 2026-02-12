@@ -378,7 +378,7 @@ export function Header({ siteSettings }: HeaderProps) {
                   </div>
                 ))}
 
-                {/* Dropdown - spans full width of nav links (About Us → Contact) */}
+                {/* Dropdown - clean white background */}
                 <AnimatePresence>
                   {activeDropdown && (
                     <motion.div
@@ -386,7 +386,7 @@ export function Header({ siteSettings }: HeaderProps) {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 right-0 bg-neutral-800 rounded-b-xl shadow-2xl overflow-hidden z-50"
+                      className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-xl shadow-xl overflow-hidden z-50"
                     >
                       {navigation.map((item) => {
                         if (item.name !== activeDropdown || !item.categories) return null;
@@ -394,18 +394,18 @@ export function Header({ siteSettings }: HeaderProps) {
                         return (
                           <div key={item.name} className="flex">
                             {/* Category Columns */}
-                            <div className="flex gap-8 p-6">
+                            <div className="flex gap-10 p-6 flex-1">
                               {item.categories.map((category) => (
-                                <div key={category.title} className="min-w-[160px]">
+                                <div key={category.title}>
                                   {/* Category Header */}
                                   <div className="flex items-center gap-2 mb-3">
-                                    <span className="text-lime-400">{category.icon}</span>
-                                    <h3 className="font-bold text-white">
+                                    <span className="text-primary-600">{category.icon}</span>
+                                    <h3 className="font-bold text-gray-900">
                                       {category.title}
                                     </h3>
                                   </div>
                                   {/* Category Items */}
-                                  <ul className="space-y-0.5">
+                                  <ul className="space-y-1">
                                     {category.items.map((child) => (
                                       <li key={child.name}>
                                         {child.external ? (
@@ -413,7 +413,7 @@ export function Header({ siteSettings }: HeaderProps) {
                                             href={child.href}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center gap-2 py-1.5 text-white/70 hover:text-lime-400 transition-colors group"
+                                            className="flex items-center gap-2 py-1.5 text-gray-600 hover:text-primary-600 transition-colors group"
                                           >
                                             <span>{child.name}</span>
                                             <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -421,7 +421,7 @@ export function Header({ siteSettings }: HeaderProps) {
                                         ) : (
                                           <Link
                                             href={child.href}
-                                            className="block py-1.5 text-white/70 hover:text-lime-400 transition-colors"
+                                            className="block py-1.5 text-gray-600 hover:text-primary-600 transition-colors"
                                           >
                                             {child.name}
                                           </Link>
@@ -435,15 +435,15 @@ export function Header({ siteSettings }: HeaderProps) {
 
                             {/* Promo Image Section - full height edge to edge */}
                             {item.promoImage && (
-                              <Link href={item.promoImage.href} className="group block relative w-40 flex-shrink-0">
+                              <Link href={item.promoImage.href} className="group block relative w-44 flex-shrink-0">
                                 <Image
                                   src={item.promoImage.src}
                                   alt={item.promoImage.alt}
                                   fill
                                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                                <p className="absolute bottom-3 left-3 right-3 text-sm font-medium text-white group-hover:text-lime-400 transition-colors">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                                <p className="absolute bottom-3 left-3 right-3 text-sm font-medium text-white group-hover:text-lime-300 transition-colors">
                                   {item.promoImage.title}
                                 </p>
                               </Link>
