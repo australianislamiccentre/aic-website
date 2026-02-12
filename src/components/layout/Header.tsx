@@ -378,7 +378,7 @@ export function Header({ siteSettings }: HeaderProps) {
                   </div>
                 ))}
 
-                {/* Dropdown - positioned under nav links only */}
+                {/* Dropdown - spans full width of nav links (About Us → Contact) */}
                 <AnimatePresence>
                   {activeDropdown && (
                     <motion.div
@@ -386,7 +386,7 @@ export function Header({ siteSettings }: HeaderProps) {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 bg-neutral-800 rounded-b-xl shadow-2xl overflow-hidden z-50"
+                      className="absolute top-full left-0 right-0 bg-neutral-800 rounded-b-xl shadow-2xl overflow-hidden z-50"
                     >
                       {navigation.map((item) => {
                         if (item.name !== activeDropdown || !item.categories) return null;
@@ -471,10 +471,10 @@ export function Header({ siteSettings }: HeaderProps) {
                   <Search className="w-5 h-5" />
                 </button>
 
-                {/* Donate Button - Full height, green color */}
+                {/* Donate Button - Full height, lime green color */}
                 <Link
                   href="/donate"
-                  className="hidden sm:flex items-center gap-2 h-16 px-6 bg-primary-600 hover:bg-primary-700 text-white font-semibold transition-all duration-200"
+                  className="hidden sm:flex items-center gap-2 h-16 px-6 bg-lime-500 hover:bg-lime-600 text-neutral-900 font-semibold transition-all duration-200"
                 >
                   <Heart className="w-4 h-4" />
                   <span>Donate</span>
