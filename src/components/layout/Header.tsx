@@ -20,91 +20,172 @@ import {
   MapPin,
   Phone,
   ExternalLink,
+  // Category icons
+  HandHeart,
+  Clock,
+  Building2,
+  GraduationCap,
+  Trophy,
+  Newspaper,
+  Camera,
 } from "lucide-react";
 
 interface HeaderProps {
   siteSettings?: SanitySiteSettings | null;
 }
 
+// Navigation structure - simplified like MyCentre
+interface NavChild {
+  name: string;
+  href: string;
+  external?: boolean;
+}
+
+interface NavCategory {
+  title: string;
+  icon: React.ReactNode;
+  items: NavChild[];
+}
+
+interface NavItem {
+  name: string;
+  href: string;
+  categories?: NavCategory[];
+  promoImage?: {
+    src: string;
+    alt: string;
+    title: string;
+    href: string;
+  };
+}
+
 // Build navigation with external links
-function buildNavigation(externalLinks: { college: string; bookstore: string; newportStorm: string }) {
+function buildNavigation(externalLinks: { college: string; bookstore: string; newportStorm: string }): NavItem[] {
   return [
     {
-      name: "Home",
-      href: "/",
-      children: [
-        { name: "Prayer Times", href: "/#prayer-times" },
-        { name: "For Worshippers", href: "/worshippers" },
-        { name: "For Visitors", href: "/visit" },
-        { name: "AIC College", href: externalLinks.college, external: true },
-        { name: "AIC Bookstore", href: externalLinks.bookstore, external: true },
-        { name: "Newport Storm FC", href: externalLinks.newportStorm, external: true },
+      name: "About Us",
+      href: "/about",
+      categories: [
+        {
+          title: "About AIC",
+          icon: <Building2 className="w-5 h-5 text-lime-500" />,
+          items: [
+            { name: "Our Story", href: "/about" },
+            { name: "Our Imams", href: "/imams" },
+            { name: "Architecture", href: "/architecture" },
+          ],
+        },
+        {
+          title: "Visit Us",
+          icon: <MapPin className="w-5 h-5 text-lime-500" />,
+          items: [
+            { name: "Plan Your Visit", href: "/visit" },
+            { name: "360° Virtual Tour", href: "/visit#virtual-tour" },
+            { name: "Getting Here", href: "/visit#directions" },
+          ],
+        },
       ],
-    },
-    { name: "About", href: "/about" },
-    {
-      name: "Worshippers",
-      href: "/worshippers",
-      children: [
-        { name: "Daily Prayers", href: "/worshippers#prayers" },
-        { name: "Friday Sermons", href: "/worshippers#jumuah" },
-        { name: "Mosque Etiquette", href: "/worshippers#etiquette" },
-        { name: "Religious Programs", href: "/worshippers#programs" },
-        { name: "Events", href: "/events" },
-        { name: "Services", href: "/services" },
-        { name: "Getting to AIC", href: "/visit#directions" },
-      ],
+      promoImage: {
+        src: "/images/gallery/mosque-interior.jpg",
+        alt: "AIC Mosque Interior",
+        title: "Discover Our Architecture",
+        href: "/architecture",
+      },
     },
     {
-      name: "Services",
+      name: "Services & Worship",
       href: "/services",
-      children: [
-        { name: "Religious Services", href: "/services#religious" },
-        { name: "Funeral Services", href: "/services#funeral" },
-        { name: "Nikah Services", href: "/services#nikah" },
-        { name: "Counselling & Support", href: "/services#counselling" },
+      categories: [
+        {
+          title: "Prayer & Worship",
+          icon: <Clock className="w-5 h-5 text-lime-500" />,
+          items: [
+            { name: "Prayer Times", href: "/#prayer-times" },
+            { name: "Friday Sermons", href: "/worshippers#jumuah" },
+            { name: "For Worshippers", href: "/worshippers" },
+          ],
+        },
+        {
+          title: "Religious Services",
+          icon: <HandHeart className="w-5 h-5 text-lime-500" />,
+          items: [
+            { name: "Nikah Services", href: "/services/nikah" },
+            { name: "Funeral Services", href: "/services/funeral" },
+            { name: "Counselling & Support", href: "/services/counselling" },
+          ],
+        },
       ],
+      promoImage: {
+        src: "/images/gallery/prayer-hall.jpg",
+        alt: "Prayer Hall",
+        title: "Join Our Community",
+        href: "/worshippers",
+      },
     },
     {
-      name: "Visitors",
-      href: "/visit",
-      children: [
-        { name: "Visiting Hours", href: "/visit#hours" },
-        { name: "Book a Visit", href: "/visit#book" },
-        { name: "Mosque Manners", href: "/visit#manners" },
-        { name: "360° Tour", href: "/visit#virtual-tour" },
-        { name: "Getting to AIC", href: "/visit#directions" },
-        { name: "FAQs", href: "/visit#faq" },
-      ],
-    },
-    {
-      name: "Programs",
+      name: "Programs & Education",
       href: "/programs",
-      children: [
-        { name: "Education Programs", href: "/programs#education" },
-        { name: "AIC College", href: externalLinks.college, external: true },
-        { name: "AIC Salam School", href: "/programs#salam" },
-        { name: "IQRA Academy", href: "/programs#iqra" },
-        { name: "Al-Noor Institute", href: "/programs#alnoor" },
-        { name: "Sports & Youth", href: "/programs#youth" },
-        { name: "Newport Storm FC", href: externalLinks.newportStorm, external: true },
-        { name: "Boys Youth Nights", href: "/programs#boysynights" },
+      categories: [
+        {
+          title: "Education",
+          icon: <GraduationCap className="w-5 h-5 text-lime-500" />,
+          items: [
+            { name: "IQRA Academy", href: "/events/iqra-academy" },
+            { name: "Al-Noor Institute", href: "/programs#alnoor" },
+            { name: "AIC Salam School", href: "/programs#salam" },
+            { name: "AIC College", href: externalLinks.college, external: true },
+          ],
+        },
+        {
+          title: "Youth & Sports",
+          icon: <Trophy className="w-5 h-5 text-lime-500" />,
+          items: [
+            { name: "Newport Storm FC", href: externalLinks.newportStorm, external: true },
+            { name: "Boys Youth Nights", href: "/programs#boysynights" },
+            { name: "Events & Activities", href: "/events" },
+          ],
+        },
       ],
+      promoImage: {
+        src: "/images/gallery/education.jpg",
+        alt: "Education Programs",
+        title: "Explore Our Programs",
+        href: "/programs",
+      },
     },
     {
-      name: "News & Media",
+      name: "News & Events",
       href: "/media",
-      children: [
-        { name: "Announcements", href: "/announcements" },
-        { name: "Gallery", href: "/media#gallery" },
-        { name: "Videos", href: "/media#videos" },
-        { name: "Podcasts", href: "/media#podcasts" },
-        { name: "Social Media", href: "/media#social" },
+      categories: [
+        {
+          title: "Stay Updated",
+          icon: <Newspaper className="w-5 h-5 text-lime-500" />,
+          items: [
+            { name: "Announcements", href: "/announcements" },
+            { name: "Upcoming Events", href: "/events" },
+            { name: "Active Campaigns", href: "/campaigns" },
+          ],
+        },
+        {
+          title: "Media",
+          icon: <Camera className="w-5 h-5 text-lime-500" />,
+          items: [
+            { name: "Photo Gallery", href: "/media#gallery" },
+            { name: "Videos", href: "/media#videos" },
+          ],
+        },
       ],
+      promoImage: {
+        src: "/images/gallery/community.jpg",
+        alt: "Community Event",
+        title: "See What's Happening",
+        href: "/events",
+      },
     },
-    { name: "Architecture", href: "/architecture" },
-    { name: "Our Imams", href: "/imams" },
-    { name: "Contact", href: "/contact" },
+    {
+      name: "Contact",
+      href: "/contact",
+    },
   ];
 }
 
@@ -182,6 +263,12 @@ export function Header({ siteSettings }: HeaderProps) {
     setMobileExpandedItem(mobileExpandedItem === name ? null : name);
   };
 
+  // Check if current path matches nav item
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname.startsWith(href);
+  };
+
   return (
     <>
       {/* Top bar - Desktop */}
@@ -253,27 +340,32 @@ export function Header({ siteSettings }: HeaderProps) {
               />
             </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden xl:flex items-center gap-1">
+            {/* Desktop Navigation - MyCentre Style */}
+            <div className="hidden lg:flex items-center gap-1">
               {navigation.map((item) => (
                 <div
                   key={item.name}
                   className="relative"
-                  onMouseEnter={() => setActiveDropdown(item.name)}
+                  onMouseEnter={() => item.categories && setActiveDropdown(item.name)}
                   onMouseLeave={() => setActiveDropdown(null)}
                 >
                   <Link
                     href={item.href}
-                    onClick={item.href === "/" ? handleLogoClick : undefined}
                     className={cn(
-                      "flex items-center gap-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm",
+                      "flex items-center gap-1.5 px-4 py-2.5 rounded-lg font-medium transition-all duration-200",
                       isScrolled
-                        ? "text-gray-700 hover:text-neutral-900 hover:bg-neutral-100"
-                        : "text-white/90 hover:text-white hover:bg-white/10"
+                        ? cn(
+                            "text-gray-700 hover:text-neutral-900 hover:bg-neutral-100",
+                            isActive(item.href) && "text-primary-600"
+                          )
+                        : cn(
+                            "text-white/90 hover:text-white hover:bg-white/10",
+                            isActive(item.href) && "text-lime-400"
+                          )
                     )}
                   >
                     {item.name}
-                    {item.children && (
+                    {item.categories && (
                       <ChevronDown className={cn(
                         "w-4 h-4 transition-transform duration-200",
                         activeDropdown === item.name && "rotate-180"
@@ -281,38 +373,79 @@ export function Header({ siteSettings }: HeaderProps) {
                     )}
                   </Link>
 
-                  {/* Dropdown */}
+                  {/* Dropdown - MyCentre Style */}
                   <AnimatePresence>
-                    {item.children && activeDropdown === item.name && (
+                    {item.categories && activeDropdown === item.name && (
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 mt-2 w-56 py-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden"
+                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+                        style={{ minWidth: "600px" }}
                       >
-                        {item.children.map((child) => (
-                          child.external ? (
-                            <a
-                              key={child.name}
-                              href={child.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center justify-between px-4 py-2.5 text-gray-700 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
-                            >
-                              <span className="text-green-600 font-medium">{child.name}</span>
-                              <ExternalLink className="w-3 h-3 text-green-500" />
-                            </a>
-                          ) : (
-                            <Link
-                              key={child.name}
-                              href={child.href}
-                              className="block px-4 py-2.5 text-gray-700 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
-                            >
-                              {child.name}
-                            </Link>
-                          )
-                        ))}
+                        <div className="flex">
+                          {/* Categories Section */}
+                          <div className="flex-1 p-6">
+                            <div className="grid grid-cols-2 gap-8">
+                              {item.categories.map((category) => (
+                                <div key={category.title}>
+                                  {/* Category Header */}
+                                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+                                    {category.icon}
+                                    <h3 className="font-semibold text-gray-900">
+                                      {category.title}
+                                    </h3>
+                                  </div>
+                                  {/* Category Items */}
+                                  <ul className="space-y-1">
+                                    {category.items.map((child) => (
+                                      <li key={child.name}>
+                                        {child.external ? (
+                                          <a
+                                            href={child.href}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 px-2 py-2 rounded-lg text-gray-600 hover:text-primary-600 hover:bg-primary-50 transition-colors group"
+                                          >
+                                            <span>{child.name}</span>
+                                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                          </a>
+                                        ) : (
+                                          <Link
+                                            href={child.href}
+                                            className="block px-2 py-2 rounded-lg text-gray-600 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+                                          >
+                                            {child.name}
+                                          </Link>
+                                        )}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Promo Image Section */}
+                          {item.promoImage && (
+                            <div className="w-48 bg-gray-50 p-4 flex flex-col justify-center">
+                              <Link href={item.promoImage.href} className="group">
+                                <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-3">
+                                  <Image
+                                    src={item.promoImage.src}
+                                    alt={item.promoImage.alt}
+                                    fill
+                                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                  />
+                                </div>
+                                <p className="text-sm font-medium text-gray-900 group-hover:text-primary-600 transition-colors">
+                                  {item.promoImage.title}
+                                </p>
+                              </Link>
+                            </div>
+                          )}
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -337,7 +470,7 @@ export function Header({ siteSettings }: HeaderProps) {
 
               <Button
                 href="/donate"
-                variant={isScrolled ? "gold" : "gold"}
+                variant="gold"
                 size="sm"
                 icon={<Heart className="w-4 h-4" />}
                 className="hidden sm:inline-flex"
@@ -348,7 +481,7 @@ export function Header({ siteSettings }: HeaderProps) {
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 className={cn(
-                  "xl:hidden p-2.5 rounded-lg transition-all duration-200",
+                  "lg:hidden p-2.5 rounded-lg transition-all duration-200",
                   isScrolled
                     ? "text-gray-600 hover:text-neutral-900 hover:bg-neutral-100"
                     : "text-white/90 hover:text-white hover:bg-white/10"
@@ -362,7 +495,7 @@ export function Header({ siteSettings }: HeaderProps) {
         </nav>
       </header>
 
-      {/* Mobile Menu - Full Screen Redesign */}
+      {/* Mobile Menu - Full Screen */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
@@ -370,7 +503,7 @@ export function Header({ siteSettings }: HeaderProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 xl:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 lg:hidden"
               onClick={() => setMobileMenuOpen(false)}
             />
             <motion.div
@@ -378,7 +511,7 @@ export function Header({ siteSettings }: HeaderProps) {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed inset-0 bg-neutral-900 z-50 xl:hidden flex flex-col"
+              className="fixed inset-0 bg-neutral-900 z-50 lg:hidden flex flex-col"
             >
               {/* Sticky Header with Close Button */}
               <div className="sticky top-0 z-10 bg-neutral-900 border-b border-white/10 px-6 py-4 flex items-center justify-between">
@@ -403,8 +536,8 @@ export function Header({ siteSettings }: HeaderProps) {
                 <div className="space-y-1">
                   {navigation.map((item) => (
                     <div key={item.name}>
-                      {item.children ? (
-                        // Item with children - expandable
+                      {item.categories ? (
+                        // Item with categories - expandable
                         <>
                           <button
                             onClick={() => toggleMobileExpand(item.name)}
@@ -427,40 +560,44 @@ export function Header({ siteSettings }: HeaderProps) {
                                 transition={{ duration: 0.3 }}
                                 className="overflow-hidden"
                               >
-                                <div className="ml-4 pl-4 border-l-2 border-lime-500/30 space-y-1 py-2">
-                                  {/* Main page link */}
-                                  <Link
-                                    href={item.href}
-                                    onClick={() => handleMobileNavClick(item.href)}
-                                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-lime-400 hover:bg-white/10 transition-colors"
-                                  >
-                                    <span className="font-medium">View All {item.name}</span>
-                                    <ChevronRight className="w-4 h-4" />
-                                  </Link>
-                                  {/* Children links */}
-                                  {item.children.map((child) => (
-                                    child.external ? (
-                                      <a
-                                        key={child.name}
-                                        href={child.href}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center justify-between px-4 py-3 rounded-lg text-green-400 hover:bg-white/10 transition-colors"
-                                      >
-                                        <span>{child.name}</span>
-                                        <ExternalLink className="w-4 h-4 text-green-500/60" />
-                                      </a>
-                                    ) : (
-                                      <Link
-                                        key={child.name}
-                                        href={child.href}
-                                        onClick={() => handleMobileNavClick(child.href)}
-                                        className="block px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-                                      >
-                                        {child.name}
-                                      </Link>
-                                    )
+                                <div className="ml-4 pl-4 border-l-2 border-lime-500/30 space-y-4 py-2">
+                                  {item.categories.map((category) => (
+                                    <div key={category.title}>
+                                      {/* Category Header */}
+                                      <div className="flex items-center gap-2 mb-2 px-2">
+                                        {category.icon}
+                                        <span className="text-sm font-semibold text-white/70 uppercase tracking-wide">
+                                          {category.title}
+                                        </span>
+                                      </div>
+                                      {/* Category Items */}
+                                      <div className="space-y-1">
+                                        {category.items.map((child) => (
+                                          child.external ? (
+                                            <a
+                                              key={child.name}
+                                              href={child.href}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              onClick={() => setMobileMenuOpen(false)}
+                                              className="flex items-center justify-between px-4 py-3 rounded-lg text-lime-400 hover:bg-white/10 transition-colors"
+                                            >
+                                              <span>{child.name}</span>
+                                              <ExternalLink className="w-4 h-4 text-lime-500/60" />
+                                            </a>
+                                          ) : (
+                                            <Link
+                                              key={child.name}
+                                              href={child.href}
+                                              onClick={() => handleMobileNavClick(child.href)}
+                                              className="block px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                                            >
+                                              {child.name}
+                                            </Link>
+                                          )
+                                        ))}
+                                      </div>
+                                    </div>
                                   ))}
                                 </div>
                               </motion.div>
@@ -468,7 +605,7 @@ export function Header({ siteSettings }: HeaderProps) {
                           </AnimatePresence>
                         </>
                       ) : (
-                        // Item without children - direct link
+                        // Item without categories - direct link
                         <Link
                           href={item.href}
                           onClick={() => handleMobileNavClick(item.href)}
