@@ -1,28 +1,24 @@
 import { HeroSection } from "@/components/sections/HeroSection";
 import { QuickAccessSection } from "@/components/sections/QuickAccessSection";
-import { DonationCTASection } from "@/components/sections/DonationCTASection";
+import { QuickDonateSection } from "@/components/sections/QuickDonateSection";
 import { LatestUpdatesSection } from "@/components/sections/LatestUpdatesSection";
-import { EventsSection } from "@/components/sections/EventsSection";
+import { UpcomingSection } from "@/components/sections/UpcomingSection";
+import { MediaHighlightSection } from "@/components/sections/MediaHighlightSection";
 import { AboutPreviewSection } from "@/components/sections/AboutPreviewSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
-import { getEvents, getFeaturedEvents, getUrgentAnnouncements, getServices, getPrayerSettings, getLatestUpdates } from "@/sanity/lib/fetch";
-import { SanityEvent, SanityAnnouncement, SanityService, SanityPrayerSettings } from "@/types/sanity";
+import { getEvents, getUrgentAnnouncements, getServices, getPrayerSettings, getLatestUpdates, getPrograms } from "@/sanity/lib/fetch";
+import { SanityEvent, SanityAnnouncement, SanityService, SanityPrayerSettings, SanityProgram } from "@/types/sanity";
 
 export default async function HomePage() {
   // Fetch content from Sanity - single source of truth
-  const [featuredEvents, allEvents, urgentAnnouncements, services, prayerSettings, latestUpdates] = await Promise.all([
-    getFeaturedEvents() as Promise<SanityEvent[]>,
+  const [allEvents, urgentAnnouncements, services, prayerSettings, latestUpdates, programs] = await Promise.all([
     getEvents() as Promise<SanityEvent[]>,
     getUrgentAnnouncements() as Promise<SanityAnnouncement[]>,
     getServices() as Promise<SanityService[]>,
     getPrayerSettings() as Promise<SanityPrayerSettings | null>,
     getLatestUpdates(),
+    getPrograms() as Promise<SanityProgram[]>,
   ]);
-
-  // Use featured events if available, otherwise use first few from all events
-  const eventsForHomepage = featuredEvents.length > 0
-    ? featuredEvents
-    : allEvents.slice(0, 5);
 
   // Get the first urgent announcement for the banner (if any)
   const urgentAnnouncement = urgentAnnouncements.length > 0 ? urgentAnnouncements[0] : null;
@@ -31,16 +27,17 @@ export default async function HomePage() {
     <>
       <HeroSection prayerSettings={prayerSettings} />
       <QuickAccessSection />
-      <DonationCTASection />
       <LatestUpdatesSection
         announcements={latestUpdates.announcements}
-        events={latestUpdates.events}
+        events={[]} // Events show in UpcomingSection now
         campaigns={latestUpdates.campaigns}
         urgentAnnouncement={urgentAnnouncement}
       />
-      <EventsSection events={eventsForHomepage} />
+      <QuickDonateSection />
+      <UpcomingSection events={allEvents} programs={programs} />
       <AboutPreviewSection />
       <ServicesSection services={services} />
+      <MediaHighlightSection />
     </>
   );
 }

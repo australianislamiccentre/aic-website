@@ -223,98 +223,183 @@ function UpdateCard({ item, index }: { item: LatestUpdateItem; index: number }) 
   );
 }
 
+// Mobile Banner Button Component
+function MobileBannerButton({
+  href,
+  icon: Icon,
+  label,
+  description,
+  color
+}: {
+  href: string;
+  icon: typeof Megaphone;
+  label: string;
+  description: string;
+  color: string;
+}) {
+  return (
+    <Link href={href} className="block group">
+      <motion.div
+        whileTap={{ scale: 0.98 }}
+        className={`flex items-center justify-between p-4 rounded-xl border transition-all ${color}`}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+            <Icon className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="font-semibold">{label}</p>
+            <p className="text-sm opacity-80">{description}</p>
+          </div>
+        </div>
+        <ArrowRight className="w-5 h-5 opacity-60 group-hover:translate-x-1 transition-transform" />
+      </motion.div>
+    </Link>
+  );
+}
+
 export function LatestUpdatesSection({
   announcements = [],
   events = [],
   campaigns = [],
   urgentAnnouncement,
 }: LatestUpdatesSectionProps) {
-  // Combine all updates and sort by date (newest first)
+  // Filter out events (they show in UpcomingSection) and limit items per type
+  const limitedAnnouncements = announcements.slice(0, 3);
+  const limitedCampaigns = campaigns.slice(0, 2);
+
+  // Combine announcements and campaigns only (no events)
   const allUpdates: LatestUpdateItem[] = [
-    ...announcements,
-    ...events,
-    ...campaigns,
+    ...limitedAnnouncements,
+    ...limitedCampaigns,
   ].sort((a, b) => {
     const dateA = new Date(a.date || a.startDate || "");
     const dateB = new Date(b.date || b.startDate || "");
-    // Events sort by date ascending (upcoming first), others by date descending
-    if (a._type === "event" && b._type === "event") {
-      return dateA.getTime() - dateB.getTime();
-    }
     return dateB.getTime() - dateA.getTime();
   });
 
-  // Take top 8 items
-  const displayUpdates = allUpdates.slice(0, 8);
+  // Take top 6 items
+  const displayUpdates = allUpdates.slice(0, 6);
 
   // If no updates, don't render the section
   if (displayUpdates.length === 0 && !urgentAnnouncement) {
     return null;
   }
 
+  // Mobile banner links
+  const mobileBanners = [
+    {
+      href: "/announcements",
+      icon: Megaphone,
+      label: "Announcements",
+      description: "Latest news & updates",
+      color: "bg-amber-500 text-white hover:bg-amber-600",
+    },
+    {
+      href: "/events",
+      icon: CalendarDays,
+      label: "Events",
+      description: "Upcoming activities",
+      color: "bg-green-500 text-white hover:bg-green-600",
+    },
+    {
+      href: "/campaigns",
+      icon: Heart,
+      label: "Campaigns",
+      description: "Support our causes",
+      color: "bg-teal-500 text-white hover:bg-teal-600",
+    },
+  ];
+
   return (
-    <section className="py-16 md:py-24 bg-white relative overflow-hidden">
+    <section className="py-12 md:py-20 bg-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 md:px-6 relative">
         {/* Urgent Banner */}
         {urgentAnnouncement && <UrgentBanner announcement={urgentAnnouncement} />}
 
         {/* Header */}
         <FadeIn>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-50 text-teal-700 text-sm font-medium mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 text-teal-700 text-sm font-medium mb-3">
                 <Bell className="w-4 h-4" />
                 Stay Updated
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
                 Latest{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-teal-500">
                   Updates
                 </span>
               </h2>
-              <p className="text-gray-600 max-w-xl">
-                Stay informed about announcements, upcoming events, and active campaigns.
-              </p>
             </div>
-            <div className="flex gap-3 self-start md:self-auto">
-              <Button
-                href="/announcements"
-                variant="outline"
-                size="sm"
-              >
+            {/* Desktop buttons - hidden on mobile */}
+            <div className="hidden md:flex gap-3">
+              <Button href="/announcements" variant="outline" size="sm">
                 Announcements
               </Button>
-              <Button
-                href="/events"
-                variant="outline"
-                size="sm"
-              >
+              <Button href="/events" variant="outline" size="sm">
                 Events
               </Button>
-              <Button
-                href="/campaigns"
-                variant="outline"
-                size="sm"
-              >
+              <Button href="/campaigns" variant="outline" size="sm">
                 Campaigns
               </Button>
             </div>
           </div>
         </FadeIn>
 
-        {/* Updates Grid */}
-        {displayUpdates.length > 0 && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {displayUpdates.map((item, index) => (
-              <UpdateCard key={item._id} item={item} index={index} />
-            ))}
-          </div>
-        )}
+        {/* Mobile: Banner Buttons */}
+        <div className="md:hidden space-y-3 mb-8">
+          {mobileBanners.map((banner, index) => (
+            <motion.div
+              key={banner.href}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <MobileBannerButton {...banner} />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Desktop: Grouped Updates by Type */}
+        <div className="hidden md:block space-y-10">
+          {/* Announcements Group */}
+          {limitedAnnouncements.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Megaphone className="w-5 h-5 text-amber-500" />
+                <h3 className="text-lg font-semibold text-gray-900">Announcements</h3>
+                <span className="text-sm text-gray-400">({limitedAnnouncements.length})</span>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {limitedAnnouncements.map((item, index) => (
+                  <UpdateCard key={item._id} item={item} index={index} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Campaigns Group */}
+          {limitedCampaigns.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Heart className="w-5 h-5 text-teal-500" />
+                <h3 className="text-lg font-semibold text-gray-900">Active Campaigns</h3>
+                <span className="text-sm text-gray-400">({limitedCampaigns.length})</span>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {limitedCampaigns.map((item, index) => (
+                  <UpdateCard key={item._id} item={item} index={index} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Empty state when only urgent banner is shown */}
-        {displayUpdates.length === 0 && urgentAnnouncement && (
+        {limitedAnnouncements.length === 0 && limitedCampaigns.length === 0 && urgentAnnouncement && (
           <FadeIn>
-            <div className="text-center py-8 bg-neutral-50 rounded-2xl">
+            <div className="hidden md:block text-center py-8 bg-neutral-50 rounded-2xl">
               <Bell className="w-12 h-12 mx-auto text-gray-300 mb-4" />
               <p className="text-gray-500">
                 Check back soon for more updates.

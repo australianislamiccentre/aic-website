@@ -1,9 +1,12 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
-import { FeatureCard } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { SanityService } from "@/types/sanity";
+import { SanityService, SanityImage } from "@/types/sanity";
+import { urlFor } from "@/sanity/lib/image";
+import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowRight,
   Sparkles,
@@ -41,13 +44,98 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   certificate: Award,
 };
 
+// Filter out prayer-related services
+const PRAYER_KEYWORDS = [
+  "friday prayer",
+  "jumu'ah",
+  "jumuah",
+  "daily prayer",
+  "prayer times",
+  "salah",
+  "salat",
+  "religious services",
+];
+
+function isPrayerService(service: SanityService): boolean {
+  const title = service.title.toLowerCase();
+  return PRAYER_KEYWORDS.some((keyword) => title.includes(keyword));
+}
+
+// Get image URL from Sanity
+function getImageUrl(image: SanityImage | undefined): string | null {
+  if (!image) return null;
+  return urlFor(image).width(600).height(400).url();
+}
+
 interface ServicesSectionProps {
   services: SanityService[];
 }
 
+// Service Card Component with image
+function ServiceCard({ service, index }: { service: SanityService; index: number }) {
+  const imageUrl = getImageUrl(service.image);
+  const Icon = iconMap[service.icon] || Sparkles;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1 }}
+    >
+      <Link href={`/services/${service.slug}`} className="block group h-full">
+        <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 h-full flex flex-col">
+          {/* Image Section */}
+          <div className="relative h-48 overflow-hidden">
+            {imageUrl ? (
+              <Image
+                src={imageUrl}
+                alt={service.title}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
+                <Icon className="w-16 h-16 text-white/40" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+
+            {/* Icon overlay */}
+            <div className="absolute bottom-3 left-3">
+              <div className="w-10 h-10 rounded-lg bg-teal-500 flex items-center justify-center shadow-lg">
+                <Icon className="w-5 h-5 text-white" />
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-5 flex-1 flex flex-col">
+            <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-teal-600 transition-colors">
+              {service.title}
+            </h3>
+            <p className="text-gray-600 text-sm line-clamp-2 mb-4 flex-1">
+              {service.shortDescription}
+            </p>
+            <div className="flex items-center text-teal-600 text-sm font-medium group-hover:gap-2 transition-all">
+              <span>Learn more</span>
+              <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
 export function ServicesSection({ services }: ServicesSectionProps) {
+  // Filter out prayer-related services and take top 3
+  const filteredServices = services
+    .filter((service) => !isPrayerService(service))
+    .slice(0, 3);
+
   // Show nothing if no services
-  if (services.length === 0) {
+  if (filteredServices.length === 0) {
     return null;
   }
 
@@ -68,28 +156,20 @@ export function ServicesSection({ services }: ServicesSectionProps) {
               Serving Our Community with{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-teal-500">Excellence</span>
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 max-w-3xl mx-auto">
               From spiritual guidance to practical support, we offer comprehensive
-              services to meet the diverse needs of our community.
+              services to meet the diverse needs of our community. On top of daily prayers
+              and Friday prayers, we provide a range of religious and community services
+              to support you through life&apos;s important moments.
             </p>
           </div>
         </FadeIn>
 
-        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.slice(0, 6).map((service) => {
-            const Icon = iconMap[service.icon] || Sparkles;
-            return (
-              <StaggerItem key={service._id}>
-                <FeatureCard
-                  icon={<Icon className="w-6 h-6" />}
-                  title={service.title}
-                  description={service.shortDescription}
-                  href={`/services#${service.slug}`}
-                />
-              </StaggerItem>
-            );
-          })}
-        </StaggerContainer>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredServices.map((service, index) => (
+            <ServiceCard key={service._id} service={service} index={index} />
+          ))}
+        </div>
 
         <FadeIn delay={0.4}>
           <div className="text-center mt-12">
