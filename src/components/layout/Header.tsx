@@ -67,7 +67,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       categories: [
         {
           title: "About AIC",
-          icon: <Building2 className="w-5 h-5 text-primary-600" />,
+          icon: <Building2 className="w-5 h-5 text-lime-500" />,
           items: [
             { name: "Our Story", href: "/about" },
             { name: "Our Imams", href: "/imams" },
@@ -76,7 +76,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
         {
           title: "Visit Us",
-          icon: <MapPin className="w-5 h-5 text-primary-600" />,
+          icon: <MapPin className="w-5 h-5 text-lime-500" />,
           items: [
             { name: "Plan Your Visit", href: "/visit" },
             { name: "360° Virtual Tour", href: "/visit#virtual-tour" },
@@ -85,7 +85,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
       ],
       promoImage: {
-        src: "/images/gallery/mosque-interior.jpg",
+        src: "/images/aic 1.jpg",
         alt: "AIC Mosque Interior",
         title: "Discover Our Architecture",
         href: "/architecture",
@@ -97,7 +97,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       categories: [
         {
           title: "Prayer & Worship",
-          icon: <Clock className="w-5 h-5 text-primary-600" />,
+          icon: <Clock className="w-5 h-5 text-lime-500" />,
           items: [
             { name: "Prayer Times", href: "/#prayer-times" },
             { name: "Friday Sermons", href: "/worshippers#jumuah" },
@@ -106,7 +106,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
         {
           title: "Religious Services",
-          icon: <HandHeart className="w-5 h-5 text-primary-600" />,
+          icon: <HandHeart className="w-5 h-5 text-lime-500" />,
           items: [
             { name: "Nikah Services", href: "/services/nikah" },
             { name: "Funeral Services", href: "/services/funeral" },
@@ -115,7 +115,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
       ],
       promoImage: {
-        src: "/images/gallery/prayer-hall.jpg",
+        src: "/images/aic 2.jpg",
         alt: "Prayer Hall",
         title: "Join Our Community",
         href: "/worshippers",
@@ -127,7 +127,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       categories: [
         {
           title: "Education",
-          icon: <GraduationCap className="w-5 h-5 text-primary-600" />,
+          icon: <GraduationCap className="w-5 h-5 text-lime-500" />,
           items: [
             { name: "IQRA Academy", href: "/events/iqra-academy" },
             { name: "Al-Noor Institute", href: "/programs#alnoor" },
@@ -137,7 +137,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
         {
           title: "Youth & Sports",
-          icon: <Trophy className="w-5 h-5 text-primary-600" />,
+          icon: <Trophy className="w-5 h-5 text-lime-500" />,
           items: [
             { name: "Newport Storm FC", href: externalLinks.newportStorm, external: true },
             { name: "Boys Youth Nights", href: "/programs#boysynights" },
@@ -146,7 +146,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
       ],
       promoImage: {
-        src: "/images/gallery/education.jpg",
+        src: "/images/aic 4.jpg",
         alt: "Education Programs",
         title: "Explore Our Programs",
         href: "/programs",
@@ -158,7 +158,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       categories: [
         {
           title: "Stay Updated",
-          icon: <Newspaper className="w-5 h-5 text-primary-600" />,
+          icon: <Newspaper className="w-5 h-5 text-lime-500" />,
           items: [
             { name: "Announcements", href: "/announcements" },
             { name: "Upcoming Events", href: "/events" },
@@ -167,7 +167,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
         {
           title: "Media",
-          icon: <Camera className="w-5 h-5 text-primary-600" />,
+          icon: <Camera className="w-5 h-5 text-lime-500" />,
           items: [
             { name: "Photo Gallery", href: "/media#gallery" },
             { name: "Videos", href: "/media#videos" },
@@ -175,7 +175,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
       ],
       promoImage: {
-        src: "/images/gallery/community.jpg",
+        src: "/images/aic 5.jpg",
         alt: "Community Event",
         title: "See What's Happening",
         href: "/events",
@@ -356,8 +356,8 @@ export function Header({ siteSettings }: HeaderProps) {
                         "flex items-center gap-1 px-4 h-full font-semibold transition-all duration-200 border-b-2",
                         isScrolled
                           ? cn(
-                              "text-gray-700 hover:text-primary-600 border-transparent hover:border-primary-600",
-                              isActive(item.href) && "text-primary-600 border-primary-600"
+                              "text-gray-700 hover:text-lime-500 border-transparent hover:border-primary-600",
+                              isActive(item.href) && "text-lime-500 border-primary-600"
                             )
                           : cn(
                               "text-white/90 hover:text-white border-transparent hover:border-lime-400",
@@ -417,7 +417,7 @@ export function Header({ siteSettings }: HeaderProps) {
             </div>
           </nav>
 
-          {/* Full-width Dropdown - positioned below nav */}
+          {/* Dropdown - constrained to nav width with nice background */}
           <AnimatePresence>
             {activeDropdown && (
               <motion.div
@@ -425,75 +425,80 @@ export function Header({ siteSettings }: HeaderProps) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute left-0 right-0 bg-white shadow-xl border-t border-gray-100 z-50"
+                className="absolute left-0 right-0 z-50"
                 onMouseEnter={() => setActiveDropdown(activeDropdown)}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <div className="max-w-7xl mx-auto px-6 py-8">
-                  {navigation.map((item) => {
-                    if (item.name !== activeDropdown || !item.categories) return null;
+                {/* Constrained dropdown container */}
+                <div className="max-w-7xl mx-auto px-6">
+                  <div className="bg-neutral-800 rounded-b-2xl shadow-2xl overflow-hidden">
+                    <div className="p-6">
+                      {navigation.map((item) => {
+                        if (item.name !== activeDropdown || !item.categories) return null;
 
-                    return (
-                      <div key={item.name} className="flex gap-12">
-                        {/* Category Columns */}
-                        {item.categories.map((category) => (
-                          <div key={category.title} className="min-w-[200px]">
-                            {/* Category Header */}
-                            <div className="flex items-center gap-2 mb-4">
-                              {category.icon}
-                              <h3 className="font-bold text-gray-900">
-                                {category.title}
-                              </h3>
-                            </div>
-                            {/* Category Items */}
-                            <ul className="space-y-1">
-                              {category.items.map((child) => (
-                                <li key={child.name}>
-                                  {child.external ? (
-                                    <a
-                                      href={child.href}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-2 py-2 text-gray-600 hover:text-primary-600 transition-colors group"
-                                    >
-                                      <span>{child.name}</span>
-                                      <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </a>
-                                  ) : (
-                                    <Link
-                                      href={child.href}
-                                      className="block py-2 text-gray-600 hover:text-primary-600 transition-colors"
-                                    >
-                                      {child.name}
-                                    </Link>
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-
-                        {/* Promo Image Section */}
-                        {item.promoImage && (
-                          <div className="ml-auto">
-                            <Link href={item.promoImage.href} className="group block">
-                              <div className="relative w-48 h-32 rounded-xl overflow-hidden mb-2">
-                                <Image
-                                  src={item.promoImage.src}
-                                  alt={item.promoImage.alt}
-                                  fill
-                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
+                        return (
+                          <div key={item.name} className="flex gap-10">
+                            {/* Category Columns */}
+                            {item.categories.map((category) => (
+                              <div key={category.title} className="min-w-[180px]">
+                                {/* Category Header */}
+                                <div className="flex items-center gap-2 mb-3">
+                                  <span className="text-lime-400">{category.icon}</span>
+                                  <h3 className="font-bold text-white">
+                                    {category.title}
+                                  </h3>
+                                </div>
+                                {/* Category Items */}
+                                <ul className="space-y-0.5">
+                                  {category.items.map((child) => (
+                                    <li key={child.name}>
+                                      {child.external ? (
+                                        <a
+                                          href={child.href}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="flex items-center gap-2 py-1.5 text-white/70 hover:text-lime-400 transition-colors group"
+                                        >
+                                          <span>{child.name}</span>
+                                          <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </a>
+                                      ) : (
+                                        <Link
+                                          href={child.href}
+                                          className="block py-1.5 text-white/70 hover:text-lime-400 transition-colors"
+                                        >
+                                          {child.name}
+                                        </Link>
+                                      )}
+                                    </li>
+                                  ))}
+                                </ul>
                               </div>
-                              <p className="text-sm font-medium text-gray-900 group-hover:text-primary-600 transition-colors">
-                                {item.promoImage.title}
-                              </p>
-                            </Link>
+                            ))}
+
+                            {/* Promo Image Section */}
+                            {item.promoImage && (
+                              <div className="ml-auto">
+                                <Link href={item.promoImage.href} className="group block">
+                                  <div className="relative w-44 h-28 rounded-lg overflow-hidden mb-2">
+                                    <Image
+                                      src={item.promoImage.src}
+                                      alt={item.promoImage.alt}
+                                      fill
+                                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                  </div>
+                                  <p className="text-sm font-medium text-white/80 group-hover:text-lime-400 transition-colors">
+                                    {item.promoImage.title}
+                                  </p>
+                                </Link>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
