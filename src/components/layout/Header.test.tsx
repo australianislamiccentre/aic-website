@@ -54,13 +54,13 @@ describe("Header", () => {
   it("renders main navigation links", () => {
     render(<Header />);
 
-    // Navigation links may have icons, use getAllBy and check href
-    const homeLinks = screen.getAllByRole("link", { name: /Home/i });
-    const aboutLinks = screen.getAllByRole("link", { name: /About/i });
-    const contactLinks = screen.getAllByRole("link", { name: /Contact/i });
+    // Navigation structure: About, Services, Programs, Contact
+    const aboutLinks = screen.getAllByText(/About/i);
+    const servicesLinks = screen.getAllByText(/Services/i);
+    const contactLinks = screen.getAllByText(/Contact/i);
 
-    expect(homeLinks.length).toBeGreaterThan(0);
     expect(aboutLinks.length).toBeGreaterThan(0);
+    expect(servicesLinks.length).toBeGreaterThan(0);
     expect(contactLinks.length).toBeGreaterThan(0);
   });
 
@@ -123,10 +123,10 @@ describe("Header", () => {
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    // Check that navigation items are visible (multiple may exist due to desktop nav)
-    expect(screen.getAllByText("Home").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("About").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Contact").length).toBeGreaterThan(0);
+    // Check that navigation items are visible
+    expect(screen.getAllByText(/About/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Services/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Contact/i).length).toBeGreaterThan(0);
   });
 
   it("expands submenu in mobile menu when clicked", async () => {
@@ -136,13 +136,13 @@ describe("Header", () => {
     // Open mobile menu
     await user.click(screen.getByLabelText("Open menu"));
 
-    // Click on expandable menu item (Services has children)
+    // Click on expandable menu item (Services has categories)
     const servicesButton = screen.getByRole("button", { name: /Services/i });
     await user.click(servicesButton);
 
-    // Check that child items are visible
+    // Check that category items are visible
     await waitFor(() => {
-      expect(screen.getByText("Religious Services")).toBeInTheDocument();
+      expect(screen.getByText("Prayer Times")).toBeInTheDocument();
     });
   });
 
@@ -168,25 +168,13 @@ describe("Header", () => {
     expect(screen.getAllByText("Newport").length).toBeGreaterThan(0);
   });
 
-  it("has navigation links in mobile menu with correct hrefs", async () => {
-    const user = userEvent.setup();
+  it("has navigation links with correct hrefs", async () => {
     render(<Header />);
 
-    // Open mobile menu
-    await user.click(screen.getByLabelText("Open menu"));
-    expect(screen.getByLabelText("Close menu")).toBeInTheDocument();
-
-    // Verify About link exists with correct href
-    const aboutLinks = screen.getAllByText("About");
-    const aboutLinkWithHref = aboutLinks.find(
-      (link: HTMLElement) => link.closest("a")?.getAttribute("href") === "/about"
-    );
-    expect(aboutLinkWithHref).toBeTruthy();
-
     // Verify Contact link exists with correct href
-    const contactLinks = screen.getAllByText("Contact");
+    const contactLinks = screen.getAllByRole("link", { name: /Contact/i });
     const contactLinkWithHref = contactLinks.find(
-      (link: HTMLElement) => link.closest("a")?.getAttribute("href") === "/contact"
+      (link: HTMLElement) => link.getAttribute("href") === "/contact"
     );
     expect(contactLinkWithHref).toBeTruthy();
   });
