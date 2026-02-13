@@ -331,3 +331,12 @@ body {
 .stagger-3 { transition-delay: 0.3s; }
 .stagger-4 { transition-delay: 0.4s; }
 .stagger-5 { transition-delay: 0.5s; }
+
+/* Hide scrollbar for horizontal scroll containers */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
