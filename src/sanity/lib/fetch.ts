@@ -243,6 +243,22 @@ export async function getFeaturedServices(): Promise<SanityService[]> {
   }
 }
 
+// For static generation (no draft mode check - used in generateStaticParams)
+export async function getServicesForStaticGeneration(): Promise<SanityService[]> {
+  try {
+    const result = await client.fetch<SanityService[]>(servicesQuery, {}, {
+      next: {
+        revalidate: REVALIDATE_TIME,
+        tags: ["sanity", "services"],
+      },
+    });
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch services for static generation:", error);
+    return [];
+  }
+}
+
 // Donation Causes
 export async function getDonationCauses(): Promise<SanityDonationCause[]> {
   try {
