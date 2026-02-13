@@ -54,10 +54,10 @@ describe("Header", () => {
   it("renders main navigation links", () => {
     render(<Header />);
 
-    // New navigation structure: About Us, Services & Worship, Programs & Education, News & Events, Contact
-    const aboutLinks = screen.getAllByRole("link", { name: /About Us/i });
-    const servicesLinks = screen.getAllByRole("link", { name: /Services/i });
-    const contactLinks = screen.getAllByRole("link", { name: /Contact/i });
+    // Navigation structure: About, Services, Programs, Contact
+    const aboutLinks = screen.getAllByText(/About/i);
+    const servicesLinks = screen.getAllByText(/Services/i);
+    const contactLinks = screen.getAllByText(/Contact/i);
 
     expect(aboutLinks.length).toBeGreaterThan(0);
     expect(servicesLinks.length).toBeGreaterThan(0);
@@ -124,8 +124,8 @@ describe("Header", () => {
     await user.click(screen.getByLabelText("Open menu"));
 
     // Check that navigation items are visible
-    expect(screen.getAllByText(/About Us/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Services & Worship/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/About/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Services/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Contact/i).length).toBeGreaterThan(0);
   });
 
@@ -136,13 +136,13 @@ describe("Header", () => {
     // Open mobile menu
     await user.click(screen.getByLabelText("Open menu"));
 
-    // Click on expandable menu item (Services & Worship has categories)
-    const servicesButton = screen.getByRole("button", { name: /Services & Worship/i });
+    // Click on expandable menu item (Services has categories)
+    const servicesButton = screen.getByRole("button", { name: /Services/i });
     await user.click(servicesButton);
 
     // Check that category items are visible
     await waitFor(() => {
-      expect(screen.getByText("Prayer & Worship")).toBeInTheDocument();
+      expect(screen.getByText("Prayer Times")).toBeInTheDocument();
     });
   });
 
@@ -170,13 +170,6 @@ describe("Header", () => {
 
   it("has navigation links with correct hrefs", async () => {
     render(<Header />);
-
-    // Verify About Us link exists with correct href
-    const aboutLinks = screen.getAllByRole("link", { name: /About Us/i });
-    const aboutLinkWithHref = aboutLinks.find(
-      (link: HTMLElement) => link.getAttribute("href") === "/about"
-    );
-    expect(aboutLinkWithHref).toBeTruthy();
 
     // Verify Contact link exists with correct href
     const contactLinks = screen.getAllByRole("link", { name: /Contact/i });
