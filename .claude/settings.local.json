@@ -31,7 +31,10 @@
       "Bash(/opt/homebrew/bin/npm test -- --run)",
       "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
       "Bash(source:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ],
     "additionalDirectories": [
       "/Users/rashidelhouli/australian-islamic-centre/src/components/sections",
