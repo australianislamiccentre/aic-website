@@ -26,6 +26,7 @@ import {
 import { SanityDonationCampaign, CampaignSubscriptionResponse } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
 import { Button } from "@/components/ui/Button";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { PortableText } from "@portabletext/react";
 import {
@@ -394,62 +395,43 @@ export default function CampaignDetailContent({ campaign }: CampaignDetailConten
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-neutral-900 via-neutral-800 to-teal-900 py-16 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_50%)]" />
-        </div>
-
-        {/* Back Link */}
-        <div className="container mx-auto px-4 mb-8 relative">
-          <Link
-            href="/campaigns"
-            className="inline-flex items-center text-gray-300 hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            All Campaigns
-          </Link>
-        </div>
-
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-4xl mx-auto">
-            <FadeIn direction="up">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 bg-lime-500/20 rounded-2xl flex items-center justify-center">
-                  <IconComponent className="w-7 h-7 text-lime-400" />
-                </div>
-                <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${color}`}>
-                  {label}
+      {/* Page Header */}
+      <section className="pt-8 pb-8 bg-white">
+        <div className="max-w-4xl mx-auto px-6">
+          <BreadcrumbLight />
+          <div className="mt-8">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-teal-500 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <IconComponent className="w-6 h-6 text-white" />
+              </div>
+              <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${color}`}>
+                {label}
+              </span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              {campaign.title}
+            </h1>
+            <p className="text-gray-600 max-w-2xl mb-4">{campaign.description}</p>
+            <div className="flex flex-wrap gap-4 text-gray-500 text-sm">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-teal-600" />
+                <span>
+                  {formatDateRangeLocal(campaign.startDate, campaign.endDate, billingInfo.isOngoing)}
                 </span>
               </div>
-
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
-                {campaign.title}
-              </h1>
-
-              <p className="text-lg text-gray-300 mb-6">{campaign.description}</p>
-
-              <div className="flex flex-wrap gap-6 text-gray-300">
+              {!billingInfo.isOngoing && billingInfo.totalDays && (
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  <span>
-                    {formatDateRangeLocal(campaign.startDate, campaign.endDate, billingInfo.isOngoing)}
-                  </span>
+                  <Clock className="w-4 h-4 text-teal-600" />
+                  <span>{billingInfo.totalDays} days total</span>
                 </div>
-                {!billingInfo.isOngoing && billingInfo.totalDays && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5" />
-                    <span>{billingInfo.totalDays} days total</span>
-                  </div>
-                )}
-                {campaign.subscriberCount !== undefined && campaign.subscriberCount > 0 && (
-                  <div className="flex items-center gap-2">
-                    <Users className="w-5 h-5" />
-                    <span>{campaign.subscriberCount} donors</span>
-                  </div>
-                )}
-              </div>
-            </FadeIn>
+              )}
+              {campaign.subscriberCount !== undefined && campaign.subscriberCount > 0 && (
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-teal-600" />
+                  <span>{campaign.subscriberCount} donors</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>

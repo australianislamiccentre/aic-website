@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { jumuahTimes, mosqueEtiquette, aicInfo, services, upcomingEvents } from "@/data/content";
 import { getPrayerTimesForDate } from "@/lib/prayer-times";
 import { TARAWEEH_CONFIG, EID_CONFIG } from "@/lib/prayer-config";
@@ -14,7 +14,6 @@ import type { SanityPrayerSettings } from "@/types/sanity";
 import {
   Clock,
   MapPin,
-  BookOpen,
   Users,
   Heart,
   ArrowRight,
@@ -122,36 +121,18 @@ export default function WorshippersClient({ prayerSettings }: WorshippersClientP
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative py-24 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E")`,
-            }}
-          />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 relative">
-          <div className="mb-8">
-            <Breadcrumb />
+      {/* Page Header */}
+      <section className="pt-8 pb-8 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <BreadcrumbLight />
+          <div className="mt-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              For <span className="text-teal-600">Worshippers</span>
+            </h1>
+            <p className="text-gray-600 max-w-2xl">
+              Join our congregation for daily prayers, Friday Jumu&apos;ah, and spiritual programs at the Australian Islamic Centre.
+            </p>
           </div>
-          <FadeIn>
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-lime-400 text-sm font-medium mb-6">
-                <BookOpen className="w-4 h-4" />
-                For Worshippers
-              </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                Worship at <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-lime-400">AIC</span>
-              </h1>
-              <p className="text-xl text-white/80 max-w-2xl mx-auto">
-                Join our congregation for daily prayers, Friday Jumu&apos;ah, and spiritual programs.
-                Experience the tranquility of worship in our beautiful mosque.
-              </p>
-            </div>
-          </FadeIn>
         </div>
       </section>
 

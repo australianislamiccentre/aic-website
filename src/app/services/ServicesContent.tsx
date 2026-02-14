@@ -1,12 +1,11 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { ServiceCard } from "@/components/ui/Card";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { aicInfo } from "@/data/content";
 import { SanityService } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
@@ -175,14 +174,6 @@ interface ServicesContentProps {
 }
 
 export default function ServicesContent({ services }: ServicesContentProps) {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-
   // Use Sanity data if available, otherwise fallback
   const serviceDetails: ServiceDisplay[] = services.length > 0
     ? services.map(transformSanityService)
@@ -190,49 +181,22 @@ export default function ServicesContent({ services }: ServicesContentProps) {
 
   return (
     <>
-      {/* Hero Section */}
-      <section ref={heroRef} className="relative h-[60vh] min-h-[400px] overflow-hidden">
-        <motion.div style={{ y: heroY }} className="absolute inset-0">
-          <Image
-            src="/images/aic 10.webp"
-            alt="Services at Australian Islamic Centre"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-neutral-900/80 via-neutral-800/70 to-neutral-900/90" />
-        </motion.div>
-
-        <div className="relative h-full flex flex-col">
-          <div className="pt-24 px-6">
-            <div className="max-w-7xl mx-auto">
-              <Breadcrumb />
-            </div>
-          </div>
-          <div className="flex-1 flex items-center justify-center text-center">
-            <div className="max-w-4xl mx-auto px-6">
-              <FadeIn>
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-lime-400 text-sm font-medium mb-6">
-                  <Heart className="w-4 h-4" />
-                  Our Services
-                </div>
-                <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                  Serving Our Community with{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-lime-400">Dedication</span>
-                </h1>
-                <p className="text-xl text-white/80 max-w-2xl mx-auto">
-                  From spiritual guidance to practical support, we offer comprehensive services
-                  to meet the diverse needs of our community.
-                </p>
-              </FadeIn>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Services Overview - Quick Links on Mobile/Tablet, Cards on Desktop */}
-      <section className="py-8 lg:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <section className="pt-8 pb-8 lg:pb-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
+          {/* Breadcrumb */}
+          <BreadcrumbLight />
+
+          {/* Page Title */}
+          <div className="mt-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              Our <span className="text-teal-600">Services</span>
+            </h1>
+            <p className="text-gray-600 max-w-2xl">
+              From spiritual guidance to practical support, we offer comprehensive services to meet the diverse needs of our community.
+            </p>
+          </div>
+
           {/* Mobile/Tablet: Compact Quick Links */}
           <div className="lg:hidden">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

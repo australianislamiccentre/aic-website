@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { formatDate } from "@/lib/utils";
 import { urlFor } from "@/sanity/lib/image";
 import { SanityAnnouncement, SanityImage } from "@/types/sanity";
@@ -177,38 +177,74 @@ export default function AnnouncementsContent({ announcements }: AnnouncementsCon
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative py-24 bg-gradient-to-br from-neutral-900 via-neutral-800 to-amber-900 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E")`,
-            }}
-          />
-        </div>
+      {/* Hero Section with Image */}
+      <section className="relative bg-gradient-to-br from-neutral-50 via-white to-amber-50/30 overflow-hidden">
+        {/* Decorative shapes */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-amber-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
-        <div className="max-w-7xl mx-auto px-6 relative">
-          <div className="mb-8">
-            <Breadcrumb />
-          </div>
-          <FadeIn>
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-amber-400 text-sm font-medium mb-6">
+        <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+          <BreadcrumbLight />
+
+          <div className="mt-8 grid lg:grid-cols-2 gap-12 items-center">
+            {/* Text Content */}
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-700 text-sm font-medium mb-6">
                 <Bell className="w-4 h-4" />
                 Stay Informed
               </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                News &{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-400">
-                  Announcements
-                </span>
+
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                News & <span className="text-amber-600">Announcements</span>
               </h1>
-              <p className="text-xl text-white/80 max-w-2xl mx-auto">
-                Stay up to date with important updates, community news, and activities at the Australian Islamic Centre.
+
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                Stay informed with the latest news, updates, and important notices from the Australian Islamic Centre. From community updates to prayer time changes.
               </p>
+
+              <div className="flex flex-wrap gap-3">
+                <span className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                  Community News
+                </span>
+                <span className="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-full text-sm font-medium">
+                  Prayer Updates
+                </span>
+                <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                  Ramadan & Eid
+                </span>
+              </div>
             </div>
-          </FadeIn>
+
+            {/* Image */}
+            <div className="relative hidden lg:block">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <Image
+                  src="/images/aic start.jpg"
+                  alt="Australian Islamic Centre"
+                  width={600}
+                  height={400}
+                  className="w-full h-72 object-cover"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              </div>
+
+              {/* Count card */}
+              <div className="absolute -bottom-4 -right-4 bg-white rounded-xl p-4 shadow-xl">
+                <div className="flex items-center gap-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-amber-600">{announcements.length}</p>
+                    <p className="text-xs text-gray-500">Updates</p>
+                  </div>
+                  <div className="w-px h-10 bg-gray-200" />
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-red-600">{announcements.filter(a => a.priority === 'urgent').length}</p>
+                    <p className="text-xs text-gray-500">Urgent</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

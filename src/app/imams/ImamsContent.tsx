@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { PageHero } from "@/components/ui/PageHero";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { SanityTeamMember } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
 import { PortableText } from "@portabletext/react";
@@ -25,17 +25,23 @@ interface ImamsContentProps {
 export default function ImamsContent({ imams }: ImamsContentProps) {
   return (
     <>
-      <PageHero
-        badge="Religious Leadership"
-        title="Our"
-        highlight="Imams"
-        subtitle="Meet the spiritual leaders who guide our community in faith, provide Islamic education, and serve as a source of knowledge and wisdom."
-        image="/images/aic start.jpg"
-        height="tall"
-      />
+      {/* Page Header */}
+      <section className="pt-8 pb-8 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <BreadcrumbLight />
+          <div className="mt-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              Our <span className="text-teal-600">Imams</span>
+            </h1>
+            <p className="text-gray-600 max-w-2xl">
+              Meet the spiritual leaders who guide our community in faith, provide Islamic education, and serve as a source of knowledge and wisdom.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Imams Section */}
-      <section className="py-24 bg-white">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
             <div className="text-center mb-16">

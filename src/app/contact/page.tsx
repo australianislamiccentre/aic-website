@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea, Select } from "@/components/ui/Input";
-import { PageHero } from "@/components/ui/PageHero";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { aicInfo } from "@/data/content";
 import {
   MapPin,
@@ -121,20 +121,26 @@ ${formData.message}`;
 
   return (
     <>
-      <PageHero
-        badge="Contact"
-        title="Get in"
-        highlight="Touch"
-        subtitle="Have a question or need assistance? We're here to help. Reach out to us and we'll respond as soon as possible."
-        image="/images/aic 5.jpg"
-        height="short"
-      />
-
       {/* Contact Cards Section */}
-      <section className="py-16 bg-white relative">
+      <section className="pt-8 pb-16 bg-white relative">
         <div className="max-w-7xl mx-auto px-6">
+          {/* Breadcrumb */}
+          <div className="mb-8">
+            <BreadcrumbLight />
+          </div>
+
+          {/* Page Title */}
+          <div className="mb-12">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              Get in <span className="text-teal-600">Touch</span>
+            </h1>
+            <p className="text-gray-600 max-w-2xl">
+              Have a question or need assistance? We&apos;re here to help.
+            </p>
+          </div>
+
           {/* Contact Info Cards */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 -mt-24 relative z-10">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
             {contactInfo.map((item, index) => (
               <motion.div
                 key={item.title}

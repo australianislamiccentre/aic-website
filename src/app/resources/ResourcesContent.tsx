@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { PrayerTimesCard } from "@/components/ui/PrayerTimesCard";
 import { jumuahTimes } from "@/data/content";
 import { SanityFaq, SanityResource } from "@/types/sanity";
@@ -12,7 +12,6 @@ import { PortableText } from "@portabletext/react";
 import {
   Clock,
   Calendar,
-  BookOpen,
   Download,
   FileText,
   HelpCircle,
@@ -191,36 +190,18 @@ export default function ResourcesContent({ faqs, resources }: ResourcesContentPr
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative py-24 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E")`,
-            }}
-          />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 relative">
-          <div className="mb-8">
-            <Breadcrumb />
+      {/* Page Header */}
+      <section className="pt-8 pb-8 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <BreadcrumbLight />
+          <div className="mt-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              Community <span className="text-teal-600">Resources</span>
+            </h1>
+            <p className="text-gray-600 max-w-2xl">
+              Access prayer times, Islamic calendar, educational materials, and helpful resources for your spiritual journey.
+            </p>
           </div>
-          <FadeIn>
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-lime-400 text-sm font-medium mb-6">
-                <BookOpen className="w-4 h-4" />
-                Resources
-              </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                Community <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-lime-400">Resources</span>
-              </h1>
-              <p className="text-xl text-white/80 max-w-2xl mx-auto">
-                Access prayer times, Islamic calendar, educational materials,
-                and helpful resources for your spiritual journey.
-              </p>
-            </div>
-          </FadeIn>
         </div>
       </section>
 

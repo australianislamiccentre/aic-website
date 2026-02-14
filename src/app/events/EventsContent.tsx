@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { formatDate } from "@/lib/utils";
 import { urlFor } from "@/sanity/lib/image";
 import { SanityEvent, SanityImage } from "@/types/sanity";
@@ -358,36 +358,74 @@ export default function EventsContent({ events }: EventsContentProps) {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative py-24 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E")`,
-            }}
-          />
-        </div>
+      {/* Hero Section with Image */}
+      <section className="relative bg-gradient-to-br from-neutral-50 via-white to-green-50/30 overflow-hidden">
+        {/* Decorative shapes */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-green-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
-        <div className="max-w-7xl mx-auto px-6 relative">
-          <div className="mb-8">
-            <Breadcrumb />
-          </div>
-          <FadeIn>
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-lime-400 text-sm font-medium mb-6">
+        <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+          <BreadcrumbLight />
+
+          <div className="mt-8 grid lg:grid-cols-2 gap-12 items-center">
+            {/* Text Content */}
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 text-sm font-medium mb-6">
                 <Calendar className="w-4 h-4" />
-                Community Events
+                Community Gatherings
               </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                Upcoming <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-lime-400">Events</span>
+
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Events & <span className="text-green-600">Programs</span>
               </h1>
-              <p className="text-xl text-white/80 max-w-2xl mx-auto">
-                Join us for spiritual gatherings, educational workshops, and community celebrations.
-                There&apos;s always something happening at the Australian Islamic Centre.
+
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                Discover upcoming events, weekly programs, and community gatherings at the Australian Islamic Centre. From spiritual enrichment to sports and education.
               </p>
+
+              <div className="flex flex-wrap gap-3">
+                <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                  Weekly Programs
+                </span>
+                <span className="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-full text-sm font-medium">
+                  Special Events
+                </span>
+                <span className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                  Youth Activities
+                </span>
+              </div>
             </div>
-          </FadeIn>
+
+            {/* Image */}
+            <div className="relative hidden lg:block">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <Image
+                  src="/images/aic 1.jpg"
+                  alt="Community gathering at AIC"
+                  width={600}
+                  height={400}
+                  className="w-full h-72 object-cover"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              </div>
+
+              {/* Stats card */}
+              <div className="absolute -bottom-4 -right-4 bg-white rounded-xl p-4 shadow-xl">
+                <div className="flex items-center gap-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-green-600">{events.length}</p>
+                    <p className="text-xs text-gray-500">Events</p>
+                  </div>
+                  <div className="w-px h-10 bg-gray-200" />
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-green-600">{events.filter(e => e.recurring).length}</p>
+                    <p className="text-xs text-gray-500">Weekly</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
