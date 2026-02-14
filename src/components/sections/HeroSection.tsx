@@ -1,18 +1,17 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback } from "react";
-import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
-import { ArrowRight, Play, ChevronLeft, ChevronRight, Sunrise, Sun, Cloud, Sunset, Moon } from "lucide-react";
+import { ArrowRight, Play, ChevronLeft, ChevronRight, Sunrise, Sun, Cloud, Sunset, Moon, Star } from "lucide-react";
 import { aicImages, jumuahTimes } from "@/data/content";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
 import { TARAWEEH_CONFIG, EID_CONFIG } from "@/lib/prayer-config";
 import type { PrayerName } from "@/lib/prayer-times";
 import type { SanityPrayerSettings } from "@/types/sanity";
-import { Star } from "lucide-react";
 
-// Hero slides with different images and content
+// Hero slides - reduced to 3 for cleaner experience
 const heroSlides = [
   {
     id: 1,
@@ -30,24 +29,10 @@ const heroSlides = [
   },
   {
     id: 3,
-    image: aicImages.architecture.roofGolden,
-    title: "Serving Our",
-    highlight: "Community",
-    subtitle: "Education, worship, and support for all",
-  },
-  {
-    id: 4,
     image: aicImages.interior.prayerHallNight,
     title: "Join Us in",
     highlight: "Prayer",
     subtitle: "Five daily prayers in our beautiful prayer hall",
-  },
-  {
-    id: 5,
-    image: aicImages.exterior.aerialDrone,
-    title: "A Beacon of",
-    highlight: "Faith & Unity",
-    subtitle: "Integrating Australian values with Islamic beauty",
   },
 ];
 
@@ -77,14 +62,6 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [imagesLoaded, setImagesLoaded] = useState<boolean[]>(new Array(heroSlides.length).fill(false));
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  // Check if today is Friday (for Jumu'ah display)
-  const isFriday = new Date().toLocaleString("en-US", {
-    timeZone: "Australia/Melbourne",
-    weekday: "long"
-  }) === "Friday";
 
   // Use dynamic prayer times
   const prayerTimes = usePrayerTimes();
@@ -106,36 +83,6 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
     iqamah: nextPrayerData.iqamah,
     key: nextPrayerData.name,
   };
-
-  // Mouse parallax
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const smoothMouseX = useSpring(mouseX, { stiffness: 50, damping: 20 });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const smoothMouseY = useSpring(mouseY, { stiffness: 50, damping: 20 });
-
-  const handleImageLoad = useCallback((index: number) => {
-    setImagesLoaded(prev => {
-      const newState = [...prev];
-      newState[index] = true;
-      return newState;
-    });
-  }, []);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const { clientX, clientY } = e;
-      const { innerWidth, innerHeight } = window;
-      const x = (clientX - innerWidth / 2) / innerWidth;
-      const y = (clientY - innerHeight / 2) / innerHeight;
-      mouseX.set(x * 15);
-      mouseY.set(y * 15);
-      setMousePosition({ x: clientX, y: clientY });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [mouseX, mouseY]);
 
   // Auto-advance slides
   useEffect(() => {
@@ -184,8 +131,8 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
     x: type === "enter"
       ? (dir > 0 ? "100%" : "-100%")
       : (dir > 0 ? "-100%" : "100%"),
-    opacity: 0,
-    scale: type === "enter" ? 1.1 : 0.95,
+    opacity: type === "enter" ? 0.5 : 0,
+    scale: 1,
   });
 
   const centerVariant = {
@@ -195,50 +142,34 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
   };
 
   const currentSlideData = heroSlides[currentSlide];
-  const firstImageLoaded = imagesLoaded[0];
 
   return (
-    <section ref={containerRef} className="relative h-screen min-h-[750px] overflow-hidden bg-black">
+    <>
+    <section ref={containerRef} className="relative h-[70vh] md:h-[80vh] lg:h-screen overflow-hidden bg-black">
       {/* Background Images with Carousel */}
       <motion.div
         style={{ y, scale }}
         className="absolute inset-[-20px]"
       >
-        <AnimatePresence initial={false} mode="popLayout">
+        <AnimatePresence initial={false} mode="sync">
           <motion.div
             key={currentSlide}
             initial={getSlideVariant("enter", direction)}
             animate={centerVariant}
             exit={getSlideVariant("exit", direction)}
             transition={{
-              x: { type: "spring", stiffness: 50, damping: 20 },
-              opacity: { duration: 0.8 },
-              scale: { duration: 1.2 },
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.5 },
             }}
             className="absolute inset-0"
-            style={{
-              x: smoothMouseX,
-            }}
           >
             <Image
               src={currentSlideData.image}
               alt={currentSlideData.highlight}
               fill
               priority={currentSlide === 0}
-              className="object-cover"
-              onLoad={() => handleImageLoad(currentSlide)}
-            />
-
-            {/* Ken Burns effect overlay */}
-            <motion.div
-              className="absolute inset-0"
-              animate={{
-                scale: [1, 1.08],
-              }}
-              transition={{
-                duration: 6,
-                ease: "linear",
-              }}
+              className="object-cover object-center"
+              sizes="100vw"
             />
           </motion.div>
         </AnimatePresence>
@@ -256,65 +187,6 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
         />
       </motion.div>
 
-      {/* Animated particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-20">
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-lime-400/40 rounded-full"
-            style={{
-              left: `${10 + (i * 6)}%`,
-              top: `${20 + (i * 5) % 60}%`,
-            }}
-            animate={{
-              y: [-20, -100],
-              opacity: [0, 0.8, 0],
-              scale: [0.5, 1, 0.5],
-            }}
-            transition={{
-              duration: 4 + (i % 3),
-              repeat: Infinity,
-              delay: i * 0.4,
-              ease: "easeOut",
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Animated light sweep */}
-      <motion.div
-        className="absolute inset-0 z-20 pointer-events-none overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-      >
-        <motion.div
-          className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
-          animate={{
-            x: ["-100%", "400%"],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            repeatDelay: 6,
-            ease: "easeInOut",
-          }}
-        />
-      </motion.div>
-
-      {/* Cursor glow effect */}
-      <motion.div
-        className="absolute w-96 h-96 rounded-full pointer-events-none hidden lg:block z-20"
-        style={{
-          background: "radial-gradient(circle, rgba(152,201,60,0.08) 0%, transparent 70%)",
-          left: mousePosition.x - 192,
-          top: mousePosition.y - 192,
-        }}
-        animate={{
-          opacity: firstImageLoaded ? 1 : 0,
-        }}
-      />
-
       {/* Main Content */}
       <motion.div
         style={{ opacity }}
@@ -327,7 +199,7 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 80, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.8 }}
-              className="h-1 bg-gradient-to-r from-lime-400 via-green-400 to-transparent mb-8 rounded-full"
+              className="h-1 bg-gradient-to-r from-lime-400 via-green-400 to-transparent mb-4 md:mb-8 rounded-full"
             />
 
             {/* Animated text content */}
@@ -339,14 +211,14 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
                 exit={{ opacity: 0, y: -30 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
-                <motion.h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+                <motion.h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-bold text-white mb-4 md:mb-6 leading-tight">
                   <span className="block">{currentSlideData.title}</span>
                   <span className="block text-transparent bg-clip-text bg-gradient-to-r from-lime-300 via-green-400 to-lime-400">
                     {currentSlideData.highlight}
                   </span>
                 </motion.h1>
 
-                <motion.p className="text-xl md:text-2xl text-white/80 mb-8 leading-relaxed max-w-2xl">
+                <motion.p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/80 mb-6 md:mb-8 leading-relaxed max-w-2xl">
                   {currentSlideData.subtitle}
                 </motion.p>
               </motion.div>
@@ -357,7 +229,7 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.6 }}
-              className="flex flex-wrap gap-4 mb-8"
+              className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-6 md:mb-8"
             >
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button
@@ -440,17 +312,18 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
           </motion.button>
         </div>
       </motion.div>
+    </section>
 
-      {/* Prayer Times Bar - Fixed at bottom, always in view */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 0.8 }}
-        className="absolute bottom-0 left-0 right-0 z-40"
-      >
-        <div className="backdrop-blur-xl bg-black/60 border-t border-white/10">
-          {/* Desktop: Prayer cards layout */}
-          <div className="hidden lg:block">
+    {/* Prayer Times Bar - Below hero */}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5, duration: 0.6 }}
+      className="relative z-40 bg-neutral-900"
+    >
+      <div className="border-b border-white/10">
+          {/* Desktop: Prayer cards layout - only at xl and above */}
+          <div className="hidden xl:block">
             <div className="max-w-7xl mx-auto px-6 py-4">
               {/* Next Prayer Highlight + Prayer Grid */}
               <div className="flex items-start gap-6">
@@ -569,8 +442,8 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
             </div>
           </div>
 
-          {/* Tablet: Compact grid */}
-          <div className="hidden md:block lg:hidden">
+          {/* Tablet/Small Desktop: Compact grid */}
+          <div className="hidden md:block xl:hidden">
             <div className="max-w-4xl mx-auto px-6 py-4">
               {/* Next Prayer */}
               <div className="flex items-center justify-between mb-3">
@@ -729,43 +602,6 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
           </div>
         </div>
       </motion.div>
-
-      {/* Decorative corner elements */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1.5, duration: 0.6 }}
-        className="absolute top-24 right-8 w-32 h-32 hidden lg:block z-20"
-      >
-        <motion.div
-          animate={{ rotate: [0, 90] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 border-t-2 border-r-2 border-lime-400/20 rounded-tr-3xl"
-        />
-        <div className="absolute top-0 right-0 w-2 h-2 bg-lime-400/50 rounded-full" />
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1.5, duration: 0.6 }}
-        className="absolute bottom-36 left-8 w-32 h-32 hidden lg:block z-20"
-      >
-        <motion.div
-          animate={{ rotate: [0, -90] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 border-b-2 border-l-2 border-lime-400/20 rounded-bl-3xl"
-        />
-        <div className="absolute bottom-0 left-0 w-2 h-2 bg-lime-400/50 rounded-full" />
-      </motion.div>
-
-      {/* Side accent line */}
-      <motion.div
-        initial={{ height: 0 }}
-        animate={{ height: 120 }}
-        transition={{ delay: 1.2, duration: 0.8 }}
-        className="absolute right-8 top-1/3 w-px bg-gradient-to-b from-transparent via-lime-400/30 to-transparent hidden xl:block z-20"
-      />
-    </section>
+    </>
   );
 }

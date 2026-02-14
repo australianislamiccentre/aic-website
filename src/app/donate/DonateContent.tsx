@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { donationFrequencies, donationAmounts } from "@/data/content";
 import { SanityDonationCause } from "@/types/sanity";
 import {
@@ -213,54 +213,73 @@ function DonateForm({ donationCauses }: DonateFormProps) {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative py-24 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E")`,
-            }}
-          />
-        </div>
+      {/* Hero Section with Image */}
+      <section className="relative bg-gradient-to-br from-neutral-50 via-white to-green-50/30 overflow-hidden">
+        {/* Decorative shapes */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-green-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-lime-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
-        <div className="max-w-7xl mx-auto px-6 relative">
-          <div className="mb-8">
-            <Breadcrumb />
-          </div>
-          <FadeIn>
-            <div className="text-center">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", duration: 0.6 }}
-                className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-green-500 to-lime-500 flex items-center justify-center mb-6 shadow-lg"
-              >
-                <Heart className="w-10 h-10 text-white" />
-              </motion.div>
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                Support Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-lime-400">Mission</span>
+        <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+          <BreadcrumbLight />
+
+          <div className="mt-8 grid lg:grid-cols-2 gap-12 items-center">
+            {/* Text Content */}
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 text-sm font-medium mb-6">
+                <Heart className="w-4 h-4" />
+                Make a Difference
+              </div>
+
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Support Our <span className="text-green-600">Mission</span>
               </h1>
-              <p className="text-xl text-white/80 max-w-2xl mx-auto mb-8">
+
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
                 Your generosity helps us maintain our centre, run educational programs,
                 and support those in need. Every contribution makes a difference.
               </p>
-              <div className="flex flex-wrap justify-center gap-4 text-sm text-white/60">
-                <div className="flex items-center gap-2">
-                  <Lock className="w-4 h-4" />
-                  <span>Secure Payment</span>
+
+              <div className="flex flex-wrap gap-4 mb-6">
+                <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm">
+                  <Lock className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-gray-600">Secure Payment</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Tax Deductible</span>
+                <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm">
+                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-gray-600">Tax Deductible</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
-                  <span>100% Goes to Cause</span>
+                <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm">
+                  <Sparkles className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-gray-600">100% Goes to Cause</span>
                 </div>
               </div>
             </div>
-          </FadeIn>
+
+            {/* Image */}
+            <div className="relative hidden lg:block">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <img
+                  src="/images/aic 7.webp"
+                  alt="Community support at AIC"
+                  className="w-full h-72 object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              </div>
+
+              {/* Impact card */}
+              <div className="absolute -bottom-4 -left-4 bg-white rounded-xl p-4 shadow-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
+                    <Heart className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900 text-sm">Your Impact</p>
+                    <p className="text-xs text-gray-500">Helping families daily</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

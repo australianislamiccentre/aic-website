@@ -24,7 +24,14 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd .npmrc to fix Vercel peer dependency resolution\n\nnext-sanity@10.1.4 requires next@^15.1 but project uses next@16.1.3\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git commit:*)",
       "Bash(npm run test:run:*)",
-      "Bash(NEXT_PUBLIC_SANITY_PROJECT_ID=test NEXT_PUBLIC_SANITY_DATASET=production NEXT_PUBLIC_SANITY_API_VERSION=2024-01-01 npm run test:run:*)"
+      "Bash(NEXT_PUBLIC_SANITY_PROJECT_ID=test NEXT_PUBLIC_SANITY_DATASET=production NEXT_PUBLIC_SANITY_API_VERSION=2024-01-01 npm run test:run:*)",
+      "WebFetch(domain:fundraiseup.com)",
+      "Bash(grep:*)",
+      "Bash(npm test:*)",
+      "Bash(/opt/homebrew/bin/npm test -- --run)",
+      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
+      "Bash(source:*)",
+      "Bash(find:*)"
     ],
     "additionalDirectories": [
       "/Users/rashidelhouli/australian-islamic-centre/src/components/sections",

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { aicInfo } from "@/data/content";
 import { urlFor } from "@/sanity/lib/image";
 import { SanityProgram } from "@/types/sanity";
@@ -211,36 +211,18 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative py-24 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 0L80 40L40 80L0 40z' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3Ccircle cx='40' cy='40' r='20' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E")`,
-            }}
-          />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 relative">
-          <div className="mb-8">
-            <Breadcrumb />
+      {/* Page Header */}
+      <section className="pt-8 pb-8 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <BreadcrumbLight />
+          <div className="mt-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              Our <span className="text-teal-600">Programs</span>
+            </h1>
+            <p className="text-gray-600 max-w-2xl">
+              Comprehensive Islamic education and community programs designed to nurture faith, knowledge, and personal development for all ages.
+            </p>
           </div>
-          <FadeIn>
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-lime-400 text-sm font-medium mb-6">
-                <GraduationCap className="w-4 h-4" />
-                Education & Youth Programs
-              </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                Transformative <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-lime-400">Programs</span>
-              </h1>
-              <p className="text-xl text-white/80 max-w-2xl mx-auto">
-                Comprehensive Islamic education and community programs designed to
-                nurture faith, knowledge, and personal development for all ages.
-              </p>
-            </div>
-          </FadeIn>
         </div>
       </section>
 

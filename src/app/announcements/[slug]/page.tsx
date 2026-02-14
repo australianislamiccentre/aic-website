@@ -1,12 +1,9 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { getAnnouncementBySlug, getAnnouncementsForStaticGeneration } from "@/sanity/lib/fetch";
-import { urlFor } from "@/sanity/lib/image";
-import { SanityAnnouncement, SanityImage } from "@/types/sanity";
+import { SanityAnnouncement } from "@/types/sanity";
 import { formatDate } from "@/lib/utils";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { Button } from "@/components/ui/Button";
 import { PortableText } from "@portabletext/react";
 import { ShareButton } from "./ShareButton";
@@ -19,12 +16,6 @@ import {
 
 interface AnnouncementPageProps {
   params: Promise<{ slug: string }>;
-}
-
-// Helper to get image URL
-function getImageUrl(image: SanityImage | undefined): string | null {
-  if (!image) return null;
-  return urlFor(image).width(1200).height(600).url();
 }
 
 // Category styling
@@ -63,15 +54,12 @@ export async function generateMetadata({ params }: AnnouncementPageProps): Promi
     };
   }
 
-  const imageUrl = getImageUrl(announcement.image);
-
   return {
     title: `${announcement.title} | Australian Islamic Centre`,
     description: announcement.excerpt,
     openGraph: {
       title: announcement.title,
       description: announcement.excerpt,
-      images: imageUrl ? [imageUrl] : [],
       type: "article",
     },
   };
@@ -85,93 +73,52 @@ export default async function AnnouncementPage({ params }: AnnouncementPageProps
     notFound();
   }
 
-  const imageUrl = getImageUrl(announcement.image);
   const isHighlighted = announcement.priority === "important" || announcement.priority === "urgent";
   const categoryStyles = getCategoryStyles(announcement.category);
 
   return (
     <>
-      {/* Hero Section */}
-      <section className={`relative ${imageUrl ? 'h-[40vh] md:h-[50vh] min-h-[300px]' : 'py-24 bg-gradient-to-br from-neutral-900 via-neutral-800 to-amber-900'}`}>
-        {imageUrl ? (
-          <>
-            <Image
-              src={imageUrl}
-              alt={announcement.title}
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-          </>
-        ) : (
-          <div className="absolute inset-0 opacity-10">
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E")`,
-              }}
-            />
+      {/* Page Header */}
+      <section className="pt-8 pb-8 bg-white">
+        <div className="max-w-4xl mx-auto px-6">
+          <BreadcrumbLight />
+          <div className="mt-8">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              {isHighlighted && (
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-full ${
+                  announcement.priority === "urgent"
+                    ? "bg-red-500 text-white"
+                    : "bg-amber-500 text-white"
+                }`}>
+                  <AlertTriangle className="w-4 h-4" />
+                  {announcement.priority === "urgent" ? "Urgent" : "Important"}
+                </span>
+              )}
+              <span className={`px-3 py-1.5 text-sm font-semibold rounded-full ${categoryStyles}`}>
+                {announcement.category}
+              </span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              {announcement.title}
+            </h1>
+            <div className="flex items-center gap-2 text-gray-600">
+              <Calendar className="w-5 h-5 text-teal-600" />
+              <span>{formatDate(announcement.date)}</span>
+              {announcement.expiresAt && (
+                <span className="text-sm text-gray-500 ml-2">
+                  · Valid until {formatDate(announcement.expiresAt)}
+                </span>
+              )}
+            </div>
           </div>
-        )}
-
-        {/* Back Button */}
-        <div className="absolute top-24 left-6 z-10">
-          <Link
-            href="/announcements"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-full hover:bg-white/20 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Announcements
-          </Link>
-        </div>
-
-        {/* Priority and Category Badges */}
-        <div className="absolute bottom-6 left-6 z-10 flex flex-wrap items-center gap-2">
-          {isHighlighted && (
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-full ${
-              announcement.priority === "urgent"
-                ? "bg-red-500 text-white"
-                : "bg-amber-500 text-white"
-            }`}>
-              <AlertTriangle className="w-4 h-4" />
-              {announcement.priority === "urgent" ? "Urgent" : "Important"}
-            </span>
-          )}
-          <span className={`px-3 py-1.5 text-sm font-semibold rounded-full ${imageUrl ? 'bg-white/90' : ''} ${categoryStyles}`}>
-            {announcement.category}
-          </span>
         </div>
       </section>
 
       {/* Announcement Content */}
-      <section className="py-12 md:py-16 bg-white">
+      <section className="py-12 md:py-16 bg-neutral-50">
         <div className="max-w-4xl mx-auto px-6">
-          {/* Breadcrumb */}
-          <div className="mb-6">
-            <Breadcrumb />
-          </div>
-
-          {/* Title */}
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            {announcement.title}
-          </h1>
-
-          {/* Meta Info */}
-          <div className="flex flex-wrap items-center gap-4 mb-8 pb-8 border-b border-gray-200">
-            <div className="flex items-center gap-2 text-gray-600">
-              <Calendar className="w-5 h-5 text-teal-600" />
-              <span>{formatDate(announcement.date)}</span>
-            </div>
-            {announcement.expiresAt && (
-              <div className="text-sm text-gray-500">
-                Valid until {formatDate(announcement.expiresAt)}
-              </div>
-            )}
-          </div>
-
           {/* Excerpt */}
-          <div className="bg-neutral-50 rounded-xl p-6 mb-8">
+          <div className="bg-white rounded-xl p-6 mb-8 shadow-sm">
             <p className="text-lg text-gray-700 leading-relaxed">
               {announcement.excerpt}
             </p>

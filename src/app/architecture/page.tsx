@@ -1,16 +1,14 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import {
   ArrowRight,
   Award,
   Sparkles,
-  Eye,
   Building,
   Sun,
   Wind,
@@ -97,103 +95,86 @@ const awards = [
 ];
 
 export default function ArchitecturePage() {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
-
   return (
     <>
-      {/* Cinematic Hero */}
-      <section ref={heroRef} className="relative h-screen min-h-[700px] overflow-hidden">
-        <motion.div style={{ y: heroY, scale: heroScale }} className="absolute inset-0">
-          <Image
-            src="/images/aic end.jpg"
-            alt="Australian Islamic Centre Architecture"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80" />
-        </motion.div>
+      {/* Hero Section with Image */}
+      <section className="relative bg-gradient-to-br from-neutral-50 via-white to-teal-50/30 overflow-hidden">
+        {/* Decorative shapes */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-teal-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
-        <div className="relative h-full flex flex-col">
-          {/* Breadcrumb at top */}
-          <div className="pt-24 px-6">
-            <div className="max-w-7xl mx-auto">
-              <Breadcrumb />
-            </div>
-          </div>
+        <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+          <BreadcrumbLight />
 
-          <div className="flex-1 flex items-center justify-center text-center">
-            <div className="max-w-4xl mx-auto px-6">
-              <FadeIn>
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", delay: 0.3 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-lime-400 text-sm font-medium mb-6"
-                >
-                  <Award className="w-4 h-4" />
-                  Award-Winning Architecture
-                </motion.div>
+          <div className="mt-8 grid lg:grid-cols-2 gap-12 items-center">
+            {/* Text Content */}
+            <div className="order-2 lg:order-1">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-6">
+                <Award className="w-4 h-4" />
+                Award-Winning Design
+              </div>
 
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-                  Where Faith Meets{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-lime-400">Modern Design</span>
-                </h1>
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Our <span className="text-teal-600">Architecture</span>
+              </h1>
 
-              <p className="text-xl md:text-2xl text-white/80 mb-8 max-w-2xl mx-auto">
-                A groundbreaking architectural achievement that harmoniously blends
-                traditional Islamic principles with contemporary Australian design.
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                Explore the award-winning design of the Australian Islamic Centre, where Islamic tradition meets contemporary Australian architecture in a masterful synthesis of faith and form.
               </p>
 
-              <div className="flex flex-wrap justify-center gap-4">
-                <Button
-                  href="#explore"
-                  variant="white"
-                  size="lg"
-                  icon={<Eye className="w-5 h-5" />}
-                >
-                  Explore the Design
-                </Button>
-                <Button
-                  href="/visit"
-                  variant="outline"
-                  size="lg"
-                  className="border-white/30 text-white hover:bg-white/10"
-                  icon={<ArrowRight className="w-5 h-5" />}
-                >
-                  Plan Your Visit
-                </Button>
+              <div className="flex flex-wrap gap-6 mb-8">
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-teal-600">2016</p>
+                  <p className="text-sm text-gray-500">Completed</p>
+                </div>
+                <div className="w-px bg-gray-200" />
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-teal-600">3</p>
+                  <p className="text-sm text-gray-500">Int&apos;l Awards</p>
+                </div>
+                <div className="w-px bg-gray-200" />
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-teal-600">5,000m²</p>
+                  <p className="text-sm text-gray-500">Total Area</p>
+                </div>
               </div>
-            </FadeIn>
+
+              <Button
+                href="#explore"
+                variant="primary"
+                size="lg"
+                icon={<ArrowRight className="w-5 h-5" />}
+              >
+                Explore the Design
+              </Button>
+            </div>
+
+            {/* Image */}
+            <div className="order-1 lg:order-2 relative">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <Image
+                  src="/images/aic 2.jpg"
+                  alt="Australian Islamic Centre exterior"
+                  width={600}
+                  height={400}
+                  className="w-full h-72 md:h-96 object-cover"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              </div>
+
+              {/* Floating badge */}
+              <div className="absolute -bottom-4 -left-4 bg-white rounded-xl p-4 shadow-xl flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-amber-500 flex items-center justify-center">
+                  <Award className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 text-sm">World Architecture</p>
+                  <p className="text-xs text-gray-500">Festival Winner 2017</p>
+                </div>
+              </div>
             </div>
           </div>
-
-          {/* Scroll indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          >
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2"
-            >
-              <motion.div
-                animate={{ y: [0, 12, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="w-1.5 h-1.5 rounded-full bg-white/60"
-              />
-            </motion.div>
-          </motion.div>
         </div>
       </section>
 

@@ -15,11 +15,11 @@ import {
   ArrowRight,
   Clock,
   Users,
-  Target,
 } from "lucide-react";
 import { SanityDonationCampaign } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
 import { Button } from "@/components/ui/Button";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import {
   getMelbourneToday,
@@ -235,31 +235,18 @@ export default function CampaignsContent({ campaigns }: CampaignsContentProps) {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-neutral-900 via-neutral-800 to-teal-900 py-20 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_50%)]" />
-        </div>
-
-        <div className="container mx-auto px-4 relative">
-          <FadeIn direction="up">
-            <div className="max-w-3xl mx-auto text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-lime-500/20 mb-6">
-                <Target className="w-8 h-8 text-lime-400" />
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                Donation{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-teal-400">
-                  Campaigns
-                </span>
-              </h1>
-              <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-                Join our scheduled donation campaigns and make a daily impact. Sign up
-                once and we&apos;ll handle the rest - your contribution will be
-                automatically processed each day of the campaign.
-              </p>
-            </div>
-          </FadeIn>
+      {/* Page Header */}
+      <section className="pt-8 pb-8 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <BreadcrumbLight />
+          <div className="mt-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              Donation <span className="text-teal-600">Campaigns</span>
+            </h1>
+            <p className="text-gray-600 max-w-2xl">
+              Join our scheduled donation campaigns and make a daily impact. Sign up once and we&apos;ll handle the rest.
+            </p>
+          </div>
         </div>
       </section>
 

@@ -1,11 +1,8 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
-import { getServiceBySlug, getServices } from "@/sanity/lib/fetch";
-import { urlFor } from "@/sanity/lib/image";
-import { SanityService, SanityImage } from "@/types/sanity";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { getServiceBySlug, getServicesForStaticGeneration } from "@/sanity/lib/fetch";
+import { SanityService } from "@/types/sanity";
+import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { Button } from "@/components/ui/Button";
 import { PortableText } from "@portabletext/react";
 import {
@@ -53,15 +50,9 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   users: Users,
 };
 
-// Helper to get image URL
-function getImageUrl(image: SanityImage | undefined): string {
-  if (!image) return "/images/aic 1.jpg";
-  return urlFor(image).width(1200).height(600).url();
-}
-
 // Generate static params for all services
 export async function generateStaticParams() {
-  const services = (await getServices()) as SanityService[];
+  const services = (await getServicesForStaticGeneration()) as SanityService[];
   return services.map((service) => ({
     slug: service.slug || service._id,
   }));
@@ -78,15 +69,12 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
     };
   }
 
-  const imageUrl = getImageUrl(service.image);
-
   return {
     title: `${service.title} | Australian Islamic Centre`,
     description: service.shortDescription,
     openGraph: {
       title: service.title,
       description: service.shortDescription,
-      images: [imageUrl],
       type: "website",
     },
   };
@@ -117,66 +105,40 @@ export default async function ServicePage({ params }: ServicePageProps) {
     notFound();
   }
 
-  const imageUrl = getImageUrl(service.image);
   const Icon = iconMap[service.icon] || Sparkles;
 
   return (
     <>
-      {/* Hero Section with Service Image */}
-      <section className="relative h-[40vh] md:h-[50vh] min-h-[300px]">
-        <Image
-          src={imageUrl}
-          alt={service.title}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-
-        {/* Back Button */}
-        <div className="absolute top-24 left-6 z-10">
-          <Link
-            href="/services"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-full hover:bg-white/20 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Services
-          </Link>
-        </div>
-
-        {/* Service Icon Badge */}
-        <div className="absolute bottom-6 left-6 z-10">
-          <div className="w-14 h-14 rounded-xl bg-teal-500 flex items-center justify-center shadow-lg">
-            <Icon className="w-7 h-7 text-white" />
+      {/* Page Header */}
+      <section className="pt-8 pb-8 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <BreadcrumbLight />
+          <div className="mt-8 flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-teal-500 flex items-center justify-center shadow-lg flex-shrink-0">
+              <Icon className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                {service.title}
+              </h1>
+              <p className="text-gray-600 max-w-2xl">
+                {service.shortDescription}
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Service Content */}
-      <section className="py-12 md:py-16 bg-white">
+      <section className="py-12 md:py-16 bg-neutral-50">
         <div className="max-w-6xl mx-auto px-6">
-          {/* Breadcrumb */}
-          <div className="mb-6">
-            <Breadcrumb />
-          </div>
-
           <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
             {/* Main Content - Left side */}
             <div className="lg:col-span-2">
-              {/* Title */}
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                {service.title}
-              </h1>
-
-              {/* Short Description */}
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                {service.shortDescription}
-              </p>
-
               {/* Service Info Cards */}
               <div className="grid sm:grid-cols-3 gap-4 mb-8">
                 {/* Availability */}
-                <div className="bg-neutral-50 rounded-xl p-4">
+                <div className="bg-white rounded-xl p-4 shadow-sm">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-teal-100 rounded-lg">
                       <Clock className="w-5 h-5 text-teal-600" />
@@ -189,7 +151,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
                 </div>
 
                 {/* Fee */}
-                <div className="bg-neutral-50 rounded-xl p-4">
+                <div className="bg-white rounded-xl p-4 shadow-sm">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-amber-100 rounded-lg">
                       <DollarSign className="w-5 h-5 text-amber-600" />
@@ -202,7 +164,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
                 </div>
 
                 {/* Location */}
-                <div className="bg-neutral-50 rounded-xl p-4">
+                <div className="bg-white rounded-xl p-4 shadow-sm">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-green-100 rounded-lg">
                       <MapPin className="w-5 h-5 text-green-600" />

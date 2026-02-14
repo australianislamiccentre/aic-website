@@ -19,14 +19,6 @@ import {
   MapPin,
   Phone,
   ExternalLink,
-  // Category icons
-  HandHeart,
-  Clock,
-  Building2,
-  GraduationCap,
-  Trophy,
-  Newspaper,
-  Camera,
 } from "lucide-react";
 
 interface HeaderProps {
@@ -38,11 +30,12 @@ interface NavChild {
   name: string;
   href: string;
   external?: boolean;
+  isViewAll?: boolean; // Style differently as a "view all" link
 }
 
 interface NavCategory {
   title: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode | null;
   items: NavChild[];
 }
 
@@ -62,12 +55,12 @@ interface NavItem {
 function buildNavigation(externalLinks: { college: string; bookstore: string; newportStorm: string }): NavItem[] {
   return [
     {
-      name: "About Us",
+      name: "About",
       href: "/about",
       categories: [
         {
           title: "About AIC",
-          icon: <Building2 className="w-5 h-5 text-lime-500" />,
+          icon: null,
           items: [
             { name: "Our Story", href: "/about" },
             { name: "Our Imams", href: "/imams" },
@@ -76,7 +69,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
         },
         {
           title: "Visit Us",
-          icon: <MapPin className="w-5 h-5 text-lime-500" />,
+          icon: null,
           items: [
             { name: "Plan Your Visit", href: "/visit" },
             { name: "360° Virtual Tour", href: "/visit#virtual-tour" },
@@ -92,25 +85,25 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       },
     },
     {
-      name: "Services & Worship",
+      name: "Services",
       href: "/services",
       categories: [
         {
           title: "Prayer & Worship",
-          icon: <Clock className="w-5 h-5 text-lime-500" />,
+          icon: null,
           items: [
             { name: "Prayer Times", href: "/#prayer-times" },
-            { name: "Friday Sermons", href: "/worshippers#jumuah" },
             { name: "For Worshippers", href: "/worshippers" },
           ],
         },
         {
           title: "Religious Services",
-          icon: <HandHeart className="w-5 h-5 text-lime-500" />,
+          icon: null,
           items: [
             { name: "Nikah Services", href: "/services/nikah" },
             { name: "Funeral Services", href: "/services/funeral" },
-            { name: "Counselling & Support", href: "/services/counselling" },
+            { name: "Counselling", href: "/services/counselling" },
+            { name: "All Services →", href: "/services", isViewAll: true },
           ],
         },
       ],
@@ -122,26 +115,25 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       },
     },
     {
-      name: "Programs & Education",
+      name: "Programs",
       href: "/programs",
       categories: [
         {
           title: "Education",
-          icon: <GraduationCap className="w-5 h-5 text-lime-500" />,
+          icon: null,
           items: [
             { name: "IQRA Academy", href: "/events/iqra-academy" },
             { name: "Al-Noor Institute", href: "/programs#alnoor" },
-            { name: "AIC Salam School", href: "/programs#salam" },
             { name: "AIC College", href: externalLinks.college, external: true },
+            { name: "All Programs →", href: "/programs", isViewAll: true },
           ],
         },
         {
           title: "Youth & Sports",
-          icon: <Trophy className="w-5 h-5 text-lime-500" />,
+          icon: null,
           items: [
             { name: "Newport Storm FC", href: externalLinks.newportStorm, external: true },
-            { name: "Boys Youth Nights", href: "/programs#boysynights" },
-            { name: "Events & Activities", href: "/events" },
+            { name: "Youth Nights", href: "/programs#boysynights" },
           ],
         },
       ],
@@ -153,24 +145,24 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       },
     },
     {
-      name: "News & Events",
-      href: "/media",
+      name: "Events",
+      href: "/events",
       categories: [
         {
-          title: "Stay Updated",
-          icon: <Newspaper className="w-5 h-5 text-lime-500" />,
+          title: "What's On",
+          icon: null,
           items: [
+            { name: "All Events", href: "/events" },
             { name: "Announcements", href: "/announcements" },
-            { name: "Upcoming Events", href: "/events" },
-            { name: "Active Campaigns", href: "/campaigns" },
+            { name: "Campaigns", href: "/campaigns" },
           ],
         },
         {
-          title: "Media",
-          icon: <Camera className="w-5 h-5 text-lime-500" />,
+          title: "Resources",
+          icon: null,
           items: [
-            { name: "Photo Gallery", href: "/media#gallery" },
-            { name: "Videos", href: "/media#videos" },
+            { name: "Community Resources", href: "/resources" },
+            { name: "Media Gallery", href: "/media" },
           ],
         },
       ],
@@ -343,7 +335,7 @@ export function Header({ siteSettings }: HeaderProps) {
 
               {/* Desktop Navigation - with relative container for dropdown */}
               <div
-                className="hidden lg:flex items-center h-full relative"
+                className="hidden lg:flex items-center h-full relative ml-auto"
                 onMouseLeave={() => setActiveDropdown(null)}
               >
                 {navigation.map((item) => (
@@ -355,7 +347,7 @@ export function Header({ siteSettings }: HeaderProps) {
                     <Link
                       href={item.href}
                       className={cn(
-                        "flex items-center gap-1 px-4 h-full font-semibold transition-all duration-200 border-b-2",
+                        "flex items-center gap-0.5 px-2 xl:px-3 h-full text-sm xl:text-base font-semibold transition-all duration-200 border-b-2 whitespace-nowrap",
                         isScrolled
                           ? cn(
                               "text-gray-700 hover:text-primary-600 border-transparent hover:border-primary-600",
@@ -370,7 +362,7 @@ export function Header({ siteSettings }: HeaderProps) {
                       {item.name}
                       {item.categories && (
                         <ChevronDown className={cn(
-                          "w-4 h-4 transition-transform duration-200",
+                          "w-3.5 h-3.5 transition-transform duration-200 flex-shrink-0",
                           activeDropdown === item.name && "rotate-180"
                         )} />
                       )}
@@ -386,7 +378,7 @@ export function Header({ siteSettings }: HeaderProps) {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-xl shadow-xl overflow-hidden z-50"
+                      className="absolute top-full right-0 w-[600px] bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50"
                     >
                       {navigation.map((item) => {
                         if (item.name !== activeDropdown || !item.categories) return null;
@@ -394,16 +386,13 @@ export function Header({ siteSettings }: HeaderProps) {
                         return (
                           <div key={item.name} className="flex">
                             {/* Category Columns */}
-                            <div className="flex gap-10 p-6 flex-1">
+                            <div className="flex gap-12 p-6 flex-1">
                               {item.categories.map((category) => (
-                                <div key={category.title}>
+                                <div key={category.title} className="flex-1 min-w-0">
                                   {/* Category Header */}
-                                  <div className="flex items-center gap-2 mb-3">
-                                    <span className="text-primary-600">{category.icon}</span>
-                                    <h3 className="font-bold text-gray-900">
-                                      {category.title}
-                                    </h3>
-                                  </div>
+                                  <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 pb-2 border-b border-gray-100">
+                                    {category.title}
+                                  </h3>
                                   {/* Category Items */}
                                   <ul className="space-y-1">
                                     {category.items.map((child) => (
@@ -413,15 +402,22 @@ export function Header({ siteSettings }: HeaderProps) {
                                             href={child.href}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center gap-2 py-1.5 text-gray-600 hover:text-primary-600 transition-colors group"
+                                            className="flex items-center gap-1.5 py-1.5 text-sm text-gray-600 hover:text-primary-600 transition-colors group"
                                           >
                                             <span>{child.name}</span>
-                                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <ExternalLink className="w-3 h-3 opacity-50 group-hover:opacity-100 transition-opacity" />
                                           </a>
+                                        ) : child.isViewAll ? (
+                                          <Link
+                                            href={child.href}
+                                            className="block py-1.5 text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors border-t border-gray-100 mt-3 pt-3"
+                                          >
+                                            {child.name}
+                                          </Link>
                                         ) : (
                                           <Link
                                             href={child.href}
-                                            className="block py-1.5 text-gray-600 hover:text-primary-600 transition-colors"
+                                            className="block py-1.5 text-sm text-gray-600 hover:text-primary-600 transition-colors"
                                           >
                                             {child.name}
                                           </Link>
@@ -435,7 +431,7 @@ export function Header({ siteSettings }: HeaderProps) {
 
                             {/* Promo Image Section - full height edge to edge */}
                             {item.promoImage && (
-                              <Link href={item.promoImage.href} className="group block relative w-44 flex-shrink-0">
+                              <Link href={item.promoImage.href} className="group block relative w-52 flex-shrink-0">
                                 <Image
                                   src={item.promoImage.src}
                                   alt={item.promoImage.alt}
@@ -563,18 +559,17 @@ export function Header({ siteSettings }: HeaderProps) {
                                 transition={{ duration: 0.3 }}
                                 className="overflow-hidden"
                               >
-                                <div className="ml-4 pl-4 border-l-2 border-lime-500/30 space-y-4 py-2">
+                                <div className="ml-4 pl-4 border-l-2 border-lime-500/30 space-y-3 py-2">
                                   {item.categories.map((category) => (
                                     <div key={category.title}>
                                       {/* Category Header */}
-                                      <div className="flex items-center gap-2 mb-2 px-2">
-                                        {category.icon}
-                                        <span className="text-sm font-bold text-white/70 uppercase tracking-wide">
+                                      <div className="mb-2 px-2">
+                                        <span className="text-xs font-bold text-white/50 uppercase tracking-wider">
                                           {category.title}
                                         </span>
                                       </div>
                                       {/* Category Items */}
-                                      <div className="space-y-1">
+                                      <div className="space-y-0.5">
                                         {category.items.map((child) => (
                                           child.external ? (
                                             <a
@@ -583,17 +578,26 @@ export function Header({ siteSettings }: HeaderProps) {
                                               target="_blank"
                                               rel="noopener noreferrer"
                                               onClick={() => setMobileMenuOpen(false)}
-                                              className="flex items-center justify-between px-4 py-3 rounded-lg text-lime-400 hover:bg-white/10 transition-colors"
+                                              className="flex items-center justify-between pl-2 pr-4 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors text-sm"
                                             >
                                               <span>{child.name}</span>
-                                              <ExternalLink className="w-4 h-4 text-lime-500/60" />
+                                              <ExternalLink className="w-3.5 h-3.5 text-white/40" />
                                             </a>
+                                          ) : child.isViewAll ? (
+                                            <Link
+                                              key={child.name}
+                                              href={child.href}
+                                              onClick={() => handleMobileNavClick(child.href)}
+                                              className="block pl-2 pr-4 py-1.5 mt-1 pt-2 border-t border-white/10 text-lime-400/80 hover:text-lime-300 transition-colors text-xs font-medium"
+                                            >
+                                              {child.name}
+                                            </Link>
                                           ) : (
                                             <Link
                                               key={child.name}
                                               href={child.href}
                                               onClick={() => handleMobileNavClick(child.href)}
-                                              className="block px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                                              className="block pl-2 pr-4 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors text-sm"
                                             >
                                               {child.name}
                                             </Link>
