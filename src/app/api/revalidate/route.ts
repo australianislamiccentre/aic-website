@@ -30,6 +30,7 @@ const documentTypeToPath: Record<string, string[]> = {
   program: ["/programs", "/"],
   service: ["/services"],
   donationCause: ["/donate"],
+  donationCampaign: ["/campaigns", "/donate", "/"],
   galleryImage: ["/media", "/"],
   testimonial: ["/"],
   faq: ["/resources"],
@@ -37,7 +38,7 @@ const documentTypeToPath: Record<string, string[]> = {
   tourType: ["/visit"],
   siteSettings: ["/"],
   prayerSettings: ["/worshippers"],
-  teamMember: ["/about"],
+  teamMember: ["/about", "/imams"],
   pageContent: ["/"],
   resource: ["/resources"],
 };
