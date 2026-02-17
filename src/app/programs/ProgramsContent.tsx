@@ -6,7 +6,7 @@ import Image from "next/image";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
-import { aicInfo } from "@/data/content";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { urlFor } from "@/sanity/lib/image";
 import { SanityProgram } from "@/types/sanity";
 import {
@@ -203,6 +203,7 @@ interface ProgramsContentProps {
 }
 
 export default function ProgramsContent({ programs }: ProgramsContentProps) {
+  const info = useSiteSettings();
   const educationPrograms = programs.filter((p) => p.categories?.includes("Education"));
   const youthPrograms = programs.filter((p) =>
     p.categories?.includes("Sports") || p.categories?.includes("Youth")
@@ -248,7 +249,7 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
                   Contact Us
                 </Button>
                 <Button
-                  href={aicInfo.externalLinks.college}
+                  href={info.externalLinks.college}
                   target="_blank"
                   variant="outline"
                   icon={<ExternalLink className="w-5 h-5" />}
@@ -279,7 +280,7 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
               Sports & Youth
             </a>
             <a
-              href={aicInfo.externalLinks.college}
+              href={info.externalLinks.college}
               target="_blank"
               rel="noopener noreferrer"
               className="px-5 py-2.5 rounded-full text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors inline-flex items-center gap-2"
@@ -434,7 +435,7 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
                     that nurtures both academic excellence and Islamic values.
                   </p>
                   <Button
-                    href={aicInfo.externalLinks.college}
+                    href={info.externalLinks.college}
                     target="_blank"
                     variant="primary"
                     icon={<ExternalLink className="w-5 h-5" />}
@@ -558,7 +559,7 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
                 Contact Us to Enroll
               </Button>
               <Button
-                href={aicInfo.externalLinks.bookstore}
+                href={info.externalLinks.bookstore}
                 target="_blank"
                 variant="outline"
                 size="lg"

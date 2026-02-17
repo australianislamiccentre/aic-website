@@ -5,7 +5,8 @@ import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { Play, ExternalLink, ArrowRight, Instagram, Facebook, Youtube } from "lucide-react";
 import Image from "next/image";
-import { aicImages, aicInfo } from "@/data/content";
+import { aicImages } from "@/data/content";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
 // Featured video content
 const featuredVideo = {
@@ -53,13 +54,14 @@ const socialPosts = [
   },
 ];
 
-const socialLinks = [
-  { name: "Instagram", icon: Instagram, url: aicInfo.socialMedia.instagram, color: "from-pink-500 to-purple-500" },
-  { name: "Facebook", icon: Facebook, url: aicInfo.socialMedia.facebook, color: "from-blue-600 to-blue-500" },
-  { name: "YouTube", icon: Youtube, url: aicInfo.socialMedia.youtube, color: "from-red-600 to-red-500" },
-];
-
 export function SocialMediaSection() {
+  const info = useSiteSettings();
+
+  const socialLinks = [
+    { name: "Instagram", icon: Instagram, url: info.socialMedia.instagram, color: "from-pink-500 to-purple-500" },
+    { name: "Facebook", icon: Facebook, url: info.socialMedia.facebook, color: "from-blue-600 to-blue-500" },
+    { name: "YouTube", icon: Youtube, url: info.socialMedia.youtube, color: "from-red-600 to-red-500" },
+  ];
   return (
     <section className="py-16 md:py-24 bg-gradient-to-b from-neutral-100 to-neutral-50 relative overflow-hidden">
       {/* Background pattern */}
@@ -133,7 +135,7 @@ export function SocialMediaSection() {
                 <p className="text-gray-400 text-sm">{featuredVideo.description}</p>
 
                 <Button
-                  href={aicInfo.socialMedia.youtube}
+                  href={info.socialMedia.youtube}
                   variant="outline"
                   className="mt-4 border-white/20 text-white hover:bg-white/10"
                   icon={<ExternalLink className="w-4 h-4" />}

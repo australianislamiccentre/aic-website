@@ -8,8 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SearchDialog } from "@/components/ui/SearchDialog";
 import { DonateModal } from "@/components/DonateModal";
-import { aicInfo } from "@/data/content";
-import { SanitySiteSettings } from "@/types/sanity";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { DonateModalSettings, DonationGoalMeter } from "@/sanity/lib/fetch";
 import {
   Menu,
@@ -24,7 +23,6 @@ import {
 } from "lucide-react";
 
 interface HeaderProps {
-  siteSettings?: SanitySiteSettings | null;
   donateModalSettings?: DonateModalSettings | null;
   donationGoalMeter?: DonationGoalMeter | null;
 }
@@ -201,7 +199,7 @@ function useIsScrolled(threshold = 50) {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
-export function Header({ siteSettings, donateModalSettings, donationGoalMeter }: HeaderProps) {
+export function Header({ donateModalSettings, donationGoalMeter }: HeaderProps) {
   const pathname = usePathname();
   const isScrolled = useIsScrolled(50);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -210,19 +208,7 @@ export function Header({ siteSettings, donateModalSettings, donationGoalMeter }:
   const [searchOpen, setSearchOpen] = useState(false);
   const [donateModalOpen, setDonateModalOpen] = useState(false);
 
-  // Use Sanity data if available, fallback to hardcoded values
-  const info = {
-    address: {
-      suburb: siteSettings?.address?.suburb ?? aicInfo.address.suburb,
-      state: siteSettings?.address?.state ?? aicInfo.address.state,
-    },
-    phone: siteSettings?.phone ?? aicInfo.phone,
-    externalLinks: {
-      college: siteSettings?.externalLinks?.college ?? aicInfo.externalLinks.college,
-      bookstore: siteSettings?.externalLinks?.bookstore ?? aicInfo.externalLinks.bookstore,
-      newportStorm: siteSettings?.externalLinks?.sportsClub ?? aicInfo.externalLinks.newportStorm,
-    },
-  };
+  const info = useSiteSettings();
 
   const navigation = buildNavigation(info.externalLinks);
 

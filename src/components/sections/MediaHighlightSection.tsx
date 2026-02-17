@@ -3,47 +3,49 @@
 import { motion } from "framer-motion";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { aicImages, aicInfo } from "@/data/content";
+import { aicImages } from "@/data/content";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { Play, ExternalLink, Youtube, Instagram, Facebook } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-// Featured video data
-const featuredVideo = {
-  title: "Experience the Australian Islamic Centre",
-  description:
-    "Take a virtual tour of our award-winning architectural masterpiece and discover the heart of our community.",
-  thumbnail: aicImages.exterior.aerial,
-  youtubeUrl: aicInfo.socialMedia.youtube,
-  duration: "3:42",
-};
-
-// Social media links
-const socialLinks = [
-  {
-    platform: "YouTube",
-    icon: Youtube,
-    url: aicInfo.socialMedia.youtube,
-    color: "bg-red-600 hover:bg-red-700",
-    label: "Subscribe",
-  },
-  {
-    platform: "Instagram",
-    icon: Instagram,
-    url: aicInfo.socialMedia.instagram,
-    color: "bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 hover:opacity-90",
-    label: "Follow",
-  },
-  {
-    platform: "Facebook",
-    icon: Facebook,
-    url: aicInfo.socialMedia.facebook,
-    color: "bg-blue-600 hover:bg-blue-700",
-    label: "Like",
-  },
-];
-
 export function MediaHighlightSection() {
+  const info = useSiteSettings();
+
+  // Featured video data
+  const featuredVideo = {
+    title: "Experience the Australian Islamic Centre",
+    description:
+      "Take a virtual tour of our award-winning architectural masterpiece and discover the heart of our community.",
+    thumbnail: aicImages.exterior.aerial,
+    youtubeUrl: info.socialMedia.youtube,
+    duration: "3:42",
+  };
+
+  // Social media links
+  const socialLinks = [
+    {
+      platform: "YouTube",
+      icon: Youtube,
+      url: info.socialMedia.youtube,
+      color: "bg-red-600 hover:bg-red-700",
+      label: "Subscribe",
+    },
+    {
+      platform: "Instagram",
+      icon: Instagram,
+      url: info.socialMedia.instagram,
+      color: "bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 hover:opacity-90",
+      label: "Follow",
+    },
+    {
+      platform: "Facebook",
+      icon: Facebook,
+      url: info.socialMedia.facebook,
+      color: "bg-blue-600 hover:bg-blue-700",
+      label: "Like",
+    },
+  ];
   return (
     <section className="py-12 md:py-20 bg-neutral-950 relative overflow-hidden">
       {/* Background accent */}

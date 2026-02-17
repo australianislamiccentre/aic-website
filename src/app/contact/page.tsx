@@ -6,7 +6,7 @@ import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea, Select } from "@/components/ui/Input";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
-import { aicInfo } from "@/data/content";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import {
   MapPin,
   Phone,
@@ -35,12 +35,6 @@ const inquiryTypes = [
   { value: "other", label: "Other" },
 ];
 
-const socialLinks = [
-  { name: "Facebook", icon: Facebook, href: aicInfo.socialMedia.facebook, color: "hover:bg-blue-600" },
-  { name: "Instagram", icon: Instagram, href: aicInfo.socialMedia.instagram, color: "hover:bg-gradient-to-br hover:from-pink-500 hover:to-purple-600" },
-  { name: "YouTube", icon: Youtube, href: aicInfo.socialMedia.youtube, color: "hover:bg-red-600" },
-];
-
 const quickLinks = [
   { label: "Book a Visit", href: "/visit", icon: ArrowRight },
   { label: "Prayer Times", href: "/services#prayer-times", icon: ArrowRight },
@@ -48,46 +42,54 @@ const quickLinks = [
   { label: "Make a Donation", href: "/donate", icon: ArrowRight },
 ];
 
-const contactInfo = [
-  {
-    icon: MapPin,
-    title: "Visit Us",
-    content: `${aicInfo.address.street}, ${aicInfo.address.suburb}`,
-    subContent: `${aicInfo.address.state} ${aicInfo.address.postcode}`,
-    action: {
-      label: "Get Directions",
-      href: `https://maps.google.com/?q=${encodeURIComponent(aicInfo.address.full)}`,
-      external: true,
-    },
-  },
-  {
-    icon: Phone,
-    title: "Call Us",
-    content: aicInfo.phone,
-    action: {
-      label: "Call Now",
-      href: `tel:${aicInfo.phone}`,
-    },
-  },
-  {
-    icon: Mail,
-    title: "Email Us",
-    content: aicInfo.email,
-    action: {
-      label: "Send Email",
-      href: `mailto:${aicInfo.email}?subject=${encodeURIComponent('Contact Enquiry - Australian Islamic Centre')}`,
-      external: true,
-    },
-  },
-  {
-    icon: Clock,
-    title: "Opening Hours",
-    content: "Open Daily: Fajr to Isha",
-    subContent: "Office: 9AM - 5PM",
-  },
-];
-
 export default function ContactPage() {
+  const info = useSiteSettings();
+
+  const socialLinks = [
+    { name: "Facebook", icon: Facebook, href: info.socialMedia.facebook, color: "hover:bg-blue-600" },
+    { name: "Instagram", icon: Instagram, href: info.socialMedia.instagram, color: "hover:bg-gradient-to-br hover:from-pink-500 hover:to-purple-600" },
+    { name: "YouTube", icon: Youtube, href: info.socialMedia.youtube, color: "hover:bg-red-600" },
+  ];
+
+  const contactInfo = [
+    {
+      icon: MapPin,
+      title: "Visit Us",
+      content: `${info.address.street}, ${info.address.suburb}`,
+      subContent: `${info.address.state} ${info.address.postcode}`,
+      action: {
+        label: "Get Directions",
+        href: `https://maps.google.com/?q=${encodeURIComponent(info.address.full)}`,
+        external: true,
+      },
+    },
+    {
+      icon: Phone,
+      title: "Call Us",
+      content: info.phone,
+      action: {
+        label: "Call Now",
+        href: `tel:${info.phone}`,
+      },
+    },
+    {
+      icon: Mail,
+      title: "Email Us",
+      content: info.email,
+      action: {
+        label: "Send Email",
+        href: `mailto:${info.email}?subject=${encodeURIComponent('Contact Enquiry - Australian Islamic Centre')}`,
+        external: true,
+      },
+    },
+    {
+      icon: Clock,
+      title: "Opening Hours",
+      content: "Open Daily: Fajr to Isha",
+      subContent: "Office: 9AM - 5PM",
+    },
+  ];
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -335,9 +337,9 @@ ${formData.message}`;
                   />
                 </div>
                 <div className="p-4">
-                  <p className="text-sm text-gray-600 mb-3">{aicInfo.address.full}</p>
+                  <p className="text-sm text-gray-600 mb-3">{info.address.full}</p>
                   <a
-                    href={`https://maps.google.com/?q=${encodeURIComponent(aicInfo.address.full)}`}
+                    href={`https://maps.google.com/?q=${encodeURIComponent(info.address.full)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-sm font-medium text-teal-600 hover:text-teal-700"

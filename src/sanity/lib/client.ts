@@ -19,6 +19,15 @@ export const client = createClient({
   },
 });
 
+// Client that bypasses CDN — for singleton settings that must be fresh
+// (prayer times, site settings, donation config)
+export const noCdnClient = createClient({
+  projectId,
+  dataset,
+  apiVersion,
+  useCdn: false,
+});
+
 // Client with write permissions (for mutations)
 export const writeClient = createClient({
   projectId,

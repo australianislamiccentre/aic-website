@@ -6,7 +6,7 @@ import Image from "next/image";
 import { FadeIn, StaggerGrid, StaggerGridItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
-import { aicInfo } from "@/data/content";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { SanityGalleryImage } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
 import {
@@ -168,6 +168,7 @@ interface MediaContentProps {
 }
 
 export default function MediaContent({ galleryImages }: MediaContentProps) {
+  const info = useSiteSettings();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedTab, setSelectedTab] = useState<"photos" | "videos" | "podcasts">("photos");
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -369,7 +370,7 @@ export default function MediaContent({ galleryImages }: MediaContentProps) {
               <FadeIn delay={0.4}>
                 <div className="text-center mt-12">
                   <Button
-                    href={aicInfo.socialMedia.youtube}
+                    href={info.socialMedia.youtube}
                     target="_blank"
                     variant="outline"
                     icon={<Youtube className="w-5 h-5" />}

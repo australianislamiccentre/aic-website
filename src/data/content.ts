@@ -5,17 +5,6 @@ export { getPrayerTimesSimple as getDynamicPrayerTimes, getNextPrayer, getPrayer
 // Centralized prayer configuration - will be replaced by Sanity CMS
 import { getJumuahTimes } from "@/lib/prayer-config";
 
-// Static fallback prayer times (used for SSR initial render)
-// These will be replaced by dynamic times on the client
-export const prayerTimes = {
-  fajr: { adhan: "5:30 AM", iqamah: "5:45 AM" },
-  sunrise: { adhan: "6:45 AM", iqamah: "-" },
-  dhuhr: { adhan: "1:30 PM", iqamah: "1:45 PM" },
-  asr: { adhan: "5:15 PM", iqamah: "5:30 PM" },
-  maghrib: { adhan: "8:30 PM", iqamah: "8:35 PM" },
-  isha: { adhan: "9:45 PM", iqamah: "10:00 PM" },
-};
-
 // Jumu'ah (Friday) prayer times - now from centralized config
 // This will automatically update when JUMUAH_CONFIG changes in prayer-config.ts
 // Eventually this will come from Sanity CMS
@@ -43,7 +32,8 @@ export const aicImages = {
   },
 };
 
-// AIC Information
+// AIC Information - Used as fallback when Sanity siteSettings is empty
+// Prefer using useSiteSettings() hook from @/contexts/SiteSettingsContext
 export const aicInfo = {
   name: "Australian Islamic Centre",
   shortName: "AIC",
@@ -71,7 +61,7 @@ export const aicInfo = {
   },
 };
 
-// Upcoming Events
+// Upcoming Events - Hardcoded fallback for when Sanity events are empty
 export const upcomingEvents = [
   // Dated events (these should appear first)
   {
@@ -171,7 +161,7 @@ export const upcomingEvents = [
   },
 ];
 
-// Services
+// Services - Hardcoded fallback for when Sanity services are empty
 export const services = [
   {
     id: "prayers",
@@ -217,260 +207,7 @@ export const services = [
   },
 ];
 
-// Programs - Education & Youth
-export const programs = [
-  {
-    id: "iqra",
-    title: "IQRA Academy",
-    description: "Weekend school established in 2013 with 100+ students from kindergarten through Year 7. Focused on Quran recitation, Islamic studies, and memorization.",
-    schedule: "Saturdays & Sundays, 9AM - 1PM",
-    image: "/images/aic start.jpg",
-    features: ["Iqra Program - Fluent Quranic Reading", "Islamic Studies Foundation", "Quranic Memorization", "Understanding & Tafsir"],
-    category: "Education",
-  },
-  {
-    id: "salam",
-    title: "Salam Arabic School",
-    description: "Comprehensive Arabic language instruction for students of all ages and levels.",
-    schedule: "Weekends",
-    image: "/images/aic 10.webp",
-    features: ["Classical Arabic", "Modern Standard Arabic", "Conversational Skills", "Reading & Writing"],
-    category: "Education",
-  },
-  {
-    id: "alnoor",
-    title: "Al-Noor Institute",
-    description: "Advanced Islamic education programs for deeper understanding of Islamic sciences.",
-    schedule: "Contact for details",
-    image: "/images/aic 5.jpg",
-    features: ["Advanced Islamic Studies", "Fiqh & Aqeedah", "Seerah & History", "Contemporary Issues"],
-    category: "Education",
-  },
-  {
-    id: "newportstorm",
-    title: "Newport Storm FC",
-    description: "Community football club fostering teamwork, fitness, and Islamic values in youth.",
-    schedule: "See club website for training times",
-    image: "/images/aic 1.jpg",
-    features: ["Junior Teams", "Senior Teams", "Professional Coaching", "Community Spirit"],
-    category: "Sports & Youth",
-    externalLink: "https://www.newportstormfc.com.au/",
-  },
-  {
-    id: "boysynights",
-    title: "Boys Youth Nights",
-    description: "Regular youth gatherings for boys featuring Islamic learning, sports, and brotherhood activities.",
-    schedule: "Contact for schedule",
-    image: "/images/aic 8.jpg",
-    features: ["Islamic Learning", "Sports Activities", "Brotherhood Building", "Leadership Development"],
-    category: "Sports & Youth",
-  },
-  {
-    id: "girlsjiujitsu",
-    title: "Girls Jiu-Jitsu Classes",
-    description: "Self-defense and fitness classes designed specifically for girls in a safe, supportive environment.",
-    schedule: "Weekly sessions",
-    image: "/images/aic 4.jpg",
-    features: ["Self-Defense Skills", "Physical Fitness", "Confidence Building", "Female Instructors"],
-    category: "Sports & Youth",
-  },
-];
-
-// Tour Types
-export const tourTypes = [
-  {
-    id: "architectural",
-    title: "Architectural Tours",
-    description: "Explore our award-winning architectural design that has attracted visitors from around the world.",
-    icon: "building",
-    image: "/images/aic 2.jpg",
-  },
-  {
-    id: "school",
-    title: "School Tours",
-    description: "Educational excursions for students to learn about Islam, Muslim culture, and interfaith understanding.",
-    icon: "graduation",
-    image: "/images/aic 1.jpg",
-  },
-  {
-    id: "masjid",
-    title: "Masjid Tours",
-    description: "Experience the spiritual heart of our centre with a guided tour of the prayer facilities.",
-    icon: "mosque",
-    image: "/images/aic start.jpg",
-  },
-  {
-    id: "info",
-    title: "Information Sessions",
-    description: "Learn about Islam, ask questions, and engage in meaningful dialogue in a welcoming environment.",
-    icon: "info",
-    image: "/images/aic end.jpg",
-  },
-];
-
-// Testimonials
-export const testimonials = [
-  {
-    id: "1",
-    quote: "The Australian Islamic Centre is not just a mosque - it's a global architectural icon that serves as a hub for our local community. The integration of Australian values with Islamic beauty is truly remarkable.",
-    author: "Community Member",
-    role: "Newport Local",
-    image: "/images/aic 9.jpeg",
-  },
-  {
-    id: "2",
-    quote: "IQRA Academy has transformed my children's understanding of Islam. The teachers are dedicated and the environment nurtures both Islamic knowledge and Australian identity.",
-    author: "Parent",
-    role: "IQRA Academy Parent",
-    image: "/images/aic start.jpg",
-  },
-  {
-    id: "3",
-    quote: "The visitor tour was an eye-opening experience. The architecture is stunning and the community was so welcoming. I learned so much about Islam and the Muslim community.",
-    author: "Visitor",
-    role: "Architecture Enthusiast",
-    image: "/images/aic 2.jpg",
-  },
-];
-
-// Stats
-export const stats = [
-  { value: "1000+", label: "Weekly Worshippers" },
-  { value: "100+", label: "IQRA Students" },
-  { value: "Global", label: "Architecture Recognition" },
-  { value: "40+", label: "Years Serving Community" },
-];
-
-// Gallery Images
-export const galleryImages = [
-  {
-    id: "1",
-    src: "/images/aic start.jpg",
-    alt: "Main prayer hall interior with colorful skylights",
-    category: "Prayer Hall",
-  },
-  {
-    id: "2",
-    src: "/images/aic end.jpg",
-    alt: "Exterior front view with minaret",
-    category: "Architecture",
-  },
-  {
-    id: "3",
-    src: "/images/aic 2.jpg",
-    alt: "Aerial view of golden roof lanterns",
-    category: "Architecture",
-  },
-  {
-    id: "4",
-    src: "/images/aic 1.jpg",
-    alt: "Courtyard with community members",
-    category: "Community",
-  },
-  {
-    id: "5",
-    src: "/images/aic 5.jpg",
-    alt: "Interior ceiling with colorful lights",
-    category: "Prayer Hall",
-  },
-  {
-    id: "6",
-    src: "/images/aic 9.jpeg",
-    alt: "Aerial drone shot with crescent moon",
-    category: "Architecture",
-  },
-  {
-    id: "7",
-    src: "/images/aic 10.webp",
-    alt: "Prayer hall at night with calligraphy",
-    category: "Prayer Hall",
-  },
-  {
-    id: "8",
-    src: "/images/aic 8.jpg",
-    alt: "Night exterior with lights",
-    category: "Events",
-  },
-  {
-    id: "9",
-    src: "/images/aic 6.webp",
-    alt: "Minaret close-up view",
-    category: "Architecture",
-  },
-  {
-    id: "10",
-    src: "/images/aic 4.jpg",
-    alt: "Aerial view of the centre",
-    category: "Architecture",
-  },
-];
-
-export const donationFrequencies = [
-  { value: "once", label: "One-time" },
-  { value: "daily", label: "Daily" },
-  { value: "monthly", label: "Monthly" },
-  { value: "yearly", label: "Yearly" },
-];
-
-export const donationAmounts = [25, 50, 100, 250, 500, 1000];
-
-// News/Announcements
-export const announcements = [
-  {
-    id: "1",
-    title: "Ramadan 2024 Prayer Times",
-    date: "2024-03-01",
-    excerpt: "Special Taraweeh prayers and Iftar programs throughout the blessed month.",
-    category: "Announcement",
-    featured: true,
-  },
-  {
-    id: "2",
-    title: "IQRA Academy Enrolments Open",
-    date: "2024-02-15",
-    excerpt: "Enrolments now open for the new term. Limited spots available for Quran and Islamic studies classes.",
-    category: "Education",
-    featured: true,
-  },
-  {
-    id: "3",
-    title: "Community Eid Celebration",
-    date: "2024-04-10",
-    excerpt: "Join us for Eid prayers followed by community breakfast and festivities for all ages.",
-    category: "Event",
-    featured: false,
-  },
-];
-
-// FAQ for Visitors
-export const visitorFAQs = [
-  {
-    question: "Do I need to book a visit in advance?",
-    answer: "While walk-ins are welcome for individual visits, we recommend booking group tours in advance to ensure a guide is available.",
-  },
-  {
-    question: "What should I wear when visiting the mosque?",
-    answer: "Modest dress is required. Shoulders and knees should be covered. Headscarves are provided for women if needed.",
-  },
-  {
-    question: "Can non-Muslims visit the mosque?",
-    answer: "Absolutely! We welcome visitors of all faiths and backgrounds. Our tours are designed to be educational and inclusive.",
-  },
-  {
-    question: "Is photography allowed?",
-    answer: "Photography is permitted in designated areas. Please ask your guide and be respectful during prayer times.",
-  },
-  {
-    question: "Are there parking facilities?",
-    answer: "Yes, free parking is available on-site for visitors.",
-  },
-  {
-    question: "Is there a 360-degree virtual tour available?",
-    answer: "Yes! We offer a virtual 360-degree tour for those who cannot visit in person. Contact us for access.",
-  },
-];
-
-// Mosque Etiquette
+// Mosque Etiquette - Hardcoded fallback for when Sanity etiquette is empty
 export const mosqueEtiquette = [
   {
     title: "Remove Shoes",
@@ -504,11 +241,10 @@ export const mosqueEtiquette = [
   },
 ];
 
-// Partners
-export const partners = [
-  { name: "Hobsons Bay City Council", category: "Government" },
-  { name: "Victorian Government", category: "Government" },
-  { name: "Victoria Police", category: "Community" },
-  { name: "Fire Rescue Victoria", category: "Community" },
-  { name: "Western Health", category: "Health" },
+// Stats
+export const stats = [
+  { value: "1000+", label: "Weekly Worshippers" },
+  { value: "100+", label: "IQRA Students" },
+  { value: "Global", label: "Architecture Recognition" },
+  { value: "40+", label: "Years Serving Community" },
 ];
