@@ -5,7 +5,7 @@ import Image from "next/image";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
-import { aicInfo } from "@/data/content";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { Sun, Compass, Droplets } from "lucide-react";
 import {
   ArrowRight,
@@ -119,6 +119,8 @@ const values = [
 ];
 
 export default function AboutPage() {
+  const info = useSiteSettings();
+
   return (
     <>
       {/* Hero Intro Section */}
@@ -229,7 +231,7 @@ export default function AboutPage() {
                   Our Mission
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-                  {aicInfo.tagline}
+                  {info.tagline}
                 </h2>
                 <p className="text-gray-600 mb-4 leading-relaxed">
                   The Australian Islamic Centre serves as a beacon of Islamic faith and practice in Melbourne.

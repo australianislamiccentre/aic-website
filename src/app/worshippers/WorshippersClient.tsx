@@ -7,10 +7,17 @@ import Link from "next/link";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
-import { jumuahTimes, mosqueEtiquette, aicInfo, services, upcomingEvents } from "@/data/content";
+import {
+  jumuahTimes,
+  mosqueEtiquette as fallbackEtiquette,
+  services as fallbackServices,
+  upcomingEvents as fallbackEvents,
+} from "@/data/content";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { getPrayerTimesForDate } from "@/lib/prayer-times";
 import { TARAWEEH_CONFIG, EID_CONFIG } from "@/lib/prayer-config";
-import type { SanityPrayerSettings } from "@/types/sanity";
+import type { SanityPrayerSettings, SanityEtiquette, SanityService, SanityEvent } from "@/types/sanity";
+import { urlFor } from "@/sanity/lib/image";
 import {
   Clock,
   MapPin,
@@ -35,22 +42,75 @@ import {
   Star,
 } from "lucide-react";
 
+// Icon map supports both lowercase (hardcoded) and PascalCase (Sanity) icon names
 const etiquetteIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   footprints: Footprints,
+  Footprints: Footprints,
   shirt: Shirt,
+  Shirt: Shirt,
   volume: Volume2,
+  Volume2: Volume2,
+  VolumeX: Volume2,
   hands: HandHeart,
+  HandHeart: HandHeart,
+  Hand: HandHeart,
   droplets: Droplets,
+  Droplets: Droplets,
   help: HelpCircle,
+  HelpCircle: HelpCircle,
+  Heart: Heart,
+  Users: Users,
+  Clock: Clock,
+  Moon: Moon,
+  Star: Star,
 };
 
 interface WorshippersClientProps {
   prayerSettings?: SanityPrayerSettings | null;
+  etiquette?: SanityEtiquette[];
+  services?: SanityService[];
+  events?: SanityEvent[];
 }
 
-export default function WorshippersClient({ prayerSettings }: WorshippersClientProps) {
+export default function WorshippersClient({
+  prayerSettings,
+  etiquette = [],
+  services = [],
+  events = [],
+}: WorshippersClientProps) {
+  const info = useSiteSettings();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const prayerTimes = getPrayerTimesForDate(selectedDate);
+
+  // Normalize Sanity data with hardcoded fallbacks
+  const etiquetteItems = etiquette.length > 0
+    ? etiquette.map(e => ({ title: e.title, description: e.description, icon: e.icon }))
+    : fallbackEtiquette;
+
+  const serviceItems = services.length > 0
+    ? services.slice(0, 6).map(s => ({
+        id: s.slug,
+        title: s.title,
+        description: s.shortDescription,
+      }))
+    : fallbackServices.slice(0, 6);
+
+  const programEvents = events.length > 0
+    ? events
+        .filter(e => e.categories?.some(c => c === "Education" || c === "Prayer"))
+        .slice(0, 6)
+        .map(e => ({
+          id: e.slug || e._id,
+          title: e.title,
+          description: e.shortDescription || e.description,
+          image: e.image ? urlFor(e.image).width(600).height(400).url() : "/images/aic 1.jpg",
+          category: e.categories?.[0] || "Education",
+          date: e.recurring ? (e.recurringDay || "Weekly") : (e.date || "TBA"),
+          time: e.time,
+        }))
+    : fallbackEvents
+        .filter(e => e.category === "Education" || e.category === "Prayer")
+        .slice(0, 6);
 
   // Use Sanity data with fallback to hardcoded config
   const taraweehActive = prayerSettings?.taraweehEnabled ?? TARAWEEH_CONFIG.enabled;
@@ -240,7 +300,7 @@ export default function WorshippersClient({ prayerSettings }: WorshippersClientP
           <FadeIn>
             <div className="bg-neutral-50 rounded-2xl p-8 text-center">
               <p className="text-gray-600">
-                <strong>Location:</strong> {aicInfo.address.full}
+                <strong>Location:</strong> {info.address.full}
               </p>
             </div>
           </FadeIn>
@@ -428,7 +488,7 @@ export default function WorshippersClient({ prayerSettings }: WorshippersClientP
           </FadeIn>
 
           <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mosqueEtiquette.map((item) => {
+            {etiquetteItems.map((item) => {
               const Icon = etiquetteIcons[item.icon] || CheckCircle2;
               return (
                 <StaggerItem key={item.title}>
@@ -468,7 +528,7 @@ export default function WorshippersClient({ prayerSettings }: WorshippersClientP
           </FadeIn>
 
           <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {upcomingEvents.filter(e => e.category === "Education" || e.category === "Prayer").slice(0, 6).map((event) => (
+            {programEvents.map((event) => (
               <StaggerItem key={event.id}>
                 <motion.div
                   whileHover={{ y: -8 }}
@@ -531,7 +591,7 @@ export default function WorshippersClient({ prayerSettings }: WorshippersClientP
           </FadeIn>
 
           <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.slice(0, 6).map((service) => (
+            {serviceItems.map((service) => (
               <StaggerItem key={service.id}>
                 <Link href={`/services#${service.id}`}>
                   <motion.div
@@ -571,7 +631,7 @@ export default function WorshippersClient({ prayerSettings }: WorshippersClientP
                 <div className="space-y-4 mb-8">
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-teal-400 flex-shrink-0 mt-1" />
-                    <p className="text-white/90">{aicInfo.address.full}</p>
+                    <p className="text-white/90">{info.address.full}</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <Clock className="w-5 h-5 text-teal-400 flex-shrink-0 mt-1" />
@@ -580,7 +640,7 @@ export default function WorshippersClient({ prayerSettings }: WorshippersClientP
                 </div>
                 <div className="flex flex-wrap gap-4">
                   <Button
-                    href={`https://maps.google.com/?q=${encodeURIComponent(aicInfo.address.full)}`}
+                    href={`https://maps.google.com/?q=${encodeURIComponent(info.address.full)}`}
                     variant="gold"
                     icon={<MapPin className="w-5 h-5" />}
                   >

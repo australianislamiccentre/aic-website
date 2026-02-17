@@ -5,7 +5,7 @@ import Image from "next/image";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
-import { aicInfo } from "@/data/content";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { SanityTourType, SanityEtiquette, SanityFaq } from "@/types/sanity";
 import { PortableText } from "@portabletext/react";
 import {
@@ -74,6 +74,7 @@ interface VisitContentProps {
 }
 
 export default function VisitContent({ tourTypes, etiquette, faqs }: VisitContentProps) {
+  const info = useSiteSettings();
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
   return (
@@ -108,10 +109,10 @@ export default function VisitContent({ tourTypes, etiquette, faqs }: VisitConten
                 <div className="absolute inset-0 bg-neutral-900/80 flex items-center justify-center">
                   <div className="text-center text-white p-6">
                     <MapPin className="w-12 h-12 mx-auto mb-4 text-teal-400" />
-                    <h3 className="text-xl font-bold mb-2">{aicInfo.name}</h3>
-                    <p className="text-white/80 mb-4">{aicInfo.address.full}</p>
+                    <h3 className="text-xl font-bold mb-2">{info.name}</h3>
+                    <p className="text-white/80 mb-4">{info.address.full}</p>
                     <Button
-                      href={`https://maps.google.com/?q=${encodeURIComponent(aicInfo.address.full)}`}
+                      href={`https://maps.google.com/?q=${encodeURIComponent(info.address.full)}`}
                       variant="gold"
                       icon={<Navigation className="w-4 h-4" />}
                     >
@@ -134,9 +135,9 @@ export default function VisitContent({ tourTypes, etiquette, faqs }: VisitConten
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Address</h3>
                       <p className="text-gray-600">
-                        {aicInfo.address.street}<br />
-                        {aicInfo.address.suburb}, {aicInfo.address.state} {aicInfo.address.postcode}<br />
-                        {aicInfo.address.country}
+                        {info.address.street}<br />
+                        {info.address.suburb}, {info.address.state} {info.address.postcode}<br />
+                        {info.address.country}
                       </p>
                     </div>
                   </div>
@@ -147,8 +148,8 @@ export default function VisitContent({ tourTypes, etiquette, faqs }: VisitConten
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
-                      <a href={`tel:${aicInfo.phone}`} className="text-gray-600 hover:text-neutral-700">
-                        {aicInfo.phone}
+                      <a href={`tel:${info.phone}`} className="text-gray-600 hover:text-neutral-700">
+                        {info.phone}
                       </a>
                     </div>
                   </div>
@@ -159,8 +160,8 @@ export default function VisitContent({ tourTypes, etiquette, faqs }: VisitConten
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
-                      <a href={`mailto:${aicInfo.email}?subject=${encodeURIComponent('Visit Enquiry - Australian Islamic Centre')}`} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-neutral-700">
-                        {aicInfo.email}
+                      <a href={`mailto:${info.email}?subject=${encodeURIComponent('Visit Enquiry - Australian Islamic Centre')}`} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-neutral-700">
+                        {info.email}
                       </a>
                     </div>
                   </div>

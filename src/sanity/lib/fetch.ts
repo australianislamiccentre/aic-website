@@ -1,7 +1,7 @@
 import "server-only";
 
 import { draftMode } from "next/headers";
-import { client, previewClient } from "./client";
+import { client, noCdnClient, previewClient } from "./client";
 import {
   eventBySlugQuery,
   eventsQuery,
@@ -88,10 +88,12 @@ export interface DonateModalSettings {
 const REVALIDATE_TIME = 60;
 
 // Generic fetch function with caching and draft mode support
+// skipCdn: bypass Sanity CDN for singleton settings that must be fresh
 async function sanityFetch<T>(
   query: string,
   params: Record<string, unknown> = {},
-  tags: string[] = []
+  tags: string[] = [],
+  options: { skipCdn?: boolean } = {}
 ): Promise<T> {
   const { isEnabled: isDraftMode } = await draftMode();
   const isDevelopment = process.env.NODE_ENV === "development";
@@ -101,8 +103,11 @@ async function sanityFetch<T>(
     return previewClient.fetch<T>(query, params);
   }
 
-  // In production mode, use regular client with caching
-  return client.fetch<T>(query, params, {
+  // Use noCdnClient for singleton settings that must always be fresh
+  const fetchClient = options.skipCdn ? noCdnClient : client;
+
+  // In production mode, use client with caching
+  return fetchClient.fetch<T>(query, params, {
     next: {
       revalidate: REVALIDATE_TIME,
       tags: ["sanity", ...tags],
@@ -277,7 +282,8 @@ export async function getDonationSettings(): Promise<DonationSettings | null> {
     return await sanityFetch<DonationSettings | null>(
       donationSettingsQuery,
       {},
-      ["donationSettings"]
+      ["donationSettings"],
+      { skipCdn: true }
     );
   } catch (error) {
     console.error("Failed to fetch donation settings from Sanity:", error);
@@ -310,7 +316,8 @@ export async function getDonateModalSettings(): Promise<DonateModalSettings | nu
     const result = await sanityFetch<DonateModalSettingsRaw | null>(
       donateModalSettingsQuery,
       {},
-      ["donateModalSettings"]
+      ["donateModalSettings"],
+      { skipCdn: true }
     );
 
     if (!result) return null;
@@ -359,7 +366,8 @@ export async function getDonationGoalMeter(): Promise<DonationGoalMeter | null> 
     const result = await sanityFetch<DonationGoalMeter | null>(
       donationGoalMeterQuery,
       {},
-      ["donationGoalMeter"]
+      ["donationGoalMeter"],
+      { skipCdn: true }
     );
     return result;
   } catch (error) {
@@ -553,7 +561,7 @@ export async function getFeaturedResources(): Promise<SanityResource[]> {
 // ============================================
 export async function getSiteSettings(): Promise<SanitySiteSettings | null> {
   try {
-    return await sanityFetch<SanitySiteSettings | null>(siteSettingsQuery, {}, ["siteSettings"]);
+    return await sanityFetch<SanitySiteSettings | null>(siteSettingsQuery, {}, ["siteSettings"], { skipCdn: true });
   } catch (error) {
     console.error("Failed to fetch site settings from Sanity:", error);
     return null;
@@ -563,7 +571,7 @@ export async function getSiteSettings(): Promise<SanitySiteSettings | null> {
 // Prayer Settings (singleton)
 export async function getPrayerSettings(): Promise<SanityPrayerSettings | null> {
   try {
-    return await sanityFetch<SanityPrayerSettings | null>(prayerSettingsQuery, {}, ["prayerSettings"]);
+    return await sanityFetch<SanityPrayerSettings | null>(prayerSettingsQuery, {}, ["prayerSettings"], { skipCdn: true });
   } catch (error) {
     console.error("Failed to fetch prayer settings from Sanity:", error);
     return null;

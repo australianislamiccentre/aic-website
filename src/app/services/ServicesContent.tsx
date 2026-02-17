@@ -6,7 +6,7 @@ import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/F
 import { Button } from "@/components/ui/Button";
 import { ServiceCard } from "@/components/ui/Card";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
-import { aicInfo } from "@/data/content";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { SanityService } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
 import { PortableText } from "@portabletext/react";
@@ -46,6 +46,7 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 // Fallback service details when Sanity is empty
+// Note: contact fields use empty strings as placeholders; populated at component level via useSiteSettings
 const fallbackServiceDetails = [
   {
     id: "religious",
@@ -60,7 +61,8 @@ const fallbackServiceDetails = [
       "General Islamic guidance",
     ],
     schedule: "Available by appointment",
-    contact: aicInfo.email,
+    contact: "",
+    contactType: "email" as const,
     iconKey: "book-open",
   },
   {
@@ -76,7 +78,8 @@ const fallbackServiceDetails = [
       "Grief counselling and support",
     ],
     schedule: "24/7 Emergency service available",
-    contact: aicInfo.phone,
+    contact: "",
+    contactType: "phone" as const,
     iconKey: "hand-heart",
   },
   {
@@ -92,7 +95,8 @@ const fallbackServiceDetails = [
       "Venue available for ceremonies",
     ],
     schedule: "By appointment",
-    contact: aicInfo.email,
+    contact: "",
+    contactType: "email" as const,
     iconKey: "heart",
   },
   {
@@ -108,7 +112,8 @@ const fallbackServiceDetails = [
       "Confidential and supportive sessions",
     ],
     schedule: "By appointment",
-    contact: aicInfo.email,
+    contact: "",
+    contactType: "email" as const,
     iconKey: "users",
   },
 ];
@@ -154,7 +159,7 @@ interface ServiceDisplay {
   fullDescription?: SanityService["fullDescription"];
 }
 
-function transformSanityService(service: SanityService): ServiceDisplay {
+function transformSanityService(service: SanityService, defaultEmail: string): ServiceDisplay {
   return {
     id: service.slug,
     title: service.title,
@@ -163,7 +168,7 @@ function transformSanityService(service: SanityService): ServiceDisplay {
     image: service.image ? urlFor(service.image).width(600).height(400).url() : "/images/aic start.jpg",
     features: service.requirements || [],
     schedule: service.availability || "By appointment",
-    contact: service.contactEmail || service.contactPhone || aicInfo.email,
+    contact: service.contactEmail || service.contactPhone || defaultEmail,
     iconKey: service.icon || "book-open",
     fullDescription: service.fullDescription,
   };
@@ -174,10 +179,15 @@ interface ServicesContentProps {
 }
 
 export default function ServicesContent({ services }: ServicesContentProps) {
+  const info = useSiteSettings();
+
   // Use Sanity data if available, otherwise fallback
   const serviceDetails: ServiceDisplay[] = services.length > 0
-    ? services.map(transformSanityService)
-    : fallbackServiceDetails;
+    ? services.map((s) => transformSanityService(s, info.email))
+    : fallbackServiceDetails.map((s) => ({
+        ...s,
+        contact: s.contactType === "phone" ? info.phone : info.email,
+      }));
 
   return (
     <>
@@ -412,7 +422,7 @@ export default function ServicesContent({ services }: ServicesContentProps) {
                 Contact Us
               </Button>
               <Button
-                href={`tel:${aicInfo.phone}`}
+                href={`tel:${info.phone}`}
                 variant="outline"
                 size="lg"
                 className="border-white/30 text-white hover:bg-white/10"

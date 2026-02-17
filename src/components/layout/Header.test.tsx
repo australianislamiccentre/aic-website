@@ -2,22 +2,35 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, userEvent, waitFor } from "@/test/test-utils";
 import { Header } from "./Header";
 
-// Mock the aicInfo data
-vi.mock("@/data/content", () => ({
-  aicInfo: {
+// Mock the SiteSettings context
+vi.mock("@/contexts/SiteSettingsContext", () => ({
+  useSiteSettings: () => ({
     name: "Australian Islamic Centre",
+    shortName: "AIC",
+    tagline: "A unique Islamic environment",
+    parentOrganization: "Newport Islamic Society",
     phone: "(03) 9391 9303",
+    email: "contact@aic.org.au",
     address: {
-      full: "15 Corporate Crescent, Newport VIC 3015",
+      street: "15 Corporate Crescent",
       suburb: "Newport",
       state: "VIC",
+      postcode: "3015",
+      country: "Australia",
+      full: "15 Corporate Crescent, Newport VIC 3015",
+    },
+    socialMedia: {
+      facebook: "https://facebook.com/aic",
+      instagram: "https://instagram.com/aic",
+      youtube: "https://youtube.com/aic",
     },
     externalLinks: {
       college: "https://aicollege.edu.au",
       bookstore: "https://aicbookstore.com.au",
       newportStorm: "https://newportstorm.com.au",
     },
-  },
+  }),
+  SiteSettingsProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 // Mock SearchDialog

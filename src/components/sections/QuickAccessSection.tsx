@@ -19,7 +19,8 @@ import {
   ExternalLink,
   ChevronDown,
 } from "lucide-react";
-import { aicImages, aicInfo } from "@/data/content";
+import { aicImages } from "@/data/content";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
 interface QuickLink {
   name: string;
@@ -39,53 +40,55 @@ interface AccessCardData {
   links: QuickLink[];
 }
 
-const accessCards: AccessCardData[] = [
-  {
-    id: "worshippers",
-    title: "For Worshippers",
-    subtitle: "Prayer & Spiritual Services",
-    description: "Access daily prayers, Friday sermons, and spiritual guidance",
-    image: aicImages.interior.prayerHallBright,
-    icon: <Clock className="w-6 h-6 md:w-8 md:h-8" />,
-    accentColor: "from-green-500 to-green-600",
-    links: [
-      { name: "Prayer Times", href: "/#prayer-times", icon: <Clock className="w-4 h-4" /> },
-      { name: "Friday Jumu'ah", href: "/services#jumuah", icon: <Mic className="w-4 h-4" /> },
-      { name: "Events Calendar", href: "/events", icon: <Calendar className="w-4 h-4" /> },
-      { name: "Religious Services", href: "/services", icon: <Heart className="w-4 h-4" /> },
-    ],
-  },
-  {
-    id: "visitors",
-    title: "For Visitors",
-    subtitle: "Explore Our Iconic Centre",
-    description: "Discover the award-winning architecture and book a guided tour",
-    image: aicImages.exterior.aerial,
-    icon: <Compass className="w-6 h-6 md:w-8 md:h-8" />,
-    accentColor: "from-primary-600 to-primary-700",
-    links: [
-      { name: "Book a Visit", href: "/visit#book", icon: <Calendar className="w-4 h-4" /> },
-      { name: "Architecture Tour", href: "/architecture", icon: <Compass className="w-4 h-4" /> },
-      { name: "360° Virtual Tour", href: "/visit#virtual-tour", icon: <Play className="w-4 h-4" /> },
-      { name: "Getting Here", href: "/visit#directions", icon: <MapPin className="w-4 h-4" /> },
-    ],
-  },
-  {
-    id: "community",
-    title: "For Community",
-    subtitle: "Programs & Education",
-    description: "Join our educational programs, youth activities, and community events",
-    image: aicImages.exterior.courtyard,
-    icon: <Users className="w-6 h-6 md:w-8 md:h-8" />,
-    accentColor: "from-lime-500 to-lime-600",
-    links: [
-      { name: "Latest Updates", href: "/media#updates", icon: <BookOpen className="w-4 h-4" /> },
-      { name: "IQRA Academy", href: "/programs#iqra", icon: <BookOpen className="w-4 h-4" /> },
-      { name: "AIC College", href: aicInfo.externalLinks.college, icon: <GraduationCap className="w-4 h-4" />, external: true },
-      { name: "Youth Programs", href: "/programs#youth", icon: <Users className="w-4 h-4" /> },
-    ],
-  },
-];
+function buildAccessCards(collegeLink: string): AccessCardData[] {
+  return [
+    {
+      id: "worshippers",
+      title: "For Worshippers",
+      subtitle: "Prayer & Spiritual Services",
+      description: "Access daily prayers, Friday sermons, and spiritual guidance",
+      image: aicImages.interior.prayerHallBright,
+      icon: <Clock className="w-6 h-6 md:w-8 md:h-8" />,
+      accentColor: "from-green-500 to-green-600",
+      links: [
+        { name: "Prayer Times", href: "/#prayer-times", icon: <Clock className="w-4 h-4" /> },
+        { name: "Friday Jumu'ah", href: "/services#jumuah", icon: <Mic className="w-4 h-4" /> },
+        { name: "Events Calendar", href: "/events", icon: <Calendar className="w-4 h-4" /> },
+        { name: "Religious Services", href: "/services", icon: <Heart className="w-4 h-4" /> },
+      ],
+    },
+    {
+      id: "visitors",
+      title: "For Visitors",
+      subtitle: "Explore Our Iconic Centre",
+      description: "Discover the award-winning architecture and book a guided tour",
+      image: aicImages.exterior.aerial,
+      icon: <Compass className="w-6 h-6 md:w-8 md:h-8" />,
+      accentColor: "from-primary-600 to-primary-700",
+      links: [
+        { name: "Book a Visit", href: "/visit#book", icon: <Calendar className="w-4 h-4" /> },
+        { name: "Architecture Tour", href: "/architecture", icon: <Compass className="w-4 h-4" /> },
+        { name: "360° Virtual Tour", href: "/visit#virtual-tour", icon: <Play className="w-4 h-4" /> },
+        { name: "Getting Here", href: "/visit#directions", icon: <MapPin className="w-4 h-4" /> },
+      ],
+    },
+    {
+      id: "community",
+      title: "For Community",
+      subtitle: "Programs & Education",
+      description: "Join our educational programs, youth activities, and community events",
+      image: aicImages.exterior.courtyard,
+      icon: <Users className="w-6 h-6 md:w-8 md:h-8" />,
+      accentColor: "from-lime-500 to-lime-600",
+      links: [
+        { name: "Latest Updates", href: "/media#updates", icon: <BookOpen className="w-4 h-4" /> },
+        { name: "IQRA Academy", href: "/programs#iqra", icon: <BookOpen className="w-4 h-4" /> },
+        { name: "AIC College", href: collegeLink, icon: <GraduationCap className="w-4 h-4" />, external: true },
+        { name: "Youth Programs", href: "/programs#youth", icon: <Users className="w-4 h-4" /> },
+      ],
+    },
+  ];
+}
 
 // Mobile Card - tap to expand
 function MobileAccessCard({
@@ -382,6 +385,8 @@ function DesktopAccessCard({
 }
 
 export function QuickAccessSection() {
+  const info = useSiteSettings();
+  const accessCards = buildAccessCards(info.externalLinks.college);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [mobileExpandedCard, setMobileExpandedCard] = useState<string | null>(null);
 

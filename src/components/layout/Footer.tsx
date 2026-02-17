@@ -3,8 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { aicInfo } from "@/data/content";
-import { SanitySiteSettings } from "@/types/sanity";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import {
   MapPin,
   Phone,
@@ -19,36 +18,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
-interface FooterProps {
-  siteSettings?: SanitySiteSettings | null;
-}
-
-export function Footer({ siteSettings }: FooterProps) {
-  // Use Sanity data if available, fallback to hardcoded values
-  const info = {
-    name: siteSettings?.organizationName ?? aicInfo.name,
-    shortName: siteSettings?.shortName ?? aicInfo.shortName,
-    tagline: siteSettings?.tagline ?? aicInfo.tagline,
-    address: {
-      street: siteSettings?.address?.street ?? aicInfo.address.street,
-      suburb: siteSettings?.address?.suburb ?? aicInfo.address.suburb,
-      state: siteSettings?.address?.state ?? aicInfo.address.state,
-      postcode: siteSettings?.address?.postcode ?? aicInfo.address.postcode,
-      country: siteSettings?.address?.country ?? aicInfo.address.country,
-    },
-    phone: siteSettings?.phone ?? aicInfo.phone,
-    email: siteSettings?.email ?? aicInfo.email,
-    socialMedia: {
-      facebook: siteSettings?.socialMedia?.facebook ?? aicInfo.socialMedia.facebook,
-      instagram: siteSettings?.socialMedia?.instagram ?? aicInfo.socialMedia.instagram,
-      youtube: siteSettings?.socialMedia?.youtube ?? aicInfo.socialMedia.youtube,
-    },
-    externalLinks: {
-      college: siteSettings?.externalLinks?.college ?? aicInfo.externalLinks.college,
-      bookstore: siteSettings?.externalLinks?.bookstore ?? aicInfo.externalLinks.bookstore,
-      newportStorm: siteSettings?.externalLinks?.sportsClub ?? aicInfo.externalLinks.newportStorm,
-    },
-  };
+export function Footer() {
+  const info = useSiteSettings();
 
   const footerLinks = {
     explore: [

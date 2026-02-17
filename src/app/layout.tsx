@@ -10,6 +10,7 @@ import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { PreviewBanner } from "@/components/PreviewBanner";
 import { getSiteSettings, getDonationSettings, getDonateModalSettings, getDonationGoalMeter } from "@/sanity/lib/fetch";
 import { FundraiseUpScript } from "@/components/FundraiseUpScript";
+import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -109,12 +110,14 @@ export default async function RootLayout({
       <body
         className={`${inter.variable} ${playfair.variable} ${amiri.variable} antialiased bg-neutral-50 text-gray-900 overflow-x-hidden`}
       >
-        <FundraiseUpScript settings={donationSettings} />
-        <ScrollToTop />
-        <ScrollProgress />
-        <Header siteSettings={siteSettings} donateModalSettings={donateModalSettings} donationGoalMeter={donationGoalMeter} />
-        <main className="overflow-x-hidden">{children}</main>
-        <Footer siteSettings={siteSettings} />
+        <SiteSettingsProvider siteSettings={siteSettings}>
+          <FundraiseUpScript settings={donationSettings} />
+          <ScrollToTop />
+          <ScrollProgress />
+          <Header donateModalSettings={donateModalSettings} donationGoalMeter={donationGoalMeter} />
+          <main className="overflow-x-hidden">{children}</main>
+          <Footer />
+        </SiteSettingsProvider>
         {isDraftMode && (
           <>
             <PreviewBanner />
