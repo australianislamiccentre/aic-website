@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display, Amiri } from "next/font/google";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
@@ -133,6 +134,7 @@ for(i=0;i<8;i++)o[l[i]]=o(l[i]);w[n]=o}
             <VisualEditing />
           </>
         )}
+        <SpeedInsights />
       </body>
     </html>
   );
