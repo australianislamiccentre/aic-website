@@ -65,7 +65,8 @@ describe("donationGoalMeter schema", () => {
     });
 
     it("has rows configuration", () => {
-      expect(elementField?.rows).toBe(3);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((elementField as any)?.rows).toBe(3);
     });
 
     it("has description with example", () => {
