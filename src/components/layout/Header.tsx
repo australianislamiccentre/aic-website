@@ -7,8 +7,10 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SearchDialog } from "@/components/ui/SearchDialog";
+import { DonateModal } from "@/components/DonateModal";
 import { aicInfo } from "@/data/content";
 import { SanitySiteSettings } from "@/types/sanity";
+import { DonateModalSettings, DonationGoalMeter } from "@/sanity/lib/fetch";
 import {
   Menu,
   X,
@@ -23,6 +25,8 @@ import {
 
 interface HeaderProps {
   siteSettings?: SanitySiteSettings | null;
+  donateModalSettings?: DonateModalSettings | null;
+  donationGoalMeter?: DonationGoalMeter | null;
 }
 
 // Navigation structure - simplified like MyCentre
@@ -154,7 +158,6 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
           items: [
             { name: "All Events", href: "/events" },
             { name: "Announcements", href: "/announcements" },
-            { name: "Campaigns", href: "/campaigns" },
           ],
         },
         {
@@ -198,13 +201,14 @@ function useIsScrolled(threshold = 50) {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
-export function Header({ siteSettings }: HeaderProps) {
+export function Header({ siteSettings, donateModalSettings, donationGoalMeter }: HeaderProps) {
   const pathname = usePathname();
   const isScrolled = useIsScrolled(50);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileExpandedItem, setMobileExpandedItem] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [donateModalOpen, setDonateModalOpen] = useState(false);
 
   // Use Sanity data if available, fallback to hardcoded values
   const info = {
@@ -467,14 +471,14 @@ export function Header({ siteSettings }: HeaderProps) {
                   <Search className="w-5 h-5" />
                 </button>
 
-                {/* Donate Button - Full height, lime green color */}
-                <Link
-                  href="/donate"
+                {/* Donate Button */}
+                <button
+                  onClick={() => setDonateModalOpen(true)}
                   className="hidden sm:flex items-center gap-2 h-16 px-6 bg-lime-500 hover:bg-lime-600 text-neutral-900 font-semibold transition-all duration-200"
                 >
                   <Heart className="w-4 h-4" />
                   <span>Donate</span>
-                </Link>
+                </button>
 
                 <button
                   onClick={() => setMobileMenuOpen(true)}
@@ -628,14 +632,16 @@ export function Header({ siteSettings }: HeaderProps) {
 
               {/* Fixed Footer */}
               <div className="sticky bottom-0 bg-neutral-900 border-t border-white/10 px-6 py-6 space-y-4">
-                <Link
-                  href="/donate"
-                  onClick={() => setMobileMenuOpen(false)}
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setDonateModalOpen(true);
+                  }}
                   className="flex items-center justify-center gap-2 w-full py-4 text-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl transition-all duration-200"
                 >
                   <Heart className="w-5 h-5" />
                   <span>Make a Donation</span>
-                </Link>
+                </button>
 
                 <div className="flex items-center justify-center gap-6 text-sm text-white/60">
                   <a href={`tel:${info.phone}`} className="flex items-center gap-2 hover:text-white transition-colors">
@@ -656,6 +662,16 @@ export function Header({ siteSettings }: HeaderProps) {
 
       {/* Search Dialog */}
       <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      {/* Donate Modal */}
+      <DonateModal
+        isOpen={donateModalOpen}
+        onClose={() => setDonateModalOpen(false)}
+        modalTitle={donateModalSettings?.modalTitle}
+        goalMeter={donationGoalMeter}
+        featuredCampaign={donateModalSettings?.featuredCampaign}
+        additionalCampaigns={donateModalSettings?.additionalCampaigns}
+      />
     </>
   );
 }

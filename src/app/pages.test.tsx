@@ -100,9 +100,6 @@ vi.mock("@/data/content", () => ({
     { title: "Remove Shoes", description: "Please remove shoes before entering", icon: "footprints" },
     { title: "Modest Dress", description: "Dress modestly", icon: "shirt" },
   ],
-  donationCauses: [
-    { id: "general", title: "General Fund", description: "Support operations", icon: "building" },
-  ],
   donationFrequencies: [
     { value: "once", label: "One-Time" },
     { value: "monthly", label: "Monthly" },

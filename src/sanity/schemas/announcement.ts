@@ -144,7 +144,7 @@ export default defineType({
               { title: "Media", value: "/media" },
               { title: "Architecture", value: "/architecture" },
               { title: "Announcements", value: "/announcements" },
-              { title: "Campaigns", value: "/campaigns" },
+              { title: "Donate", value: "/donate" },
             ],
           },
           hidden: ({ parent }) => parent?.linkType !== "internal",

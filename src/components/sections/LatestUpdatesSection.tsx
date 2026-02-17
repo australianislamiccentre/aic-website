@@ -24,7 +24,6 @@ import { LatestUpdateItem } from "@/sanity/lib/fetch";
 interface LatestUpdatesSectionProps {
   announcements?: LatestUpdateItem[];
   events?: LatestUpdateItem[];
-  campaigns?: LatestUpdateItem[];
   urgentAnnouncement?: SanityAnnouncement | null;
 }
 
@@ -48,8 +47,6 @@ function getTypeStyles(type: string, priority?: string) {
       return { badge: "bg-amber-100 text-amber-700", icon: Megaphone, color: "text-amber-600" };
     case "event":
       return { badge: "bg-green-100 text-green-700", icon: CalendarDays, color: "text-green-600" };
-    case "donationCampaign":
-      return { badge: "bg-teal-100 text-teal-700", icon: Heart, color: "text-teal-600" };
     default:
       return { badge: "bg-gray-100 text-gray-700", icon: Bell, color: "text-gray-600" };
   }
@@ -62,8 +59,6 @@ function getItemLink(item: LatestUpdateItem): string {
       return `/announcements/${item.slug}`;
     case "event":
       return `/events/${item.slug}`;
-    case "donationCampaign":
-      return `/campaigns/${item.slug}`;
     default:
       return "/";
   }
@@ -76,8 +71,6 @@ function getTypeLabel(type: string): string {
       return "Announcement";
     case "event":
       return "Event";
-    case "donationCampaign":
-      return "Campaign";
     default:
       return "Update";
   }
@@ -137,7 +130,7 @@ function UpdateCard({ item, index }: { item: LatestUpdateItem; index: number }) 
                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${styles.badge}`}>
                   {getTypeLabel(item._type)}
                 </span>
-                {item.category && item._type !== "donationCampaign" && (
+                {item.category && (
                   <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-white/90 text-gray-700">
                     {item.category}
                   </span>
@@ -145,7 +138,7 @@ function UpdateCard({ item, index }: { item: LatestUpdateItem; index: number }) 
               </div>
             </div>
           ) : (
-            <div className={`h-2 ${isHighlighted ? 'bg-gradient-to-r from-amber-400 to-amber-500' : item._type === 'event' ? 'bg-gradient-to-r from-green-500 to-green-600' : item._type === 'donationCampaign' ? 'bg-gradient-to-r from-teal-500 to-teal-600' : 'bg-gradient-to-r from-amber-500 to-amber-600'}`} />
+            <div className={`h-2 ${isHighlighted ? 'bg-gradient-to-r from-amber-400 to-amber-500' : item._type === 'event' ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-amber-500 to-amber-600'}`} />
           )}
 
           {/* Content */}
@@ -155,7 +148,7 @@ function UpdateCard({ item, index }: { item: LatestUpdateItem; index: number }) 
                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${styles.badge}`}>
                   {getTypeLabel(item._type)}
                 </span>
-                {item.category && item._type !== "donationCampaign" && (
+                {item.category && (
                   <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
                     {item.category}
                   </span>
@@ -193,27 +186,6 @@ function UpdateCard({ item, index }: { item: LatestUpdateItem; index: number }) 
                   <Calendar className={`w-4 h-4 ${styles.color}`} />
                   <span>{formatDate(item.date)}</span>
                 </div>
-              )}
-
-              {item._type === "donationCampaign" && (
-                <>
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className={`w-4 h-4 ${styles.color}`} />
-                    <span>
-                      {item.isOngoing
-                        ? "Ongoing"
-                        : item.startDate
-                          ? `From ${formatDate(item.startDate)}`
-                          : "Active"}
-                    </span>
-                  </div>
-                  {item.goal && (
-                    <div className="flex items-center gap-1.5">
-                      <Heart className={`w-4 h-4 ${styles.color}`} />
-                      <span>${item.raised?.toLocaleString() ?? 0} / ${item.goal.toLocaleString()}</span>
-                    </div>
-                  )}
-                </>
               )}
             </div>
           </div>
@@ -261,28 +233,13 @@ function MobileBannerButton({
 export function LatestUpdatesSection({
   announcements = [],
   events = [],
-  campaigns = [],
   urgentAnnouncement,
 }: LatestUpdatesSectionProps) {
-  // Filter out events (they show in UpcomingSection) and limit items per type
-  const limitedAnnouncements = announcements.slice(0, 3);
-  const limitedCampaigns = campaigns.slice(0, 2);
-
-  // Combine announcements and campaigns only (no events)
-  const allUpdates: LatestUpdateItem[] = [
-    ...limitedAnnouncements,
-    ...limitedCampaigns,
-  ].sort((a, b) => {
-    const dateA = new Date(a.date || a.startDate || "");
-    const dateB = new Date(b.date || b.startDate || "");
-    return dateB.getTime() - dateA.getTime();
-  });
-
-  // Take top 6 items
-  const displayUpdates = allUpdates.slice(0, 6);
+  // Limit announcements
+  const limitedAnnouncements = announcements.slice(0, 6);
 
   // If no updates, don't render the section
-  if (displayUpdates.length === 0 && !urgentAnnouncement) {
+  if (limitedAnnouncements.length === 0 && !urgentAnnouncement) {
     return null;
   }
 
@@ -303,9 +260,9 @@ export function LatestUpdatesSection({
       color: "bg-green-500 text-white hover:bg-green-600",
     },
     {
-      href: "/campaigns",
+      href: "/donate",
       icon: Heart,
-      label: "Campaigns",
+      label: "Donate",
       description: "Support our causes",
       color: "bg-teal-500 text-white hover:bg-teal-600",
     },
@@ -340,8 +297,8 @@ export function LatestUpdatesSection({
               <Button href="/events" variant="outline" size="sm">
                 Events
               </Button>
-              <Button href="/campaigns" variant="outline" size="sm">
-                Campaigns
+              <Button href="/donate" variant="outline" size="sm">
+                Donate
               </Button>
             </div>
           </div>
@@ -361,9 +318,8 @@ export function LatestUpdatesSection({
           ))}
         </div>
 
-        {/* Desktop: Grouped Updates by Type */}
-        <div className="hidden md:block space-y-10">
-          {/* Announcements Group */}
+        {/* Desktop: Announcements */}
+        <div className="hidden md:block">
           {limitedAnnouncements.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-4">
@@ -378,26 +334,10 @@ export function LatestUpdatesSection({
               </div>
             </div>
           )}
-
-          {/* Campaigns Group */}
-          {limitedCampaigns.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Heart className="w-5 h-5 text-teal-500" />
-                <h3 className="text-lg font-semibold text-gray-900">Active Campaigns</h3>
-                <span className="text-sm text-gray-400">({limitedCampaigns.length})</span>
-              </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {limitedCampaigns.map((item, index) => (
-                  <UpdateCard key={item._id} item={item} index={index} />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Empty state when only urgent banner is shown */}
-        {limitedAnnouncements.length === 0 && limitedCampaigns.length === 0 && urgentAnnouncement && (
+        {limitedAnnouncements.length === 0 && urgentAnnouncement && (
           <FadeIn>
             <div className="hidden md:block text-center py-8 bg-neutral-50 rounded-2xl">
               <Bell className="w-12 h-12 mx-auto text-gray-300 mb-4" />

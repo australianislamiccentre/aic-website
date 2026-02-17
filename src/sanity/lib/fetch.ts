@@ -6,7 +6,6 @@ import {
   eventBySlugQuery,
   eventsQuery,
   featuredEventsQuery,
-  pastEventsQuery,
   announcementsQuery,
   announcementBySlugQuery,
   featuredAnnouncementsQuery,
@@ -15,13 +14,10 @@ import {
   servicesQuery,
   serviceBySlugQuery,
   featuredServicesQuery,
-  donationCausesQuery,
-  donationCauseBySlugQuery,
-  featuredDonationCausesQuery,
-  // Donation Campaigns
-  donationCampaignsQuery,
-  donationCampaignBySlugQuery,
-  featuredDonationCampaignsQuery,
+  // Donation Settings
+  donationSettingsQuery,
+  donateModalSettingsQuery,
+  donationGoalMeterQuery,
   galleryQuery,
   featuredGalleryQuery,
   faqsQuery,
@@ -31,19 +27,18 @@ import {
   tourTypesQuery,
   siteSettingsQuery,
   prayerSettingsQuery,
-  // New queries
+  // Team Members
   teamMembersQuery,
   teamMemberBySlugQuery,
   teamMembersByCategoryQuery,
   featuredTeamMembersQuery,
+  // Page Content
   pageContentQuery,
   pageContentBySlugQuery,
-  pageContentByTypeQuery,
   navigationPagesQuery,
+  // Resources
   resourcesQuery,
   resourceBySlugQuery,
-  resourcesByCategoryQuery,
-  resourcesByTypeQuery,
   featuredResourcesQuery,
   latestUpdatesQuery,
 } from "./queries";
@@ -52,8 +47,6 @@ import {
   SanityAnnouncement,
   SanityProgram,
   SanityService,
-  SanityDonationCause,
-  SanityDonationCampaign,
   SanityGalleryImage,
   SanityFaq,
   SanityEtiquette,
@@ -65,6 +58,32 @@ import {
   SanityResource,
 } from "@/types/sanity";
 
+// Donation Settings type (Fundraise Up config)
+export interface DonationSettings {
+  _id: string;
+  installationScript?: string;
+  organizationKey?: string;
+}
+
+// Campaign type (referenced from modal settings)
+export interface ModalCampaign {
+  _id: string;
+  title: string;
+  fundraiseUpElement: string;
+}
+
+// Donate Modal Settings type
+export interface DonateModalSettings {
+  _id: string;
+  modalTitle?: string;
+  showOverallGoalMeter?: boolean;
+  goalLabel?: string;
+  overallGoal?: number;
+  overallRaised?: number;
+  featuredCampaign?: ModalCampaign | null;
+  additionalCampaigns?: ModalCampaign[];
+}
+
 // Revalidation time in seconds (1 minute for faster updates)
 const REVALIDATE_TIME = 60;
 
@@ -75,9 +94,10 @@ async function sanityFetch<T>(
   tags: string[] = []
 ): Promise<T> {
   const { isEnabled: isDraftMode } = await draftMode();
+  const isDevelopment = process.env.NODE_ENV === "development";
 
-  // In draft mode, use preview client with no caching
-  if (isDraftMode) {
+  // In draft mode OR development, use preview client to see draft documents
+  if (isDraftMode || isDevelopment) {
     return previewClient.fetch<T>(query, params);
   }
 
@@ -133,16 +153,6 @@ export async function getEventBySlug(slug: string): Promise<SanityEvent | null> 
   } catch (error) {
     console.error(`Failed to fetch event "${slug}" from Sanity:`, error);
     return null;
-  }
-}
-
-export async function getPastEvents(): Promise<SanityEvent[]> {
-  try {
-    const result = await sanityFetch<SanityEvent[]>(pastEventsQuery, {}, ["events"]);
-    return result ?? [];
-  } catch (error) {
-    console.error("Failed to fetch past events from Sanity:", error);
-    return [];
   }
 }
 
@@ -259,99 +269,102 @@ export async function getServicesForStaticGeneration(): Promise<SanityService[]>
   }
 }
 
-// Donation Causes
-export async function getDonationCauses(): Promise<SanityDonationCause[]> {
+// ============================================
+// Donation Settings (Fundraise Up config)
+// ============================================
+export async function getDonationSettings(): Promise<DonationSettings | null> {
   try {
-    const result = await sanityFetch<SanityDonationCause[]>(donationCausesQuery, {}, ["donationCauses"]);
-    return result ?? [];
+    return await sanityFetch<DonationSettings | null>(
+      donationSettingsQuery,
+      {},
+      ["donationSettings"]
+    );
   } catch (error) {
-    console.error("Failed to fetch donation causes from Sanity:", error);
-    return [];
-  }
-}
-
-export async function getDonationCauseBySlug(slug: string): Promise<SanityDonationCause | null> {
-  try {
-    return await sanityFetch<SanityDonationCause | null>(donationCauseBySlugQuery, { slug }, ["donationCauses"]);
-  } catch (error) {
-    console.error(`Failed to fetch donation cause "${slug}" from Sanity:`, error);
+    console.error("Failed to fetch donation settings from Sanity:", error);
     return null;
   }
 }
 
-export async function getFeaturedDonationCauses(): Promise<SanityDonationCause[]> {
-  try {
-    const result = await sanityFetch<SanityDonationCause[]>(featuredDonationCausesQuery, {}, ["donationCauses"]);
-    return result ?? [];
-  } catch (error) {
-    console.error("Failed to fetch featured donation causes from Sanity:", error);
-    return [];
-  }
+// ============================================
+// Donate Modal Settings
+// ============================================
+
+// Internal type that includes active field for filtering
+interface ModalCampaignWithActive extends ModalCampaign {
+  active?: boolean;
 }
 
-// ============================================
-// Donation Campaigns (Scheduled Daily Billing)
-// ============================================
-export async function getDonationCampaigns(): Promise<SanityDonationCampaign[]> {
+interface DonateModalSettingsRaw {
+  _id: string;
+  modalTitle?: string;
+  showOverallGoalMeter?: boolean;
+  goalLabel?: string;
+  overallGoal?: number;
+  overallRaised?: number;
+  featuredCampaign?: ModalCampaignWithActive | null;
+  additionalCampaigns?: ModalCampaignWithActive[];
+}
+
+export async function getDonateModalSettings(): Promise<DonateModalSettings | null> {
   try {
-    const result = await sanityFetch<SanityDonationCampaign[]>(
-      donationCampaignsQuery,
+    const result = await sanityFetch<DonateModalSettingsRaw | null>(
+      donateModalSettingsQuery,
       {},
-      ["donationCampaigns"]
+      ["donateModalSettings"]
     );
-    return result ?? [];
-  } catch (error) {
-    console.error("Failed to fetch donation campaigns from Sanity:", error);
-    return [];
-  }
-}
 
-export async function getDonationCampaignBySlug(
-  slug: string
-): Promise<SanityDonationCampaign | null> {
-  try {
-    return await sanityFetch<SanityDonationCampaign | null>(
-      donationCampaignBySlugQuery,
-      { slug },
-      ["donationCampaigns"]
-    );
+    if (!result) return null;
+
+    // Filter out inactive campaigns and include goal meter fields
+    return {
+      _id: result._id,
+      modalTitle: result.modalTitle,
+      showOverallGoalMeter: result.showOverallGoalMeter,
+      goalLabel: result.goalLabel,
+      overallGoal: result.overallGoal,
+      overallRaised: result.overallRaised,
+      featuredCampaign: result.featuredCampaign?.active
+        ? {
+            _id: result.featuredCampaign._id,
+            title: result.featuredCampaign.title,
+            fundraiseUpElement: result.featuredCampaign.fundraiseUpElement,
+          }
+        : null,
+      additionalCampaigns: (result.additionalCampaigns || [])
+        .filter((c) => c.active)
+        .map((c) => ({
+          _id: c._id,
+          title: c.title,
+          fundraiseUpElement: c.fundraiseUpElement,
+        })),
+    };
   } catch (error) {
-    console.error(`Failed to fetch campaign "${slug}" from Sanity:`, error);
+    console.error("Failed to fetch donate modal settings from Sanity:", error);
     return null;
   }
 }
 
-export async function getFeaturedDonationCampaigns(): Promise<SanityDonationCampaign[]> {
-  try {
-    const result = await sanityFetch<SanityDonationCampaign[]>(
-      featuredDonationCampaignsQuery,
-      {},
-      ["donationCampaigns"]
-    );
-    return result ?? [];
-  } catch (error) {
-    console.error("Failed to fetch featured campaigns from Sanity:", error);
-    return [];
-  }
+// ============================================
+// Donation Goal Meter
+// ============================================
+
+export interface DonationGoalMeter {
+  _id: string;
+  enabled: boolean;
+  fundraiseUpElement?: string;
 }
 
-// For static generation (no draft mode check - used in generateStaticParams)
-export async function getDonationCampaignsForStaticGeneration(): Promise<SanityDonationCampaign[]> {
+export async function getDonationGoalMeter(): Promise<DonationGoalMeter | null> {
   try {
-    const result = await client.fetch<SanityDonationCampaign[]>(
-      donationCampaignsQuery,
+    const result = await sanityFetch<DonationGoalMeter | null>(
+      donationGoalMeterQuery,
       {},
-      {
-        next: {
-          revalidate: REVALIDATE_TIME,
-          tags: ["sanity", "donationCampaigns"],
-        },
-      }
+      ["donationGoalMeter"]
     );
-    return result ?? [];
+    return result;
   } catch (error) {
-    console.error("Failed to fetch campaigns for static generation:", error);
-    return [];
+    console.error("Failed to fetch donation goal meter from Sanity:", error);
+    return null;
   }
 }
 
@@ -493,15 +506,6 @@ export async function getPageContentBySlug(slug: string): Promise<SanityPageCont
   }
 }
 
-export async function getPageContentByType(pageType: string): Promise<SanityPageContent | null> {
-  try {
-    return await sanityFetch<SanityPageContent | null>(pageContentByTypeQuery, { pageType }, ["pageContent"]);
-  } catch (error) {
-    console.error(`Failed to fetch page content for type "${pageType}" from Sanity:`, error);
-    return null;
-  }
-}
-
 export async function getNavigationPages(): Promise<SanityPageContent[]> {
   try {
     const result = await sanityFetch<SanityPageContent[]>(navigationPagesQuery, {}, ["pageContent"]);
@@ -531,26 +535,6 @@ export async function getResourceBySlug(slug: string): Promise<SanityResource | 
   } catch (error) {
     console.error(`Failed to fetch resource "${slug}" from Sanity:`, error);
     return null;
-  }
-}
-
-export async function getResourcesByCategory(category: string): Promise<SanityResource[]> {
-  try {
-    const result = await sanityFetch<SanityResource[]>(resourcesByCategoryQuery, { category }, ["resources"]);
-    return result ?? [];
-  } catch (error) {
-    console.error(`Failed to fetch resources for category "${category}" from Sanity:`, error);
-    return [];
-  }
-}
-
-export async function getResourcesByType(resourceType: string): Promise<SanityResource[]> {
-  try {
-    const result = await sanityFetch<SanityResource[]>(resourcesByTypeQuery, { resourceType }, ["resources"]);
-    return result ?? [];
-  } catch (error) {
-    console.error(`Failed to fetch resources of type "${resourceType}" from Sanity:`, error);
-    return [];
   }
 }
 
@@ -591,7 +575,7 @@ export async function getPrayerSettings(): Promise<SanityPrayerSettings | null> 
 // ============================================
 export interface LatestUpdateItem {
   _id: string;
-  _type: "announcement" | "event" | "donationCampaign";
+  _type: "announcement" | "event";
   title: string;
   slug: string;
   description: string;
@@ -602,12 +586,7 @@ export interface LatestUpdateItem {
   callToAction?: { label?: string; linkType?: string; internalPage?: string; url?: string };
   time?: string;
   location?: string;
-  icon?: string;
-  goal?: number;
-  raised?: number;
-  startDate?: string;
-  endDate?: string;
-  isOngoing?: boolean;
+  featured?: boolean;
 }
 
 export interface LatestUpdatesResult {
@@ -618,10 +597,11 @@ export interface LatestUpdatesResult {
 
 export async function getLatestUpdates(): Promise<LatestUpdatesResult> {
   try {
-    const result = await sanityFetch<LatestUpdatesResult>(latestUpdatesQuery, {}, ["announcements", "events", "donationCampaigns"]);
+    const result = await sanityFetch<LatestUpdatesResult>(latestUpdatesQuery, {}, ["announcements", "events"]);
     return result ?? { announcements: [], events: [], campaigns: [] };
   } catch (error) {
     console.error("Failed to fetch latest updates from Sanity:", error);
     return { announcements: [], events: [], campaigns: [] };
   }
 }
+

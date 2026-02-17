@@ -24,7 +24,6 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getEventsForStaticGeneration: vi.fn().mockResolvedValue([]),
   getFeaturedEvents: vi.fn().mockResolvedValue([]),
   getEventBySlug: vi.fn().mockResolvedValue(null),
-  getPastEvents: vi.fn().mockResolvedValue([]),
   getAnnouncements: vi.fn().mockResolvedValue([]),
   getAnnouncementBySlug: vi.fn().mockResolvedValue(null),
   getAnnouncementsForStaticGeneration: vi.fn().mockResolvedValue([]),
@@ -34,9 +33,6 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getServices: vi.fn().mockResolvedValue([]),
   getServiceBySlug: vi.fn().mockResolvedValue(null),
   getFeaturedServices: vi.fn().mockResolvedValue([]),
-  getDonationCauses: vi.fn().mockResolvedValue([]),
-  getDonationCauseBySlug: vi.fn().mockResolvedValue(null),
-  getFeaturedDonationCauses: vi.fn().mockResolvedValue([]),
   getGalleryImages: vi.fn().mockResolvedValue([]),
   getFeaturedGalleryImages: vi.fn().mockResolvedValue([]),
   getTestimonials: vi.fn().mockResolvedValue([]),
@@ -51,12 +47,9 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getFeaturedTeamMembers: vi.fn().mockResolvedValue([]),
   getPageContent: vi.fn().mockResolvedValue([]),
   getPageContentBySlug: vi.fn().mockResolvedValue(null),
-  getPageContentByType: vi.fn().mockResolvedValue(null),
   getNavigationPages: vi.fn().mockResolvedValue([]),
   getResources: vi.fn().mockResolvedValue([]),
   getResourceBySlug: vi.fn().mockResolvedValue(null),
-  getResourcesByCategory: vi.fn().mockResolvedValue([]),
-  getResourcesByType: vi.fn().mockResolvedValue([]),
   getFeaturedResources: vi.fn().mockResolvedValue([]),
   getSiteSettings: vi.fn().mockResolvedValue(null),
   getPrayerSettings: vi.fn().mockResolvedValue(null),
@@ -65,6 +58,8 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getDonationCampaignBySlug: vi.fn().mockResolvedValue(null),
   getDonationCampaignsForStaticGeneration: vi.fn().mockResolvedValue([]),
   getFeaturedDonationCampaigns: vi.fn().mockResolvedValue([]),
+  // Donate modal functions
+  getDonateModalSettings: vi.fn().mockResolvedValue(null),
 }));
 
 // Mock next/navigation

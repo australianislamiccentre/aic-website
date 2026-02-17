@@ -11,6 +11,57 @@ const structure = (S: StructureBuilder) =>
   S.list()
     .title("Content")
     .items([
+      // Top-level singletons for easy access
+      S.listItem()
+        .title("Prayer Times")
+        .child(
+          S.document()
+            .schemaType("prayerSettings")
+            .documentId("prayerSettings")
+        ),
+      S.listItem()
+        .title("Donations")
+        .child(
+          S.list()
+            .title("Donations")
+            .items([
+              S.listItem()
+                .title("Settings")
+                .child(
+                  S.document()
+                    .schemaType("donationSettings")
+                    .documentId("donationSettings")
+                ),
+              S.listItem()
+                .title("Donate Button Modal")
+                .child(
+                  S.document()
+                    .schemaType("donateModalSettings")
+                    .documentId("donateModalSettings")
+                ),
+              S.listItem()
+                .title("Goal Meter")
+                .child(
+                  S.document()
+                    .schemaType("donationGoalMeter")
+                    .documentId("donationGoalMeter")
+                ),
+              S.divider(),
+              S.listItem()
+                .title("Campaigns")
+                .child(S.documentTypeList("donationCampaign").title("Donation Campaigns")),
+            ])
+        ),
+      S.listItem()
+        .title("Site Settings")
+        .child(
+          S.document()
+            .schemaType("siteSettings")
+            .documentId("siteSettings")
+        ),
+
+      S.divider(),
+
       // Events with Published/Draft/Expired tabs
       S.listItem()
         .title("Events")
@@ -81,46 +132,11 @@ const structure = (S: StructureBuilder) =>
             ])
         ),
 
-      // Donation Campaigns with Active/Draft/Inactive tabs
-      S.listItem()
-        .title("Donation Campaigns")
-        .child(
-          S.list()
-            .title("Donation Campaigns")
-            .items([
-              S.listItem()
-                .title("Active")
-                .child(
-                  S.documentList()
-                    .title("Active Campaigns")
-                    .filter('_type == "donationCampaign" && !(_id in path("drafts.**")) && active == true')
-                ),
-              S.listItem()
-                .title("Drafts")
-                .child(
-                  S.documentList()
-                    .title("Draft Campaigns")
-                    .filter('_type == "donationCampaign" && _id in path("drafts.**")')
-                ),
-              S.listItem()
-                .title("Inactive")
-                .child(
-                  S.documentList()
-                    .title("Inactive Campaigns")
-                    .filter('_type == "donationCampaign" && !(_id in path("drafts.**")) && active == false')
-                ),
-              S.divider(),
-              S.listItem()
-                .title("All Campaigns")
-                .child(S.documentTypeList("donationCampaign").title("All Campaigns")),
-            ])
-        ),
-
       S.divider(),
 
-      // Rest of the document types (exclude the ones we customized)
+      // Rest of the document types (exclude the ones we customized and singletons)
       ...S.documentTypeListItems().filter(
-        (item) => !["event", "announcement", "donationCampaign"].includes(item.getId() || "")
+        (item) => !["event", "announcement", "siteSettings", "prayerSettings", "donationSettings", "donateModalSettings", "donationGoalMeter", "donationCampaign"].includes(item.getId() || "")
       ),
     ]);
 
@@ -137,8 +153,7 @@ const previewPaths: Record<string, (slug?: string) => string> = {
   announcement: (slug) => `/announcements${slug ? `/${slug}` : ""}`,
   service: () => "/services",
   program: () => "/programs",
-  donationCause: () => "/donate",
-  donationCampaign: (slug) => `/campaigns${slug ? `/${slug}` : ""}`,
+  donationSettings: () => "/donate",
   galleryImage: () => "/media",
   faq: () => "/resources",
   etiquette: () => "/visit",

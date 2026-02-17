@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { FadeIn } from "@/components/animations/FadeIn";
 import {
   Heart,
@@ -257,17 +256,10 @@ export function QuickDonateSection() {
             {/* Links */}
             <div className="flex flex-wrap justify-center lg:justify-start gap-3">
               <Link
-                href="/campaigns"
+                href="/donate"
                 className="inline-flex items-center gap-1.5 text-sm text-lime-400 hover:text-lime-300 transition-colors"
               >
-                View All Campaigns
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/donate"
-                className="inline-flex items-center gap-1.5 text-sm text-white/60 hover:text-white/80 transition-colors"
-              >
-                More Donation Options
+                View All Donation Options
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -276,128 +268,128 @@ export function QuickDonateSection() {
           {/* Right: Quick Donate Form */}
           <FadeIn delay={0.1}>
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 md:p-6 border border-white/10">
-              {/* Amount Selection */}
-              <div className="mb-5">
-                <label className="block text-sm font-medium text-white/70 mb-3">
-                  Select Amount
-                </label>
-                <div className="grid grid-cols-4 gap-2 mb-3">
-                  {quickAmounts.map((value) => (
-                    <motion.button
-                      key={value}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleAmountSelect(value)}
-                      className={`py-3 rounded-xl text-center font-bold transition-all ${
-                        selectedAmount === value
-                          ? "bg-lime-500 text-neutral-900"
-                          : "bg-white/10 text-white hover:bg-white/20"
-                      }`}
-                    >
-                      ${value}
-                    </motion.button>
-                  ))}
-                </div>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 font-medium">
-                    $
-                  </span>
-                  <input
-                    type="number"
-                    placeholder="Custom amount"
-                    value={customAmount}
-                    onChange={(e) => handleCustomAmountChange(e.target.value)}
-                    className="w-full pl-8 pr-4 py-3 rounded-xl bg-white/10 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
+                  {/* Amount Selection */}
+                  <div className="mb-5">
+                    <label className="block text-sm font-medium text-white/70 mb-3">
+                      Select Amount
+                    </label>
+                    <div className="grid grid-cols-4 gap-2 mb-3">
+                      {quickAmounts.map((value) => (
+                        <motion.button
+                          key={value}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleAmountSelect(value)}
+                          className={`py-3 rounded-xl text-center font-bold transition-all ${
+                            selectedAmount === value
+                              ? "bg-lime-500 text-neutral-900"
+                              : "bg-white/10 text-white hover:bg-white/20"
+                          }`}
+                        >
+                          ${value}
+                        </motion.button>
+                      ))}
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 font-medium">
+                        $
+                      </span>
+                      <input
+                        type="number"
+                        placeholder="Custom amount"
+                        value={customAmount}
+                        onChange={(e) => handleCustomAmountChange(e.target.value)}
+                        className="w-full pl-8 pr-4 py-3 rounded-xl bg-white/10 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
 
-              {/* Donor Info */}
-              <div className="space-y-3 mb-5">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="First Name *"
-                      value={donorInfo.firstName}
-                      onChange={(e) => handleFieldChange("firstName", e.target.value)}
-                      onBlur={() => handleFieldBlur("firstName")}
-                      className={`w-full px-4 py-3 rounded-xl bg-white/10 border text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent ${
-                        touchedFields.firstName && fieldErrors.firstName
-                          ? "border-red-500"
-                          : "border-white/10"
-                      }`}
-                    />
-                    {touchedFields.firstName && fieldErrors.firstName && (
-                      <p className="mt-1 text-xs text-red-400">{fieldErrors.firstName}</p>
-                    )}
+                  {/* Donor Info */}
+                  <div className="space-y-3 mb-5">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="First Name *"
+                          value={donorInfo.firstName}
+                          onChange={(e) => handleFieldChange("firstName", e.target.value)}
+                          onBlur={() => handleFieldBlur("firstName")}
+                          className={`w-full px-4 py-3 rounded-xl bg-white/10 border text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent ${
+                            touchedFields.firstName && fieldErrors.firstName
+                              ? "border-red-500"
+                              : "border-white/10"
+                          }`}
+                        />
+                        {touchedFields.firstName && fieldErrors.firstName && (
+                          <p className="mt-1 text-xs text-red-400">{fieldErrors.firstName}</p>
+                        )}
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Last Name *"
+                          value={donorInfo.lastName}
+                          onChange={(e) => handleFieldChange("lastName", e.target.value)}
+                          onBlur={() => handleFieldBlur("lastName")}
+                          className={`w-full px-4 py-3 rounded-xl bg-white/10 border text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent ${
+                            touchedFields.lastName && fieldErrors.lastName
+                              ? "border-red-500"
+                              : "border-white/10"
+                          }`}
+                        />
+                        {touchedFields.lastName && fieldErrors.lastName && (
+                          <p className="mt-1 text-xs text-red-400">{fieldErrors.lastName}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <input
+                        type="email"
+                        placeholder="Email Address *"
+                        value={donorInfo.email}
+                        onChange={(e) => handleFieldChange("email", e.target.value)}
+                        onBlur={() => handleFieldBlur("email")}
+                        className={`w-full px-4 py-3 rounded-xl bg-white/10 border text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent ${
+                          touchedFields.email && fieldErrors.email
+                            ? "border-red-500"
+                            : "border-white/10"
+                        }`}
+                      />
+                      {touchedFields.email && fieldErrors.email && (
+                        <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Last Name *"
-                      value={donorInfo.lastName}
-                      onChange={(e) => handleFieldChange("lastName", e.target.value)}
-                      onBlur={() => handleFieldBlur("lastName")}
-                      className={`w-full px-4 py-3 rounded-xl bg-white/10 border text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent ${
-                        touchedFields.lastName && fieldErrors.lastName
-                          ? "border-red-500"
-                          : "border-white/10"
-                      }`}
-                    />
-                    {touchedFields.lastName && fieldErrors.lastName && (
-                      <p className="mt-1 text-xs text-red-400">{fieldErrors.lastName}</p>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <input
-                    type="email"
-                    placeholder="Email Address *"
-                    value={donorInfo.email}
-                    onChange={(e) => handleFieldChange("email", e.target.value)}
-                    onBlur={() => handleFieldBlur("email")}
-                    className={`w-full px-4 py-3 rounded-xl bg-white/10 border text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent ${
-                      touchedFields.email && fieldErrors.email
-                        ? "border-red-500"
-                        : "border-white/10"
-                    }`}
-                  />
-                  {touchedFields.email && fieldErrors.email && (
-                    <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>
+
+                  {/* Error Message */}
+                  {error && (
+                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                      <p className="text-red-300 text-sm">{error}</p>
+                    </div>
                   )}
-                </div>
-              </div>
 
-              {/* Error Message */}
-              {error && (
-                <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-                  <p className="text-red-300 text-sm">{error}</p>
-                </div>
-              )}
+                  {/* Submit Button */}
+                  <Button
+                    type="button"
+                    variant="gold"
+                    size="lg"
+                    className="w-full"
+                    disabled={isProcessing || amount < 1}
+                    onClick={handleQuickDonate}
+                    icon={
+                      isProcessing ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Heart className="w-5 h-5" />
+                      )
+                    }
+                  >
+                    {isProcessing ? "Processing..." : `Donate $${amount.toFixed(2)}`}
+                  </Button>
 
-              {/* Submit Button */}
-              <Button
-                type="button"
-                variant="gold"
-                size="lg"
-                className="w-full"
-                disabled={isProcessing || amount < 1}
-                onClick={handleQuickDonate}
-                icon={
-                  isProcessing ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Heart className="w-5 h-5" />
-                  )
-                }
-              >
-                {isProcessing ? "Processing..." : `Donate $${amount.toFixed(2)}`}
-              </Button>
-
-              <p className="text-center text-xs text-white/40 mt-3">
-                Secure payment powered by Stripe
-              </p>
+                  <p className="text-center text-xs text-white/40 mt-3">
+                    Secure payment powered by Stripe
+                  </p>
             </div>
           </FadeIn>
         </div>

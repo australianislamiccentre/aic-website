@@ -1,12 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@/test/test-utils";
-import {
-  Card,
-  ImageCard,
-  FeatureCard,
-  StatCard,
-  TestimonialCard,
-} from "./Card";
+import { Card, ImageCard, StatCard } from "./Card";
 import { Star } from "lucide-react";
 
 describe("Card", () => {
@@ -70,34 +64,6 @@ describe("ImageCard", () => {
   });
 });
 
-describe("FeatureCard", () => {
-  const defaultProps = {
-    icon: <Star data-testid="star-icon" />,
-    title: "Feature Title",
-    description: "Feature description text",
-  };
-
-  it("renders with title", () => {
-    render(<FeatureCard {...defaultProps} />);
-    expect(screen.getByText("Feature Title")).toBeInTheDocument();
-  });
-
-  it("renders with description", () => {
-    render(<FeatureCard {...defaultProps} />);
-    expect(screen.getByText("Feature description text")).toBeInTheDocument();
-  });
-
-  it("renders icon", () => {
-    render(<FeatureCard {...defaultProps} />);
-    expect(screen.getByTestId("star-icon")).toBeInTheDocument();
-  });
-
-  it("renders as a link when href is provided", () => {
-    render(<FeatureCard {...defaultProps} href="/feature" />);
-    expect(screen.getByRole("link")).toHaveAttribute("href", "/feature");
-  });
-});
-
 describe("StatCard", () => {
   it("renders value and label", () => {
     render(<StatCard value="500+" label="Community Members" />);
@@ -124,31 +90,3 @@ describe("StatCard", () => {
   });
 });
 
-describe("TestimonialCard", () => {
-  const defaultProps = {
-    quote: "This is a great community centre!",
-    author: "John Doe",
-  };
-
-  it("renders quote", () => {
-    render(<TestimonialCard {...defaultProps} />);
-    expect(
-      screen.getByText("This is a great community centre!")
-    ).toBeInTheDocument();
-  });
-
-  it("renders author name", () => {
-    render(<TestimonialCard {...defaultProps} />);
-    expect(screen.getByText("John Doe")).toBeInTheDocument();
-  });
-
-  it("renders role when provided", () => {
-    render(<TestimonialCard {...defaultProps} role="Community Member" />);
-    expect(screen.getByText("Community Member")).toBeInTheDocument();
-  });
-
-  it("renders author image when provided", () => {
-    render(<TestimonialCard {...defaultProps} image="/author.jpg" />);
-    expect(screen.getByAltText("John Doe")).toBeInTheDocument();
-  });
-});
