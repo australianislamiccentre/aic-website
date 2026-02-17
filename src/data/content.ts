@@ -405,46 +405,6 @@ export const galleryImages = [
   },
 ];
 
-// Donation Causes
-export const donationCauses = [
-  {
-    id: "general",
-    title: "General Fund",
-    description: "Support the daily operations and maintenance of the centre.",
-    icon: "building",
-  },
-  {
-    id: "education",
-    title: "Education Programs",
-    description: "Fund scholarships and educational materials for IQRA Academy and Salam School students.",
-    icon: "book",
-  },
-  {
-    id: "zakat",
-    title: "Zakat",
-    description: "Fulfill your Zakat obligation through our verified distribution channels.",
-    icon: "heart",
-  },
-  {
-    id: "sadaqah",
-    title: "Sadaqah",
-    description: "Give voluntary charity to support those in need in our community.",
-    icon: "gift",
-  },
-  {
-    id: "youth",
-    title: "Youth Programs",
-    description: "Support AIYC programs including sports, youth nights, and development activities.",
-    icon: "users",
-  },
-  {
-    id: "maintenance",
-    title: "Building Maintenance",
-    description: "Help maintain and preserve our architectural landmark for future generations.",
-    icon: "hammer",
-  },
-];
-
 export const donationFrequencies = [
   { value: "once", label: "One-time" },
   { value: "daily", label: "Daily" },

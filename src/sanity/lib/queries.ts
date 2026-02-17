@@ -92,22 +92,6 @@ export const featuredEventsQuery = groq`
   }
 `;
 
-// Past events archive - non-recurring events that have passed
-export const pastEventsQuery = groq`
-  *[_type == "event" && active != false && recurring != true && date < now() && (endDate == null || endDate < now())] | order(date desc) {
-    _id,
-    title,
-    "slug": slug.current,
-    date,
-    endDate,
-    time,
-    location,
-    categories,
-    image,
-    description
-  }
-`;
-
 // Announcements - active only, not expired
 export const announcementsQuery = groq`
   *[_type == "announcement" && active != false && (expiresAt == null || expiresAt > now())] | order(priority desc, date desc) {
@@ -262,148 +246,53 @@ export const featuredServicesQuery = groq`
   }
 `;
 
-// Donation Causes - enhanced with new fields
-export const donationCausesQuery = groq`
-  *[_type == "donationCause" && active != false && (
-    campaignType == "ongoing" ||
-    endDate == null ||
-    endDate >= now()
-  )] | order(priority desc, order asc) {
+// ============================================
+// Donation Settings (Fundraise Up config)
+// ============================================
+export const donationSettingsQuery = groq`
+  *[_type == "donationSettings"][0] {
     _id,
-    title,
-    "slug": slug.current,
-    description,
-    fullDescription,
-    image,
-    icon,
-    campaignType,
-    startDate,
-    endDate,
-    goal,
-    raised,
-    showProgress,
-    paymentOptions,
-    featured,
-    priority
-  }
-`;
-
-// Single donation cause by slug
-export const donationCauseBySlugQuery = groq`
-  *[_type == "donationCause" && slug.current == $slug][0] {
-    _id,
-    title,
-    "slug": slug.current,
-    description,
-    fullDescription,
-    image,
-    icon,
-    campaignType,
-    startDate,
-    endDate,
-    goal,
-    raised,
-    showProgress,
-    paymentOptions,
-    featured,
-    priority,
-    active
-  }
-`;
-
-// Featured donation causes for homepage
-export const featuredDonationCausesQuery = groq`
-  *[_type == "donationCause" && active != false && featured == true] | order(priority desc, order asc) [0...4] {
-    _id,
-    title,
-    "slug": slug.current,
-    description,
-    image,
-    icon,
-    goal,
-    raised,
-    showProgress,
-    priority
+    installationScript,
+    organizationKey
   }
 `;
 
 // ============================================
-// Donation Campaigns - Scheduled Daily Billing
+// Donation Goal Meter (singleton)
 // ============================================
-
-// Active campaigns where signup is currently open
-export const donationCampaignsQuery = groq`
-  *[_type == "donationCampaign" && active != false && (
-    signupStartDate == null || signupStartDate <= now()
-  ) && (
-    signupEndDate == null || signupEndDate >= now()
-  ) && endDate >= now()] | order(featured desc, endDate asc, order asc, startDate asc) {
+export const donationGoalMeterQuery = groq`
+  *[_type == "donationGoalMeter"][0] {
     _id,
-    title,
-    "slug": slug.current,
-    description,
-    fullDescription,
-    image,
-    icon,
-    startDate,
-    endDate,
-    signupStartDate,
-    signupEndDate,
-    presetAmounts,
-    allowCustomAmount,
-    minimumAmount,
-    maximumAmount,
-    featured,
-    goal,
-    raised,
-    subscriberCount
+    enabled,
+    fundraiseUpElement
   }
 `;
 
-// Single campaign by slug (includes all fields for detail page)
-export const donationCampaignBySlugQuery = groq`
-  *[_type == "donationCampaign" && slug.current == $slug][0] {
+// ============================================
+// Donate Modal Settings (singleton with campaign references)
+// ============================================
+export const donateModalSettingsQuery = groq`
+  *[_type == "donateModalSettings"][0] {
     _id,
-    title,
-    "slug": slug.current,
-    description,
-    fullDescription,
-    image,
-    icon,
-    startDate,
-    endDate,
-    signupStartDate,
-    signupEndDate,
-    presetAmounts,
-    allowCustomAmount,
-    minimumAmount,
-    maximumAmount,
-    active,
-    featured,
-    goal,
-    raised,
-    subscriberCount
-  }
-`;
-
-// Featured campaigns for homepage display
-export const featuredDonationCampaignsQuery = groq`
-  *[_type == "donationCampaign" && active != false && featured == true && (
-    signupStartDate == null || signupStartDate <= now()
-  ) && (
-    signupEndDate == null || signupEndDate >= now()
-  ) && endDate >= now()] | order(endDate asc, startDate asc) [0...3] {
-    _id,
-    title,
-    "slug": slug.current,
-    description,
-    image,
-    icon,
-    startDate,
-    endDate,
-    presetAmounts,
-    goal,
-    raised
+    modalTitle,
+    showOverallGoalMeter,
+    goalLabel,
+    overallGoal,
+    overallRaised,
+    // Featured campaign - fetch with active status (filtering done in fetch function)
+    "featuredCampaign": featuredCampaign->{
+      _id,
+      title,
+      fundraiseUpElement,
+      active
+    },
+    // Additional campaigns - fetch with active status (filtering done in fetch function)
+    "additionalCampaigns": additionalCampaigns[]->{
+      _id,
+      title,
+      fundraiseUpElement,
+      active
+    }
   }
 `;
 
@@ -483,27 +372,8 @@ export const tourTypesQuery = groq`
   }
 `;
 
-// Tour Requests (for admin)
-export const tourRequestsQuery = groq`
-  *[_type == "tourRequest"] | order(submittedAt desc) {
-    _id,
-    name,
-    email,
-    phone,
-    tourType->{title},
-    preferredDate,
-    preferredTime,
-    groupSize,
-    organization,
-    message,
-    status,
-    submittedAt,
-    notes
-  }
-`;
-
 // ============================================
-// NEW: Team Members
+// Team Members
 // ============================================
 export const teamMembersQuery = groq`
   *[_type == "teamMember" && active != false] | order(category asc, order asc) {
@@ -605,22 +475,6 @@ export const pageContentBySlugQuery = groq`
   }
 `;
 
-export const pageContentByTypeQuery = groq`
-  *[_type == "pageContent" && pageType == $pageType && active != false][0] {
-    _id,
-    title,
-    "slug": slug.current,
-    pageType,
-    subtitle,
-    introduction,
-    content,
-    sections,
-    heroImage,
-    gallery,
-    seo
-  }
-`;
-
 export const navigationPagesQuery = groq`
   *[_type == "pageContent" && active != false && showInNav == true] | order(navOrder asc) {
     _id,
@@ -674,41 +528,6 @@ export const resourceBySlugQuery = groq`
     featured,
     downloadCount,
     active
-  }
-`;
-
-export const resourcesByCategoryQuery = groq`
-  *[_type == "resource" && active != false && category == $category] | order(date desc, order asc) {
-    _id,
-    title,
-    "slug": slug.current,
-    description,
-    thumbnail,
-    resourceType,
-    "fileUrl": file.asset->url,
-    externalUrl,
-    fileSize,
-    duration,
-    author,
-    date,
-    language
-  }
-`;
-
-export const resourcesByTypeQuery = groq`
-  *[_type == "resource" && active != false && resourceType == $resourceType] | order(date desc, order asc) {
-    _id,
-    title,
-    "slug": slug.current,
-    description,
-    thumbnail,
-    category,
-    "fileUrl": file.asset->url,
-    externalUrl,
-    fileSize,
-    duration,
-    author,
-    date
   }
 `;
 
@@ -800,20 +619,5 @@ export const latestUpdatesQuery = groq`
     time,
     location
   },
-  "campaigns": *[_type == "donationCampaign" && active == true && (isOngoing == true || endDate >= now() || !defined(endDate))] | order(featured desc, isOngoing asc, endDate asc, startDate asc) [0...2] {
-    _id,
-    _type,
-    title,
-    "slug": slug.current,
-    description,
-    "date": startDate,
-    image,
-    icon,
-    goal,
-    raised,
-    startDate,
-    endDate,
-    isOngoing,
-    featured
-  }
+  "campaigns": []
 }`;

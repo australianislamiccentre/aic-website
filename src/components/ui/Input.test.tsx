@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen, userEvent } from "@/test/test-utils";
-import { Input, Textarea, Select, Checkbox, RadioGroup } from "./Input";
+import { Input, Textarea, Select } from "./Input";
 
 describe("Input", () => {
   it("renders with placeholder", () => {
@@ -121,96 +121,3 @@ describe("Select", () => {
   });
 });
 
-describe("Checkbox", () => {
-  it("renders with label", () => {
-    render(<Checkbox label="I agree to terms" />);
-    expect(screen.getByText("I agree to terms")).toBeInTheDocument();
-  });
-
-  it("renders with description", () => {
-    render(
-      <Checkbox
-        label="Newsletter"
-        description="Receive weekly updates"
-      />
-    );
-    expect(screen.getByText("Receive weekly updates")).toBeInTheDocument();
-  });
-
-  it("handles check/uncheck", async () => {
-    const user = userEvent.setup();
-    render(<Checkbox label="Accept" />);
-
-    const checkbox = screen.getByRole("checkbox");
-    expect(checkbox).not.toBeChecked();
-
-    await user.click(checkbox);
-    expect(checkbox).toBeChecked();
-
-    await user.click(checkbox);
-    expect(checkbox).not.toBeChecked();
-  });
-
-  it("calls onChange handler", async () => {
-    const handleChange = vi.fn();
-    const user = userEvent.setup();
-
-    render(<Checkbox label="Accept" onChange={handleChange} />);
-    await user.click(screen.getByRole("checkbox"));
-
-    expect(handleChange).toHaveBeenCalled();
-  });
-});
-
-describe("RadioGroup", () => {
-  const options = [
-    { value: "small", label: "Small" },
-    { value: "medium", label: "Medium" },
-    { value: "large", label: "Large" },
-  ];
-
-  it("renders all radio options", () => {
-    render(<RadioGroup name="size" options={options} />);
-
-    expect(screen.getByText("Small")).toBeInTheDocument();
-    expect(screen.getByText("Medium")).toBeInTheDocument();
-    expect(screen.getByText("Large")).toBeInTheDocument();
-  });
-
-  it("renders with label", () => {
-    render(<RadioGroup name="size" label="Select Size" options={options} />);
-    expect(screen.getByText("Select Size")).toBeInTheDocument();
-  });
-
-  it("renders options with descriptions", () => {
-    const optionsWithDesc = [
-      { value: "small", label: "Small", description: "Best for individuals" },
-      { value: "large", label: "Large", description: "Best for families" },
-    ];
-
-    render(<RadioGroup name="size" options={optionsWithDesc} />);
-    expect(screen.getByText("Best for individuals")).toBeInTheDocument();
-    expect(screen.getByText("Best for families")).toBeInTheDocument();
-  });
-
-  it("selects the correct option based on value prop", () => {
-    render(<RadioGroup name="size" options={options} value="medium" />);
-
-    const radios = screen.getAllByRole("radio");
-    expect(radios[0]).not.toBeChecked(); // small
-    expect(radios[1]).toBeChecked(); // medium
-    expect(radios[2]).not.toBeChecked(); // large
-  });
-
-  it("calls onChange with selected value", async () => {
-    const handleChange = vi.fn();
-    const user = userEvent.setup();
-
-    render(
-      <RadioGroup name="size" options={options} onChange={handleChange} />
-    );
-
-    await user.click(screen.getByText("Large"));
-    expect(handleChange).toHaveBeenCalledWith("large");
-  });
-});

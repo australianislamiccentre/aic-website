@@ -1,5 +1,4 @@
-import { getDonationCauses } from "@/sanity/lib/fetch";
-import { SanityDonationCause } from "@/types/sanity";
+import { getDonateModalSettings, getDonationGoalMeter } from "@/sanity/lib/fetch";
 import DonateContent from "./DonateContent";
 
 export const metadata = {
@@ -8,7 +7,21 @@ export const metadata = {
 };
 
 export default async function DonatePage() {
-  const donationCauses = await getDonationCauses() as SanityDonationCause[];
+  const [donateModalSettings, goalMeter] = await Promise.all([
+    getDonateModalSettings(),
+    getDonationGoalMeter(),
+  ]);
 
-  return <DonateContent donationCauses={donationCauses} />;
+  // Combine featured and additional campaigns into a single list
+  const campaigns = [
+    ...(donateModalSettings?.featuredCampaign ? [{ ...donateModalSettings.featuredCampaign, featured: true }] : []),
+    ...(donateModalSettings?.additionalCampaigns?.map(c => ({ ...c, featured: false })) || []),
+  ];
+
+  return (
+    <DonateContent
+      campaigns={campaigns}
+      goalMeter={goalMeter}
+    />
+  );
 }

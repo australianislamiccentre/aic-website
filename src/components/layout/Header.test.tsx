@@ -30,6 +30,16 @@ vi.mock("@/components/ui/SearchDialog", () => ({
     ) : null,
 }));
 
+// Mock DonateModal
+vi.mock("@/components/DonateModal", () => ({
+  DonateModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
+    isOpen ? (
+      <div data-testid="donate-modal">
+        <button onClick={onClose}>Close Modal</button>
+      </div>
+    ) : null,
+}));
+
 describe("Header", () => {
   beforeEach(() => {
     // Reset scroll position
@@ -66,9 +76,8 @@ describe("Header", () => {
 
   it("renders donate button", () => {
     render(<Header />);
-    const donateLinks = screen.getAllByRole("link", { name: /Donate/i });
-    expect(donateLinks.length).toBeGreaterThan(0);
-    expect(donateLinks[0]).toHaveAttribute("href", "/donate");
+    const donateButton = screen.getByRole("button", { name: /Donate/i });
+    expect(donateButton).toBeInTheDocument();
   });
 
   it("renders search button", () => {
@@ -153,7 +162,7 @@ describe("Header", () => {
     await user.click(screen.getByLabelText("Open menu"));
 
     expect(
-      screen.getByRole("link", { name: /Make a Donation/i })
+      screen.getByRole("button", { name: /Make a Donation/i })
     ).toBeInTheDocument();
   });
 
@@ -194,13 +203,13 @@ describe("Header", () => {
     expect(phoneLinks.length).toBeGreaterThan(0);
   });
 
-  it("has proper link to donate page", () => {
+  it("opens donate modal when donate button is clicked", async () => {
+    const user = userEvent.setup();
     render(<Header />);
 
-    const donateLinks = screen.getAllByRole("link", { name: /Donate/i });
-    const visibleDonateLink = donateLinks.find((link: HTMLElement) =>
-      link.getAttribute("href") === "/donate"
-    );
-    expect(visibleDonateLink).toBeTruthy();
+    const donateButton = screen.getByRole("button", { name: /Donate/i });
+    await user.click(donateButton);
+
+    expect(screen.getByTestId("donate-modal")).toBeInTheDocument();
   });
 });

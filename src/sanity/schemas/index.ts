@@ -1,8 +1,10 @@
 import event from "./event";
 import announcement from "./announcement";
 import service from "./service";
-import donationCause from "./donationCause";
+import donationSettings from "./donationSettings";
+import donateModalSettings from "./donateModalSettings";
 import donationCampaign from "./donationCampaign";
+import donationGoalMeter from "./donationGoalMeter";
 import galleryImage from "./gallery";
 import faq from "./faq";
 import etiquette from "./etiquette";
@@ -18,12 +20,13 @@ export const schemaTypes = [
   // Singletons
   siteSettings,
   prayerSettings,
+  donationSettings,
+  donateModalSettings,
+  donationGoalMeter,
   // Content types
   event,
   announcement,
   service,
-  donationCause,
-  donationCampaign,
   teamMember,
   pageContent,
   resource,
@@ -31,6 +34,7 @@ export const schemaTypes = [
   faq,
   etiquette,
   tourType,
+  donationCampaign,
   // Form submissions
   tourRequest,
 ];

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { sanitizeMetadata } from '@/lib/campaign-utils';
 
 // Lazy initialize Stripe to avoid build-time errors
 let stripe: Stripe | null = null;
@@ -15,13 +16,6 @@ function getStripe(): Stripe {
     });
   }
   return stripe;
-}
-
-// Sanitize strings to remove hidden Unicode characters that can exceed Stripe's 500 char limit
-function sanitizeMetadata(str: string | undefined): string {
-  if (!str) return '';
-  // Remove non-printable ASCII characters and trim
-  return str.replace(/[^\x20-\x7E]/g, '').trim().slice(0, 500);
 }
 
 // Frequency mapping for Stripe recurring intervals

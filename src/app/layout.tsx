@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display, Amiri } from "next/font/google";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity";
-import Script from "next/script";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { PreviewBanner } from "@/components/PreviewBanner";
-import { getSiteSettings } from "@/sanity/lib/fetch";
+import { getSiteSettings, getDonationSettings, getDonateModalSettings, getDonationGoalMeter } from "@/sanity/lib/fetch";
+import { FundraiseUpScript } from "@/components/FundraiseUpScript";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -96,35 +96,23 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [{ isEnabled: isDraftMode }, siteSettings] = await Promise.all([
+  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, donateModalSettings, donationGoalMeter] = await Promise.all([
     draftMode(),
     getSiteSettings(),
+    getDonationSettings(),
+    getDonateModalSettings(),
+    getDonationGoalMeter(),
   ]);
 
   return (
     <html lang="en" className="scroll-smooth">
-      <head>
-        {/* Fundraise Up: the new standard for online giving */}
-        <Script
-          id="fundraise-up"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,n,a){if(!w[n]){var l='call,catch,on,once,set,then,track,openCheckout'
-.split(','),i,o=function(n){return'function'==typeof n?o.l.push([arguments])&&o
-:function(){return o.l.push([n,arguments])&&o}},t=d.getElementsByTagName(s)[0],
-j=d.createElement(s);j.async=!0;j.src='https://cdn.fundraiseup.com/widget/'+a+'';
-t.parentNode.insertBefore(j,t);o.s=Date.now();o.v=5;o.h=w.location.href;o.l=[];
-for(i=0;i<8;i++)o[l[i]]=o(l[i]);w[n]=o}
-})(window,document,'script','FundraiseUp','AGUWBDNC');`,
-          }}
-        />
-      </head>
       <body
         className={`${inter.variable} ${playfair.variable} ${amiri.variable} antialiased bg-neutral-50 text-gray-900 overflow-x-hidden`}
       >
+        <FundraiseUpScript settings={donationSettings} />
         <ScrollToTop />
         <ScrollProgress />
-        <Header siteSettings={siteSettings} />
+        <Header siteSettings={siteSettings} donateModalSettings={donateModalSettings} donationGoalMeter={donationGoalMeter} />
         <main className="overflow-x-hidden">{children}</main>
         <Footer siteSettings={siteSettings} />
         {isDraftMode && (

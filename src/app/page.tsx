@@ -30,7 +30,6 @@ export default async function HomePage() {
       <LatestUpdatesSection
         announcements={latestUpdates.announcements}
         events={[]} // Events show in UpcomingSection now
-        campaigns={latestUpdates.campaigns}
         urgentAnnouncement={urgentAnnouncement}
       />
       <QuickDonateSection />
