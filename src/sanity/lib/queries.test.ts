@@ -11,8 +11,8 @@ describe("GROQ Queries", () => {
       expect(typeof donationGoalMeterQuery).toBe("string");
     });
 
-    it("queries donationGoalMeter document type", () => {
-      expect(donationGoalMeterQuery).toContain('_type == "donationGoalMeter"');
+    it("queries donationGoalMeter singleton by ID", () => {
+      expect(donationGoalMeterQuery).toContain('_id == "donationGoalMeter"');
     });
 
     it("returns only the first document (singleton)", () => {

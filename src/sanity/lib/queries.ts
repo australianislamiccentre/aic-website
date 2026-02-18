@@ -250,7 +250,7 @@ export const featuredServicesQuery = groq`
 // Donation Settings (Fundraise Up config)
 // ============================================
 export const donationSettingsQuery = groq`
-  *[_type == "donationSettings"][0] {
+  *[_id == "donationSettings"][0] {
     _id,
     installationScript,
     organizationKey
@@ -261,7 +261,7 @@ export const donationSettingsQuery = groq`
 // Donation Goal Meter (singleton)
 // ============================================
 export const donationGoalMeterQuery = groq`
-  *[_type == "donationGoalMeter"][0] {
+  *[_id == "donationGoalMeter"][0] {
     _id,
     enabled,
     fundraiseUpElement
@@ -272,7 +272,7 @@ export const donationGoalMeterQuery = groq`
 // Donate Modal Settings (singleton with campaign references)
 // ============================================
 export const donateModalSettingsQuery = groq`
-  *[_type == "donateModalSettings"][0] {
+  *[_id == "donateModalSettings"][0] {
     _id,
     modalTitle,
     showOverallGoalMeter,
@@ -548,7 +548,7 @@ export const featuredResourcesQuery = groq`
 // Site Settings (singleton) - enhanced
 // ============================================
 export const siteSettingsQuery = groq`
-  *[_type == "siteSettings"][0] {
+  *[_id == "siteSettings"][0] {
     _id,
     organizationName,
     shortName,
@@ -572,7 +572,7 @@ export const siteSettingsQuery = groq`
 
 // Prayer Settings (singleton) - flat structure
 export const prayerSettingsQuery = groq`
-  *[_type == "prayerSettings"][0] {
+  *[_id == "prayerSettings"][0] {
     _id,
     // Daily prayers
     fajrIqamahMode, fajrFixedTime, fajrDelay,
