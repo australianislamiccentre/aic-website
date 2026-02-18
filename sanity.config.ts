@@ -40,11 +40,11 @@ const structure = (S: StructureBuilder) =>
                     .documentId("donateModalSettings")
                 ),
               S.listItem()
-                .title("Goal Meter")
+                .title("Donate Page")
                 .child(
                   S.document()
-                    .schemaType("donationGoalMeter")
-                    .documentId("donationGoalMeter")
+                    .schemaType("donatePageSettings")
+                    .documentId("donatePageSettings")
                 ),
               S.divider(),
               S.listItem()
@@ -136,7 +136,7 @@ const structure = (S: StructureBuilder) =>
 
       // Rest of the document types (exclude the ones we customized and singletons)
       ...S.documentTypeListItems().filter(
-        (item) => !["event", "announcement", "siteSettings", "prayerSettings", "donationSettings", "donateModalSettings", "donationGoalMeter", "donationCampaign"].includes(item.getId() || "")
+        (item) => !["event", "announcement", "siteSettings", "prayerSettings", "donationSettings", "donateModalSettings", "donatePageSettings", "donationCampaign"].includes(item.getId() || "")
       ),
     ]);
 

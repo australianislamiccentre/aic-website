@@ -1,25 +1,11 @@
 "use client";
 
-import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
-import {
-  Heart,
-  Lock,
-  CheckCircle2,
-  Sparkles,
-  Calendar,
-} from "lucide-react";
-import { DonationGoalMeter } from "@/sanity/lib/fetch";
-
-interface Campaign {
-  _id: string;
-  title: string;
-  fundraiseUpElement: string;
-  featured: boolean;
-}
+import Image from "next/image";
+import { Heart, Sparkles } from "lucide-react";
+import type { DonatePageSettings, DonatePageCampaign } from "@/sanity/lib/fetch";
 
 interface DonateContentProps {
-  campaigns: Campaign[];
-  goalMeter?: DonationGoalMeter | null;
+  settings?: DonatePageSettings | null;
 }
 
 // Clean Fundraise Up element code of hidden Unicode characters
@@ -27,204 +13,175 @@ const cleanElementCode = (code: string) => {
   return code.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
 };
 
-export default function DonateContent({
-  campaigns,
-  goalMeter,
-}: DonateContentProps) {
-  const featuredCampaign = campaigns.find(c => c.featured);
-  const additionalCampaigns = campaigns.filter(c => !c.featured);
+export default function DonateContent({ settings }: DonateContentProps) {
+  const enabledCampaigns = (settings?.campaigns || []).filter(
+    (c) => c.enabled !== false && c.fundraiseUpElement
+  );
+
+  const showGoal = settings?.goalEnabled && settings?.goalElement;
+  const showForm = settings?.formEnabled && settings?.formElement;
+  const showDonorList = settings?.donorListEnabled && settings?.donorListElement;
+  const showMap = settings?.mapEnabled && settings?.mapElement;
+  const showCampaigns = enabledCampaigns.length > 0;
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-neutral-50 via-white to-green-50/30 overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-green-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-lime-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+    <div className="bg-neutral-50">
+      {/* ── Hero: Image background + gradient overlay + text left / form right ── */}
+      <section className="relative overflow-hidden">
+        {/* Background image */}
+        <Image
+          src="/images/aic 2.jpg"
+          alt="Australian Islamic Centre"
+          fill
+          priority
+          className="object-cover object-center"
+          sizes="100vw"
+        />
 
-        <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 text-sm font-medium mb-6">
-              <Heart className="w-4 h-4" />
-              Make a Difference
+        {/* Gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/90 via-neutral-900/60 to-neutral-900/30 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-neutral-900/40 via-transparent to-neutral-900/60 z-10" />
+
+        {/* Islamic geometric pattern */}
+        <div
+          className="absolute inset-0 z-10 opacity-[0.04]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='%23ffffff' stroke-opacity='1' stroke-width='1'/%3E%3C/svg%3E")`,
+          }}
+        />
+
+        {/* Hero content */}
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center py-8 sm:py-12 md:py-16 lg:py-20">
+            {/* Left — text */}
+            <div>
+              <div className="h-1 w-16 bg-gradient-to-r from-lime-400 to-green-400 rounded-full mb-6" />
+
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
+                Support Our{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-300 via-green-400 to-lime-400">
+                  Community
+                </span>
+              </h1>
+
+              <p className="text-white/70 text-base sm:text-lg max-w-md mb-6">
+                Your generosity helps us maintain our centre, run educational
+                programs, and support those in need.
+              </p>
+
+              <div className="flex items-center gap-3 text-white/50 text-sm">
+                <Heart className="w-4 h-4 text-lime-400" />
+                <span>Every contribution makes a difference</span>
+              </div>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Support Our <span className="text-green-600">Mission</span>
-            </h1>
-
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-2xl mx-auto">
-              Your generosity helps us maintain our centre, run educational programs,
-              and support those in need. Every contribution makes a difference.
-            </p>
-
-            <div className="flex flex-wrap justify-center gap-4">
-              <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm">
-                <Lock className="w-4 h-4 text-green-600" />
-                <span className="text-sm text-gray-600">Secure Payment</span>
+            {/* Right — donation form */}
+            {showForm && (
+              <div className="bg-white rounded-2xl shadow-2xl p-1 lg:max-w-md lg:ml-auto">
+                <div
+                  className="fundraise-up-wrapper"
+                  dangerouslySetInnerHTML={{
+                    __html: cleanElementCode(settings!.formElement!),
+                  }}
+                />
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm">
-                <CheckCircle2 className="w-4 h-4 text-green-600" />
-                <span className="text-sm text-gray-600">Tax Deductible</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm">
-                <Sparkles className="w-4 h-4 text-green-600" />
-                <span className="text-sm text-gray-600">100% Goes to Cause</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Campaigns Section */}
-      {campaigns.length > 0 && (
-        <section className="py-16 bg-white">
-          <div className="max-w-4xl mx-auto px-6">
-            <FadeIn>
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Active Campaigns</h2>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  Choose a campaign to support and make an impact today.
-                </p>
+      {/* ── Goal Meter — centred between hero and campaigns ── */}
+      {showGoal && (
+        <div className="bg-white border-b border-gray-100">
+          <div className="max-w-xl mx-auto px-4 sm:px-6 py-6">
+            <div
+              className="fundraise-up-goal-meter"
+              dangerouslySetInnerHTML={{
+                __html: cleanElementCode(settings!.goalElement!),
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ── Active Campaigns — full-width styled section ── */}
+      {showCampaigns && (
+        <section className="relative overflow-hidden bg-gradient-to-b from-neutral-900 to-neutral-800 py-8 sm:py-12">
+          {/* Decorative background */}
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='%23ffffff' stroke-opacity='1' stroke-width='1'/%3E%3C/svg%3E")`,
+            }}
+          />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-lime-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-lime-400 text-xs font-medium mb-3">
+                <Sparkles className="w-3.5 h-3.5" />
+                Make an impact
               </div>
-            </FadeIn>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                Active Campaigns
+              </h2>
+              <p className="text-white/50 text-sm mt-2 max-w-md mx-auto">
+                Choose a cause close to your heart and make a direct impact.
+              </p>
+            </div>
 
-            <div className="space-y-8">
-              {/* Overall Goal Meter (Fundraise Up Element) */}
-              {goalMeter?.enabled && goalMeter?.fundraiseUpElement && (
-                <FadeIn>
-                  <div
-                    className="fundraise-up-goal-meter max-w-lg mx-auto mb-4"
-                    dangerouslySetInnerHTML={{
-                      __html: cleanElementCode(goalMeter.fundraiseUpElement),
-                    }}
-                  />
-                </FadeIn>
-              )}
-
-              {/* Featured Campaign - integrated title header */}
-              {featuredCampaign && (
-                <FadeIn>
-                  <div className="w-[300px] mx-auto rounded-xl overflow-hidden shadow-md">
-                    {/* Title bar - matches Fundraise Up widget header */}
-                    <div className="bg-[#1a5d57] px-4 py-2.5">
-                      <h3 className="text-white text-sm font-semibold text-center leading-snug">
-                        {featuredCampaign.title}
-                      </h3>
-                    </div>
-                    {/* Fundraise Up Element */}
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center sm:items-start gap-6">
+              {enabledCampaigns.map((campaign: DonatePageCampaign) => (
+                <div key={campaign._key} className="flex flex-col items-center">
+                  {campaign.title && (
+                    <h3 className="text-white text-sm font-semibold mb-2 text-center">
+                      {campaign.title}
+                    </h3>
+                  )}
+                  <div className="group rounded-2xl overflow-hidden border border-white/10 hover:border-lime-400/30 transition-all duration-300">
                     <div
                       className="fundraise-up-wrapper"
                       dangerouslySetInnerHTML={{
-                        __html: cleanElementCode(featuredCampaign.fundraiseUpElement),
+                        __html: cleanElementCode(campaign.fundraiseUpElement),
                       }}
                     />
                   </div>
-                </FadeIn>
-              )}
-
-              {/* Additional Campaigns */}
-              {additionalCampaigns.length > 0 && (
-                <StaggerContainer className="flex flex-wrap justify-center gap-6">
-                  {additionalCampaigns.map((campaign) => (
-                    <StaggerItem key={campaign._id}>
-                      <div className="w-[300px] rounded-xl overflow-hidden shadow-md">
-                        {/* Title bar */}
-                        <div className="bg-[#1a5d57] px-4 py-2">
-                          <h4 className="text-white text-xs font-medium text-center leading-snug">
-                            {campaign.title}
-                          </h4>
-                        </div>
-                        {/* Fundraise Up Element */}
-                        <div
-                          className="fundraise-up-wrapper"
-                          dangerouslySetInnerHTML={{
-                            __html: cleanElementCode(campaign.fundraiseUpElement),
-                          }}
-                        />
-                      </div>
-                    </StaggerItem>
-                  ))}
-                </StaggerContainer>
-              )}
+                </div>
+              ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Why Donate Section */}
-      <section className="py-16 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Donate With Us?</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Your contributions directly support our community and make a lasting impact.
-              </p>
-            </div>
-          </FadeIn>
-
-          <StaggerContainer className="grid md:grid-cols-4 gap-8">
-            {[
-              { icon: Lock, title: "100% Secure", description: "All payments are processed securely" },
-              { icon: CheckCircle2, title: "Tax Deductible", description: "Receive a tax receipt for your donation" },
-              { icon: Heart, title: "Direct Impact", description: "100% of your donation goes to the cause" },
-              { icon: Calendar, title: "Flexible Options", description: "One-time or recurring donations available" },
-            ].map((item) => (
-              <StaggerItem key={item.title}>
-                <div className="text-center">
-                  <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-                    <item.icon className="w-7 h-7 text-green-600" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-                  <p className="text-sm text-gray-600">{item.description}</p>
-                </div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
+      {/* ── Recent Donations ── */}
+      {showDonorList && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          <div
+            className="fundraise-up-wrapper"
+            dangerouslySetInnerHTML={{
+              __html: cleanElementCode(settings!.donorListElement!),
+            }}
+          />
         </div>
-      </section>
+      )}
 
-      {/* Other Ways to Give */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Other Ways to Give</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Beyond online donations, there are many ways you can support our mission.
-              </p>
-            </div>
-          </FadeIn>
-
-          <StaggerContainer className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Bank Transfer",
-                description: "Make a direct bank transfer to our account.",
-                details: "BSB: 000-000 | Account: 12345678",
-              },
-              {
-                title: "In-Person",
-                description: "Visit our centre and make a donation in person.",
-                details: "23-27 Blenheim Rd, Newport VIC 3015",
-              },
-              {
-                title: "Legacy Giving",
-                description: "Include the centre in your will for lasting impact.",
-                details: "Contact us for more information",
-              },
-            ].map((method) => (
-              <StaggerItem key={method.title}>
-                <div className="p-8 bg-gray-50 rounded-2xl hover:shadow-md transition-shadow">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{method.title}</h3>
-                  <p className="text-gray-600 mb-4">{method.description}</p>
-                  <p className="text-sm text-green-600 font-medium">{method.details}</p>
-                </div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
+      {/* ── Donation Map ── */}
+      {showMap && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-8">
+          <div className="border-t border-gray-200 pt-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 text-center mb-4">
+              {settings!.mapTitle || "Donations Around the World"}
+            </h2>
+            <div
+              className="fundraise-up-wrapper"
+              dangerouslySetInnerHTML={{
+                __html: cleanElementCode(settings!.mapElement!),
+              }}
+            />
+          </div>
         </div>
-      </section>
+      )}
     </div>
   );
 }

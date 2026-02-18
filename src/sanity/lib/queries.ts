@@ -258,13 +258,26 @@ export const donationSettingsQuery = groq`
 `;
 
 // ============================================
-// Donation Goal Meter (singleton)
+// Donate Page Settings (singleton)
 // ============================================
-export const donationGoalMeterQuery = groq`
-  *[_id == "donationGoalMeter"][0] {
+export const donatePageSettingsQuery = groq`
+  *[_id == "donatePageSettings"][0] {
     _id,
-    enabled,
-    fundraiseUpElement
+    goalEnabled,
+    goalElement,
+    formEnabled,
+    formElement,
+    campaigns[] {
+      _key,
+      title,
+      fundraiseUpElement,
+      enabled
+    },
+    donorListEnabled,
+    donorListElement,
+    mapEnabled,
+    mapTitle,
+    mapElement
   }
 `;
 

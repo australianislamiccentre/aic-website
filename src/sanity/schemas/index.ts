@@ -4,7 +4,7 @@ import service from "./service";
 import donationSettings from "./donationSettings";
 import donateModalSettings from "./donateModalSettings";
 import donationCampaign from "./donationCampaign";
-import donationGoalMeter from "./donationGoalMeter";
+import donatePageSettings from "./donatePageSettings";
 import galleryImage from "./gallery";
 import faq from "./faq";
 import etiquette from "./etiquette";
@@ -22,7 +22,7 @@ export const schemaTypes = [
   prayerSettings,
   donationSettings,
   donateModalSettings,
-  donationGoalMeter,
+  donatePageSettings,
   // Content types
   event,
   announcement,
