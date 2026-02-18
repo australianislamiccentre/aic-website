@@ -17,7 +17,7 @@ import {
   // Donation Settings
   donationSettingsQuery,
   donateModalSettingsQuery,
-  donationGoalMeterQuery,
+  donatePageSettingsQuery,
   galleryQuery,
   featuredGalleryQuery,
   faqsQuery,
@@ -343,29 +343,46 @@ export async function getDonateModalSettings(): Promise<DonateModalSettings | nu
 }
 
 // ============================================
-// Donation Goal Meter
+// Donate Page Settings (singleton for /donate page)
 // ============================================
+export interface DonatePageCampaign {
+  _key: string;
+  title?: string;
+  fundraiseUpElement: string;
+  enabled?: boolean;
+}
 
+export interface DonatePageSettings {
+  _id: string;
+  goalEnabled?: boolean;
+  goalElement?: string;
+  formEnabled?: boolean;
+  formElement?: string;
+  campaigns?: DonatePageCampaign[];
+  donorListEnabled?: boolean;
+  donorListElement?: string;
+  mapEnabled?: boolean;
+  mapTitle?: string;
+  mapElement?: string;
+}
+
+// Legacy alias — used by DonateModal for goal meter props
 export interface DonationGoalMeter {
   _id: string;
   enabled: boolean;
   fundraiseUpElement?: string;
-  mainDonationFormElement?: string;
-  recentDonationsElement?: string;
-  donationMapElement?: string;
 }
 
-export async function getDonationGoalMeter(): Promise<DonationGoalMeter | null> {
+export async function getDonatePageSettings(): Promise<DonatePageSettings | null> {
   try {
-    const result = await sanityFetch<DonationGoalMeter | null>(
-      donationGoalMeterQuery,
+    return await sanityFetch<DonatePageSettings | null>(
+      donatePageSettingsQuery,
       {},
-      ["donationGoalMeter"],
+      ["donatePageSettings"],
       { skipCdn: true }
     );
-    return result;
   } catch (error) {
-    console.error("Failed to fetch donation goal meter from Sanity:", error);
+    console.error("Failed to fetch donate page settings from Sanity:", error);
     return null;
   }
 }

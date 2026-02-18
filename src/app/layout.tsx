@@ -8,7 +8,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { PreviewBanner } from "@/components/PreviewBanner";
-import { getSiteSettings, getDonationSettings, getDonateModalSettings, getDonationGoalMeter } from "@/sanity/lib/fetch";
+import { getSiteSettings, getDonationSettings, getDonateModalSettings, getDonatePageSettings } from "@/sanity/lib/fetch";
 import { FundraiseUpScript } from "@/components/FundraiseUpScript";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 
@@ -97,13 +97,22 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, donateModalSettings, donationGoalMeter] = await Promise.all([
+  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, donateModalSettings, donatePageSettings] = await Promise.all([
     draftMode(),
     getSiteSettings(),
     getDonationSettings(),
     getDonateModalSettings(),
-    getDonationGoalMeter(),
+    getDonatePageSettings(),
   ]);
+
+  // Extract goal meter data for the donation modal
+  const donationGoalMeter = donatePageSettings?.goalEnabled
+    ? {
+        _id: donatePageSettings._id,
+        enabled: true,
+        fundraiseUpElement: donatePageSettings.goalElement,
+      }
+    : null;
 
   return (
     <html lang="en" className="scroll-smooth">

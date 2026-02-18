@@ -1,41 +1,57 @@
 import { describe, it, expect } from "vitest";
-import { donationGoalMeterQuery } from "./queries";
+import { donatePageSettingsQuery } from "./queries";
 
 describe("GROQ Queries", () => {
-  describe("donationGoalMeterQuery", () => {
+  describe("donatePageSettingsQuery", () => {
     it("is defined", () => {
-      expect(donationGoalMeterQuery).toBeDefined();
+      expect(donatePageSettingsQuery).toBeDefined();
     });
 
     it("is a string", () => {
-      expect(typeof donationGoalMeterQuery).toBe("string");
+      expect(typeof donatePageSettingsQuery).toBe("string");
     });
 
-    it("queries donationGoalMeter singleton by ID", () => {
-      expect(donationGoalMeterQuery).toContain('_id == "donationGoalMeter"');
+    it("queries donatePageSettings singleton by ID", () => {
+      expect(donatePageSettingsQuery).toContain('_id == "donatePageSettings"');
     });
 
     it("returns only the first document (singleton)", () => {
-      expect(donationGoalMeterQuery).toContain("[0]");
+      expect(donatePageSettingsQuery).toContain("[0]");
     });
 
     it("includes _id field", () => {
-      expect(donationGoalMeterQuery).toContain("_id");
+      expect(donatePageSettingsQuery).toContain("_id");
     });
 
-    it("includes enabled field", () => {
-      expect(donationGoalMeterQuery).toContain("enabled");
+    it("includes goal fields", () => {
+      expect(donatePageSettingsQuery).toContain("goalEnabled");
+      expect(donatePageSettingsQuery).toContain("goalElement");
     });
 
-    it("includes fundraiseUpElement field", () => {
-      expect(donationGoalMeterQuery).toContain("fundraiseUpElement");
+    it("includes form fields", () => {
+      expect(donatePageSettingsQuery).toContain("formEnabled");
+      expect(donatePageSettingsQuery).toContain("formElement");
+    });
+
+    it("includes campaigns array", () => {
+      expect(donatePageSettingsQuery).toContain("campaigns[]");
+    });
+
+    it("includes donor list fields", () => {
+      expect(donatePageSettingsQuery).toContain("donorListEnabled");
+      expect(donatePageSettingsQuery).toContain("donorListElement");
+    });
+
+    it("includes map fields", () => {
+      expect(donatePageSettingsQuery).toContain("mapEnabled");
+      expect(donatePageSettingsQuery).toContain("mapTitle");
+      expect(donatePageSettingsQuery).toContain("mapElement");
     });
 
     it("does not include unnecessary fields", () => {
-      // Should not include revision, createdAt, updatedAt by default
-      expect(donationGoalMeterQuery).not.toContain("_rev");
-      expect(donationGoalMeterQuery).not.toContain("_createdAt");
-      expect(donationGoalMeterQuery).not.toContain("_updatedAt");
+      expect(donatePageSettingsQuery).not.toContain("_rev");
+      expect(donatePageSettingsQuery).not.toContain("_createdAt");
+      expect(donatePageSettingsQuery).not.toContain("_updatedAt");
     });
   });
 });

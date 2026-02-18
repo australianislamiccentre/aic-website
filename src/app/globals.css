@@ -332,6 +332,18 @@ body {
 .stagger-4 { transition-delay: 0.4s; }
 .stagger-5 { transition-delay: 0.5s; }
 
+/* Fundraise Up widget fill container */
+.fundraise-up-wrapper,
+.fundraise-up-goal-meter {
+  width: 100%;
+}
+
+.fundraise-up-wrapper iframe,
+.fundraise-up-goal-meter iframe {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
 /* Hide scrollbar for horizontal scroll containers */
 .scrollbar-hide {
   -ms-overflow-style: none;
