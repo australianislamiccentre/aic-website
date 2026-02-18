@@ -15,8 +15,8 @@ describe("donationGoalMeter schema", () => {
       expect(donationGoalMeter.type).toBe("document");
     });
 
-    it("has exactly 2 fields", () => {
-      expect(donationGoalMeter.fields).toHaveLength(2);
+    it("has exactly 5 fields", () => {
+      expect(donationGoalMeter.fields).toHaveLength(5);
     });
   });
 
@@ -61,7 +61,7 @@ describe("donationGoalMeter schema", () => {
     });
 
     it("has correct title", () => {
-      expect(elementField?.title).toBe("Fundraise Up Element Code");
+      expect(elementField?.title).toBe("Goal Meter Element Code");
     });
 
     it("has rows configuration", () => {

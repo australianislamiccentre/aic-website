@@ -264,7 +264,10 @@ export const donationGoalMeterQuery = groq`
   *[_id == "donationGoalMeter"][0] {
     _id,
     enabled,
-    fundraiseUpElement
+    fundraiseUpElement,
+    mainDonationFormElement,
+    recentDonationsElement,
+    donationMapElement
   }
 `;
 

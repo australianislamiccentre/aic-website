@@ -350,6 +350,9 @@ export interface DonationGoalMeter {
   _id: string;
   enabled: boolean;
   fundraiseUpElement?: string;
+  mainDonationFormElement?: string;
+  recentDonationsElement?: string;
+  donationMapElement?: string;
 }
 
 export async function getDonationGoalMeter(): Promise<DonationGoalMeter | null> {

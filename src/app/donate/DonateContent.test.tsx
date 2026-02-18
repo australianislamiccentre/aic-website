@@ -62,8 +62,8 @@ describe("DonateContent", () => {
     it("renders hero section with title", () => {
       render(<DonateContent campaigns={[]} />);
 
-      expect(screen.getByText("Support Our")).toBeInTheDocument();
-      expect(screen.getByText("Mission")).toBeInTheDocument();
+      expect(screen.getByText("Make a")).toBeInTheDocument();
+      expect(screen.getByText("Donation")).toBeInTheDocument();
     });
 
     it("renders hero section description", () => {
@@ -74,15 +74,36 @@ describe("DonateContent", () => {
       ).toBeInTheDocument();
     });
 
-    it("displays badge indicators", () => {
+    it("displays support badge", () => {
       render(<DonateContent campaigns={[]} />);
 
-      expect(screen.getByText("Make a Difference")).toBeInTheDocument();
-      expect(screen.getByText("Secure Payment")).toBeInTheDocument();
-      // "Tax Deductible" appears twice (hero badge and benefits section)
-      const taxDeductibleElements = screen.getAllByText("Tax Deductible");
-      expect(taxDeductibleElements.length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText("100% Goes to Cause")).toBeInTheDocument();
+      expect(screen.getByText("Support Our Centre")).toBeInTheDocument();
+    });
+  });
+
+  describe("Main Donation Form", () => {
+    it("renders main donation form when element exists", () => {
+      const goalMeterWithForm: DonationGoalMeter = {
+        ...mockGoalMeter,
+        mainDonationFormElement: '<a href="#MAIN_FORM" style="display:none"></a>',
+      };
+
+      const { container } = render(
+        <DonateContent campaigns={[]} goalMeter={goalMeterWithForm} />
+      );
+
+      const wrappers = container.querySelectorAll(".fundraise-up-wrapper");
+      expect(wrappers.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("does not render main donation form when element is missing", () => {
+      const { container } = render(
+        <DonateContent campaigns={[]} goalMeter={mockGoalMeter} />
+      );
+
+      // Only campaign wrappers would appear, not main form
+      const wrappers = container.querySelectorAll(".fundraise-up-wrapper");
+      expect(wrappers.length).toBe(0);
     });
   });
 
@@ -167,7 +188,6 @@ describe("DonateContent", () => {
       const goalMeterDiv = container.querySelector(".fundraise-up-goal-meter");
       expect(goalMeterDiv).toHaveClass("max-w-lg");
       expect(goalMeterDiv).toHaveClass("mx-auto");
-      expect(goalMeterDiv).toHaveClass("mb-4");
     });
 
     it("cleans unicode characters from goal meter element", () => {
@@ -191,12 +211,9 @@ describe("DonateContent", () => {
       render(<DonateContent campaigns={mockCampaigns} />);
 
       expect(screen.getByText("Active Campaigns")).toBeInTheDocument();
-      expect(
-        screen.getByText("Choose a campaign to support and make an impact today.")
-      ).toBeInTheDocument();
     });
 
-    it("does not render campaigns section when no campaigns", () => {
+    it("does not render campaigns section when no campaigns and no goal meter", () => {
       render(<DonateContent campaigns={[]} />);
 
       expect(screen.queryByText("Active Campaigns")).not.toBeInTheDocument();
@@ -240,82 +257,41 @@ describe("DonateContent", () => {
     });
   });
 
-  describe("Why Donate Section", () => {
-    it("renders why donate section", () => {
-      render(<DonateContent campaigns={[]} />);
+  describe("Recent Donations Section", () => {
+    it("renders when recentDonationsElement exists", () => {
+      const goalMeterWithRecent: DonationGoalMeter = {
+        ...mockGoalMeter,
+        recentDonationsElement: '<a href="#RECENT" style="display:none"></a>',
+      };
 
-      expect(screen.getByText("Why Donate With Us?")).toBeInTheDocument();
+      render(<DonateContent campaigns={[]} goalMeter={goalMeterWithRecent} />);
+
+      expect(screen.getByText("Recent Donations")).toBeInTheDocument();
     });
 
-    it("renders all benefit items", () => {
-      render(<DonateContent campaigns={[]} />);
+    it("does not render when recentDonationsElement is missing", () => {
+      render(<DonateContent campaigns={[]} goalMeter={mockGoalMeter} />);
 
-      expect(screen.getByText("100% Secure")).toBeInTheDocument();
-      // Note: "Tax Deductible" appears twice (hero and section)
-      expect(screen.getAllByText("Tax Deductible").length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText("Direct Impact")).toBeInTheDocument();
-      expect(screen.getByText("Flexible Options")).toBeInTheDocument();
-    });
-
-    it("renders benefit descriptions", () => {
-      render(<DonateContent campaigns={[]} />);
-
-      expect(
-        screen.getByText("All payments are processed securely")
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("Receive a tax receipt for your donation")
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("100% of your donation goes to the cause")
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("One-time or recurring donations available")
-      ).toBeInTheDocument();
+      expect(screen.queryByText("Recent Donations")).not.toBeInTheDocument();
     });
   });
 
-  describe("Other Ways to Give Section", () => {
-    it("renders other ways to give section", () => {
-      render(<DonateContent campaigns={[]} />);
+  describe("Donation Map Section", () => {
+    it("renders when donationMapElement exists", () => {
+      const goalMeterWithMap: DonationGoalMeter = {
+        ...mockGoalMeter,
+        donationMapElement: '<a href="#MAP" style="display:none"></a>',
+      };
 
-      expect(screen.getByText("Other Ways to Give")).toBeInTheDocument();
+      render(<DonateContent campaigns={[]} goalMeter={goalMeterWithMap} />);
+
+      expect(screen.getByText("Donations Around the World")).toBeInTheDocument();
     });
 
-    it("renders all giving methods", () => {
-      render(<DonateContent campaigns={[]} />);
+    it("does not render when donationMapElement is missing", () => {
+      render(<DonateContent campaigns={[]} goalMeter={mockGoalMeter} />);
 
-      expect(screen.getByText("Bank Transfer")).toBeInTheDocument();
-      expect(screen.getByText("In-Person")).toBeInTheDocument();
-      expect(screen.getByText("Legacy Giving")).toBeInTheDocument();
-    });
-
-    it("renders method descriptions", () => {
-      render(<DonateContent campaigns={[]} />);
-
-      expect(
-        screen.getByText("Make a direct bank transfer to our account.")
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("Visit our centre and make a donation in person.")
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("Include the centre in your will for lasting impact.")
-      ).toBeInTheDocument();
-    });
-
-    it("renders method details", () => {
-      render(<DonateContent campaigns={[]} />);
-
-      expect(
-        screen.getByText("BSB: 000-000 | Account: 12345678")
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("23-27 Blenheim Rd, Newport VIC 3015")
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("Contact us for more information")
-      ).toBeInTheDocument();
+      expect(screen.queryByText("Donations Around the World")).not.toBeInTheDocument();
     });
   });
 
@@ -343,10 +319,10 @@ describe("DonateContent", () => {
     it("handles empty campaigns array", () => {
       render(<DonateContent campaigns={[]} />);
 
-      // Page should still render other sections
-      expect(screen.getByText("Support Our")).toBeInTheDocument();
-      expect(screen.getByText("Why Donate With Us?")).toBeInTheDocument();
-      expect(screen.getByText("Other Ways to Give")).toBeInTheDocument();
+      // Hero should still render
+      expect(screen.getByText("Make a")).toBeInTheDocument();
+      // Removed sections should not appear
+      expect(screen.queryByText("Active Campaigns")).not.toBeInTheDocument();
     });
 
     it("handles campaigns with missing titles", () => {
@@ -404,7 +380,6 @@ describe("DonateContent", () => {
       // find() returns the first match
       expect(screen.getByText("First Featured")).toBeInTheDocument();
       // Second one is excluded from additionalCampaigns because filter(c => !c.featured)
-      // So "Second Featured" won't be rendered at all
       expect(screen.queryByText("Second Featured")).not.toBeInTheDocument();
     });
   });
