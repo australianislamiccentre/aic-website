@@ -13,7 +13,9 @@ export async function GET() {
     perspective: "published", // Only published docs
   });
 
-  const prayerSettings = await freshClient.fetch(`*[_type == "prayerSettings"][0] {
+  // Fetch ALL prayerSettings documents to check for duplicates
+  const allPrayerSettings = await freshClient.fetch(`*[_type == "prayerSettings"] {
+    _id,
     taraweehEnabled, taraweehTime,
     eidFitrActive, eidFitrTime,
     eidAdhaActive, eidAdhaTime,
@@ -22,7 +24,8 @@ export async function GET() {
 
   return NextResponse.json({
     dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
-    prayerSettings,
+    totalDocuments: allPrayerSettings.length,
+    allPrayerSettings,
     timestamp: new Date().toISOString(),
   });
 }
