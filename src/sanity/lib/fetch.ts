@@ -330,7 +330,7 @@ export async function getDonateModalSettings(): Promise<DonateModalSettings | nu
       goalLabel: result.goalLabel,
       overallGoal: result.overallGoal,
       overallRaised: result.overallRaised,
-      featuredCampaign: result.featuredCampaign?.active
+      featuredCampaign: result.featuredCampaign && result.featuredCampaign.active !== false
         ? {
             _id: result.featuredCampaign._id,
             title: result.featuredCampaign.title,
@@ -338,7 +338,7 @@ export async function getDonateModalSettings(): Promise<DonateModalSettings | nu
           }
         : null,
       additionalCampaigns: (result.additionalCampaigns || [])
-        .filter((c) => c.active)
+        .filter((c) => c.active !== false)
         .map((c) => ({
           _id: c._id,
           title: c.title,
