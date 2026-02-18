@@ -147,6 +147,7 @@ describe("DonateModal", () => {
         <DonateModal
           isOpen={true}
           onClose={mockOnClose}
+          showGoalMeter={true}
           goalMeter={mockGoalMeter}
           featuredCampaign={mockFeaturedCampaign}
         />
@@ -156,18 +157,13 @@ describe("DonateModal", () => {
       expect(goalMeterDiv).toBeInTheDocument();
     });
 
-    it("does not render goal meter when disabled", () => {
-      const disabledGoalMeter: DonationGoalMeter = {
-        _id: "goal-1",
-        enabled: false,
-        fundraiseUpElement: '<a href="#XJAKPSNE" style="display: none"></a>',
-      };
-
+    it("does not render goal meter when showGoalMeter is false", () => {
       const { container } = render(
         <DonateModal
           isOpen={true}
           onClose={mockOnClose}
-          goalMeter={disabledGoalMeter}
+          showGoalMeter={false}
+          goalMeter={mockGoalMeter}
           featuredCampaign={mockFeaturedCampaign}
         />
       );
@@ -255,6 +251,7 @@ describe("DonateModal", () => {
         <DonateModal
           isOpen={true}
           onClose={mockOnClose}
+          showGoalMeter={true}
           goalMeter={goalMeterWithUnicode}
           featuredCampaign={mockFeaturedCampaign}
         />

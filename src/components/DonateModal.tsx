@@ -10,6 +10,7 @@ interface DonateModalProps {
   isOpen: boolean;
   onClose: () => void;
   modalTitle?: string;
+  showGoalMeter?: boolean;
   goalMeter?: DonationGoalMeter | null;
   featuredCampaign?: ModalCampaign | null;
   additionalCampaigns?: ModalCampaign[];
@@ -19,6 +20,7 @@ export function DonateModal({
   isOpen,
   onClose,
   modalTitle = "Support Our Centre",
+  showGoalMeter,
   goalMeter,
   featuredCampaign,
   additionalCampaigns = [],
@@ -99,7 +101,7 @@ export function DonateModal({
               {hasCampaigns ? (
                 <div className="space-y-4">
                   {/* Overall Goal Meter (Fundraise Up Element) */}
-                  {goalMeter?.enabled && goalMeter?.fundraiseUpElement && (
+                  {showGoalMeter && goalMeter?.fundraiseUpElement && (
                     <div
                       className="fundraise-up-goal-meter mb-4"
                       dangerouslySetInnerHTML={{

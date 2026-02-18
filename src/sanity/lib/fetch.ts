@@ -76,10 +76,7 @@ export interface ModalCampaign {
 export interface DonateModalSettings {
   _id: string;
   modalTitle?: string;
-  showOverallGoalMeter?: boolean;
-  goalLabel?: string;
-  overallGoal?: number;
-  overallRaised?: number;
+  showGoalMeter?: boolean;
   featuredCampaign?: ModalCampaign | null;
   additionalCampaigns?: ModalCampaign[];
 }
@@ -303,10 +300,7 @@ interface ModalCampaignWithActive extends ModalCampaign {
 interface DonateModalSettingsRaw {
   _id: string;
   modalTitle?: string;
-  showOverallGoalMeter?: boolean;
-  goalLabel?: string;
-  overallGoal?: number;
-  overallRaised?: number;
+  showGoalMeter?: boolean;
   featuredCampaign?: ModalCampaignWithActive | null;
   additionalCampaigns?: ModalCampaignWithActive[];
 }
@@ -322,14 +316,11 @@ export async function getDonateModalSettings(): Promise<DonateModalSettings | nu
 
     if (!result) return null;
 
-    // Filter out inactive campaigns and include goal meter fields
+    // Filter out inactive campaigns
     return {
       _id: result._id,
       modalTitle: result.modalTitle,
-      showOverallGoalMeter: result.showOverallGoalMeter,
-      goalLabel: result.goalLabel,
-      overallGoal: result.overallGoal,
-      overallRaised: result.overallRaised,
+      showGoalMeter: result.showGoalMeter,
       featuredCampaign: result.featuredCampaign && result.featuredCampaign.active !== false
         ? {
             _id: result.featuredCampaign._id,

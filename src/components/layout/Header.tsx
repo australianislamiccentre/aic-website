@@ -654,6 +654,7 @@ export function Header({ donateModalSettings, donationGoalMeter }: HeaderProps) 
         isOpen={donateModalOpen}
         onClose={() => setDonateModalOpen(false)}
         modalTitle={donateModalSettings?.modalTitle}
+        showGoalMeter={donateModalSettings?.showGoalMeter}
         goalMeter={donationGoalMeter}
         featuredCampaign={donateModalSettings?.featuredCampaign}
         additionalCampaigns={donateModalSettings?.additionalCampaigns}

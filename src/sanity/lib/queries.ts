@@ -275,10 +275,7 @@ export const donateModalSettingsQuery = groq`
   *[_id == "donateModalSettings"][0] {
     _id,
     modalTitle,
-    showOverallGoalMeter,
-    goalLabel,
-    overallGoal,
-    overallRaised,
+    showGoalMeter,
     // Featured campaign - fetch with active status (filtering done in fetch function)
     "featuredCampaign": featuredCampaign->{
       _id,
