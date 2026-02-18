@@ -42,7 +42,7 @@ const documentTypeToPath: Record<string, string[]> = {
   etiquette: ["/visit"],
   tourType: ["/visit"],
   siteSettings: ["/"],
-  prayerSettings: ["/worshippers"],
+  prayerSettings: ["/", "/worshippers"],
   teamMember: ["/about", "/imams"],
   pageContent: ["/"],
   resource: ["/resources"],
