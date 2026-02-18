@@ -63,9 +63,13 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
   const [direction, setDirection] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
-  // Use dynamic prayer times
-  const prayerTimes = usePrayerTimes();
-  const nextPrayerData = useNextPrayer();
+  // Use dynamic prayer times with Sanity iqamah overrides
+  const prayerTimes = usePrayerTimes(prayerSettings);
+  const nextPrayerData = useNextPrayer(prayerSettings);
+
+  // Jumu'ah times from Sanity with hardcoded fallback
+  const jumuahArabicTime = prayerSettings?.jumuahArabicTime ?? jumuahTimes[0]?.time;
+  const jumuahEnglishTime = prayerSettings?.jumuahEnglishTime ?? jumuahTimes[1]?.time;
 
   // Build prayers array with full data
   const prayers = [
@@ -404,11 +408,11 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
                   <span className="text-white/50 text-sm font-medium">Jumu&apos;ah</span>
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5">
                     <span className="text-white/50 text-xs">Arabic</span>
-                    <span className="text-lime-400 font-semibold">{jumuahTimes[0].time}</span>
+                    <span className="text-lime-400 font-semibold">{jumuahArabicTime}</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5">
                     <span className="text-white/50 text-xs">English</span>
-                    <span className="text-lime-400 font-semibold">{jumuahTimes[1].time}</span>
+                    <span className="text-lime-400 font-semibold">{jumuahEnglishTime}</span>
                   </div>
                 </div>
 
@@ -495,11 +499,11 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
                   <span className="text-white/50 text-sm">Jumu&apos;ah</span>
                   <div className="flex items-center gap-2 px-2 py-1 rounded bg-white/5">
                     <span className="text-white/40 text-xs">Arabic</span>
-                    <span className="text-lime-400 font-semibold text-sm">{jumuahTimes[0].time}</span>
+                    <span className="text-lime-400 font-semibold text-sm">{jumuahArabicTime}</span>
                   </div>
                   <div className="flex items-center gap-2 px-2 py-1 rounded bg-white/5">
                     <span className="text-white/40 text-xs">English</span>
-                    <span className="text-lime-400 font-semibold text-sm">{jumuahTimes[1].time}</span>
+                    <span className="text-lime-400 font-semibold text-sm">{jumuahEnglishTime}</span>
                   </div>
                 </div>
                 {taraweehActive && (
@@ -563,11 +567,11 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
                 <div className="w-full flex justify-center gap-2">
                   <div className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white/5">
                     <span className="text-white/40 text-xs">Arabic</span>
-                    <span className="text-lime-400 font-semibold text-sm">{jumuahTimes[0].time}</span>
+                    <span className="text-lime-400 font-semibold text-sm">{jumuahArabicTime}</span>
                   </div>
                   <div className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white/5">
                     <span className="text-white/40 text-xs">English</span>
-                    <span className="text-lime-400 font-semibold text-sm">{jumuahTimes[1].time}</span>
+                    <span className="text-lime-400 font-semibold text-sm">{jumuahEnglishTime}</span>
                   </div>
                 </div>
               </div>

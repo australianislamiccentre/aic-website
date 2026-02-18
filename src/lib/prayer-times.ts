@@ -4,6 +4,7 @@
  */
 
 import { getIqamahConfig } from "./prayer-config";
+import type { SanityPrayerSettings } from "@/types/sanity";
 
 // Prayer times data for each day of the year
 // Format: [Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha]
@@ -558,10 +559,23 @@ function addMinutesToTime(timeStr: string, minutes: number): string {
 }
 
 /**
- * Calculate iqamah time based on centralized config
- * Uses prayer-config.ts which will eventually be replaced by Sanity CMS
+ * Calculate iqamah time based on Sanity CMS config with hardcoded fallback
  */
-function calculateIqamahTime(prayerName: PrayerName, adhanTime: string): string {
+function calculateIqamahTime(
+  prayerName: PrayerName,
+  adhanTime: string,
+  sanityOverride?: { mode?: "calculated" | "fixed"; fixedTime?: string; delay?: number }
+): string {
+  // Use Sanity values if provided
+  if (sanityOverride?.mode) {
+    if (sanityOverride.mode === "fixed" && sanityOverride.fixedTime) {
+      return sanityOverride.fixedTime;
+    }
+    if (sanityOverride.mode === "calculated" && sanityOverride.delay != null) {
+      return addMinutesToTime(adhanTime, sanityOverride.delay);
+    }
+  }
+  // Fallback to hardcoded config from prayer-config.ts
   const config = getIqamahConfig(prayerName);
   if (config.mode === "fixed" && config.fixedTime) {
     return config.fixedTime;
@@ -572,7 +586,10 @@ function calculateIqamahTime(prayerName: PrayerName, adhanTime: string): string 
 /**
  * Get prayer times for a specific date
  */
-export function getPrayerTimesForDate(date: Date = new Date()): TodaysPrayerTimes {
+export function getPrayerTimesForDate(
+  date: Date = new Date(),
+  prayerSettings?: SanityPrayerSettings | null
+): TodaysPrayerTimes {
   const index = getPrayerTimesIndex(date);
   const times = PRAYER_TIMES_DATA[index];
 
@@ -584,12 +601,23 @@ export function getPrayerTimesForDate(date: Date = new Date()): TodaysPrayerTime
 
   const [fajrAdhan, sunriseAdhan, dhuhrAdhan, asrAdhan, maghribAdhan, ishaAdhan] = times;
 
+  // Build Sanity overrides per prayer (if available)
+  const sanity = prayerSettings
+    ? {
+        fajr: { mode: prayerSettings.fajrIqamahMode, fixedTime: prayerSettings.fajrFixedTime, delay: prayerSettings.fajrDelay },
+        dhuhr: { mode: prayerSettings.dhuhrIqamahMode, fixedTime: prayerSettings.dhuhrFixedTime, delay: prayerSettings.dhuhrDelay },
+        asr: { mode: prayerSettings.asrIqamahMode, fixedTime: prayerSettings.asrFixedTime, delay: prayerSettings.asrDelay },
+        maghrib: { mode: prayerSettings.maghribIqamahMode, fixedTime: prayerSettings.maghribFixedTime, delay: prayerSettings.maghribDelay },
+        isha: { mode: prayerSettings.ishaIqamahMode, fixedTime: prayerSettings.ishaFixedTime, delay: prayerSettings.ishaDelay },
+      }
+    : undefined;
+
   return {
     fajr: {
       name: "fajr",
       displayName: "Fajr",
       adhan: fajrAdhan,
-      iqamah: calculateIqamahTime("fajr", fajrAdhan),
+      iqamah: calculateIqamahTime("fajr", fajrAdhan, sanity?.fajr),
     },
     sunrise: {
       name: "sunrise",
@@ -601,25 +629,25 @@ export function getPrayerTimesForDate(date: Date = new Date()): TodaysPrayerTime
       name: "dhuhr",
       displayName: "Dhuhr",
       adhan: dhuhrAdhan,
-      iqamah: calculateIqamahTime("dhuhr", dhuhrAdhan),
+      iqamah: calculateIqamahTime("dhuhr", dhuhrAdhan, sanity?.dhuhr),
     },
     asr: {
       name: "asr",
       displayName: "Asr",
       adhan: asrAdhan,
-      iqamah: calculateIqamahTime("asr", asrAdhan),
+      iqamah: calculateIqamahTime("asr", asrAdhan, sanity?.asr),
     },
     maghrib: {
       name: "maghrib",
       displayName: "Maghrib",
       adhan: maghribAdhan,
-      iqamah: calculateIqamahTime("maghrib", maghribAdhan),
+      iqamah: calculateIqamahTime("maghrib", maghribAdhan, sanity?.maghrib),
     },
     isha: {
       name: "isha",
       displayName: "Isha",
       adhan: ishaAdhan,
-      iqamah: calculateIqamahTime("isha", ishaAdhan),
+      iqamah: calculateIqamahTime("isha", ishaAdhan, sanity?.isha),
     },
     date,
   };
@@ -643,8 +671,11 @@ function getDefaultPrayerTimes(date: Date): TodaysPrayerTimes {
 /**
  * Get the next prayer based on current time
  */
-export function getNextPrayer(date: Date = new Date()): PrayerTime & { isNextDay: boolean } {
-  const times = getPrayerTimesForDate(date);
+export function getNextPrayer(
+  date: Date = new Date(),
+  prayerSettings?: SanityPrayerSettings | null
+): PrayerTime & { isNextDay: boolean } {
+  const times = getPrayerTimesForDate(date, prayerSettings);
   const currentTime = date.getHours() * 60 + date.getMinutes();
 
   const prayers: PrayerTime[] = [
@@ -671,7 +702,7 @@ export function getNextPrayer(date: Date = new Date()): PrayerTime & { isNextDay
   // If we're past Isha, next prayer is Fajr tomorrow
   const tomorrow = new Date(date);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowTimes = getPrayerTimesForDate(tomorrow);
+  const tomorrowTimes = getPrayerTimesForDate(tomorrow, prayerSettings);
 
   return { ...tomorrowTimes.fajr, isNextDay: true };
 }

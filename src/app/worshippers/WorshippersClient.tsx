@@ -80,7 +80,7 @@ export default function WorshippersClient({
 }: WorshippersClientProps) {
   const info = useSiteSettings();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const prayerTimes = getPrayerTimesForDate(selectedDate);
+  const prayerTimes = getPrayerTimesForDate(selectedDate, prayerSettings);
 
   // Normalize Sanity data with hardcoded fallbacks
   const etiquetteItems = etiquette.length > 0
@@ -111,6 +111,14 @@ export default function WorshippersClient({
     : fallbackEvents
         .filter(e => e.category === "Education" || e.category === "Prayer")
         .slice(0, 6);
+
+  // Jumu'ah times from Sanity with hardcoded fallback
+  const jumuahArabicTime = prayerSettings?.jumuahArabicTime ?? jumuahTimes[0]?.time;
+  const jumuahEnglishTime = prayerSettings?.jumuahEnglishTime ?? jumuahTimes[1]?.time;
+  const sanityJumuahSessions = [
+    { session: "Arabic Session", time: jumuahArabicTime, language: "Arabic" },
+    { session: "English Session", time: jumuahEnglishTime, language: "English" },
+  ];
 
   // Use Sanity data with fallback to hardcoded config
   const taraweehActive = prayerSettings?.taraweehEnabled ?? TARAWEEH_CONFIG.enabled;
@@ -343,7 +351,7 @@ export default function WorshippersClient({
 
             <FadeIn direction="right">
               <div className="grid gap-6">
-                {jumuahTimes.map((session) => (
+                {sanityJumuahSessions.map((session) => (
                   <motion.div
                     key={session.session}
                     whileHover={{ scale: 1.02 }}
