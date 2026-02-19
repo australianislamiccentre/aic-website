@@ -1,0 +1,95 @@
+export interface ContactFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  inquiryType: string;
+  message: string;
+}
+
+export interface ServiceInquiryFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  serviceName: string;
+  message: string;
+}
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function validateContactForm(
+  data: unknown
+): { valid: true; data: ContactFormData } | { valid: false; error: string } {
+  if (!data || typeof data !== "object") {
+    return { valid: false, error: "Invalid request body" };
+  }
+
+  const d = data as Record<string, unknown>;
+
+  if (!d.firstName || typeof d.firstName !== "string" || d.firstName.trim().length === 0) {
+    return { valid: false, error: "First name is required" };
+  }
+  if (!d.lastName || typeof d.lastName !== "string" || d.lastName.trim().length === 0) {
+    return { valid: false, error: "Last name is required" };
+  }
+  if (!d.email || typeof d.email !== "string" || !EMAIL_REGEX.test(d.email)) {
+    return { valid: false, error: "A valid email address is required" };
+  }
+  if (!d.inquiryType || typeof d.inquiryType !== "string") {
+    return { valid: false, error: "Enquiry type is required" };
+  }
+  if (!d.message || typeof d.message !== "string" || d.message.trim().length === 0) {
+    return { valid: false, error: "Message is required" };
+  }
+
+  return {
+    valid: true,
+    data: {
+      firstName: String(d.firstName).trim(),
+      lastName: String(d.lastName).trim(),
+      email: String(d.email).trim().toLowerCase(),
+      phone: d.phone ? String(d.phone).trim() : undefined,
+      inquiryType: String(d.inquiryType).trim(),
+      message: String(d.message).trim(),
+    },
+  };
+}
+
+export function validateServiceInquiry(
+  data: unknown
+): { valid: true; data: ServiceInquiryFormData } | { valid: false; error: string } {
+  if (!data || typeof data !== "object") {
+    return { valid: false, error: "Invalid request body" };
+  }
+
+  const d = data as Record<string, unknown>;
+
+  if (!d.firstName || typeof d.firstName !== "string" || d.firstName.trim().length === 0) {
+    return { valid: false, error: "First name is required" };
+  }
+  if (!d.lastName || typeof d.lastName !== "string" || d.lastName.trim().length === 0) {
+    return { valid: false, error: "Last name is required" };
+  }
+  if (!d.email || typeof d.email !== "string" || !EMAIL_REGEX.test(d.email)) {
+    return { valid: false, error: "A valid email address is required" };
+  }
+  if (!d.serviceName || typeof d.serviceName !== "string") {
+    return { valid: false, error: "Service name is required" };
+  }
+  if (!d.message || typeof d.message !== "string" || d.message.trim().length === 0) {
+    return { valid: false, error: "Message is required" };
+  }
+
+  return {
+    valid: true,
+    data: {
+      firstName: String(d.firstName).trim(),
+      lastName: String(d.lastName).trim(),
+      email: String(d.email).trim().toLowerCase(),
+      phone: d.phone ? String(d.phone).trim() : undefined,
+      serviceName: String(d.serviceName).trim(),
+      message: String(d.message).trim(),
+    },
+  };
+}

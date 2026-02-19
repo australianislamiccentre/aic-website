@@ -7,9 +7,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SearchDialog } from "@/components/ui/SearchDialog";
-import { DonateModal } from "@/components/DonateModal";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
-import { DonateModalSettings, DonationGoalMeter } from "@/sanity/lib/fetch";
 import {
   Menu,
   X,
@@ -21,11 +19,6 @@ import {
   Phone,
   ExternalLink,
 } from "lucide-react";
-
-interface HeaderProps {
-  donateModalSettings?: DonateModalSettings | null;
-  donationGoalMeter?: DonationGoalMeter | null;
-}
 
 // Navigation structure - simplified like MyCentre
 interface NavChild {
@@ -199,14 +192,13 @@ function useIsScrolled(threshold = 50) {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
-export function Header({ donateModalSettings, donationGoalMeter }: HeaderProps) {
+export function Header() {
   const pathname = usePathname();
   const isScrolled = useIsScrolled(50);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileExpandedItem, setMobileExpandedItem] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [donateModalOpen, setDonateModalOpen] = useState(false);
 
   const info = useSiteSettings();
 
@@ -458,13 +450,13 @@ export function Header({ donateModalSettings, donationGoalMeter }: HeaderProps) 
                 </button>
 
                 {/* Donate Button */}
-                <button
-                  onClick={() => setDonateModalOpen(true)}
+                <Link
+                  href="/donate"
                   className="hidden sm:flex items-center gap-2 h-16 px-6 bg-lime-500 hover:bg-lime-600 text-neutral-900 font-semibold transition-all duration-200"
                 >
                   <Heart className="w-4 h-4" />
                   <span>Donate</span>
-                </button>
+                </Link>
 
                 <button
                   onClick={() => setMobileMenuOpen(true)}
@@ -618,16 +610,14 @@ export function Header({ donateModalSettings, donationGoalMeter }: HeaderProps) 
 
               {/* Fixed Footer */}
               <div className="sticky bottom-0 bg-neutral-900 border-t border-white/10 px-6 py-6 space-y-4">
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setDonateModalOpen(true);
-                  }}
+                <Link
+                  href="/donate"
+                  onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center justify-center gap-2 w-full py-4 text-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl transition-all duration-200"
                 >
                   <Heart className="w-5 h-5" />
                   <span>Make a Donation</span>
-                </button>
+                </Link>
 
                 <div className="flex items-center justify-center gap-6 text-sm text-white/60">
                   <a href={`tel:${info.phone}`} className="flex items-center gap-2 hover:text-white transition-colors">
@@ -649,16 +639,6 @@ export function Header({ donateModalSettings, donationGoalMeter }: HeaderProps) 
       {/* Search Dialog */}
       <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      {/* Donate Modal */}
-      <DonateModal
-        isOpen={donateModalOpen}
-        onClose={() => setDonateModalOpen(false)}
-        modalTitle={donateModalSettings?.modalTitle}
-        showGoalMeter={donateModalSettings?.showGoalMeter}
-        goalMeter={donationGoalMeter}
-        featuredCampaign={donateModalSettings?.featuredCampaign}
-        additionalCampaigns={donateModalSettings?.additionalCampaigns}
-      />
     </>
   );
 }

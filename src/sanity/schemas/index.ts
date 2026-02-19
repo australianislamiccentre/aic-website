@@ -2,7 +2,6 @@ import event from "./event";
 import announcement from "./announcement";
 import service from "./service";
 import donationSettings from "./donationSettings";
-import donateModalSettings from "./donateModalSettings";
 import donationCampaign from "./donationCampaign";
 import donatePageSettings from "./donatePageSettings";
 import galleryImage from "./gallery";
@@ -10,6 +9,7 @@ import faq from "./faq";
 import etiquette from "./etiquette";
 import tourType from "./tourType";
 import tourRequest from "./tourRequest";
+import formSettings from "./formSettings";
 import siteSettings from "./siteSettings";
 import prayerSettings from "./prayerSettings";
 import teamMember from "./teamMember";
@@ -21,8 +21,8 @@ export const schemaTypes = [
   siteSettings,
   prayerSettings,
   donationSettings,
-  donateModalSettings,
   donatePageSettings,
+  formSettings,
   // Content types
   event,
   announcement,

@@ -281,31 +281,6 @@ export const donatePageSettingsQuery = groq`
   }
 `;
 
-// ============================================
-// Donate Modal Settings (singleton with campaign references)
-// ============================================
-export const donateModalSettingsQuery = groq`
-  *[_id == "donateModalSettings"][0] {
-    _id,
-    modalTitle,
-    showGoalMeter,
-    // Featured campaign - fetch with active status (filtering done in fetch function)
-    "featuredCampaign": featuredCampaign->{
-      _id,
-      title,
-      fundraiseUpElement,
-      active
-    },
-    // Additional campaigns - fetch with active status (filtering done in fetch function)
-    "additionalCampaigns": additionalCampaigns[]->{
-      _id,
-      title,
-      fundraiseUpElement,
-      active
-    }
-  }
-`;
-
 // Gallery
 export const galleryQuery = groq`
   *[_type == "galleryImage"] | order(order asc) {
@@ -597,6 +572,40 @@ export const prayerSettingsQuery = groq`
     // Eid
     eidFitrActive, eidFitrTime,
     eidAdhaActive, eidAdhaTime
+  }
+`;
+
+// ============================================
+// Form Settings (singleton)
+// ============================================
+export const formSettingsQuery = groq`
+  *[_id == "formSettings"][0] {
+    _id,
+    // Contact Form
+    contactRecipientEmail,
+    contactEnabled,
+    contactHeading,
+    contactHeadingAccent,
+    contactDescription,
+    contactFormHeading,
+    contactFormDescription,
+    contactInquiryTypes,
+    contactSuccessHeading,
+    contactSuccessMessage,
+    // Service Inquiry
+    serviceInquiryRecipientEmail,
+    serviceInquiryEnabled,
+    serviceInquiryFormHeading,
+    serviceInquiryFormDescription,
+    serviceInquirySuccessHeading,
+    serviceInquirySuccessMessage,
+    // Newsletter
+    newsletterRecipientEmail,
+    newsletterEnabled,
+    newsletterHeading,
+    newsletterDescription,
+    newsletterButtonText,
+    newsletterSuccessMessage
   }
 `;
 
