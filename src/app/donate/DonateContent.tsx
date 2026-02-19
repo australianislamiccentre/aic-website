@@ -52,21 +52,21 @@ export default function DonateContent({ settings }: DonateContentProps) {
 
         {/* Hero content */}
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center py-8 sm:py-12 md:py-16 lg:py-20">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 lg:gap-10 items-center py-8 sm:py-12 md:py-16 lg:py-20">
             {/* Left — text */}
             <div>
               <div className="h-1 w-16 bg-gradient-to-r from-lime-400 to-green-400 rounded-full mb-6" />
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
-                Support Our{" "}
+                Multiply Your Rewards{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-300 via-green-400 to-lime-400">
-                  Community
+                  This Ramadan
                 </span>
               </h1>
 
               <p className="text-white/70 text-base sm:text-lg max-w-md mb-6">
-                Your generosity helps us maintain our centre, run educational
-                programs, and support those in need.
+                Every donation given in Ramadan carries greater reward. Support
+                our centre and community programs.
               </p>
 
               <div className="flex items-center gap-3 text-white/50 text-sm">
@@ -77,7 +77,7 @@ export default function DonateContent({ settings }: DonateContentProps) {
 
             {/* Right — donation form */}
             {showForm && (
-              <div className="bg-white rounded-2xl shadow-2xl p-1 lg:max-w-md lg:ml-auto">
+              <div className="bg-white rounded-2xl shadow-2xl p-1">
                 <div
                   className="fundraise-up-wrapper"
                   dangerouslySetInnerHTML={{

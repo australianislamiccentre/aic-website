@@ -332,16 +332,11 @@ body {
 .stagger-4 { transition-delay: 0.4s; }
 .stagger-5 { transition-delay: 0.5s; }
 
-/* Fundraise Up widget fill container */
+/* Fundraise Up widget — prevent overflow on small screens */
 .fundraise-up-wrapper,
 .fundraise-up-goal-meter {
-  width: 100%;
-}
-
-.fundraise-up-wrapper iframe,
-.fundraise-up-goal-meter iframe {
-  width: 100% !important;
-  max-width: 100% !important;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 /* Hide scrollbar for horizontal scroll containers */

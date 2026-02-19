@@ -53,15 +53,15 @@ describe("DonateContent", () => {
     it("renders hero section with title", () => {
       render(<DonateContent />);
 
-      expect(screen.getByText(/Support Our/)).toBeInTheDocument();
-      expect(screen.getByText("Community")).toBeInTheDocument();
+      expect(screen.getByText(/Multiply Your Rewards/)).toBeInTheDocument();
+      expect(screen.getByText("This Ramadan")).toBeInTheDocument();
     });
 
     it("renders hero section description", () => {
       render(<DonateContent />);
 
       expect(
-        screen.getByText(/Your generosity helps us maintain our centre/)
+        screen.getByText(/Every donation given in Ramadan carries greater reward/)
       ).toBeInTheDocument();
     });
 
@@ -246,7 +246,7 @@ describe("DonateContent", () => {
       render(<DonateContent settings={null} />);
 
       // Hero should still render
-      expect(screen.getByText(/Support Our/)).toBeInTheDocument();
+      expect(screen.getByText(/Multiply Your Rewards/)).toBeInTheDocument();
       // No sections should appear
       expect(screen.queryByText("Active Campaigns")).not.toBeInTheDocument();
     });
@@ -254,13 +254,13 @@ describe("DonateContent", () => {
     it("handles undefined settings", () => {
       render(<DonateContent settings={undefined} />);
 
-      expect(screen.getByText(/Support Our/)).toBeInTheDocument();
+      expect(screen.getByText(/Multiply Your Rewards/)).toBeInTheDocument();
     });
 
     it("handles no props", () => {
       render(<DonateContent />);
 
-      expect(screen.getByText(/Support Our/)).toBeInTheDocument();
+      expect(screen.getByText(/Multiply Your Rewards/)).toBeInTheDocument();
     });
 
     it("cleans unicode from campaign elements", () => {
