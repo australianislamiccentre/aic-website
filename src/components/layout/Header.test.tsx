@@ -43,16 +43,6 @@ vi.mock("@/components/ui/SearchDialog", () => ({
     ) : null,
 }));
 
-// Mock DonateModal
-vi.mock("@/components/DonateModal", () => ({
-  DonateModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
-    isOpen ? (
-      <div data-testid="donate-modal">
-        <button onClick={onClose}>Close Modal</button>
-      </div>
-    ) : null,
-}));
-
 describe("Header", () => {
   beforeEach(() => {
     // Reset scroll position
@@ -87,10 +77,11 @@ describe("Header", () => {
     expect(contactLinks.length).toBeGreaterThan(0);
   });
 
-  it("renders donate button", () => {
+  it("renders donate link", () => {
     render(<Header />);
-    const donateButton = screen.getByRole("button", { name: /Donate/i });
-    expect(donateButton).toBeInTheDocument();
+    const donateLink = screen.getByRole("link", { name: /Donate/i });
+    expect(donateLink).toBeInTheDocument();
+    expect(donateLink).toHaveAttribute("href", "/donate");
   });
 
   it("renders search button", () => {
@@ -174,9 +165,9 @@ describe("Header", () => {
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    expect(
-      screen.getByRole("button", { name: /Make a Donation/i })
-    ).toBeInTheDocument();
+    const mobileDonateLnk = screen.getByRole("link", { name: /Make a Donation/i });
+    expect(mobileDonateLnk).toBeInTheDocument();
+    expect(mobileDonateLnk).toHaveAttribute("href", "/donate");
   });
 
   it("shows contact info in mobile menu footer", async () => {
@@ -216,13 +207,10 @@ describe("Header", () => {
     expect(phoneLinks.length).toBeGreaterThan(0);
   });
 
-  it("opens donate modal when donate button is clicked", async () => {
-    const user = userEvent.setup();
+  it("donate button links to /donate page", () => {
     render(<Header />);
 
-    const donateButton = screen.getByRole("button", { name: /Donate/i });
-    await user.click(donateButton);
-
-    expect(screen.getByTestId("donate-modal")).toBeInTheDocument();
+    const donateLink = screen.getByRole("link", { name: /Donate/i });
+    expect(donateLink).toHaveAttribute("href", "/donate");
   });
 });

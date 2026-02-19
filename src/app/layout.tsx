@@ -8,9 +8,11 @@ import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { PreviewBanner } from "@/components/PreviewBanner";
-import { getSiteSettings, getDonationSettings, getDonateModalSettings, getDonatePageSettings } from "@/sanity/lib/fetch";
+import { getSiteSettings, getDonationSettings, getFormSettings } from "@/sanity/lib/fetch";
 import { FundraiseUpScript } from "@/components/FundraiseUpScript";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
+import { FormSettingsProvider } from "@/contexts/FormSettingsContext";
+import type { SanityFormSettings } from "@/contexts/FormSettingsContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -97,22 +99,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, donateModalSettings, donatePageSettings] = await Promise.all([
+  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, formSettingsRaw] = await Promise.all([
     draftMode(),
     getSiteSettings(),
     getDonationSettings(),
-    getDonateModalSettings(),
-    getDonatePageSettings(),
+    getFormSettings(),
   ]);
-
-  // Extract goal meter data for the donation modal
-  const donationGoalMeter = donatePageSettings?.goalEnabled
-    ? {
-        _id: donatePageSettings._id,
-        enabled: true,
-        fundraiseUpElement: donatePageSettings.goalElement,
-      }
-    : null;
 
   return (
     <html lang="en" className="scroll-smooth">
@@ -120,12 +112,14 @@ export default async function RootLayout({
         className={`${inter.variable} ${playfair.variable} ${amiri.variable} antialiased bg-neutral-50 text-gray-900 overflow-x-hidden`}
       >
         <SiteSettingsProvider siteSettings={siteSettings}>
-          <FundraiseUpScript settings={donationSettings} />
-          <ScrollToTop />
-          <ScrollProgress />
-          <Header donateModalSettings={donateModalSettings} donationGoalMeter={donationGoalMeter} />
-          <main className="overflow-x-hidden">{children}</main>
-          <Footer />
+          <FormSettingsProvider formSettings={formSettingsRaw as SanityFormSettings | null}>
+            <FundraiseUpScript settings={donationSettings} />
+            <ScrollToTop />
+            <ScrollProgress />
+            <Header />
+            <main className="overflow-x-hidden">{children}</main>
+            <Footer />
+          </FormSettingsProvider>
         </SiteSettingsProvider>
         {isDraftMode && (
           <>

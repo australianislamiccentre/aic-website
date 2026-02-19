@@ -58,8 +58,6 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getDonationCampaignBySlug: vi.fn().mockResolvedValue(null),
   getDonationCampaignsForStaticGeneration: vi.fn().mockResolvedValue([]),
   getFeaturedDonationCampaigns: vi.fn().mockResolvedValue([]),
-  // Donate modal functions
-  getDonateModalSettings: vi.fn().mockResolvedValue(null),
 }));
 
 // Mock next/navigation

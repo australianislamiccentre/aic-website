@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { useFormSettings } from "@/contexts/FormSettingsContext";
+import { useState } from "react";
 import {
   MapPin,
   Phone,
@@ -15,11 +17,14 @@ import {
   Heart,
   ArrowRight,
   ExternalLink,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export function Footer() {
   const info = useSiteSettings();
+  const forms = useFormSettings();
 
   const footerLinks = {
     explore: [
@@ -56,6 +61,39 @@ export function Footer() {
     { name: "Youtube", icon: Youtube, href: info.socialMedia.youtube },
   ];
   const currentYear = new Date().getFullYear();
+  const [subName, setSubName] = useState("");
+  const [subEmail, setSubEmail] = useState("");
+  const [subPhone, setSubPhone] = useState("");
+  const [subStatus, setSubStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [subError, setSubError] = useState("");
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubStatus("loading");
+    setSubError("");
+
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: subName,
+          email: subEmail,
+          phone: subPhone,
+          _gotcha: (document.getElementById("_gotcha_sub") as HTMLInputElement)?.value || "",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to subscribe");
+      setSubStatus("success");
+      setSubName("");
+      setSubEmail("");
+      setSubPhone("");
+    } catch (err) {
+      setSubError(err instanceof Error ? err.message : "Something went wrong.");
+      setSubStatus("error");
+    }
+  };
 
   return (
     <footer className="relative bg-neutral-900 text-white overflow-hidden">
@@ -73,40 +111,69 @@ export function Footer() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Stay Connected with Our Community
+                {forms.newsletterHeading}
               </h2>
               <p className="text-white/70 text-lg">
-                Subscribe to receive updates on events, programs, and spiritual reminders from the Australian Islamic Centre.
+                {forms.newsletterDescription}
               </p>
             </div>
-            <form
-              className="flex flex-col sm:flex-row gap-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const emailInput = e.currentTarget.querySelector('input[type="email"]') as HTMLInputElement;
-                const email = emailInput?.value;
-                if (email) {
-                  const mailtoLink = `mailto:contact@australianislamiccentre.org?subject=${encodeURIComponent('Newsletter Subscription Request')}&body=${encodeURIComponent(`Please add me to the AIC newsletter.\n\nEmail: ${email}`)}`;
-                  window.open(mailtoLink, '_blank');
-                  emailInput.value = '';
-                }
-              }}
-            >
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                required
-                className="flex-1 px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-              />
-              <Button
-                type="submit"
-                variant="gold"
-                size="lg"
-                icon={<ArrowRight className="w-5 h-5" />}
-              >
-                Subscribe
-              </Button>
-            </form>
+            {subStatus === "success" ? (
+              <div className="flex items-center gap-3 text-teal-400">
+                <CheckCircle2 className="w-6 h-6 flex-shrink-0" />
+                <p className="text-lg">{forms.newsletterSuccessMessage}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribe} className="space-y-3">
+                <input
+                  type="text"
+                  id="_gotcha_sub"
+                  name="_gotcha_sub"
+                  autoComplete="off"
+                  tabIndex={-1}
+                  className="absolute opacity-0 h-0 w-0 overflow-hidden pointer-events-none"
+                  aria-hidden="true"
+                />
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    placeholder="Full name"
+                    required
+                    value={subName}
+                    onChange={(e) => setSubName(e.target.value)}
+                    className="px-5 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Phone number (optional)"
+                    value={subPhone}
+                    onChange={(e) => setSubPhone(e.target.value)}
+                    className="px-5 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="email"
+                    placeholder="Email address"
+                    required
+                    value={subEmail}
+                    onChange={(e) => setSubEmail(e.target.value)}
+                    className="flex-1 px-5 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                  />
+                  <Button
+                    type="submit"
+                    variant="gold"
+                    size="lg"
+                    disabled={subStatus === "loading"}
+                    icon={subStatus === "loading" ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
+                  >
+                    {subStatus === "loading" ? "Subscribing..." : forms.newsletterButtonText}
+                  </Button>
+                </div>
+                {subStatus === "error" && (
+                  <p className="text-red-400 text-sm">{subError}</p>
+                )}
+              </form>
+            )}
           </div>
         </div>
       </div>

@@ -124,31 +124,41 @@ describe("Footer", () => {
       screen.getByText("Stay Connected with Our Community")
     ).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText("Enter your email address")
+      screen.getByPlaceholderText("Full name")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Email address")
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /Subscribe/i })
     ).toBeInTheDocument();
   });
 
-  it("newsletter form opens mailto link on submit", async () => {
+  it("newsletter form submits via fetch", async () => {
     const user = userEvent.setup();
-    const windowOpenSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ success: true }), { status: 200 })
+    );
 
     render(<Footer />);
 
-    const emailInput = screen.getByPlaceholderText("Enter your email address");
+    const nameInput = screen.getByPlaceholderText("Full name");
+    const emailInput = screen.getByPlaceholderText("Email address");
     const submitButton = screen.getByRole("button", { name: /Subscribe/i });
 
+    await user.type(nameInput, "John Doe");
     await user.type(emailInput, "test@example.com");
     await user.click(submitButton);
 
-    expect(windowOpenSpy).toHaveBeenCalledWith(
-      expect.stringContaining("mailto:"),
-      "_blank"
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "/api/subscribe",
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
     );
 
-    windowOpenSpy.mockRestore();
+    fetchSpy.mockRestore();
   });
 
   it("displays copyright notice with current year", () => {

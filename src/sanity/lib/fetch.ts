@@ -16,7 +16,6 @@ import {
   featuredServicesQuery,
   // Donation Settings
   donationSettingsQuery,
-  donateModalSettingsQuery,
   donatePageSettingsQuery,
   galleryQuery,
   featuredGalleryQuery,
@@ -41,6 +40,8 @@ import {
   resourceBySlugQuery,
   featuredResourcesQuery,
   latestUpdatesQuery,
+  // Form Settings
+  formSettingsQuery,
 } from "./queries";
 import {
   SanityEvent,
@@ -63,22 +64,6 @@ export interface DonationSettings {
   _id: string;
   installationScript?: string;
   organizationKey?: string;
-}
-
-// Campaign type (referenced from modal settings)
-export interface ModalCampaign {
-  _id: string;
-  title: string;
-  fundraiseUpElement: string;
-}
-
-// Donate Modal Settings type
-export interface DonateModalSettings {
-  _id: string;
-  modalTitle?: string;
-  showGoalMeter?: boolean;
-  featuredCampaign?: ModalCampaign | null;
-  additionalCampaigns?: ModalCampaign[];
 }
 
 // Revalidation time in seconds (1 minute for faster updates)
@@ -289,60 +274,6 @@ export async function getDonationSettings(): Promise<DonationSettings | null> {
 }
 
 // ============================================
-// Donate Modal Settings
-// ============================================
-
-// Internal type that includes active field for filtering
-interface ModalCampaignWithActive extends ModalCampaign {
-  active?: boolean;
-}
-
-interface DonateModalSettingsRaw {
-  _id: string;
-  modalTitle?: string;
-  showGoalMeter?: boolean;
-  featuredCampaign?: ModalCampaignWithActive | null;
-  additionalCampaigns?: ModalCampaignWithActive[];
-}
-
-export async function getDonateModalSettings(): Promise<DonateModalSettings | null> {
-  try {
-    const result = await sanityFetch<DonateModalSettingsRaw | null>(
-      donateModalSettingsQuery,
-      {},
-      ["donateModalSettings"],
-      { skipCdn: true }
-    );
-
-    if (!result) return null;
-
-    // Filter out inactive campaigns
-    return {
-      _id: result._id,
-      modalTitle: result.modalTitle,
-      showGoalMeter: result.showGoalMeter,
-      featuredCampaign: result.featuredCampaign && result.featuredCampaign.active !== false
-        ? {
-            _id: result.featuredCampaign._id,
-            title: result.featuredCampaign.title,
-            fundraiseUpElement: result.featuredCampaign.fundraiseUpElement,
-          }
-        : null,
-      additionalCampaigns: (result.additionalCampaigns || [])
-        .filter((c) => c.active !== false)
-        .map((c) => ({
-          _id: c._id,
-          title: c.title,
-          fundraiseUpElement: c.fundraiseUpElement,
-        })),
-    };
-  } catch (error) {
-    console.error("Failed to fetch donate modal settings from Sanity:", error);
-    return null;
-  }
-}
-
-// ============================================
 // Donate Page Settings (singleton for /donate page)
 // ============================================
 export interface DonatePageCampaign {
@@ -364,13 +295,6 @@ export interface DonatePageSettings {
   mapEnabled?: boolean;
   mapTitle?: string;
   mapElement?: string;
-}
-
-// Legacy alias — used by DonateModal for goal meter props
-export interface DonationGoalMeter {
-  _id: string;
-  enabled: boolean;
-  fundraiseUpElement?: string;
 }
 
 export async function getDonatePageSettings(): Promise<DonatePageSettings | null> {
@@ -575,6 +499,21 @@ export async function getSiteSettings(): Promise<SanitySiteSettings | null> {
     return await sanityFetch<SanitySiteSettings | null>(siteSettingsQuery, {}, ["siteSettings"], { skipCdn: true });
   } catch (error) {
     console.error("Failed to fetch site settings from Sanity:", error);
+    return null;
+  }
+}
+
+// Form Settings (singleton)
+export async function getFormSettings(): Promise<Record<string, unknown> | null> {
+  try {
+    return await sanityFetch<Record<string, unknown> | null>(
+      formSettingsQuery,
+      {},
+      ["formSettings"],
+      { skipCdn: true }
+    );
+  } catch (error) {
+    console.error("Failed to fetch form settings from Sanity:", error);
     return null;
   }
 }

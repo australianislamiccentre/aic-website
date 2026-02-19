@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Send } from "lucide-react";
+import { Send, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { useFormSettings } from "@/contexts/FormSettingsContext";
 
 interface ServiceContactFormProps {
   serviceName: string;
 }
 
 export function ServiceContactForm({ serviceName }: ServiceContactFormProps) {
+  const forms = useFormSettings();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -15,6 +17,9 @@ export function ServiceContactForm({ serviceName }: ServiceContactFormProps) {
     phone: "",
     message: "",
   });
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -23,33 +28,90 @@ export function ServiceContactForm({ serviceName }: ServiceContactFormProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-    // Create mailto link with prefilled data
-    const subject = encodeURIComponent(`Inquiry: ${serviceName}`);
-    const body = encodeURIComponent(
-      `First Name: ${formData.firstName}\n` +
-        `Last Name: ${formData.lastName}\n` +
-        `Email: ${formData.email}\n` +
-        `Phone: ${formData.phone}\n\n` +
-        `Service: ${serviceName}\n\n` +
-        `Message:\n${formData.message}`
-    );
+    try {
+      const res = await fetch("/api/service-inquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          serviceName,
+          _gotcha: (document.getElementById("_gotcha") as HTMLInputElement)?.value || "",
+        }),
+      });
 
-    window.location.href = `mailto:info@australianislamiccentre.org.au?subject=${subject}&body=${body}`;
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send inquiry");
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (submitted) {
+    return (
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 text-center">
+        <div className="w-16 h-16 mx-auto rounded-full bg-teal-50 flex items-center justify-center mb-4">
+          <CheckCircle2 className="w-8 h-8 text-teal-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">{forms.serviceInquirySuccessHeading}</h3>
+        <p className="text-gray-600 text-sm mb-4">
+          {forms.serviceInquirySuccessMessage}
+        </p>
+        <button
+          onClick={() => {
+            setSubmitted(false);
+            setError(null);
+            setFormData({
+              firstName: "",
+              lastName: "",
+              email: "",
+              phone: "",
+              message: "",
+            });
+          }}
+          className="text-teal-600 hover:text-teal-700 font-medium text-sm transition-colors"
+        >
+          Send Another Inquiry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
       <h3 className="text-xl font-bold text-gray-900 mb-2">
-        Inquire About This Service
+        {forms.serviceInquiryFormHeading}
       </h3>
       <p className="text-gray-600 text-sm mb-6">
-        Fill out the form below and we&apos;ll get back to you as soon as possible.
+        {forms.serviceInquiryFormDescription}
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Honeypot field - hidden from humans, catches bots */}
+        <input
+          type="text"
+          id="_gotcha"
+          name="_gotcha"
+          autoComplete="off"
+          tabIndex={-1}
+          className="absolute opacity-0 h-0 w-0 overflow-hidden pointer-events-none"
+          aria-hidden="true"
+        />
         <div className="grid grid-cols-2 gap-4">
           {/* First Name */}
           <div>
@@ -151,13 +213,25 @@ export function ServiceContactForm({ serviceName }: ServiceContactFormProps) {
           />
         </div>
 
+        {error && (
+          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            {error}
+          </div>
+        )}
+
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors"
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 text-white font-semibold rounded-lg transition-colors"
         >
-          <Send className="w-4 h-4" />
-          Send Inquiry
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Send className="w-4 h-4" />
+          )}
+          {loading ? "Sending..." : "Send Inquiry"}
         </button>
       </form>
     </div>

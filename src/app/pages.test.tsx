@@ -246,12 +246,12 @@ describe("Contact Page", () => {
     expect(screen.getByText("Touch")).toBeInTheDocument();
   });
 
-  it("displays contact information cards", () => {
+  it("displays contact details sidebar", () => {
     render(<ContactPage />);
-    expect(screen.getByText("Visit Us")).toBeInTheDocument();
+    expect(screen.getByText("Contact Details")).toBeInTheDocument();
     expect(screen.getByText("Call Us")).toBeInTheDocument();
     expect(screen.getByText("Email Us")).toBeInTheDocument();
-    expect(screen.getByText("Opening Hours")).toBeInTheDocument();
+    expect(screen.getByText("Hours")).toBeInTheDocument();
   });
 
   it("displays contact form", () => {
@@ -262,11 +262,10 @@ describe("Contact Page", () => {
     expect(screen.getByPlaceholderText("your@email.com")).toBeInTheDocument();
   });
 
-  it("displays quick links sidebar", () => {
+  it("displays map and directions", () => {
     render(<ContactPage />);
-    expect(screen.getByText("Quick Links")).toBeInTheDocument();
-    expect(screen.getByText("Book a Visit")).toBeInTheDocument();
-    expect(screen.getByText("Make a Donation")).toBeInTheDocument();
+    expect(screen.getByTitle("Australian Islamic Centre Location")).toBeInTheDocument();
+    expect(screen.getByText("Get Directions")).toBeInTheDocument();
   });
 
   it("displays social media section", () => {
