@@ -36,7 +36,7 @@ export default defineType({
       type: "text",
       rows: 2,
       group: "basic",
-      description: "Brief description for cards and previews (max 150 characters)",
+      description: "Shown on the service card (/services page) and homepage card. Max 150 characters.",
       validation: (Rule) => Rule.required().max(150),
     }),
     defineField({
@@ -45,14 +45,30 @@ export default defineType({
       type: "array",
       group: "basic",
       of: [{ type: "block" }],
-      description: "Detailed description for the service page",
+      description: "Shown on the service detail page (/services/[slug]) under 'About This Service'.",
+    }),
+    defineField({
+      name: "highlights",
+      title: "Card Highlights",
+      type: "array",
+      group: "basic",
+      of: [{ type: "string" }],
+      description: "SHORT bullet points shown on the service CARD on the /services listing page. Keep these brief (2-4 words each). E.g. 'Daily prayers', 'Spiritual guidance'.",
+    }),
+    defineField({
+      name: "keyFeatures",
+      title: "Key Features (Detail Page)",
+      type: "array",
+      group: "basic",
+      of: [{ type: "string" }],
+      description: "Detailed feature list shown on the SERVICE DETAIL PAGE (/services/[slug]) above the full description. Can be longer than card highlights. E.g. 'Daily five prayers led by qualified Imams', 'One-on-one spiritual counselling'.",
     }),
     defineField({
       name: "icon",
       title: "Icon",
       type: "string",
       group: "basic",
-      description: "Lucide icon name",
+      description: "Icon shown on service cards (/services page, homepage) and the detail page header.",
       options: {
         list: [
           { title: "Moon (Shahada)", value: "Moon" },
@@ -80,6 +96,7 @@ export default defineType({
       options: {
         hotspot: true,
       },
+      description: "Shown on the service card (/services page). Recommended size: 1200×800px (3:2 ratio). Use the hotspot to control cropping.",
     }),
 
     // Details
@@ -88,7 +105,7 @@ export default defineType({
       title: "Availability",
       type: "string",
       group: "details",
-      description: "When is this service available? (e.g., 'By appointment', 'Fridays after Jumu'ah')",
+      description: "Shown on the service card and detail page. E.g. 'By appointment', 'Fridays after Jumu'ah'.",
     }),
     defineField({
       name: "requirements",
@@ -96,7 +113,7 @@ export default defineType({
       type: "array",
       group: "details",
       of: [{ type: "string" }],
-      description: "What's needed? (e.g., 'Valid ID', 'Two witnesses', 'Completed application form')",
+      description: "Shown on the service detail page (/services/[slug]) under 'Requirements'. E.g. 'Valid ID', 'Two witnesses'.",
     }),
     defineField({
       name: "processSteps",
@@ -115,7 +132,7 @@ export default defineType({
           },
         },
       ],
-      description: "Step-by-step process for this service",
+      description: "Shown on the service detail page (/services/[slug]) under 'Process'. Step-by-step guide.",
     }),
     defineField({
       name: "fee",
@@ -158,7 +175,7 @@ export default defineType({
       title: "Duration",
       type: "string",
       group: "details",
-      description: "How long does this service take? (e.g., '30 minutes', '1-2 hours')",
+      description: "Shown on the service detail page. E.g. '30 minutes', '1-2 hours'.",
     }),
 
     // Contact
@@ -168,7 +185,7 @@ export default defineType({
       type: "boolean",
       group: "contact",
       initialValue: false,
-      description: "Does this service require prior booking?",
+      description: "Shown on the service detail page. Does this service require prior booking?",
     }),
     defineField({
       name: "bookingUrl",
@@ -183,19 +200,28 @@ export default defineType({
       title: "Contact Email",
       type: "email",
       group: "contact",
+      description: "Shown on the service detail page sidebar. Falls back to site default if empty.",
     }),
     defineField({
       name: "contactPhone",
       title: "Contact Phone",
       type: "string",
       group: "contact",
+      description: "Shown on the service detail page sidebar. Falls back to site default if empty.",
     }),
     defineField({
       name: "contactPerson",
       title: "Contact Person",
       type: "string",
       group: "contact",
-      description: "Name of the person to contact for this service",
+      description: "Name of the person to contact. Shown on the service detail page.",
+    }),
+    defineField({
+      name: "formRecipientEmail",
+      title: "Form Recipient Email",
+      type: "email",
+      group: "contact",
+      description: "Email that receives inquiry form submissions for this service. If empty, falls back to the global service inquiry email in Form Settings.",
     }),
 
     // Settings
@@ -204,7 +230,7 @@ export default defineType({
       title: "Featured",
       type: "boolean",
       group: "settings",
-      description: "Show prominently on homepage",
+      description: "When enabled, this service appears in the 'What's On' section on the homepage.",
       initialValue: false,
     }),
     defineField({
@@ -212,7 +238,7 @@ export default defineType({
       title: "Active",
       type: "boolean",
       group: "settings",
-      description: "Show this service on the website",
+      description: "When enabled, this service is shown on the /services listing page and detail page.",
       initialValue: true,
     }),
     defineField({
@@ -220,7 +246,7 @@ export default defineType({
       title: "Display Order",
       type: "number",
       group: "settings",
-      description: "Lower numbers appear first",
+      description: "Controls display order on the /services page. Lower numbers appear first.",
     }),
   ],
   preview: {

@@ -151,18 +151,6 @@ export default defineType({
       of: [{ type: "string" }],
       description: "Highlights or bullet points (e.g., 'Qualified instructors', 'All skill levels welcome')",
     }),
-    defineField({
-      name: "tags",
-      title: "Tags",
-      type: "array",
-      group: "basic",
-      of: [{ type: "string" }],
-      options: {
-        layout: "tags",
-      },
-      description: "Optional tags for filtering and categorization",
-    }),
-
     // Schedule
     defineField({
       name: "recurring",
@@ -202,8 +190,17 @@ export default defineType({
       title: "End Date",
       type: "date",
       group: "schedule",
-      description: "For multi-day events only",
+      description: "For multi-day events only. Must be after start date.",
       hidden: ({ document }) => document?.recurring === true || document?.isOneDayEvent === true,
+      validation: (Rule) =>
+        Rule.custom((endDate, context) => {
+          const doc = context.document as { date?: string; recurring?: boolean; isOneDayEvent?: boolean } | undefined;
+          if (!endDate) return true;
+          if (doc?.date && endDate < doc.date) {
+            return "End date must be on or after the start date";
+          }
+          return true;
+        }),
     }),
     defineField({
       name: "recurringDay",
@@ -257,10 +254,23 @@ export default defineType({
       title: "End Time",
       type: "string",
       group: "schedule",
-      description: "Optional",
+      description: "Optional. Must be after start time (unless event spans past midnight).",
       options: {
         list: timeOptions,
       },
+      validation: (Rule) =>
+        Rule.custom((endTime, context) => {
+          const doc = context.document as { time?: string } | undefined;
+          if (!endTime || !doc?.time) return true;
+          // Convert 12h time to index for comparison
+          const timeToIndex = (t: string) => timeOptions.findIndex((o) => o.value === t);
+          const startIdx = timeToIndex(doc.time);
+          const endIdx = timeToIndex(endTime);
+          if (startIdx >= 0 && endIdx >= 0 && endIdx <= startIdx) {
+            return "End time must be after start time";
+          }
+          return true;
+        }),
     }),
 
     // Details

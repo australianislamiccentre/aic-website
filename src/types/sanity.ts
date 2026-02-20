@@ -66,6 +66,8 @@ export interface SanityService {
   icon: string;
   image?: SanityImage;
   availability?: string;
+  highlights?: string[];
+  keyFeatures?: string[];
   requirements?: string[];
   processSteps?: Array<{
     step: string;
@@ -82,6 +84,7 @@ export interface SanityService {
   contactEmail?: string;
   contactPhone?: string;
   contactPerson?: string;
+  formRecipientEmail?: string;
   featured?: boolean;
   active?: boolean;
   order?: number;

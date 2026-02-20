@@ -7,6 +7,7 @@ import {
   serviceConfirmationEmail,
 } from "@/lib/email-templates";
 import { getFormRecipientEmail, isFormEnabled } from "@/lib/form-settings";
+import { getServiceBySlug } from "@/sanity/lib/fetch";
 
 // Use verified domain, fall back to Resend's testing sender
 const FROM_EMAIL =
@@ -50,7 +51,19 @@ export async function POST(request: NextRequest) {
 
     const { data } = result;
     const resend = getResendClient();
-    const toEmail = await getFormRecipientEmail("serviceInquiry");
+
+    // Check if this service has a specific recipient email set in Sanity
+    let toEmail = await getFormRecipientEmail("serviceInquiry");
+    if (body.serviceSlug) {
+      try {
+        const service = await getServiceBySlug(body.serviceSlug);
+        if (service?.formRecipientEmail) {
+          toEmail = service.formRecipientEmail;
+        }
+      } catch {
+        // Fall back to global recipient if lookup fails
+      }
+    }
 
     // Send notification to AIC
     const notification = serviceNotificationEmail(data);

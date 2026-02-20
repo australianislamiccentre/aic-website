@@ -237,11 +237,7 @@ export function LatestUpdatesSection({
 }: LatestUpdatesSectionProps) {
   // Limit announcements
   const limitedAnnouncements = announcements.slice(0, 6);
-
-  // If no updates, don't render the section
-  if (limitedAnnouncements.length === 0 && !urgentAnnouncement) {
-    return null;
-  }
+  const hasContent = limitedAnnouncements.length > 0 || !!urgentAnnouncement;
 
   // Mobile banner links
   const mobileBanners = [
@@ -269,20 +265,20 @@ export function LatestUpdatesSection({
   ];
 
   return (
-    <section className="py-12 md:py-20 bg-white relative overflow-hidden">
+    <section className="py-10 md:py-20 bg-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 md:px-6 relative">
         {/* Urgent Banner */}
         {urgentAnnouncement && <UrgentBanner announcement={urgentAnnouncement} />}
 
         {/* Header */}
         <FadeIn>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 md:gap-4 mb-5 md:mb-8">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 text-teal-700 text-sm font-medium mb-3">
-                <Bell className="w-4 h-4" />
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 text-xs sm:text-sm font-medium mb-2 md:mb-3">
+                <Bell className="w-3.5 h-3.5" />
                 Stay Updated
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
                 Latest{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-teal-500">
                   Updates
@@ -305,7 +301,7 @@ export function LatestUpdatesSection({
         </FadeIn>
 
         {/* Mobile: Banner Buttons */}
-        <div className="md:hidden space-y-3 mb-8">
+        <div className="md:hidden space-y-2 mb-6">
           {mobileBanners.map((banner, index) => (
             <motion.div
               key={banner.href}
@@ -336,14 +332,19 @@ export function LatestUpdatesSection({
           )}
         </div>
 
-        {/* Empty state when only urgent banner is shown */}
-        {limitedAnnouncements.length === 0 && urgentAnnouncement && (
+        {/* Empty state when no announcements */}
+        {limitedAnnouncements.length === 0 && (
           <FadeIn>
             <div className="hidden md:block text-center py-8 bg-neutral-50 rounded-2xl">
               <Bell className="w-12 h-12 mx-auto text-gray-300 mb-4" />
               <p className="text-gray-500">
-                Check back soon for more updates.
+                No announcements right now. Check back soon for updates!
               </p>
+              <div className="flex justify-center gap-3 mt-4">
+                <Button href="/announcements" variant="outline" size="sm">
+                  View Past Announcements
+                </Button>
+              </div>
             </div>
           </FadeIn>
         )}

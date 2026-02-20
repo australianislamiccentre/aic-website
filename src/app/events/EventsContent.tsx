@@ -19,6 +19,8 @@ import {
   List,
   ArrowRight,
   Sparkles,
+  Ticket,
+  Users,
 } from "lucide-react";
 
 // Helper to get image URL from Sanity or fallback to static path
@@ -93,7 +95,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
         className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all flex flex-col md:flex-row group"
       >
         <div className="relative md:w-1/3 overflow-hidden">
-          <div className="relative h-48 md:h-full">
+          <div className="relative h-40 md:h-full">
             <motion.div
               animate={{ scale: isHovered ? 1.1 : 1 }}
               transition={{ duration: 0.4 }}
@@ -164,7 +166,25 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
               <MapPin className="w-4 h-4 text-green-600" />
               <span>{event.locationDetails || event.location}</span>
             </motion.div>
+            {event.ageGroup && (
+              <motion.div
+                animate={{ x: isHovered ? 4 : 0 }}
+                transition={{ delay: 0.15 }}
+                className="flex items-center gap-2 text-sm text-gray-500"
+              >
+                <Users className="w-4 h-4 text-green-600" />
+                <span>{event.ageGroup}</span>
+              </motion.div>
+            )}
           </div>
+          {event.registrationUrl && (
+            <div className="mb-3">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 text-teal-700 text-xs font-medium rounded-full">
+                <Ticket className="w-3 h-3" />
+                Registration Required
+              </span>
+            </div>
+          )}
 
           <motion.div
             animate={{ opacity: isHovered ? 1 : 0.8, x: isHovered ? 4 : 0 }}
@@ -201,7 +221,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
       onHoverEnd={() => setIsHovered(false)}
       className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all group relative"
     >
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-40 overflow-hidden">
         <motion.div
           animate={{ scale: isHovered ? 1.15 : 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
@@ -295,7 +315,22 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
               <MapPin className="w-4 h-4 text-green-600" />
               <span>{event.locationDetails || event.location}</span>
             </div>
+            {event.ageGroup && (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Users className="w-4 h-4 text-green-600" />
+                <span>{event.ageGroup}</span>
+              </div>
+            )}
           </div>
+
+          {event.registrationUrl && (
+            <div className="mb-3">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 text-teal-700 text-xs font-medium rounded-full">
+                <Ticket className="w-3 h-3" />
+                Registration Required
+              </span>
+            </div>
+          )}
 
           <Button
             href={`/events/${event.slug || event._id}`}
@@ -354,7 +389,6 @@ export default function EventsContent({ events }: EventsContentProps) {
   });
 
   const filteredUpcomingEvents = filteredEvents.filter((e) => !e.recurring);
-  const filteredRecurringEvents = filteredEvents.filter((e) => e.recurring);
 
   return (
     <>
@@ -496,7 +530,7 @@ export default function EventsContent({ events }: EventsContentProps) {
                 exit={{ opacity: 0, y: -20 }}
                 className={
                   viewMode === "grid"
-                    ? "grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+                    ? "grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8"
                     : "space-y-6"
                 }
               >
@@ -526,77 +560,7 @@ export default function EventsContent({ events }: EventsContentProps) {
         </div>
       </section>
 
-      {/* Recurring Events Section */}
-      {filteredRecurringEvents.length > 0 && (
-        <section className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-center gap-3 mb-8">
-              <Sparkles className="w-6 h-6 text-green-600" />
-              <h2 className="text-2xl font-bold text-gray-900">Regular Programs</h2>
-            </div>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={selectedCategory + viewMode + "recurring"}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className={
-                  viewMode === "grid"
-                    ? "grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-                    : "space-y-6"
-                }
-              >
-                {filteredRecurringEvents.map((event, index) => (
-                  <EventCard
-                    key={event._id}
-                    event={event}
-                    viewMode={viewMode}
-                    index={index}
-                  />
-                ))}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </section>
-      )}
 
-      {/* Subscribe CTA */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-6">
-          <FadeIn>
-            <div className="bg-gradient-to-r from-green-600 to-primary-700 rounded-3xl p-8 md:p-12 text-center">
-              <h2 className="text-3xl font-bold text-white mb-4">Never Miss an Event</h2>
-              <p className="text-white/80 mb-8 max-w-xl mx-auto">
-                Subscribe to our newsletter and get notified about upcoming events,
-                programs, and community gatherings.
-              </p>
-              <form
-                className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const emailInput = e.currentTarget.querySelector('input[type="email"]') as HTMLInputElement;
-                  const email = emailInput?.value;
-                  if (email) {
-                    const mailtoLink = `mailto:contact@australianislamiccentre.org?subject=${encodeURIComponent('Newsletter Subscription Request - Events')}&body=${encodeURIComponent(`Please add me to the AIC events newsletter.\n\nEmail: ${email}`)}`;
-                    window.open(mailtoLink, '_blank');
-                    emailInput.value = '';
-                  }
-                }}
-              >
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  required
-                  className="flex-1 px-6 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <Button type="submit" variant="gold">
-                  Subscribe
-                </Button>
-              </form>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
     </>
   );
 }

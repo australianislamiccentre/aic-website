@@ -24,6 +24,10 @@ import {
   Home,
   GraduationCap,
   Church,
+  Baby,
+  Scroll,
+  MessageCircle,
+  Scale,
 } from "lucide-react";
 import { ServiceContactForm } from "./ServiceContactForm";
 
@@ -31,23 +35,22 @@ interface ServicePageProps {
   params: Promise<{ slug: string }>;
 }
 
-// Map Sanity icon names to Lucide components
+// Map Sanity icon names to Lucide components — keys match schema values
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Moon: Moon,
-  BookOpen: BookOpen,
-  Heart: Heart,
-  Users: Users,
-  Calendar: Calendar,
-  Star: Star,
-  Home: Home,
-  HandHeart: HandHeart,
-  GraduationCap: GraduationCap,
-  Church: Church,
-  prayer: Sparkles,
-  mosque: BookOpen,
-  heart: Heart,
-  support: HandHeart,
-  users: Users,
+  Moon,
+  Heart,
+  BookOpen,
+  Users,
+  Calendar,
+  Star,
+  Home,
+  HandHeart,
+  GraduationCap,
+  Church,
+  Baby,
+  Scroll,
+  MessageCircle,
+  Scale,
 };
 
 // Generate static params for all services
@@ -177,6 +180,21 @@ export default async function ServicePage({ params }: ServicePageProps) {
                 </div>
               </div>
 
+              {/* Key Features */}
+              {service.keyFeatures && service.keyFeatures.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Key Features</h2>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {service.keyFeatures.map((feature, index) => (
+                      <div key={index} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100">
+                        <CheckCircle className="w-5 h-5 text-teal-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700 text-sm">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Full Description */}
               {service.fullDescription && service.fullDescription.length > 0 && (
                 <div className="mb-8">
@@ -243,30 +261,31 @@ export default async function ServicePage({ params }: ServicePageProps) {
               </div>
             </div>
 
-            {/* Sidebar - Contact Form */}
+            {/* Sidebar */}
             <div className="lg:col-span-1">
-              <div className="sticky top-24">
-                <ServiceContactForm serviceName={service.title} />
+              <div className="sticky top-24 space-y-6">
+                {/* Contact Form */}
+                <ServiceContactForm serviceName={service.title} serviceSlug={service.slug} />
 
                 {/* Direct Contact Info */}
-                <div className="mt-6 bg-neutral-50 rounded-xl p-6">
-                  <h3 className="font-semibold text-gray-900 mb-4">
+                <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                  <h3 className="font-semibold text-gray-900 mb-2">
                     Prefer to contact us directly?
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-3 mt-4">
                     <a
-                      href="mailto:info@australianislamiccentre.org.au"
-                      className="flex items-center gap-3 text-teal-600 hover:text-teal-700 transition-colors"
+                      href={`mailto:${service.contactEmail || "contact@australianislamiccentre.org"}`}
+                      className="flex items-center gap-3 w-full px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"
                     >
                       <Mail className="w-5 h-5" />
-                      <span className="text-sm">info@australianislamiccentre.org.au</span>
+                      <span className="text-sm font-medium">Email Us</span>
                     </a>
                     <a
-                      href="tel:+61396435555"
-                      className="flex items-center gap-3 text-teal-600 hover:text-teal-700 transition-colors"
+                      href={`tel:${service.contactPhone ? service.contactPhone.replace(/\s/g, "") : "0390000177"}`}
+                      className="flex items-center gap-3 w-full px-4 py-3 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 transition-colors"
                     >
                       <Phone className="w-5 h-5" />
-                      <span className="text-sm">(03) 9643 5555</span>
+                      <span className="text-sm font-medium">{service.contactPhone || "03 9000 0177"}</span>
                     </a>
                   </div>
                 </div>

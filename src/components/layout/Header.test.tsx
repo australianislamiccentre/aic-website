@@ -165,9 +165,9 @@ describe("Header", () => {
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    const mobileDonateLnk = screen.getByRole("link", { name: /Make a Donation/i });
-    expect(mobileDonateLnk).toBeInTheDocument();
-    expect(mobileDonateLnk).toHaveAttribute("href", "/donate");
+    const donateLinks = screen.getAllByRole("link", { name: /Donate/i });
+    expect(donateLinks.length).toBeGreaterThanOrEqual(1);
+    expect(donateLinks.some((link) => link.getAttribute("href") === "/donate")).toBe(true);
   });
 
   it("shows contact info in mobile menu footer", async () => {

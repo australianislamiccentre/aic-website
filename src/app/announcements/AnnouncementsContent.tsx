@@ -65,7 +65,7 @@ function AnnouncementCard({ announcement, index }: { announcement: SanityAnnounc
         <div className={`bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border ${isHighlighted ? 'border-amber-200' : 'border-gray-100'} h-full flex flex-col`}>
           {/* Image */}
           {imageUrl ? (
-            <div className="relative h-48 overflow-hidden">
+            <div className="relative h-40 overflow-hidden">
               <Image
                 src={imageUrl}
                 alt={announcement.title}
@@ -323,7 +323,7 @@ export default function AnnouncementsContent({ announcements }: AnnouncementsCon
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+                className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8"
               >
                 {otherAnnouncements.map((announcement, index) => (
                   <AnnouncementCard

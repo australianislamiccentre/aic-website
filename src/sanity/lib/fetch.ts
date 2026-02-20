@@ -66,11 +66,13 @@ export interface DonationSettings {
   organizationKey?: string;
 }
 
-// Revalidation time in seconds (1 minute for faster updates)
-const REVALIDATE_TIME = 60;
+// Revalidation time in seconds
+// On-demand revalidation via webhook handles instant updates on publish.
+// This ISR fallback catches anything the webhook misses.
+// 120s is sufficient since the webhook provides real-time updates.
+const REVALIDATE_TIME = 120;
 
 // Generic fetch function with caching and draft mode support
-// skipCdn: bypass Sanity CDN for singleton settings that must be fresh
 async function sanityFetch<T>(
   query: string,
   params: Record<string, unknown> = {},
@@ -78,17 +80,17 @@ async function sanityFetch<T>(
   options: { skipCdn?: boolean } = {}
 ): Promise<T> {
   const { isEnabled: isDraftMode } = await draftMode();
-  const isDevelopment = process.env.NODE_ENV === "development";
 
-  // In draft mode OR development, use preview client to see draft documents
-  if (isDraftMode || isDevelopment) {
+  // Only use preview client when explicitly in draft mode (not all of dev)
+  // This ensures dev behaves like production — only published content shows
+  if (isDraftMode) {
     return previewClient.fetch<T>(query, params);
   }
 
   // Use noCdnClient for singleton settings that must always be fresh
   const fetchClient = options.skipCdn ? noCdnClient : client;
 
-  // In production mode, use client with caching
+  // Fetch with ISR caching (Next.js handles the caching layer)
   return fetchClient.fetch<T>(query, params, {
     next: {
       revalidate: REVALIDATE_TIME,

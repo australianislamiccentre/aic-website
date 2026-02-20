@@ -6,7 +6,6 @@ import Image from "next/image";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
-import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { urlFor } from "@/sanity/lib/image";
 import { SanityProgram } from "@/types/sanity";
 import {
@@ -16,10 +15,10 @@ import {
   Clock,
   CheckCircle2,
   Calendar,
-  Heart,
   ExternalLink,
   Trophy,
   ChevronDown,
+  Heart,
 } from "lucide-react";
 
 function getImageUrl(image: SanityProgram["image"] | string | undefined): string {
@@ -63,7 +62,7 @@ function ProgramCard({ program }: ProgramCardProps) {
       onHoverEnd={() => setIsHovered(false)}
       className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 h-full flex flex-col relative group"
     >
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-40 overflow-hidden">
         <motion.div
           animate={{ scale: isHovered ? 1.1 : 1 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
@@ -203,10 +202,15 @@ interface ProgramsContentProps {
 }
 
 export default function ProgramsContent({ programs }: ProgramsContentProps) {
-  const info = useSiteSettings();
   const educationPrograms = programs.filter((p) => p.categories?.includes("Education"));
   const youthPrograms = programs.filter((p) =>
     p.categories?.includes("Sports") || p.categories?.includes("Youth")
+  );
+  // Catch-all for programs that don't fit Education or Sports/Youth (e.g., Women, Community, Charity)
+  const educationIds = new Set(educationPrograms.map((p) => p._id));
+  const youthIds = new Set(youthPrograms.map((p) => p._id));
+  const otherPrograms = programs.filter(
+    (p) => !educationIds.has(p._id) && !youthIds.has(p._id)
   );
   const hasPrograms = programs.length > 0;
 
@@ -229,7 +233,7 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
 
       {/* Empty State */}
       {!hasPrograms && (
-        <section className="py-20 bg-neutral-50">
+        <section className="py-12 bg-neutral-50">
           <div className="max-w-4xl mx-auto px-6 text-center">
             <FadeIn>
               <GraduationCap className="w-16 h-16 mx-auto text-gray-300 mb-6" />
@@ -240,23 +244,13 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
                 We&apos;re currently updating our program offerings. Contact us to learn about
                 our education and youth programs.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Button
-                  href="/contact"
-                  variant="primary"
-                  icon={<ArrowRight className="w-5 h-5" />}
-                >
-                  Contact Us
-                </Button>
-                <Button
-                  href={info.externalLinks.college}
-                  target="_blank"
-                  variant="outline"
-                  icon={<ExternalLink className="w-5 h-5" />}
-                >
-                  Visit AIC College
-                </Button>
-              </div>
+              <Button
+                href="/contact"
+                variant="primary"
+                icon={<ArrowRight className="w-5 h-5" />}
+              >
+                Contact Us
+              </Button>
             </FadeIn>
           </div>
         </section>
@@ -279,15 +273,14 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
             >
               Sports & Youth
             </a>
-            <a
-              href={info.externalLinks.college}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-5 py-2.5 rounded-full text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors inline-flex items-center gap-2"
-            >
-              AIC College
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+            {otherPrograms.length > 0 && (
+              <a
+                href="#other"
+                className="px-5 py-2.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+              >
+                Community & Other
+              </a>
+            )}
           </div>
         </div>
       </section>
@@ -295,10 +288,10 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
 
       {/* Education Programs Section */}
       {educationPrograms.length > 0 && (
-      <section id="education" className="py-20 bg-neutral-50">
+      <section id="education" className="py-12 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
-            <div className="text-center mb-16">
+            <div className="text-center mb-10">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
                 <BookOpen className="w-4 h-4" />
                 Education Programs
@@ -313,7 +306,7 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
             </div>
           </FadeIn>
 
-          <div className="space-y-24">
+          <div className="space-y-16">
             {educationPrograms.map((program, index) => {
               const isEven = index % 2 === 0;
               const imageUrl = getImageUrl(program.image);
@@ -337,7 +330,7 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
                           alt={program.title}
                           width={600}
                           height={400}
-                          className="w-full h-[400px] object-cover"
+                          className="w-full h-64 md:h-80 object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         <div className="absolute bottom-6 left-6 right-6">
@@ -415,58 +408,12 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
       </section>
       )}
 
-      {/* AIC College CTA */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-3xl p-8 md:p-12 border border-red-100">
-              <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-600 text-sm font-medium mb-4">
-                    <ExternalLink className="w-4 h-4" />
-                    External Partner
-                  </div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                    AIC College
-                  </h2>
-                  <p className="text-gray-600 mb-6">
-                    Australian International College offers accredited Islamic education
-                    from primary through secondary levels. Providing quality education
-                    that nurtures both academic excellence and Islamic values.
-                  </p>
-                  <Button
-                    href={info.externalLinks.college}
-                    target="_blank"
-                    variant="primary"
-                    icon={<ExternalLink className="w-5 h-5" />}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    Visit AIC College Website
-                  </Button>
-                </div>
-                <div className="relative">
-                  <div className="aspect-video rounded-2xl overflow-hidden shadow-xl">
-                    <Image
-                      src="/images/aic 1.jpg"
-                      alt="AIC College"
-                      width={600}
-                      height={400}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
       {/* Sports & Youth Section */}
       {youthPrograms.length > 0 && (
-      <section id="youth" className="py-20 bg-neutral-50">
+      <section id="youth" className="py-12 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
-            <div className="text-center mb-16">
+            <div className="text-center mb-10">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-sage-600 text-sm font-medium mb-4">
                 <Trophy className="w-4 h-4" />
                 Sports & Youth
@@ -481,8 +428,39 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
             </div>
           </FadeIn>
 
-          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {youthPrograms.map((program) => (
+              <StaggerItem key={program._id}>
+                <ProgramCard program={program} />
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        </div>
+      </section>
+      )}
+
+      {/* Other Programs Section (Women, Community, Charity, etc.) */}
+      {otherPrograms.length > 0 && (
+      <section id="other" className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <FadeIn>
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-sm font-medium mb-4">
+                <Heart className="w-4 h-4" />
+                Community & Other
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Community Programs
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Programs supporting our diverse community, including women&apos;s initiatives,
+                charitable activities, and community engagement.
+              </p>
+            </div>
+          </FadeIn>
+
+          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+            {otherPrograms.map((program) => (
               <StaggerItem key={program._id}>
                 <ProgramCard program={program} />
               </StaggerItem>
@@ -494,11 +472,11 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
 
       {/* Stats Section */}
       {hasPrograms && (
-      <section className="py-20 bg-white">
+      <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
             <div className="bg-gradient-to-br from-neutral-800 via-neutral-700 to-sage-700 rounded-3xl p-8 md:p-12">
-              <div className="text-center mb-12">
+              <div className="text-center mb-8">
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                   Our Educational Impact
                 </h2>
@@ -534,40 +512,24 @@ export default function ProgramsContent({ programs }: ProgramsContentProps) {
       </section>
       )}
 
-      {/* Enrollment CTA */}
+      {/* Contact CTA */}
       {hasPrograms && (
-      <section className="py-20 bg-neutral-50">
+      <section className="py-16 bg-neutral-50">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <FadeIn>
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mb-6">
-              <Heart className="w-8 h-8 text-white" />
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              Ready to Begin Your Learning Journey?
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+              Interested in Our Programs?
             </h2>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Enroll today and join our community of learners seeking knowledge
-              and spiritual growth. Contact us for enrollment details and class schedules.
+            <p className="text-gray-600 mb-6 max-w-xl mx-auto">
+              For more information about enrollment, schedules, and fees, please get in touch.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button
-                href="/contact"
-                variant="primary"
-                size="lg"
-                icon={<ArrowRight className="w-5 h-5" />}
-              >
-                Contact Us to Enroll
-              </Button>
-              <Button
-                href={info.externalLinks.bookstore}
-                target="_blank"
-                variant="outline"
-                size="lg"
-                icon={<ExternalLink className="w-5 h-5" />}
-              >
-                Visit AIC Bookstore
-              </Button>
-            </div>
+            <Button
+              href="/contact"
+              variant="primary"
+              icon={<ArrowRight className="w-5 h-5" />}
+            >
+              Contact Us
+            </Button>
           </FadeIn>
         </div>
       </section>

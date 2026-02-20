@@ -2,14 +2,13 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
+import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import {
   ArrowRight,
   Award,
   Sparkles,
-  Building,
   Sun,
   Wind,
   Droplet,
@@ -17,11 +16,6 @@ import {
 } from "lucide-react";
 
 const features = [
-  {
-    icon: Building,
-    title: "99 Names of Allah",
-    description: "The 99 beautiful names of Allah are intricately carved into the façade, creating a stunning visual testament to Islamic faith.",
-  },
   {
     icon: Sun,
     title: "Natural Light Design",
@@ -118,35 +112,15 @@ export default function ArchitecturePage() {
                 Our <span className="text-teal-600">Architecture</span>
               </h1>
 
-              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                Explore the award-winning design of the Australian Islamic Centre, where Islamic tradition meets contemporary Australian architecture in a masterful synthesis of faith and form.
+              <p className="text-lg text-gray-600 leading-relaxed mb-4">
+                Designed by Pritzker Prize laureate Glenn Murcutt AO in collaboration with Hakan Elevli, the Australian Islamic Centre in Newport, Melbourne is a globally celebrated architectural landmark.
               </p>
-
-              <div className="flex flex-wrap gap-6 mb-8">
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-teal-600">2016</p>
-                  <p className="text-sm text-gray-500">Completed</p>
-                </div>
-                <div className="w-px bg-gray-200" />
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-teal-600">3</p>
-                  <p className="text-sm text-gray-500">Int&apos;l Awards</p>
-                </div>
-                <div className="w-px bg-gray-200" />
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-teal-600">5,000m²</p>
-                  <p className="text-sm text-gray-500">Total Area</p>
-                </div>
-              </div>
-
-              <Button
-                href="#explore"
-                variant="primary"
-                size="lg"
-                icon={<ArrowRight className="w-5 h-5" />}
-              >
-                Explore the Design
-              </Button>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Completed in 2016, the centre features 96 coloured lanterns inspired by Islamic geometry that flood the prayer hall with kaleidoscopic light. The building is precisely oriented towards Mecca and employs natural ventilation and passive cooling — a hallmark of Murcutt&apos;s environmentally responsive practice.
+              </p>
+              <p className="text-gray-600 leading-relaxed">
+                The centre won the Victorian Architecture Medal in 2017, the AIA National Award for Public Architecture, and was shortlisted for the Aga Khan Award for Architecture.
+              </p>
             </div>
 
             {/* Image */}
@@ -157,7 +131,7 @@ export default function ArchitecturePage() {
                   alt="Australian Islamic Centre exterior"
                   width={600}
                   height={400}
-                  className="w-full h-72 md:h-96 object-cover"
+                  className="w-full h-48 md:h-72 object-cover"
                   priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
@@ -179,7 +153,7 @@ export default function ArchitecturePage() {
       </section>
 
       {/* Design Philosophy */}
-      <section id="explore" className="py-24 bg-white">
+      <section id="explore" className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <FadeIn direction="left">
@@ -197,28 +171,12 @@ export default function ArchitecturePage() {
                   masterful synthesis of Islamic architectural traditions and
                   contemporary Australian design sensibilities.
                 </p>
-                <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                <p className="text-lg text-gray-600 leading-relaxed">
                   The building challenges conventional mosque architecture by
                   reimagining sacred space through the lens of Australian light,
                   landscape, and climate. Every element serves both functional
                   and spiritual purposes.
                 </p>
-                <div className="flex items-center gap-6">
-                  <div>
-                    <p className="text-4xl font-bold text-neutral-700">2016</p>
-                    <p className="text-gray-500">Completed</p>
-                  </div>
-                  <div className="w-px h-12 bg-gray-200" />
-                  <div>
-                    <p className="text-4xl font-bold text-neutral-700">5,000m²</p>
-                    <p className="text-gray-500">Total Area</p>
-                  </div>
-                  <div className="w-px h-12 bg-gray-200" />
-                  <div>
-                    <p className="text-4xl font-bold text-neutral-700">3</p>
-                    <p className="text-gray-500">International Awards</p>
-                  </div>
-                </div>
               </div>
             </FadeIn>
 
@@ -272,45 +230,37 @@ export default function ArchitecturePage() {
         </div>
       </section>
 
-      {/* Design Features */}
-      <section className="py-24 bg-neutral-50">
+      {/* Design Features - Single Row */}
+      <section className="py-12 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                Architectural Features
-              </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Every element of the design serves both aesthetic and functional purposes,
-                creating a space that inspires worship and community gathering.
-              </p>
-            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+              Architectural Features
+            </h2>
           </FadeIn>
 
-          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Desktop: single row; Mobile: horizontal scroll */}
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-5 lg:overflow-visible">
             {features.map((feature) => (
-              <StaggerItem key={feature.title}>
-                <motion.div
-                  whileHover={{ y: -8 }}
-                  className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all"
-                >
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center mb-6">
-                    <feature.icon className="w-7 h-7 text-white" />
+              <div key={feature.title} className="flex-shrink-0 w-[200px] lg:w-auto bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center flex-shrink-0">
+                    <feature.icon className="w-4 h-4 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
-                </motion.div>
-              </StaggerItem>
+                  <h3 className="font-bold text-gray-900 text-sm">{feature.title}</h3>
+                </div>
+                <p className="text-gray-500 text-xs leading-relaxed">{feature.description}</p>
+              </div>
             ))}
-          </StaggerContainer>
+          </div>
         </div>
       </section>
 
       {/* Gallery Section with Parallax */}
-      <section className="py-24 bg-white overflow-hidden">
+      <section className="py-16 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
-            <div className="text-center mb-16">
+            <div className="text-center mb-10">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
                 Gallery
               </h2>
@@ -320,25 +270,22 @@ export default function ArchitecturePage() {
             </div>
           </FadeIn>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {gallery.map((image, index) => (
               <FadeIn key={image.id} delay={index * 0.1}>
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="group relative rounded-2xl overflow-hidden shadow-xl"
-                >
+                <div className="group relative rounded-xl overflow-hidden shadow-md">
                   <Image
                     src={image.src}
                     alt={image.alt}
-                    width={600}
-                    height={400}
-                    className="w-full h-80 object-cover transition-transform duration-700 group-hover:scale-110"
+                    width={400}
+                    height={300}
+                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <p className="text-white text-lg font-medium">{image.caption}</p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <p className="text-white text-sm font-medium">{image.caption}</p>
                   </div>
-                </motion.div>
+                </div>
               </FadeIn>
             ))}
           </div>
@@ -346,46 +293,35 @@ export default function ArchitecturePage() {
       </section>
 
       {/* Awards Section */}
-      <section className="py-24 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="py-12 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800">
+        <div className="max-w-4xl mx-auto px-6">
           <FadeIn>
-            <div className="text-center mb-16">
+            <div className="text-center mb-8">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-teal-400 text-sm font-medium mb-4">
                 <Award className="w-4 h-4" />
                 Recognition
               </div>
-              <h2 className="text-4xl font-bold text-white mb-4">
+              <h2 className="text-3xl font-bold text-white mb-3">
                 Awards & Accolades
               </h2>
-              <p className="text-lg text-white/70 max-w-2xl mx-auto">
-                Our architecture has received international recognition for its
-                innovative design and cultural significance.
-              </p>
             </div>
           </FadeIn>
 
-          <StaggerContainer className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-3 gap-3">
             {awards.map((award) => (
-              <StaggerItem key={award.title}>
-                <motion.div
-                  whileHover={{ y: -8 }}
-                  className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition-all"
-                >
-                  <div className="w-16 h-16 mx-auto rounded-full bg-teal-500/20 flex items-center justify-center mb-6">
-                    <Award className="w-8 h-8 text-teal-400" />
-                  </div>
-                  <p className="text-teal-400 font-bold text-lg mb-2">{award.year}</p>
-                  <h3 className="text-white font-bold text-xl mb-2">{award.title}</h3>
-                  <p className="text-white/60">{award.category}</p>
-                </motion.div>
-              </StaggerItem>
+              <div key={award.title} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center hover:bg-white/10 transition-all flex flex-col items-center justify-center min-h-[120px]">
+                <Award className="w-5 h-5 text-teal-400 mb-2" />
+                <p className="text-teal-400 font-bold text-xs mb-1">{award.year}</p>
+                <h3 className="text-white font-bold text-xs leading-tight mb-1">{award.title}</h3>
+                <p className="text-white/60 text-[10px]">{award.category}</p>
+              </div>
             ))}
-          </StaggerContainer>
+          </div>
         </div>
       </section>
 
       {/* Architect Quote */}
-      <section className="py-24 bg-white">
+      <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <FadeIn>
             <div className="relative">
@@ -415,23 +351,14 @@ export default function ArchitecturePage() {
               Photos can only capture so much. Visit the Australian Islamic Centre
               to truly experience this architectural masterpiece.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button
-                href="/visit"
-                variant="primary"
-                size="lg"
-                icon={<ArrowRight className="w-5 h-5" />}
-              >
-                Plan Your Visit
-              </Button>
-              <Button
-                href="/media"
-                variant="outline"
-                size="lg"
-              >
-                View More Photos
-              </Button>
-            </div>
+            <Button
+              href="/visit"
+              variant="primary"
+              size="lg"
+              icon={<ArrowRight className="w-5 h-5" />}
+            >
+              Plan Your Visit
+            </Button>
           </FadeIn>
         </div>
       </section>

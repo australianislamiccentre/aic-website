@@ -149,7 +149,7 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
 
   return (
     <>
-    <section ref={containerRef} className="relative h-[70vh] md:h-[80vh] lg:h-screen overflow-hidden bg-black">
+    <section ref={containerRef} className="relative h-[45vh] md:h-[55vh] lg:h-[65vh] min-h-[400px] overflow-hidden bg-black">
       {/* Background Images with Carousel */}
       <motion.div
         style={{ y, scale }}
@@ -320,10 +320,11 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
 
     {/* Prayer Times Bar - Below hero */}
     <motion.div
+      id="prayer-times"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5, duration: 0.6 }}
-      className="relative z-40 bg-neutral-900"
+      className="relative z-40 bg-neutral-900 scroll-mt-20"
     >
       <div className="border-b border-white/10">
           {/* Desktop: Prayer cards layout - only at xl and above */}

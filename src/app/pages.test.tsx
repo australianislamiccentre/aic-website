@@ -227,7 +227,6 @@ describe("About Page", () => {
   it("has links to visit and contact pages", () => {
     render(<AboutPage />);
     expect(screen.getByRole("link", { name: /Visit Our Centre/i })).toHaveAttribute("href", "/visit");
-    expect(screen.getByRole("link", { name: /Plan Your Visit/i })).toHaveAttribute("href", "/visit");
   });
 });
 
@@ -339,7 +338,6 @@ describe("Architecture Page", () => {
   it("displays architectural features", () => {
     render(<ArchitecturePage />);
     expect(screen.getByText("Architectural Features")).toBeInTheDocument();
-    expect(screen.getByText("99 Names of Allah")).toBeInTheDocument();
     expect(screen.getByText("Natural Light Design")).toBeInTheDocument();
     expect(screen.getByText("Qibla Orientation")).toBeInTheDocument();
     expect(screen.getByText("Sustainable Design")).toBeInTheDocument();

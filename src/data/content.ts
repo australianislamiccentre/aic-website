@@ -61,32 +61,10 @@ export const aicInfo = {
   },
 };
 
-// Upcoming Events - Hardcoded fallback for when Sanity events are empty
+// Upcoming Events - Legacy fallback (no longer used on the website; Sanity is the source of truth)
+// Kept for test compatibility only.
 export const upcomingEvents = [
-  // Dated events (these should appear first)
-  {
-    id: "eid-al-fitr-2025",
-    title: "Eid Al-Fitr Prayer",
-    date: "2025-03-30",
-    time: "7:30 AM",
-    location: "Main Prayer Hall & Courtyard",
-    image: "/images/aic 1.jpg",
-    description: "Join us for the blessed Eid Al-Fitr prayers followed by community celebrations and festivities for all ages.",
-    category: "Special Event",
-    recurring: false,
-  },
-  {
-    id: "ramadan-iftar-2025",
-    title: "Community Iftar",
-    date: "2025-03-15",
-    time: "6:30 PM",
-    location: "Community Hall",
-    image: "/images/aic 8.jpg",
-    description: "Break your fast with the community. Free iftar meal provided. All welcome.",
-    category: "Community",
-    recurring: false,
-  },
-  // Recurring events
+  // Recurring events only — dated one-off events removed to avoid stale data
   {
     id: "jumuah-arabic",
     title: "Jumu'ah Prayer - Arabic Khutbah",
@@ -243,8 +221,8 @@ export const mosqueEtiquette = [
 
 // Stats
 export const stats = [
-  { value: "1000+", label: "Weekly Worshippers" },
-  { value: "100+", label: "IQRA Students" },
+  { value: "5", label: "Daily Prayers" },
+  { value: "40+", label: "Years Serving" },
   { value: "Global", label: "Architecture Recognition" },
-  { value: "40+", label: "Years Serving Community" },
+  { value: "20+", label: "Weekly Programs" },
 ];

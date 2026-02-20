@@ -32,12 +32,12 @@ export const eventBySlugQuery = groq`
 
 // Events - active events only, recurring always show, non-recurring only if not past
 // Also filter recurring events by recurringEndDate if set
-// Uses shortDescription for cards (falls back to truncated description)
+// Uses string comparison for dates to avoid timezone issues with now()
 export const eventsQuery = groq`
   *[_type == "event" && active != false && (
-    (recurring == true && (recurringEndDate == null || recurringEndDate >= now())) ||
-    date >= now() ||
-    endDate >= now()
+    (recurring == true && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
+    date >= string::split(string(now()), "T")[0] ||
+    endDate >= string::split(string(now()), "T")[0]
   )] | order(recurring asc, featured desc, date asc) {
     _id,
     title,
@@ -65,9 +65,9 @@ export const eventsQuery = groq`
 
 export const featuredEventsQuery = groq`
   *[_type == "event" && active != false && featured == true && (
-    (recurring == true && (recurringEndDate == null || recurringEndDate >= now())) ||
-    date >= now() ||
-    endDate >= now()
+    (recurring == true && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
+    date >= string::split(string(now()), "T")[0] ||
+    endDate >= string::split(string(now()), "T")[0]
   )] | order(recurring asc, featured desc, date asc) [0...5] {
     _id,
     title,
@@ -164,7 +164,7 @@ export const programsQuery = groq`
     "Youth" in categories ||
     "Sports" in categories ||
     "Women" in categories
-  ) && (recurringEndDate == null || recurringEndDate >= now())] | order(featured desc, title asc) {
+  ) && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])] | order(featured desc, title asc) {
     _id,
     title,
     "slug": slug.current,
@@ -195,6 +195,8 @@ export const servicesQuery = groq`
     icon,
     image,
     availability,
+    highlights,
+    keyFeatures,
     requirements,
     processSteps,
     fee,
@@ -204,6 +206,7 @@ export const servicesQuery = groq`
     contactEmail,
     contactPhone,
     contactPerson,
+    formRecipientEmail,
     featured,
     active
   }
@@ -220,6 +223,8 @@ export const serviceBySlugQuery = groq`
     icon,
     image,
     availability,
+    highlights,
+    keyFeatures,
     requirements,
     processSteps,
     fee,
@@ -229,6 +234,7 @@ export const serviceBySlugQuery = groq`
     contactEmail,
     contactPhone,
     contactPerson,
+    formRecipientEmail,
     featured,
     active
   }
@@ -626,7 +632,7 @@ export const latestUpdatesQuery = groq`
     priority,
     callToAction
   },
-  "events": *[_type == "event" && active != false && recurring != true && (date >= now() || endDate >= now())] | order(date asc) [0...4] {
+  "events": *[_type == "event" && active != false && recurring != true && (date >= string::split(string(now()), "T")[0] || endDate >= string::split(string(now()), "T")[0])] | order(date asc) [0...4] {
     _id,
     _type,
     title,

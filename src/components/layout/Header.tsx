@@ -67,8 +67,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
           icon: null,
           items: [
             { name: "Plan Your Visit", href: "/visit" },
-            { name: "360° Virtual Tour", href: "/visit#virtual-tour" },
-            { name: "Getting Here", href: "/visit#directions" },
+            { name: "Affiliated Partners", href: "/partners" },
           ],
         },
       ],
@@ -119,7 +118,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
           items: [
             { name: "IQRA Academy", href: "/events/iqra-academy" },
             { name: "Al-Noor Institute", href: "/programs#alnoor" },
-            { name: "AIC College", href: externalLinks.college, external: true },
+            { name: "AIC College", href: "/partners/aicc" },
             { name: "All Programs →", href: "/programs", isViewAll: true },
           ],
         },
@@ -127,7 +126,7 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
           title: "Youth & Sports",
           icon: null,
           items: [
-            { name: "Newport Storm FC", href: externalLinks.newportStorm, external: true },
+            { name: "Newport Storm FC", href: "/partners/newport-storm" },
             { name: "Youth Nights", href: "/programs#boysynights" },
           ],
         },
@@ -152,10 +151,9 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
           ],
         },
         {
-          title: "Resources",
+          title: "Media",
           icon: null,
           items: [
-            { name: "Community Resources", href: "/resources" },
             { name: "Media Gallery", href: "/media" },
           ],
         },
@@ -452,7 +450,7 @@ export function Header() {
                 {/* Donate Button */}
                 <Link
                   href="/donate"
-                  className="hidden sm:flex items-center gap-2 h-16 px-6 bg-lime-500 hover:bg-lime-600 text-neutral-900 font-semibold transition-all duration-200"
+                  className="flex items-center gap-2 h-16 px-4 sm:px-6 bg-lime-500 hover:bg-lime-600 text-neutral-900 font-semibold transition-all duration-200 text-sm sm:text-base"
                 >
                   <Heart className="w-4 h-4" />
                   <span>Donate</span>
@@ -605,20 +603,20 @@ export function Header() {
                       )}
                     </div>
                   ))}
+                  {/* Donate link */}
+                  <Link
+                    href="/donate"
+                    onClick={() => handleMobileNavClick("/donate")}
+                    className="flex items-center gap-3 px-4 py-4 rounded-xl text-lg font-semibold text-amber-400 hover:bg-white/10 transition-colors"
+                  >
+                    <Heart className="w-5 h-5" />
+                    Donate
+                  </Link>
                 </div>
               </div>
 
               {/* Fixed Footer */}
-              <div className="sticky bottom-0 bg-neutral-900 border-t border-white/10 px-6 py-6 space-y-4">
-                <Link
-                  href="/donate"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full py-4 text-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl transition-all duration-200"
-                >
-                  <Heart className="w-5 h-5" />
-                  <span>Make a Donation</span>
-                </Link>
-
+              <div className="sticky bottom-0 bg-neutral-900 border-t border-white/10 px-6 py-4">
                 <div className="flex items-center justify-center gap-6 text-sm text-white/60">
                   <a href={`tel:${info.phone}`} className="flex items-center gap-2 hover:text-white transition-colors">
                     <Phone className="w-4 h-4" />
