@@ -39,7 +39,7 @@ const mockResults: SearchResult[] = [
     title: "Youth Leadership Program",
     description: "Empowering young Muslims with leadership skills and Islamic values",
     category: "program",
-    href: "/programs#youth",
+    href: "/events",
   },
   {
     id: "4",
@@ -67,7 +67,7 @@ const mockResults: SearchResult[] = [
     title: "Quran Memorization Classes",
     description: "Learn to memorize and recite the Holy Quran with proper tajweed",
     category: "program",
-    href: "/programs#quran",
+    href: "/events",
   },
   {
     id: "8",

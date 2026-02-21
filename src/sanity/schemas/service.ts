@@ -5,29 +5,49 @@ export default defineType({
   title: "Service",
   type: "document",
   fields: [
-    // ── 1. Status ──
+    // ── Status ──
     defineField({
       name: "active",
       title: "Active",
       type: "boolean",
-      description: "Show this service on the website",
+      description: "When disabled, this service is hidden from the website entirely (listing page, homepage, and direct URL)",
       initialValue: true,
     }),
     defineField({
       name: "featured",
-      title: "Featured",
+      title: "Featured on Homepage",
       type: "boolean",
-      description: "Show this service in the 'What's On' section on the homepage",
+      description: "Only featured services appear on the homepage. Disabled when inactive.",
       initialValue: false,
+      readOnly: ({ document }) => document?.active === false,
+      validation: (Rule) =>
+        Rule.custom((featured, context) => {
+          const doc = context.document as { active?: boolean } | undefined;
+          if (featured && doc?.active === false) {
+            return "Cannot feature an inactive service. Enable 'Active' first.";
+          }
+          return true;
+        }),
     }),
     defineField({
       name: "order",
       title: "Display Order",
       type: "number",
-      description: "Controls display order on the /services page. Lower numbers appear first.",
+      description: "Controls display order on both the /services page and homepage. Lower numbers appear first.",
     }),
 
-    // ── 2. Title & Description ──
+    // ── 1. Hero Image (banner at the top of the page) ──
+    defineField({
+      name: "image",
+      title: "Hero Image",
+      type: "image",
+      description: "Banner image shown at the top of the service page and on service cards. Recommended: 1200×800px (3:2 ratio).",
+      options: {
+        hotspot: true,
+      },
+    }),
+
+    // ── 2. Title & Icon (page header) ──
     defineField({
       name: "title",
       title: "Title",
@@ -45,34 +65,10 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: "shortDescription",
-      title: "Short Description",
-      type: "text",
-      rows: 2,
-      description: "Shown on the service card and homepage. Max 150 characters.",
-      validation: (Rule) => Rule.required().max(150),
-    }),
-    defineField({
-      name: "fullDescription",
-      title: "Full Description",
-      type: "array",
-      of: [{ type: "block" }],
-      description: "Detailed content shown on the service detail page.",
-    }),
-    defineField({
-      name: "image",
-      title: "Image",
-      type: "image",
-      options: {
-        hotspot: true,
-      },
-      description: "Shown on the service card. Recommended: 1200×800px (3:2 ratio).",
-    }),
-    defineField({
       name: "icon",
       title: "Icon",
       type: "string",
-      description: "Icon shown on service cards and the detail page header.",
+      description: "Icon shown next to the title on the service page and on service cards.",
       options: {
         list: [
           { title: "Moon (Shahada)", value: "Moon" },
@@ -92,40 +88,75 @@ export default defineType({
         ],
       },
     }),
+    defineField({
+      name: "shortDescription",
+      title: "Short Description",
+      type: "text",
+      rows: 2,
+      description: "Shown below the title on the service page and on service cards. Max 150 characters.",
+      validation: (Rule) => Rule.required().max(150),
+    }),
 
-    // ── 3. Card & Detail Page Content ──
+    // ── 3. Main Content (left column) ──
     defineField({
       name: "highlights",
       title: "Card Highlights",
       type: "array",
       of: [{ type: "string" }],
-      description: "Short bullet points on the service card (2-4 words each). E.g. 'Daily prayers', 'Spiritual guidance'.",
+      description: "Short bullet points on the service card only (2-4 words each). E.g. 'Daily prayers', 'Spiritual guidance'.",
     }),
     defineField({
       name: "keyFeatures",
       title: "Key Features (Detail Page)",
       type: "array",
       of: [{ type: "string" }],
-      description: "Detailed feature list on the service detail page. E.g. 'Daily five prayers led by qualified Imams'.",
+      description: "Detailed feature list shown on the service detail page. E.g. 'Daily five prayers led by qualified Imams'.",
+    }),
+    defineField({
+      name: "fullDescription",
+      title: "Full Description",
+      type: "array",
+      of: [{ type: "block" }],
+      description: "Rich text content shown under 'About This Service' on the detail page.",
+    }),
+    defineField({
+      name: "requirements",
+      title: "Requirements",
+      type: "array",
+      of: [{ type: "string" }],
+      description: "E.g. 'Valid ID', 'Two witnesses'.",
+    }),
+    defineField({
+      name: "processSteps",
+      title: "Process Steps",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            { name: "step", type: "string", title: "Step" },
+            { name: "description", type: "text", title: "Description", rows: 2 },
+          ],
+          preview: {
+            select: { title: "step", subtitle: "description" },
+          },
+        },
+      ],
+      description: "Step-by-step guide shown on the detail page.",
     }),
 
-    // ── 4. Service Details ──
+    // ── 4. Sidebar Details ──
     defineField({
       name: "availability",
       title: "Availability",
       type: "string",
-      description: "E.g. 'By appointment', 'Fridays after Jumu'ah'.",
-    }),
-    defineField({
-      name: "duration",
-      title: "Duration",
-      type: "string",
-      description: "E.g. '30 minutes', '1-2 hours'.",
+      description: "Shown in the sidebar details card. E.g. 'By appointment', 'Fridays after Jumu'ah'.",
     }),
     defineField({
       name: "fee",
       title: "Fee / Suggested Donation",
       type: "object",
+      description: "Shown in the sidebar details card.",
       fields: [
         defineField({
           name: "type",
@@ -157,64 +188,19 @@ export default defineType({
         }),
       ],
     }),
-    defineField({
-      name: "requirements",
-      title: "Requirements",
-      type: "array",
-      of: [{ type: "string" }],
-      description: "E.g. 'Valid ID', 'Two witnesses'.",
-    }),
-    defineField({
-      name: "processSteps",
-      title: "Process Steps",
-      type: "array",
-      of: [
-        {
-          type: "object",
-          fields: [
-            { name: "step", type: "string", title: "Step" },
-            { name: "description", type: "text", title: "Description", rows: 2 },
-          ],
-          preview: {
-            select: { title: "step", subtitle: "description" },
-          },
-        },
-      ],
-      description: "Step-by-step guide shown on the detail page.",
-    }),
 
-    // ── 5. Booking & Contact ──
-    defineField({
-      name: "bookingRequired",
-      title: "Booking Required",
-      type: "boolean",
-      initialValue: false,
-      description: "Does this service require prior booking?",
-    }),
-    defineField({
-      name: "bookingUrl",
-      title: "Online Booking URL",
-      type: "url",
-      description: "Link to online booking form (if available)",
-      hidden: ({ document }) => !document?.bookingRequired,
-    }),
-    defineField({
-      name: "contactPerson",
-      title: "Contact Person",
-      type: "string",
-      description: "Name of the person to contact",
-    }),
+    // ── 5. Contact (sidebar) ──
     defineField({
       name: "contactEmail",
       title: "Contact Email",
       type: "email",
-      description: "Falls back to site default if empty",
+      description: "Shown in the sidebar contact section. Falls back to site default if empty.",
     }),
     defineField({
       name: "contactPhone",
       title: "Contact Phone",
       type: "string",
-      description: "Falls back to site default if empty",
+      description: "Shown in the sidebar contact section. Falls back to site default if empty.",
     }),
     defineField({
       name: "formRecipientEmail",

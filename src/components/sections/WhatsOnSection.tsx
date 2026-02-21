@@ -153,7 +153,7 @@ function ProgramItem({ program, index }: { program: SanityProgram; index: number
       transition={{ delay: index * 0.06 }}
     >
       <Link
-        href={program.externalLink || `/programs#${program.slug}`}
+        href={program.externalLink || `/events/${program.slug}`}
         className="block group"
         target={program.externalLink ? "_blank" : undefined}
         rel={program.externalLink ? "noopener noreferrer" : undefined}
@@ -263,7 +263,7 @@ interface TabConfig {
 
 const allTabs: TabConfig[] = [
   { id: "events", label: "Events", icon: <Calendar className="w-4 h-4" />, href: "/events", color: "text-gray-500", activeColor: "text-green-600 border-green-600", iconBg: "bg-green-100", linkColor: "text-green-600 hover:text-green-700" },
-  { id: "programs", label: "Programs", icon: <GraduationCap className="w-4 h-4" />, href: "/programs", color: "text-gray-500", activeColor: "text-teal-600 border-teal-600", iconBg: "bg-teal-100", linkColor: "text-teal-600 hover:text-teal-700" },
+  { id: "programs", label: "Programs", icon: <GraduationCap className="w-4 h-4" />, href: "/events", color: "text-gray-500", activeColor: "text-teal-600 border-teal-600", iconBg: "bg-teal-100", linkColor: "text-teal-600 hover:text-teal-700" },
   { id: "services", label: "Services", icon: <Heart className="w-4 h-4" />, href: "/services", color: "text-gray-500", activeColor: "text-green-600 border-green-600", iconBg: "bg-green-100", linkColor: "text-green-600 hover:text-green-700" },
 ];
 
@@ -363,7 +363,7 @@ export function WhatsOnSection({ services = [], events = [], programs = [] }: Wh
               )}
               {activeTab === "programs" && (filteredPrograms.length > 0
                 ? filteredPrograms.map((item, i) => <ProgramItem key={item._id} program={item} index={i} />)
-                : <EmptyColumnMessage label="programs" href="/programs" />
+                : <EmptyColumnMessage label="programs" href="/events" />
               )}
               {activeTab === "services" && (filteredServices.length > 0
                 ? filteredServices.map((item, i) => <ServiceItem key={item._id} service={item} index={i} />)
@@ -407,7 +407,7 @@ export function WhatsOnSection({ services = [], events = [], programs = [] }: Wh
                   )}
                   {tab.id === "programs" && (filteredPrograms.length > 0
                     ? filteredPrograms.map((program, i) => <ProgramItem key={program._id} program={program} index={i} />)
-                    : <EmptyColumnMessage label="programs" href="/programs" />
+                    : <EmptyColumnMessage label="programs" href="/events" />
                   )}
                   {tab.id === "services" && (filteredServices.length > 0
                     ? filteredServices.map((service, i) => <ServiceItem key={service._id} service={service} index={i} />)

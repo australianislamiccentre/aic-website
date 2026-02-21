@@ -8,7 +8,6 @@ import {
   featuredEventsQuery,
   announcementsQuery,
   announcementBySlugQuery,
-  featuredAnnouncementsQuery,
   urgentAnnouncementsQuery,
   programsQuery,
   servicesQuery,
@@ -42,6 +41,8 @@ import {
   latestAnnouncementsQuery,
   // Form Settings
   formSettingsQuery,
+  // Embed Security
+  allowedEmbedDomainsQuery,
 } from "./queries";
 import {
   SanityEvent,
@@ -126,6 +127,16 @@ export async function getEventsForStaticGeneration(): Promise<SanityEvent[]> {
   }
 }
 
+export async function getEventBySlug(slug: string): Promise<SanityEvent | null> {
+  try {
+    return await sanityFetch<SanityEvent | null>(eventBySlugQuery, { slug }, ["events"]);
+  } catch (error) {
+    console.error(`Failed to fetch event "${slug}" from Sanity:`, error);
+    return null;
+  }
+}
+
+// Featured events for homepage
 export async function getFeaturedEvents(): Promise<SanityEvent[]> {
   try {
     const result = await sanityFetch<SanityEvent[]>(featuredEventsQuery, {}, ["events"]);
@@ -133,15 +144,6 @@ export async function getFeaturedEvents(): Promise<SanityEvent[]> {
   } catch (error) {
     console.error("Failed to fetch featured events from Sanity:", error);
     return [];
-  }
-}
-
-export async function getEventBySlug(slug: string): Promise<SanityEvent | null> {
-  try {
-    return await sanityFetch<SanityEvent | null>(eventBySlugQuery, { slug }, ["events"]);
-  } catch (error) {
-    console.error(`Failed to fetch event "${slug}" from Sanity:`, error);
-    return null;
   }
 }
 
@@ -177,16 +179,6 @@ export async function getAnnouncementsForStaticGeneration(): Promise<SanityAnnou
     return result ?? [];
   } catch (error) {
     console.error("Failed to fetch announcements for static generation:", error);
-    return [];
-  }
-}
-
-export async function getFeaturedAnnouncements(): Promise<SanityAnnouncement[]> {
-  try {
-    const result = await sanityFetch<SanityAnnouncement[]>(featuredAnnouncementsQuery, {}, ["announcements"]);
-    return result ?? [];
-  } catch (error) {
-    console.error("Failed to fetch featured announcements from Sanity:", error);
     return [];
   }
 }
@@ -555,6 +547,17 @@ export async function getLatestAnnouncements(): Promise<LatestUpdateItem[]> {
     return result ?? [];
   } catch (error) {
     console.error("Failed to fetch latest announcements from Sanity:", error);
+    return [];
+  }
+}
+
+// Embed Security
+export async function getAllowedEmbedDomains(): Promise<string[]> {
+  try {
+    const result = await sanityFetch<string[] | null>(allowedEmbedDomainsQuery, {}, ["siteSettings"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch allowed embed domains from Sanity:", error);
     return [];
   }
 }

@@ -14,7 +14,6 @@ import {
   BookOpen,
   Award,
   Target,
-  Eye,
   Lightbulb,
   Calendar,
   Building,
@@ -155,8 +154,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Mission Section - Compact */}
-      <section className="py-12 md:py-16 bg-white">
+      {/* Mission & Vision Section */}
+      <section id="vision" className="py-12 md:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <FadeIn direction="left">
@@ -175,18 +174,19 @@ export default function AboutPage() {
               <div>
                 <div className="flex items-center gap-2 text-teal-600 text-sm font-medium mb-3">
                   <Target className="w-4 h-4" />
-                  Our Mission
+                  Our Mission & Vision
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
                   {info.tagline}
                 </h2>
                 <p className="text-gray-600 mb-4 leading-relaxed">
                   The Australian Islamic Centre serves as a beacon of Islamic faith and practice in Melbourne.
-                  What started as a local community centre has transformed into a global architectural icon.
+                  We bridge Australian and Islamic values, contributing to broader society through education,
+                  interfaith dialogue, and community service.
                 </p>
                 <p className="text-gray-600 mb-6 leading-relaxed">
-                  We maintain our core identity as a community hub, providing comprehensive religious services,
-                  education, and programs for Muslims and the broader public.
+                  Our holistic approach combines traditional Islamic scholarship with contemporary understanding —
+                  providing comprehensive religious services, education, and programs for Muslims and the broader public.
                 </p>
                 <Button
                   href="/visit"
@@ -201,64 +201,97 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Vision & Values */}
-      <section id="vision" className="py-12 md:py-16 bg-neutral-900">
-        <div className="max-w-7xl mx-auto px-6">
-          {/* Vision & Approach */}
-          <div className="grid md:grid-cols-2 gap-6 mb-10">
-            <FadeIn>
-              <div className="bg-neutral-800/50 rounded-xl p-6 border border-neutral-700/50">
-                <div className="flex items-center gap-2 text-teal-400 mb-3">
-                  <Eye className="w-4 h-4" />
-                  <h3 className="font-semibold">Our Vision</h3>
-                </div>
-                <p className="text-neutral-300 text-sm leading-relaxed">
-                  To be a leading Islamic centre bridging Australian and Islamic values, with a thriving
-                  community contributing to broader society through education and interfaith dialogue.
-                </p>
+      {/* Our Journey - Timeline */}
+      <section className="py-12 md:py-16 bg-teal-50/40">
+        <div className="max-w-4xl mx-auto px-6">
+          <FadeIn>
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-100 text-teal-700 text-xs font-medium mb-3">
+                <Calendar className="w-3.5 h-3.5" />
+                Our Journey
               </div>
-            </FadeIn>
-
-            <FadeIn delay={0.1}>
-              <div className="bg-teal-600/20 rounded-xl p-6 border border-teal-500/30">
-                <div className="flex items-center gap-2 text-teal-400 mb-3">
-                  <Lightbulb className="w-4 h-4" />
-                  <h3 className="font-semibold">Our Approach</h3>
-                </div>
-                <p className="text-neutral-300 text-sm leading-relaxed">
-                  A holistic approach combining traditional Islamic scholarship with contemporary
-                  understanding, reflected in our award-winning architecture.
-                </p>
-              </div>
-            </FadeIn>
-          </div>
-
-          {/* Values */}
-          <FadeIn delay={0.2}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {values.map((value, index) => (
-                <motion.div
-                  key={value.title}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-neutral-800/30 rounded-lg p-4 border border-neutral-700/30 hover:border-teal-500/30 transition-colors"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <value.icon className="w-4 h-4 text-teal-400" />
-                    <h4 className="font-semibold text-white text-sm">{value.title}</h4>
-                  </div>
-                  <p className="text-neutral-400 text-xs leading-relaxed">{value.description}</p>
-                </motion.div>
-              ))}
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                A Legacy of Service
+              </h2>
+              <p className="text-gray-600 max-w-xl mx-auto">
+                From humble beginnings to an architectural landmark
+              </p>
             </div>
           </FadeIn>
+
+          {/* Timeline */}
+          <div className="relative">
+            {/* Vertical line */}
+            <div className="absolute left-[23px] md:left-1/2 md:-translate-x-px top-0 bottom-0 w-0.5 bg-gradient-to-b from-teal-200 via-teal-400 to-teal-600" />
+
+            <div className="space-y-8 md:space-y-10">
+              {timeline.map((item, index) => {
+                const isLeft = index % 2 === 0;
+                return (
+                  <motion.div
+                    key={item.year}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.08 }}
+                    className="relative"
+                  >
+                    {/* Mobile layout: always right of line */}
+                    <div className="md:hidden flex items-start gap-4 pl-0">
+                      <div className="relative z-10 flex-shrink-0 w-12 h-12 rounded-full bg-teal-600 flex items-center justify-center shadow-md shadow-teal-200">
+                        <item.icon className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1 bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                        <span className="inline-block px-2.5 py-0.5 bg-teal-600 text-white text-xs font-bold rounded-md mb-2">
+                          {item.year}
+                        </span>
+                        <h3 className="font-bold text-gray-900 text-sm mb-1">{item.title}</h3>
+                        <p className="text-gray-500 text-xs leading-relaxed">{item.description}</p>
+                      </div>
+                    </div>
+
+                    {/* Desktop layout: alternating left/right */}
+                    <div className="hidden md:grid md:grid-cols-[1fr_48px_1fr] items-center">
+                      <div className={isLeft ? "pr-6" : ""}>
+                        {isLeft && (
+                          <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow text-right">
+                            <span className="inline-block px-3 py-1 bg-teal-600 text-white text-xs font-bold rounded-md mb-2">
+                              {item.year}
+                            </span>
+                            <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
+                            <p className="text-gray-500 text-sm leading-relaxed">{item.description}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex justify-center">
+                        <div className="relative z-10 w-12 h-12 rounded-full bg-teal-600 flex items-center justify-center shadow-md shadow-teal-200">
+                          <item.icon className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+
+                      <div className={!isLeft ? "pl-6" : ""}>
+                        {!isLeft && (
+                          <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                            <span className="inline-block px-3 py-1 bg-teal-600 text-white text-xs font-bold rounded-md mb-2">
+                              {item.year}
+                            </span>
+                            <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
+                            <p className="text-gray-500 text-sm leading-relaxed">{item.description}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Architecture Section */}
-      <section className="py-12 md:py-16 bg-neutral-50">
+      <section className="py-12 md:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
             <div className="text-center mb-10">
@@ -324,7 +357,7 @@ export default function AboutPage() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
-                    className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                    className="bg-neutral-50 rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
@@ -352,40 +385,59 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Our Journey - Compact Milestones */}
-      <section className="py-12 md:py-16 bg-white">
-        <div className="max-w-5xl mx-auto px-6">
+      {/* Our Values + CTA */}
+      <section className="py-12 md:py-16 bg-teal-600">
+        <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 text-neutral-700 text-xs font-medium mb-3">
-                <Calendar className="w-3.5 h-3.5" />
-                Our Journey
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                A Legacy of Service
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                What We Stand For
               </h2>
-              <p className="text-gray-600 max-w-xl mx-auto">
-                From humble beginnings to an architectural landmark
+              <p className="text-teal-100 max-w-xl mx-auto">
+                Our values guide everything we do at the Australian Islamic Centre
               </p>
             </div>
           </FadeIn>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {timeline.map((item, index) => (
-              <FadeIn key={item.year} delay={index * 0.05}>
-                <div className="relative bg-neutral-50 rounded-xl p-5 border border-gray-100 h-full">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="px-2.5 py-1 bg-teal-600 text-white text-xs font-bold rounded-md">
-                      {item.year}
-                    </span>
-                    <item.icon className="w-4 h-4 text-teal-600" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-sm mb-1">{item.title}</h3>
-                  <p className="text-gray-500 text-xs leading-relaxed">{item.description}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            {values.map((value, index) => (
+              <motion.div
+                key={value.title}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08 }}
+                className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20 hover:bg-white/15 transition-colors"
+              >
+                <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center mb-3">
+                  <value.icon className="w-5 h-5 text-white" />
                 </div>
-              </FadeIn>
+                <h4 className="font-bold text-white mb-1">{value.title}</h4>
+                <p className="text-teal-100 text-sm leading-relaxed">{value.description}</p>
+              </motion.div>
             ))}
           </div>
+
+          <FadeIn delay={0.3}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button
+                href="/visit"
+                variant="outline"
+                className="border-white text-white hover:bg-white hover:text-teal-700"
+                icon={<ArrowRight className="w-4 h-4" />}
+              >
+                Plan Your Visit
+              </Button>
+              <Button
+                href="/contact"
+                variant="outline"
+                className="border-white/50 text-white hover:bg-white hover:text-teal-700"
+                icon={<ArrowRight className="w-4 h-4" />}
+              >
+                Get In Touch
+              </Button>
+            </div>
+          </FadeIn>
         </div>
       </section>
 

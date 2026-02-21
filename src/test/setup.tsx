@@ -21,14 +21,14 @@ vi.mock("next/headers", () => ({
 // Mock Sanity fetch functions - return empty arrays so fallback content is used
 vi.mock("@/sanity/lib/fetch", () => ({
   getEvents: vi.fn().mockResolvedValue([]),
-  getEventsForStaticGeneration: vi.fn().mockResolvedValue([]),
   getFeaturedEvents: vi.fn().mockResolvedValue([]),
+  getEventsForStaticGeneration: vi.fn().mockResolvedValue([]),
   getEventBySlug: vi.fn().mockResolvedValue(null),
   getAnnouncements: vi.fn().mockResolvedValue([]),
   getAnnouncementBySlug: vi.fn().mockResolvedValue(null),
   getAnnouncementsForStaticGeneration: vi.fn().mockResolvedValue([]),
-  getFeaturedAnnouncements: vi.fn().mockResolvedValue([]),
   getUrgentAnnouncements: vi.fn().mockResolvedValue([]),
+  getLatestAnnouncements: vi.fn().mockResolvedValue([]),
   getPrograms: vi.fn().mockResolvedValue([]),
   getServices: vi.fn().mockResolvedValue([]),
   getServiceBySlug: vi.fn().mockResolvedValue(null),

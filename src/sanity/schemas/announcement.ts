@@ -5,53 +5,18 @@ export default defineType({
   title: "Announcement",
   type: "document",
   fields: [
-    // ── 1. Status ──
+    // ── 1. Hero Image ──
     defineField({
-      name: "active",
-      title: "Active",
-      type: "boolean",
-      description: "Show this announcement on the website",
-      initialValue: true,
-    }),
-    defineField({
-      name: "featured",
-      title: "Featured",
-      type: "boolean",
-      description: "Show prominently on homepage. Disabled when inactive.",
-      initialValue: false,
-      readOnly: ({ document }) => document?.active === false,
-      validation: (Rule) =>
-        Rule.custom((featured, context) => {
-          const doc = context.document as { active?: boolean } | undefined;
-          if (featured && doc?.active === false) {
-            return "Cannot feature an inactive announcement. Enable 'Active' first.";
-          }
-          return true;
-        }),
-    }),
-    defineField({
-      name: "priority",
-      title: "Priority",
-      type: "string",
+      name: "image",
+      title: "Image",
+      type: "image",
+      description: "Hero banner image shown at the top of the announcement page",
       options: {
-        list: [
-          { title: "Normal", value: "normal" },
-          { title: "Important — highlighted in lists", value: "important" },
-          { title: "Urgent — shows alert banner on homepage", value: "urgent" },
-        ],
-        layout: "radio",
+        hotspot: true,
       },
-      initialValue: "normal",
-      description: "Urgent announcements display as an alert banner at the top of the homepage",
-    }),
-    defineField({
-      name: "expiresAt",
-      title: "Expires At",
-      type: "date",
-      description: "Optional — announcement will auto-hide after this date",
     }),
 
-    // ── 2. Content ──
+    // ── 2. Header ──
     defineField({
       name: "title",
       title: "Title",
@@ -69,38 +34,44 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: "date",
-      title: "Publication Date",
-      type: "date",
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
       name: "excerpt",
       title: "Excerpt",
       type: "text",
       rows: 3,
-      description: "Short summary shown in lists (max 200 characters)",
+      description: "Short summary shown below the title and in announcement cards (max 200 characters)",
       validation: (Rule) => Rule.required().max(200),
     }),
+
+    // ── 3. Main Content ──
     defineField({
       name: "content",
       title: "Full Content",
       type: "array",
       of: [{ type: "block" }],
-      description: "Detailed content for the announcement page",
+      description: "Rich text content shown in the main body of the announcement page",
     }),
+
+    // ── 4. Sidebar Details ──
     defineField({
-      name: "image",
-      title: "Image",
-      type: "image",
+      name: "priority",
+      title: "Priority",
+      type: "string",
       options: {
-        hotspot: true,
+        list: [
+          { title: "Normal", value: "normal" },
+          { title: "Important — highlighted in lists", value: "important" },
+          { title: "Urgent — shows alert banner on homepage", value: "urgent" },
+        ],
+        layout: "radio",
       },
+      initialValue: "normal",
+      description: "Urgent announcements display as an alert banner at the top of the homepage",
     }),
     defineField({
       name: "category",
       title: "Category",
       type: "string",
+      description: "Shown as a badge on the page and used for filtering on the announcements listing",
       options: {
         list: [
           { title: "General", value: "General" },
@@ -130,13 +101,28 @@ export default defineType({
       options: {
         layout: "tags",
       },
-      description: "Optional tags for filtering and search",
+      description: "Shown as small pills next to the category badge",
     }),
+    defineField({
+      name: "date",
+      title: "Publication Date",
+      type: "date",
+      description: "Shown in the sidebar details card",
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: "expiresAt",
+      title: "Expires At",
+      type: "date",
+      description: "Optional — announcement will auto-hide after this date. Shown in sidebar as 'Valid until'",
+    }),
+
+    // ── 5. Call to Action ──
     defineField({
       name: "callToAction",
       title: "Call to Action",
       type: "object",
-      description: "Optional button link",
+      description: "Optional button shown prominently in the sidebar",
       fields: [
         defineField({
           name: "label",
@@ -165,8 +151,7 @@ export default defineType({
             list: [
               { title: "Contact", value: "/contact" },
               { title: "Donate", value: "/donate" },
-              { title: "Events", value: "/events" },
-              { title: "Programs", value: "/programs" },
+              { title: "Events & Programs", value: "/events" },
               { title: "Services", value: "/services" },
               { title: "Worshippers", value: "/worshippers" },
               { title: "Visit", value: "/visit" },
@@ -190,6 +175,31 @@ export default defineType({
           hidden: ({ parent }) => parent?.linkType !== "external",
         }),
       ],
+    }),
+
+    // ── 6. Admin Settings ──
+    defineField({
+      name: "active",
+      title: "Active",
+      type: "boolean",
+      description: "When disabled, this announcement is hidden from the website entirely (listing page, homepage, and direct URL)",
+      initialValue: true,
+    }),
+    defineField({
+      name: "featured",
+      title: "Featured on Homepage",
+      type: "boolean",
+      description: "Only featured announcements appear on the homepage. Disabled when inactive.",
+      initialValue: false,
+      readOnly: ({ document }) => document?.active === false,
+      validation: (Rule) =>
+        Rule.custom((featured, context) => {
+          const doc = context.document as { active?: boolean } | undefined;
+          if (featured && doc?.active === false) {
+            return "Cannot feature an inactive announcement. Enable 'Active' first.";
+          }
+          return true;
+        }),
     }),
   ],
   preview: {

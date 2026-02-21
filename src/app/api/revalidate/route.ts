@@ -26,7 +26,7 @@ const validDocumentTypes = new Set([
 
 // Map Sanity document types to the paths that need revalidation
 const documentTypeToPath: Record<string, string[]> = {
-  event: ["/events", "/", "/programs", "/worshippers"],
+  event: ["/events", "/", "/worshippers"],
   announcement: ["/announcements", "/"],
   service: ["/services", "/worshippers"],
   donationSettings: ["/", "/donate"],
@@ -85,7 +85,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Get paths to revalidate for this document type
-    const pathsToRevalidate = documentTypeToPath[documentType] || [];
+    const pathsToRevalidate = [...(documentTypeToPath[documentType] || [])];
+
+    // Also revalidate the individual detail page if the document has a slug
+    const slug = body.slug?.current;
+    if (slug && typeof slug === "string") {
+      const detailPathPrefix: Record<string, string> = {
+        event: "/events",
+        announcement: "/announcements",
+        service: "/services",
+        resource: "/resources",
+        teamMember: "/about",
+      };
+      const prefix = detailPathPrefix[documentType];
+      if (prefix) {
+        pathsToRevalidate.push(`${prefix}/${slug}`);
+      }
+    }
 
     // Revalidate each path
     for (const path of pathsToRevalidate) {

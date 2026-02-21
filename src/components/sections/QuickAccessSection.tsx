@@ -72,9 +72,9 @@ function buildAccessCards(collegeLink: string): AccessCardData[] {
       accentColor: "text-lime-400",
       accentBg: "bg-lime-500/20 border-lime-500/30",
       links: [
-        { name: "IQRA Academy", href: "/programs#iqra", icon: <BookOpen className="w-4 h-4" /> },
+        { name: "IQRA Academy", href: "/events/iqra-academy", icon: <BookOpen className="w-4 h-4" /> },
         { name: "AIC College", href: collegeLink, icon: <GraduationCap className="w-4 h-4" />, external: true },
-        { name: "Youth Programs", href: "/programs#youth", icon: <Users className="w-4 h-4" /> },
+        { name: "Youth Programs", href: "/events", icon: <Users className="w-4 h-4" /> },
       ],
     },
   ];

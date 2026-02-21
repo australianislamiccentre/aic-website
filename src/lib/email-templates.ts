@@ -1,4 +1,4 @@
-import type { ContactFormData, ServiceInquiryFormData } from "./contact-validation";
+import type { ContactFormData, ServiceInquiryFormData, EventInquiryFormData } from "./contact-validation";
 
 // AIC Brand Colors
 const BLUE = "#01476b";
@@ -62,6 +62,24 @@ export function serviceConfirmationEmail(data: ServiceInquiryFormData): { subjec
   return {
     subject: `We've received your inquiry about ${data.serviceName} - Australian Islamic Centre`,
     html: confirmationLayout(`${escapeHtml(data.serviceName)} Inquiry Received`, `<h2 style="margin:0 0 16px;color:${BLUE};font-size:18px">Assalamu Alaikum, ${escapeHtml(data.firstName)}!</h2><p style="color:#4b5563;line-height:1.6;margin:0 0 20px;font-size:14px">We've received your inquiry about <strong style="color:${BLUE}">${escapeHtml(data.serviceName)}</strong> and will get back to you as soon as possible.</p><p style="margin:0 0 8px;color:#6b7280;font-size:13px;font-weight:600">Your submission details</p>${detailsTable(rows)}${messageBox(data.message)}`),
+  };
+}
+
+// --- Event Inquiry ---
+
+export function eventNotificationEmail(data: EventInquiryFormData): { subject: string; html: string } {
+  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone || "Not provided") + fieldRow("Event", `<strong>${escapeHtml(data.eventName)}</strong>`);
+  return {
+    subject: `Event Inquiry: ${data.eventName}`,
+    html: adminLayout(`Event Inquiry - ${escapeHtml(data.eventName)}`, `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new event inquiry has been submitted via the website.</p>${detailsTable(rows)}${messageBox(data.message)}`),
+  };
+}
+
+export function eventConfirmationEmail(data: EventInquiryFormData): { subject: string; html: string } {
+  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone || "Not provided") + fieldRow("Event", `<strong>${escapeHtml(data.eventName)}</strong>`);
+  return {
+    subject: `We've received your inquiry about ${data.eventName} - Australian Islamic Centre`,
+    html: confirmationLayout(`${escapeHtml(data.eventName)} Inquiry Received`, `<h2 style="margin:0 0 16px;color:${BLUE};font-size:18px">Assalamu Alaikum, ${escapeHtml(data.firstName)}!</h2><p style="color:#4b5563;line-height:1.6;margin:0 0 20px;font-size:14px">We've received your inquiry about <strong style="color:${BLUE}">${escapeHtml(data.eventName)}</strong> and will get back to you as soon as possible.</p><p style="margin:0 0 8px;color:#6b7280;font-size:13px;font-weight:600">Your submission details</p>${detailsTable(rows)}${messageBox(data.message)}`),
   };
 }
 

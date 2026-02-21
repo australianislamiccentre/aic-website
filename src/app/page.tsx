@@ -7,9 +7,9 @@ import { MeetImamsSection } from "@/components/sections/MeetImamsSection";
 import { GalleryStripSection } from "@/components/sections/GalleryStripSection";
 import { MediaHighlightSection } from "@/components/sections/MediaHighlightSection";
 import {
-  getEvents,
+  getFeaturedEvents,
   getUrgentAnnouncements,
-  getServices,
+  getFeaturedServices,
   getPrayerSettings,
   getLatestAnnouncements,
   getPrograms,
@@ -29,9 +29,9 @@ import {
 
 export default async function HomePage() {
   const results = await Promise.allSettled([
-    getEvents(),
+    getFeaturedEvents(),
     getUrgentAnnouncements(),
-    getServices(),
+    getFeaturedServices(),
     getPrayerSettings(),
     getLatestAnnouncements(),
     getPrograms(),

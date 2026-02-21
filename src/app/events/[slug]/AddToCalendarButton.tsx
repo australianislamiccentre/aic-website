@@ -33,6 +33,21 @@ export function AddToCalendarButton({ event }: AddToCalendarButtonProps) {
     return { hours, minutes };
   };
 
+  // Calculate end date from endTime if available, otherwise default to 2 hours
+  const getEndDate = (startDate: Date) => {
+    if (event.endTime) {
+      const { hours, minutes } = parseTime(event.endTime);
+      const end = new Date(startDate);
+      end.setHours(hours, minutes, 0, 0);
+      // If end is before start (e.g. crosses midnight), add a day
+      if (end <= startDate) end.setDate(end.getDate() + 1);
+      return end;
+    }
+    const end = new Date(startDate);
+    end.setHours(end.getHours() + 2);
+    return end;
+  };
+
   // Create calendar event URL for Google Calendar
   const getGoogleCalendarUrl = () => {
     if (!event.date) return "#";
@@ -41,9 +56,7 @@ export function AddToCalendarButton({ event }: AddToCalendarButtonProps) {
     const startDate = new Date(event.date);
     startDate.setHours(hours, minutes, 0, 0);
 
-    // Default duration of 2 hours
-    const endDate = new Date(startDate);
-    endDate.setHours(endDate.getHours() + 2);
+    const endDate = getEndDate(startDate);
 
     const params = new URLSearchParams({
       action: "TEMPLATE",
@@ -64,8 +77,7 @@ export function AddToCalendarButton({ event }: AddToCalendarButtonProps) {
     const startDate = new Date(event.date);
     startDate.setHours(hours, minutes, 0, 0);
 
-    const endDate = new Date(startDate);
-    endDate.setHours(endDate.getHours() + 2);
+    const endDate = getEndDate(startDate);
 
     const formatICalDate = (date: Date) => {
       return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
@@ -111,8 +123,7 @@ END:VCALENDAR`;
     const startDate = new Date(event.date);
     startDate.setHours(hours, minutes, 0, 0);
 
-    const endDate = new Date(startDate);
-    endDate.setHours(endDate.getHours() + 2);
+    const endDate = getEndDate(startDate);
 
     const params = new URLSearchParams({
       path: "/calendar/action/compose",
@@ -130,9 +141,10 @@ END:VCALENDAR`;
   return (
     <>
       <Button
-        variant="primary"
-        icon={<CalendarPlus className="w-5 h-5" />}
+        variant="outline"
+        icon={<CalendarPlus className="w-4 h-4" />}
         onClick={() => setShowModal(true)}
+        className="w-full"
       >
         Add to Calendar
       </Button>

@@ -268,7 +268,7 @@ function ProgramCard({ program, index }: { program: SanityProgram; index: number
       transition={{ delay: index * 0.05 }}
     >
       <Link
-        href={program.externalLink || `/programs#${program.slug}`}
+        href={program.externalLink || `/events/${program.slug}`}
         className="block group"
         target={program.externalLink ? "_blank" : undefined}
         rel={program.externalLink ? "noopener noreferrer" : undefined}
@@ -392,7 +392,7 @@ export function UpcomingSection({
                 Weekly Programs
               </h3>
               <Button
-                href="/programs"
+                href="/events"
                 variant="ghost"
                 size="sm"
                 className="text-neutral-400 hover:text-white"

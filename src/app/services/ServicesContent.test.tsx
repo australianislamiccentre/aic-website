@@ -154,13 +154,12 @@ describe("ServicesContent", () => {
       expect(link).toHaveAttribute("href", "/services/nikah");
     });
 
-    it("Contact Us links to /contact", () => {
-      const services = [makeService()];
+    it("entire card links to /services/[slug]", () => {
+      const services = [makeService({ slug: "nikah" })];
 
       render(<ServicesContent services={services} />);
-      const contactLink = screen.getByText("Contact Us");
-      const link = contactLink.closest("a");
-      expect(link).toHaveAttribute("href", "/contact");
+      const link = screen.getByText("Learn More").closest("a");
+      expect(link).toHaveAttribute("href", "/services/nikah");
     });
   });
 
@@ -187,8 +186,8 @@ describe("ServicesContent", () => {
       const services = [makeService()];
 
       render(<ServicesContent services={services} />);
-      expect(screen.getByText("Our")).toBeInTheDocument();
-      expect(screen.getByText("Services")).toBeInTheDocument();
+      const heading = screen.getByRole("heading", { level: 1 });
+      expect(heading).toHaveTextContent("Our Services");
     });
   });
 });

@@ -109,45 +109,23 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
       },
     },
     {
-      name: "Programs",
-      href: "/programs",
+      name: "Events",
+      href: "/events",
       categories: [
+        {
+          title: "Events & Programs",
+          icon: null,
+          items: [
+            { name: "All Events & Programs", href: "/events" },
+            { name: "Announcements", href: "/announcements" },
+          ],
+        },
         {
           title: "Education",
           icon: null,
           items: [
             { name: "IQRA Academy", href: "/events/iqra-academy" },
-            { name: "Al-Noor Institute", href: "/programs#alnoor" },
-            { name: "AIC College", href: "/partners/aicc" },
-            { name: "All Programs →", href: "/programs", isViewAll: true },
-          ],
-        },
-        {
-          title: "Youth & Sports",
-          icon: null,
-          items: [
-            { name: "Newport Storm FC", href: "/partners/newport-storm" },
-            { name: "Youth Nights", href: "/programs#boysynights" },
-          ],
-        },
-      ],
-      promoImage: {
-        src: "/images/aic 4.jpg",
-        alt: "Education Programs",
-        title: "Explore Our Programs",
-        href: "/programs",
-      },
-    },
-    {
-      name: "Events",
-      href: "/events",
-      categories: [
-        {
-          title: "What's On",
-          icon: null,
-          items: [
-            { name: "All Events", href: "/events" },
-            { name: "Announcements", href: "/announcements" },
+            { name: "AIC College", href: externalLinks.college, external: true },
           ],
         },
         {

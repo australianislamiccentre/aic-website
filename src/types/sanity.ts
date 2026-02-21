@@ -17,6 +17,7 @@ export interface SanityEvent {
   image?: SanityImage;
   shortDescription?: string;
   description: string;
+  keyFeatures?: string[];
   features?: string[];
   ageGroup?: string;
   externalLink?: string;
@@ -25,6 +26,8 @@ export interface SanityEvent {
   registrationUrl?: string;
   contactEmail?: string;
   contactPhone?: string;
+  formType?: "none" | "contact" | "embed";
+  embedFormUrl?: string;
 }
 
 // Portable Text block type
@@ -50,6 +53,8 @@ export interface SanityAnnouncement {
   tags?: string[];
   callToAction?: {
     label?: string;
+    linkType?: "internal" | "external";
+    internalPage?: string;
     url?: string;
   };
 }
@@ -78,12 +83,8 @@ export interface SanityService {
     amount?: number;
     note?: string;
   };
-  duration?: string;
-  bookingRequired?: boolean;
-  bookingUrl?: string;
   contactEmail?: string;
   contactPhone?: string;
-  contactPerson?: string;
   formRecipientEmail?: string;
   featured?: boolean;
   active?: boolean;
@@ -330,6 +331,7 @@ export interface SanitySiteSettings {
     label: string;
     url: string;
   }>;
+  allowedEmbedDomains?: string[];
 }
 
 // Prayer Settings - Flat structure for easy Sanity editing

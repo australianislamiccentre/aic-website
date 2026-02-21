@@ -83,14 +83,14 @@ describe("service schema", () => {
   });
 
   describe("Field descriptions clarify where content appears", () => {
-    it("shortDescription mentions service card and homepage", () => {
+    it("shortDescription mentions service page and cards", () => {
       const field = getField("shortDescription");
-      expect(field?.description).toContain("Shown on the service card and homepage");
+      expect(field?.description).toContain("on service cards");
     });
 
-    it("fullDescription mentions service detail page", () => {
+    it("fullDescription mentions detail page", () => {
       const field = getField("fullDescription");
-      expect(field?.description).toContain("service detail page");
+      expect(field?.description).toContain("detail page");
     });
 
     it("requirements mentions example requirements", () => {
@@ -105,7 +105,7 @@ describe("service schema", () => {
 
     it("active mentions showing on website", () => {
       const field = getField("active");
-      expect(field?.description).toContain("Show this service on the website");
+      expect(field?.description).toContain("hidden from the website entirely");
     });
 
     it("image mentions recommended size", () => {

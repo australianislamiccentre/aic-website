@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { getEventBySlug, getEventsForStaticGeneration } from "@/sanity/lib/fetch";
+import { getEventBySlug, getEventsForStaticGeneration, getAllowedEmbedDomains } from "@/sanity/lib/fetch";
 import { SanityEvent } from "@/types/sanity";
 import { formatDate } from "@/lib/utils";
 import { urlFor } from "@/sanity/lib/image";
@@ -19,8 +19,11 @@ import {
   Users,
   CheckCircle,
   Globe,
+  Sparkles,
 } from "lucide-react";
 import { AddToCalendarButton } from "./AddToCalendarButton";
+import { EventContactForm } from "./EventContactForm";
+import { FormEmbedSection } from "./FormEmbed";
 
 interface EventPageProps {
   params: Promise<{ slug: string }>;
@@ -66,6 +69,11 @@ export default async function EventPage({ params }: EventPageProps) {
   if (!event) {
     notFound();
   }
+
+  // Fetch allowed embed domains in parallel (only needed if event has an embed form)
+  const allowedDomains = event.formType === "embed" && event.embedFormUrl
+    ? await getAllowedEmbedDomains()
+    : [];
 
   const isRecurring = event.eventType === "recurring";
 
@@ -123,34 +131,34 @@ export default async function EventPage({ params }: EventPageProps) {
       )}
 
       {/* Page Header */}
-      <section className={`${heroImageUrl ? 'pt-6' : 'pt-8'} pb-8 bg-white`}>
-        <div className="max-w-4xl mx-auto px-6">
+      <section className={`${heroImageUrl ? 'pt-6' : 'pt-8'} pb-6 bg-white border-b border-gray-100`}>
+        <div className="max-w-5xl mx-auto px-6">
           <BreadcrumbLight />
-          <div className="mt-6">
-            <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="mt-4">
+            <div className="flex flex-wrap items-center gap-2 mb-3">
               {isRecurring && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white text-sm font-semibold rounded-full">
-                  <Repeat className="w-4 h-4" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-500 text-white text-xs font-semibold rounded-full">
+                  <Repeat className="w-3.5 h-3.5" />
                   Recurring
                 </span>
               )}
               {event.categories?.map((cat, idx) => (
-                <span key={idx} className="px-3 py-1.5 bg-amber-500 text-white text-sm font-semibold rounded-full">
+                <span key={idx} className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full">
                   {cat}
                 </span>
               ))}
               {event.ageGroup && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
-                  <Users className="w-4 h-4" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                  <Users className="w-3.5 h-3.5" />
                   {event.ageGroup}
                 </span>
               )}
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
               {event.title}
             </h1>
             {event.shortDescription && (
-              <p className="text-lg text-gray-600 max-w-2xl">
+              <p className="text-base text-gray-500 max-w-2xl">
                 {event.shortDescription}
               </p>
             )}
@@ -158,165 +166,190 @@ export default async function EventPage({ params }: EventPageProps) {
         </div>
       </section>
 
-      {/* Event Content */}
-      <section className="py-12 md:py-16 bg-neutral-50">
-        <div className="max-w-4xl mx-auto px-6">
+      {/* Main Content — 2 column layout */}
+      <section className="py-8 md:py-10 bg-neutral-50">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="grid lg:grid-cols-3 gap-8">
 
-          {/* Event Details Card */}
-          <div className="bg-white rounded-2xl p-6 md:p-8 mb-8 shadow-sm border border-gray-100">
-            <div className="grid md:grid-cols-3 gap-6">
-              {/* Date */}
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-teal-100 rounded-xl">
-                  <Calendar className="w-6 h-6 text-teal-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">
-                    {isRecurring ? "Schedule" : "Date"}
-                  </p>
-                  <p className="font-semibold text-gray-900">{getDateDisplay()}</p>
-                  {getRecurringEndDisplay() && (
-                    <p className="text-sm text-gray-500 mt-1">{getRecurringEndDisplay()}</p>
-                  )}
-                </div>
-              </div>
+            {/* Left Column — Main Content */}
+            <div className="lg:col-span-2 space-y-8">
 
-              {/* Time */}
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-amber-100 rounded-xl">
-                  <Clock className="w-6 h-6 text-amber-600" />
+              {/* Key Features — quick highlights */}
+              {event.keyFeatures && event.keyFeatures.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {event.keyFeatures.map((feature, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 text-teal-700 text-sm font-medium rounded-full border border-teal-100"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      {feature}
+                    </span>
+                  ))}
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Time</p>
-                  <p className="font-semibold text-gray-900">{getTimeDisplay()}</p>
-                </div>
-              </div>
+              )}
 
-              {/* Location */}
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-green-100 rounded-xl">
-                  <MapPin className="w-6 h-6 text-green-600" />
-                </div>
+              {/* About This Event */}
+              {event.description && (
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Location</p>
-                  {event.locationDetails && (
-                    <p className="font-semibold text-gray-900">{event.locationDetails}</p>
-                  )}
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`${event.locationDetails ? 'text-sm text-teal-600 hover:text-teal-700' : 'font-semibold text-teal-600 hover:text-teal-700'} hover:underline transition-colors`}
-                  >
-                    {event.location}
-                  </a>
+                  <h2 className="text-lg font-bold text-gray-900 mb-3">About This Event</h2>
+                  <p className="text-gray-600 leading-relaxed whitespace-pre-line">{event.description}</p>
                 </div>
-              </div>
+              )}
+
+              {/* What to Expect */}
+              {event.features && event.features.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-3">What to Expect</h3>
+                  <ul className="grid sm:grid-cols-2 gap-2.5">
+                    {event.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5">
+                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-gray-600 text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* Description */}
-          <div className="prose prose-lg max-w-none mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">About This Event</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-line">{event.description}</p>
-          </div>
+            {/* Right Column — Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="lg:sticky lg:top-24 space-y-5">
 
-          {/* Key Features / Highlights */}
-          {event.features && event.features.length > 0 && (
-            <div className="bg-white rounded-2xl p-6 md:p-8 mb-8 shadow-sm border border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">What to Expect</h3>
-              <ul className="grid sm:grid-cols-2 gap-3">
-                {event.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+                {/* Event Details Card */}
+                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Event Details</h3>
+                  <div className="space-y-4">
+                    {/* Date */}
+                    <div className="flex items-start gap-3">
+                      <Calendar className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{getDateDisplay()}</p>
+                        {getRecurringEndDisplay() && (
+                          <p className="text-xs text-gray-400 mt-0.5">{getRecurringEndDisplay()}</p>
+                        )}
+                      </div>
+                    </div>
 
-          {/* Contact Information */}
-          {(event.contactEmail || event.contactPhone) && (
-            <div className="bg-white rounded-2xl p-6 mb-8 shadow-sm border border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
-              <div className="flex flex-wrap gap-6">
-                {event.contactEmail && (
-                  <a
-                    href={`mailto:${event.contactEmail}`}
-                    className="flex items-center gap-2 text-teal-600 hover:text-teal-700 transition-colors"
-                  >
-                    <Mail className="w-5 h-5" />
-                    {event.contactEmail}
-                  </a>
+                    {/* Time */}
+                    <div className="flex items-start gap-3">
+                      <Clock className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm font-semibold text-gray-900">{getTimeDisplay()}</p>
+                    </div>
+
+                    {/* Location */}
+                    <div className="flex items-start gap-3">
+                      <MapPin className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        {event.locationDetails && (
+                          <p className="text-sm font-semibold text-gray-900">{event.locationDetails}</p>
+                        )}
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`text-sm ${event.locationDetails ? 'text-teal-600' : 'font-semibold text-teal-600'} hover:text-teal-700 hover:underline transition-colors`}
+                        >
+                          {event.location}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Card */}
+                {(event.contactEmail || event.contactPhone) && (
+                  <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Contact</h3>
+                    <div className="space-y-3">
+                      {event.contactEmail && (
+                        <a
+                          href={`mailto:${event.contactEmail}`}
+                          className="flex items-center gap-2.5 text-sm text-teal-600 hover:text-teal-700 transition-colors"
+                        >
+                          <Mail className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate">{event.contactEmail}</span>
+                        </a>
+                      )}
+                      {event.contactPhone && (
+                        <a
+                          href={`tel:${event.contactPhone}`}
+                          className="flex items-center gap-2.5 text-sm text-teal-600 hover:text-teal-700 transition-colors"
+                        >
+                          <Phone className="w-4 h-4 flex-shrink-0" />
+                          {event.contactPhone}
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 )}
-                {event.contactPhone && (
-                  <a
-                    href={`tel:${event.contactPhone}`}
-                    className="flex items-center gap-2 text-teal-600 hover:text-teal-700 transition-colors"
+
+                {/* Action Buttons */}
+                <div className="space-y-2.5">
+                  {event.registrationUrl && (
+                    <Button
+                      href={event.registrationUrl}
+                      variant="primary"
+                      icon={<ExternalLink className="w-4 h-4" />}
+                      target="_blank"
+                      className="w-full"
+                    >
+                      Register / RSVP
+                    </Button>
+                  )}
+
+                  {event.externalLink && (
+                    <Button
+                      href={event.externalLink}
+                      variant="outline"
+                      icon={<Globe className="w-4 h-4" />}
+                      target="_blank"
+                      className="w-full"
+                    >
+                      Visit Website
+                    </Button>
+                  )}
+
+                  {!isRecurring && event.date && (
+                    <AddToCalendarButton event={event} />
+                  )}
+
+                  <Button
+                    href="/events"
+                    variant="ghost"
+                    icon={<ArrowLeft className="w-4 h-4" />}
+                    iconPosition="left"
+                    className="w-full"
                   >
-                    <Phone className="w-5 h-5" />
-                    {event.contactPhone}
-                  </a>
-                )}
+                    All Events
+                  </Button>
+                </div>
+
               </div>
             </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-4 pt-6 border-t border-gray-200">
-            {/* Registration/RSVP Button */}
-            {event.registrationUrl && (
-              <Button
-                href={event.registrationUrl}
-                variant="primary"
-                icon={<ExternalLink className="w-5 h-5" />}
-                target="_blank"
-              >
-                Register / RSVP
-              </Button>
-            )}
-
-            {/* External Link / Website Button */}
-            {event.externalLink && (
-              <Button
-                href={event.externalLink}
-                variant="outline"
-                icon={<Globe className="w-5 h-5" />}
-                target="_blank"
-              >
-                Visit Website
-              </Button>
-            )}
-
-            {/* Add to Calendar - only for non-recurring events with dates */}
-            {!isRecurring && event.date && (
-              <AddToCalendarButton event={event} />
-            )}
-
-            <Button
-              href="/events"
-              variant="outline"
-              icon={<ArrowLeft className="w-5 h-5" />}
-            >
-              All Events
-            </Button>
           </div>
         </div>
       </section>
 
-      {/* Related Events Section */}
-      <section className="py-12 bg-neutral-50">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">More Events</h2>
-          <p className="text-gray-600 mb-6">
-            Discover other events and programs at the Australian Islamic Centre.
-          </p>
-          <Button href="/events" variant="primary">
-            View All Events
-          </Button>
-        </div>
-      </section>
+      {/* Inline contact form — full width below main content */}
+      {event.formType === "contact" && (
+        <section className="bg-white border-t border-gray-100">
+          <div className="max-w-xl mx-auto px-6 py-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-1 text-center">Enquire About This Event</h2>
+            <p className="text-sm text-gray-500 mb-6 text-center">Have a question? Send us a message and we&apos;ll get back to you.</p>
+            <EventContactForm
+              eventName={event.title}
+              contactEmail={event.contactEmail}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* Inline form embed — full width below main content */}
+      {event.formType === "embed" && event.embedFormUrl && (
+        <FormEmbedSection url={event.embedFormUrl} allowedDomains={allowedDomains} />
+      )}
     </>
   );
 }

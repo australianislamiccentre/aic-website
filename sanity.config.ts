@@ -149,7 +149,7 @@ const previewPaths: Record<string, (slug?: string) => string> = {
   event: (slug) => `/events${slug ? `/${slug}` : ""}`,
   announcement: (slug) => `/announcements${slug ? `/${slug}` : ""}`,
   service: () => "/services",
-  program: () => "/programs",
+  program: () => "/events",
   donationSettings: () => "/donate",
   galleryImage: () => "/media",
   faq: () => "/resources",

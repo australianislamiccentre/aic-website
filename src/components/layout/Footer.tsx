@@ -30,7 +30,7 @@ export function Footer() {
     explore: [
       { name: "About Us", href: "/about" },
       { name: "Services", href: "/services" },
-      { name: "Programs", href: "/programs" },
+      { name: "Programs", href: "/events" },
       { name: "Events", href: "/events" },
       { name: "News & Media", href: "/media" },
       { name: "Architecture", href: "/architecture" },

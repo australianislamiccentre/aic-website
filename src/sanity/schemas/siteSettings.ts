@@ -192,7 +192,48 @@ export default defineType({
       description: "Promotional banner section on homepage",
     }),
 
-    // ── 5. External Links ──
+    // ── 5. Embed Security ──
+    defineField({
+      name: "allowedEmbedDomains",
+      title: "Allowed Embed Domains",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({
+              name: "domain",
+              title: "Domain",
+              type: "string",
+              description: "e.g. form.jotform.com, docs.google.com, typeform.com",
+              validation: (Rule) =>
+                Rule.required()
+                  .regex(/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, {
+                    name: "domain",
+                    invert: false,
+                  })
+                  .error("Must be a valid domain (e.g. form.jotform.com)"),
+            }),
+            defineField({
+              name: "label",
+              title: "Label",
+              type: "string",
+              description: "Friendly name for this provider (e.g. JotForm, Google Forms)",
+            }),
+          ],
+          preview: {
+            select: { title: "label", subtitle: "domain" },
+            prepare({ title, subtitle }) {
+              return { title: title || subtitle, subtitle: title ? subtitle : undefined };
+            },
+          },
+        },
+      ],
+      description:
+        "Domains that are allowed to be embedded as iframes on event pages. Only HTTPS URLs from these domains will be permitted. Add form providers like JotForm, Google Forms, Typeform, etc.",
+    }),
+
+    // ── 6. External Links ──
     defineField({
       name: "externalLinks",
       title: "External Links",
