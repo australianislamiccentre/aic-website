@@ -54,6 +54,8 @@ function makeEvent(overrides: Partial<SanityEvent> = {}): SanityEvent {
     title: "Test Event",
     slug: "test-event",
     shortDescription: "A test event",
+    description: "A test event description",
+    categories: [],
     date: "2026-03-01",
     time: "10:00 AM",
     location: "AIC",

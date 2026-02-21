@@ -120,6 +120,7 @@ describe("service schema", () => {
         title: "Test Service",
         featured: true,
         active: true,
+        media: undefined,
       });
       expect(result?.title).toContain("⭐");
       expect(result?.title).toContain("Test Service");
@@ -130,6 +131,7 @@ describe("service schema", () => {
         title: "Test Service",
         featured: false,
         active: false,
+        media: undefined,
       });
       expect(result?.title).toContain("(Inactive)");
     });
@@ -139,6 +141,7 @@ describe("service schema", () => {
         title: "Test Service",
         featured: false,
         active: true,
+        media: undefined,
       });
       expect(result?.title).toBe("Test Service");
     });
