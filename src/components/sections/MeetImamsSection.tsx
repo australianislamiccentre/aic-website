@@ -23,31 +23,6 @@ function getImageUrl(image: SanityImage | undefined): string | null {
   }
 }
 
-// Fallback imams data when Sanity has none
-const fallbackImams = [
-  {
-    _id: "fallback-1",
-    name: "Our Head Imam",
-    slug: "head-imam",
-    role: "Head Imam",
-    category: "imam" as const,
-    shortBio: "Leading our community in prayer, education, and spiritual guidance.",
-    specializations: ["Quranic Studies", "Islamic Jurisprudence"],
-    active: true,
-    order: 1,
-  },
-  {
-    _id: "fallback-2",
-    name: "Our Associate Imam",
-    slug: "associate-imam",
-    role: "Associate Imam",
-    category: "imam" as const,
-    shortBio: "Supporting our community through counselling, youth programs, and Friday sermons.",
-    specializations: ["Youth Mentorship", "Community Outreach"],
-    active: true,
-    order: 2,
-  },
-];
 
 // ─── Mobile: Compact horizontal card ───────────────────────────────
 function ImamCardMobile({ imam, index }: { imam: SanityTeamMember; index: number }) {
@@ -165,8 +140,10 @@ function ImamCardDesktop({ imam, index }: { imam: SanityTeamMember; index: numbe
 }
 
 export function MeetImamsSection({ imams }: MeetImamsSectionProps) {
-  // Use Sanity data if available, otherwise fallback
-  const displayImams = imams.length > 0 ? imams.slice(0, 3) : fallbackImams;
+  // Hide section entirely when no imams exist in Sanity
+  if (imams.length === 0) return null;
+
+  const displayImams = imams.slice(0, 3);
 
   return (
     <section className="py-10 md:py-16 bg-white relative overflow-hidden">

@@ -230,6 +230,22 @@ function ServiceItem({ service, index }: { service: SanityService; index: number
   );
 }
 
+// ─── Empty Column Message ─────────────────────────────────────────
+
+function EmptyColumnMessage({ label, href }: { label: string; href: string }) {
+  return (
+    <div className="text-center py-8 px-4 bg-white rounded-xl border border-gray-100">
+      <p className="text-gray-400 text-sm mb-2">No {label} right now</p>
+      <Link
+        href={href}
+        className="inline-flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium"
+      >
+        View {label} page <ArrowRight className="w-3 h-3" />
+      </Link>
+    </div>
+  );
+}
+
 // ─── Tab / Column Config ──────────────────────────────────────────
 
 type TabId = "events" | "programs" | "services";
@@ -283,29 +299,11 @@ export function WhatsOnSection({ services = [], events = [], programs = [] }: Wh
     [events, programIds],
   );
 
-  // Only show tabs that have content
-  const activeTabs = useMemo(() => {
-    return allTabs.filter((tab) => {
-      if (tab.id === "events") return filteredEvents.length > 0;
-      if (tab.id === "programs") return filteredPrograms.length > 0;
-      if (tab.id === "services") return filteredServices.length > 0;
-      return false;
-    });
-  }, [filteredEvents, filteredPrograms, filteredServices]);
-
-  // Default to the first available tab
+  // Always show all 3 tabs — individual columns show empty message when needed
   const [activeTab, setActiveTab] = useState<TabId>("events");
 
-  // If the selected tab has no content, fall back to first available
-  const effectiveTab = activeTabs.find((t) => t.id === activeTab) ? activeTab : activeTabs[0]?.id;
+  const activeTabHref = allTabs.find((t) => t.id === activeTab)?.href || "/";
 
-  const activeTabHref = allTabs.find((t) => t.id === effectiveTab)?.href || "/";
-
-  // Don't render section if there's no Sanity content at all
-  if (activeTabs.length === 0) return null;
-
-  // Desktop grid columns based on how many categories have content
-  const desktopGridCols = activeTabs.length === 1 ? "md:grid-cols-1 max-w-md mx-auto" : activeTabs.length === 2 ? "md:grid-cols-2 max-w-3xl mx-auto" : "md:grid-cols-3";
 
   return (
     <section className="py-10 md:py-16 bg-gray-50 relative overflow-hidden">
@@ -333,37 +331,44 @@ export function WhatsOnSection({ services = [], events = [], programs = [] }: Wh
 
         {/* ── Mobile: Tabbed Interface ── */}
         <div className="md:hidden">
-          {/* Tab Bar — only show tabs with content */}
-          {activeTabs.length > 1 && (
-            <div className="flex border-b border-gray-200 mb-4">
-              {activeTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                    effectiveTab === tab.id ? tab.activeColor : "border-transparent " + tab.color
-                  }`}
-                >
-                  {tab.icon}
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Tab Bar — always show all 3 tabs */}
+          <div className="flex border-b border-gray-200 mb-4">
+            {allTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === tab.id ? tab.activeColor : "border-transparent " + tab.color
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
           {/* Tab Content */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={effectiveTab}
+              key={activeTab}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
               className="space-y-2"
             >
-              {effectiveTab === "events" && filteredEvents.map((item, i) => <EventItem key={item._id} event={item} index={i} />)}
-              {effectiveTab === "programs" && filteredPrograms.map((item, i) => <ProgramItem key={item._id} program={item} index={i} />)}
-              {effectiveTab === "services" && filteredServices.map((item, i) => <ServiceItem key={item._id} service={item} index={i} />)}
+              {activeTab === "events" && (filteredEvents.length > 0
+                ? filteredEvents.map((item, i) => <EventItem key={item._id} event={item} index={i} />)
+                : <EmptyColumnMessage label="events" href="/events" />
+              )}
+              {activeTab === "programs" && (filteredPrograms.length > 0
+                ? filteredPrograms.map((item, i) => <ProgramItem key={item._id} program={item} index={i} />)
+                : <EmptyColumnMessage label="programs" href="/programs" />
+              )}
+              {activeTab === "services" && (filteredServices.length > 0
+                ? filteredServices.map((item, i) => <ServiceItem key={item._id} service={item} index={i} />)
+                : <EmptyColumnMessage label="services" href="/services" />
+              )}
             </motion.div>
           </AnimatePresence>
 
@@ -373,14 +378,14 @@ export function WhatsOnSection({ services = [], events = [], programs = [] }: Wh
               href={activeTabHref}
               className="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 font-medium"
             >
-              View all {effectiveTab} <ArrowRight className="w-3.5 h-3.5" />
+              View all {activeTab} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
 
-        {/* ── Desktop: Dynamic Column Grid ── */}
-        <div className={`hidden md:grid gap-5 ${desktopGridCols}`}>
-          {activeTabs.map((tab, tabIndex) => (
+        {/* ── Desktop: Always 3-Column Grid ── */}
+        <div className="hidden md:grid md:grid-cols-3 gap-5">
+          {allTabs.map((tab, tabIndex) => (
             <FadeIn key={tab.id} delay={tabIndex * 0.1}>
               <div>
                 <ColumnHeader
@@ -396,15 +401,18 @@ export function WhatsOnSection({ services = [], events = [], programs = [] }: Wh
                   linkColor={tab.linkColor}
                 />
                 <div className="space-y-2">
-                  {tab.id === "events" && filteredEvents.map((event, i) => (
-                    <EventItem key={event._id} event={event} index={i} />
-                  ))}
-                  {tab.id === "programs" && filteredPrograms.map((program, i) => (
-                    <ProgramItem key={program._id} program={program} index={i} />
-                  ))}
-                  {tab.id === "services" && filteredServices.map((service, i) => (
-                    <ServiceItem key={service._id} service={service} index={i} />
-                  ))}
+                  {tab.id === "events" && (filteredEvents.length > 0
+                    ? filteredEvents.map((event, i) => <EventItem key={event._id} event={event} index={i} />)
+                    : <EmptyColumnMessage label="events" href="/events" />
+                  )}
+                  {tab.id === "programs" && (filteredPrograms.length > 0
+                    ? filteredPrograms.map((program, i) => <ProgramItem key={program._id} program={program} index={i} />)
+                    : <EmptyColumnMessage label="programs" href="/programs" />
+                  )}
+                  {tab.id === "services" && (filteredServices.length > 0
+                    ? filteredServices.map((service, i) => <ServiceItem key={service._id} service={service} index={i} />)
+                    : <EmptyColumnMessage label="services" href="/services" />
+                  )}
                 </div>
               </div>
             </FadeIn>

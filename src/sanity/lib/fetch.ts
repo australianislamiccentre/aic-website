@@ -39,7 +39,7 @@ import {
   resourcesQuery,
   resourceBySlugQuery,
   featuredResourcesQuery,
-  latestUpdatesQuery,
+  latestAnnouncementsQuery,
   // Form Settings
   formSettingsQuery,
 } from "./queries";
@@ -549,19 +549,13 @@ export interface LatestUpdateItem {
   featured?: boolean;
 }
 
-export interface LatestUpdatesResult {
-  announcements: LatestUpdateItem[];
-  events: LatestUpdateItem[];
-  campaigns: LatestUpdateItem[];
-}
-
-export async function getLatestUpdates(): Promise<LatestUpdatesResult> {
+export async function getLatestAnnouncements(): Promise<LatestUpdateItem[]> {
   try {
-    const result = await sanityFetch<LatestUpdatesResult>(latestUpdatesQuery, {}, ["announcements", "events"]);
-    return result ?? { announcements: [], events: [], campaigns: [] };
+    const result = await sanityFetch<LatestUpdateItem[]>(latestAnnouncementsQuery, {}, ["announcements"]);
+    return result ?? [];
   } catch (error) {
-    console.error("Failed to fetch latest updates from Sanity:", error);
-    return { announcements: [], events: [], campaigns: [] };
+    console.error("Failed to fetch latest announcements from Sanity:", error);
+    return [];
   }
 }
 

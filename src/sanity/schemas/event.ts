@@ -182,7 +182,7 @@ export default defineType({
       type: "boolean",
       group: "schedule",
       initialValue: true,
-      description: "Toggle on if the event starts and ends on the same day (no end date needed)",
+      description: "ON = event is on the start date only. OFF = multi-day event (end date required).",
       hidden: ({ document }) => document?.recurring === true,
     }),
     defineField({
@@ -190,13 +190,16 @@ export default defineType({
       title: "End Date",
       type: "date",
       group: "schedule",
-      description: "For multi-day events only. Must be after start date.",
-      hidden: ({ document }) => document?.recurring === true || document?.isOneDayEvent === true,
+      description: "Required for multi-day events. The event will be hidden from the website after this date passes.",
+      hidden: ({ document }) => document?.recurring === true || document?.isOneDayEvent !== false,
       validation: (Rule) =>
         Rule.custom((endDate, context) => {
           const doc = context.document as { date?: string; recurring?: boolean; isOneDayEvent?: boolean } | undefined;
-          if (!endDate) return true;
-          if (doc?.date && endDate < doc.date) {
+          // Require end date for multi-day events (isOneDayEvent explicitly false)
+          if (!doc?.recurring && doc?.isOneDayEvent === false && !endDate) {
+            return "End date is required for multi-day events";
+          }
+          if (doc?.date && endDate && endDate < doc.date) {
             return "End date must be on or after the start date";
           }
           return true;

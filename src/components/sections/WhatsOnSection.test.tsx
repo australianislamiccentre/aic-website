@@ -103,9 +103,22 @@ describe("WhatsOnSection", () => {
   });
 
   describe("Rendering", () => {
-    it("renders nothing when no content is provided", () => {
-      const { container } = render(<WhatsOnSection />);
-      expect(container.querySelector("section")).toBeNull();
+    it("always renders the section even with no content", () => {
+      render(<WhatsOnSection />);
+      expect(screen.getByText("Discover What's")).toBeInTheDocument();
+    });
+
+    it("shows per-column empty messages when no content provided", () => {
+      render(<WhatsOnSection />);
+      // Each empty message appears in both mobile (active tab) and desktop columns
+      expect(screen.getAllByText("No events right now").length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("shows all 3 column headers on desktop even when empty", () => {
+      render(<WhatsOnSection />);
+      expect(screen.getAllByText("Events").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Programs").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Services").length).toBeGreaterThanOrEqual(1);
     });
 
     it("renders the section when services are provided", () => {

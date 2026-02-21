@@ -616,11 +616,10 @@ export const formSettingsQuery = groq`
 `;
 
 // ============================================
-// Latest Updates - Combined feed of announcements, events, and campaigns
+// Latest Announcements for homepage
 // ============================================
-export const latestUpdatesQuery = groq`
-{
-  "announcements": *[_type == "announcement" && active != false && (expiresAt == null || expiresAt > now())] | order(date desc) [0...4] {
+export const latestAnnouncementsQuery = groq`
+  *[_type == "announcement" && active != false && (expiresAt == null || expiresAt > now())] | order(date desc) [0...6] {
     _id,
     _type,
     title,
@@ -631,18 +630,5 @@ export const latestUpdatesQuery = groq`
     category,
     priority,
     callToAction
-  },
-  "events": *[_type == "event" && active != false && recurring != true && (date >= string::split(string(now()), "T")[0] || endDate >= string::split(string(now()), "T")[0])] | order(date asc) [0...4] {
-    _id,
-    _type,
-    title,
-    "slug": slug.current,
-    "description": coalesce(shortDescription, description),
-    "date": date,
-    image,
-    "category": categories[0],
-    time,
-    location
-  },
-  "campaigns": []
-}`;
+  }
+`;
