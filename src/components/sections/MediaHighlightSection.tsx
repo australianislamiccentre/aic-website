@@ -47,7 +47,7 @@ export function MediaHighlightSection() {
     },
   ];
   return (
-    <section className="py-12 md:py-20 bg-neutral-950 relative overflow-hidden">
+    <section className="py-10 md:py-20 bg-neutral-950 relative overflow-hidden">
       {/* Background accent */}
       <div className="absolute inset-0">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-red-500/5 rounded-full blur-3xl" />
@@ -100,9 +100,9 @@ export function MediaHighlightSection() {
                 <motion.div
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-red-600 flex items-center justify-center shadow-2xl shadow-red-500/30 group-hover:bg-red-500 transition-colors"
+                  className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-red-600 flex items-center justify-center shadow-2xl shadow-red-500/30 group-hover:bg-red-500 transition-colors"
                 >
-                  <Play className="w-8 h-8 md:w-10 md:h-10 text-white fill-white ml-1" />
+                  <Play className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white fill-white ml-0.5" />
                 </motion.div>
               </div>
 
@@ -112,11 +112,11 @@ export function MediaHighlightSection() {
               </div>
 
               {/* Video info */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
-                <h3 className="text-lg md:text-xl font-bold text-white mb-1 group-hover:text-red-300 transition-colors">
+              <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-6">
+                <h3 className="text-sm sm:text-lg md:text-xl font-bold text-white mb-0.5 sm:mb-1 group-hover:text-red-300 transition-colors">
                   {featuredVideo.title}
                 </h3>
-                <p className="text-sm text-neutral-300 line-clamp-2 max-w-2xl">
+                <p className="text-xs sm:text-sm text-neutral-300 line-clamp-1 sm:line-clamp-2 max-w-2xl">
                   {featuredVideo.description}
                 </p>
               </div>
@@ -144,10 +144,10 @@ export function MediaHighlightSection() {
               href={social.url}
               target="_blank"
               rel="noopener noreferrer"
-              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-medium transition-all ${social.color}`}
+              className={`inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-white text-xs sm:text-sm font-medium transition-all ${social.color}`}
             >
-              <social.icon className="w-5 h-5" />
-              {social.label} on {social.platform}
+              <social.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">{social.label} on</span> {social.platform}
             </Link>
           ))}
         </motion.div>

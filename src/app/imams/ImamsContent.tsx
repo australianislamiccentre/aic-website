@@ -44,7 +44,7 @@ export default function ImamsContent({ imams }: ImamsContentProps) {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
-            <div className="text-center mb-16">
+            <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 Meet Our Religious Leaders
               </h2>
@@ -207,54 +207,28 @@ export default function ImamsContent({ imams }: ImamsContentProps) {
       </section>
 
       {/* Services Section */}
-      <section className="py-24 bg-gradient-to-b from-neutral-50 to-white">
+      <section className="py-12 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Services Offered by Our Imams
-              </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Our religious leaders are available to assist with various spiritual and community needs.
-              </p>
-            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+              Services Offered by Our Imams
+            </h2>
           </FadeIn>
 
-          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StaggerContainer className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {[
-              {
-                title: "Religious Counselling",
-                description: "Personal guidance on Islamic matters, faith questions, and spiritual well-being.",
-              },
-              {
-                title: "Marriage Services",
-                description: "Islamic marriage ceremonies (Nikah), pre-marriage counselling, and family guidance.",
-              },
-              {
-                title: "Funeral Services",
-                description: "Janazah prayers, burial assistance, and support for bereaved families.",
-              },
-              {
-                title: "Islamic Education",
-                description: "Quran classes, Islamic studies, and religious instruction for all ages.",
-              },
-              {
-                title: "Friday Sermons",
-                description: "Weekly Jumu'ah khutbahs addressing contemporary issues from an Islamic perspective.",
-              },
-              {
-                title: "Community Programs",
-                description: "Ramadan programs, Eid celebrations, and various community spiritual events.",
-              },
+              { title: "Religious Counselling", description: "Guidance on Islamic matters and spiritual well-being" },
+              { title: "Marriage Services", description: "Nikah ceremonies and pre-marriage counselling" },
+              { title: "Funeral Services", description: "Janazah prayers and support for families" },
+              { title: "Islamic Education", description: "Quran classes and religious instruction" },
+              { title: "Friday Sermons", description: "Weekly Jumu'ah khutbahs" },
+              { title: "Community Programs", description: "Ramadan, Eid, and spiritual events" },
             ].map((service) => (
               <StaggerItem key={service.title}>
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all border border-gray-100"
-                >
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{service.title}</h3>
-                  <p className="text-gray-600">{service.description}</p>
-                </motion.div>
+                <div className="bg-white rounded-lg p-4 border border-gray-100">
+                  <h3 className="font-semibold text-gray-900 text-sm mb-1">{service.title}</h3>
+                  <p className="text-gray-500 text-xs">{service.description}</p>
+                </div>
               </StaggerItem>
             ))}
           </StaggerContainer>
@@ -262,7 +236,7 @@ export default function ImamsContent({ imams }: ImamsContentProps) {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-neutral-800 via-neutral-700 to-sage-700">
+      <section className="py-16 bg-gradient-to-br from-neutral-800 via-neutral-700 to-sage-700">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <FadeIn>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">

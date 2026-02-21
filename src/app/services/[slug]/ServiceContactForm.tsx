@@ -6,9 +6,10 @@ import { useFormSettings } from "@/contexts/FormSettingsContext";
 
 interface ServiceContactFormProps {
   serviceName: string;
+  serviceSlug?: string;
 }
 
-export function ServiceContactForm({ serviceName }: ServiceContactFormProps) {
+export function ServiceContactForm({ serviceName, serviceSlug }: ServiceContactFormProps) {
   const forms = useFormSettings();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -40,6 +41,7 @@ export function ServiceContactForm({ serviceName }: ServiceContactFormProps) {
         body: JSON.stringify({
           ...formData,
           serviceName,
+          serviceSlug: serviceSlug || "",
           _gotcha: (document.getElementById("_gotcha") as HTMLInputElement)?.value || "",
         }),
       });

@@ -1,29 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
-import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import {
   jumuahTimes,
   mosqueEtiquette as fallbackEtiquette,
-  services as fallbackServices,
-  upcomingEvents as fallbackEvents,
 } from "@/data/content";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { getPrayerTimesForDate } from "@/lib/prayer-times";
+import { useNextPrayer } from "@/hooks/usePrayerTimes";
 import { TARAWEEH_CONFIG, EID_CONFIG } from "@/lib/prayer-config";
-import type { SanityPrayerSettings, SanityEtiquette, SanityService, SanityEvent } from "@/types/sanity";
-import { urlFor } from "@/sanity/lib/image";
+import type { PrayerName } from "@/lib/prayer-times";
+import type { SanityPrayerSettings, SanityEtiquette } from "@/types/sanity";
+import type { YouTubeVideo } from "@/lib/youtube";
 import {
   Clock,
   MapPin,
-  Users,
   Heart,
-  ArrowRight,
   CheckCircle2,
   Calendar,
   Footprints,
@@ -34,13 +30,27 @@ import {
   HelpCircle,
   Moon,
   Sun,
+  Sunrise,
   Sunset,
   Cloud,
   ChevronLeft,
   ChevronRight,
   RotateCcw,
   Star,
+  Play,
+  ArrowRight,
+  Users,
 } from "lucide-react";
+
+// Prayer icon mapping
+const PRAYER_ICONS: Record<PrayerName, typeof Moon> = {
+  fajr: Moon,
+  sunrise: Sunrise,
+  dhuhr: Sun,
+  asr: Cloud,
+  maghrib: Sunset,
+  isha: Moon,
+};
 
 // Icon map supports both lowercase (hardcoded) and PascalCase (Sanity) icon names
 const etiquetteIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -68,57 +78,27 @@ const etiquetteIcons: Record<string, React.ComponentType<{ className?: string }>
 interface WorshippersClientProps {
   prayerSettings?: SanityPrayerSettings | null;
   etiquette?: SanityEtiquette[];
-  services?: SanityService[];
-  events?: SanityEvent[];
+  youtubeVideos?: YouTubeVideo[];
 }
 
 export default function WorshippersClient({
   prayerSettings,
   etiquette = [],
-  services = [],
-  events = [],
+  youtubeVideos = [],
 }: WorshippersClientProps) {
   const info = useSiteSettings();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const prayerTimes = getPrayerTimesForDate(selectedDate, prayerSettings);
+  const nextPrayerData = useNextPrayer(prayerSettings);
 
   // Normalize Sanity data with hardcoded fallbacks
   const etiquetteItems = etiquette.length > 0
     ? etiquette.map(e => ({ title: e.title, description: e.description, icon: e.icon }))
     : fallbackEtiquette;
 
-  const serviceItems = services.length > 0
-    ? services.slice(0, 6).map(s => ({
-        id: s.slug,
-        title: s.title,
-        description: s.shortDescription,
-      }))
-    : fallbackServices.slice(0, 6);
-
-  const programEvents = events.length > 0
-    ? events
-        .filter(e => e.categories?.some(c => c === "Education" || c === "Prayer"))
-        .slice(0, 6)
-        .map(e => ({
-          id: e.slug || e._id,
-          title: e.title,
-          description: e.shortDescription || e.description,
-          image: e.image ? urlFor(e.image).width(600).height(400).url() : "/images/aic 1.jpg",
-          category: e.categories?.[0] || "Education",
-          date: e.recurring ? (e.recurringDay || "Weekly") : (e.date || "TBA"),
-          time: e.time,
-        }))
-    : fallbackEvents
-        .filter(e => e.category === "Education" || e.category === "Prayer")
-        .slice(0, 6);
-
   // Jumu'ah times from Sanity with hardcoded fallback
   const jumuahArabicTime = prayerSettings?.jumuahArabicTime ?? jumuahTimes[0]?.time;
   const jumuahEnglishTime = prayerSettings?.jumuahEnglishTime ?? jumuahTimes[1]?.time;
-  const sanityJumuahSessions = [
-    { session: "Arabic Session", time: jumuahArabicTime, language: "Arabic" },
-    { session: "English Session", time: jumuahEnglishTime, language: "English" },
-  ];
 
   // Use Sanity data with fallback to hardcoded config
   const taraweehActive = prayerSettings?.taraweehEnabled ?? TARAWEEH_CONFIG.enabled;
@@ -127,6 +107,15 @@ export default function WorshippersClient({
   const eidFitrTime = prayerSettings?.eidFitrTime ?? EID_CONFIG.eidAlFitr.times[0]?.time;
   const eidAdhaActive = prayerSettings?.eidAdhaActive ?? EID_CONFIG.eidAlAdha.active;
   const eidAdhaTime = prayerSettings?.eidAdhaTime ?? EID_CONFIG.eidAlAdha.times[0]?.time;
+
+  const isViewingToday = (() => {
+    const today = new Date();
+    return (
+      selectedDate.getDate() === today.getDate() &&
+      selectedDate.getMonth() === today.getMonth() &&
+      selectedDate.getFullYear() === today.getFullYear()
+    );
+  })();
 
   const formatDisplayDate = (date: Date) => {
     return date.toLocaleDateString("en-AU", {
@@ -143,15 +132,6 @@ export default function WorshippersClient({
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
-  };
-
-  const isToday = (date: Date) => {
-    const today = new Date();
-    return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
-    );
   };
 
   const goToPreviousDay = () => {
@@ -178,501 +158,372 @@ export default function WorshippersClient({
   };
 
   // Build prayer list from dynamic times
-  const prayerList = [
-    { name: "Fajr", adhan: prayerTimes.fajr.adhan, iqamah: prayerTimes.fajr.iqamah, arabic: "الفجر", icon: Moon, color: "from-indigo-500 to-purple-600" },
-    { name: "Sunrise", adhan: prayerTimes.sunrise.adhan, iqamah: prayerTimes.sunrise.iqamah, arabic: "الشروق", icon: Sun, color: "from-amber-400 to-orange-500", isSunrise: true },
-    { name: "Dhuhr", adhan: prayerTimes.dhuhr.adhan, iqamah: prayerTimes.dhuhr.iqamah, arabic: "الظهر", icon: Sun, color: "from-yellow-400 to-orange-500" },
-    { name: "Asr", adhan: prayerTimes.asr.adhan, iqamah: prayerTimes.asr.iqamah, arabic: "العصر", icon: Cloud, color: "from-blue-400 to-cyan-500" },
-    { name: "Maghrib", adhan: prayerTimes.maghrib.adhan, iqamah: prayerTimes.maghrib.iqamah, arabic: "المغرب", icon: Sunset, color: "from-rose-400 to-red-500" },
-    { name: "Isha", adhan: prayerTimes.isha.adhan, iqamah: prayerTimes.isha.iqamah, arabic: "العشاء", icon: Moon, color: "from-purple-500 to-indigo-600" },
+  const prayerList: {
+    key: PrayerName;
+    name: string;
+    adhan: string;
+    iqamah: string;
+    arabic: string;
+    isSunrise?: boolean;
+  }[] = [
+    { key: "fajr", name: "Fajr", adhan: prayerTimes.fajr.adhan, iqamah: prayerTimes.fajr.iqamah, arabic: "الفجر" },
+    { key: "sunrise", name: "Sunrise", adhan: prayerTimes.sunrise.adhan, iqamah: prayerTimes.sunrise.iqamah, arabic: "الشروق", isSunrise: true },
+    { key: "dhuhr", name: "Dhuhr", adhan: prayerTimes.dhuhr.adhan, iqamah: prayerTimes.dhuhr.iqamah, arabic: "الظهر" },
+    { key: "asr", name: "Asr", adhan: prayerTimes.asr.adhan, iqamah: prayerTimes.asr.iqamah, arabic: "العصر" },
+    { key: "maghrib", name: "Maghrib", adhan: prayerTimes.maghrib.adhan, iqamah: prayerTimes.maghrib.iqamah, arabic: "المغرب" },
+    { key: "isha", name: "Isha", adhan: prayerTimes.isha.adhan, iqamah: prayerTimes.isha.iqamah, arabic: "العشاء" },
   ];
+
+  const nextPrayerKey = nextPrayerData.name;
 
   return (
     <>
-      {/* Page Header */}
-      <section className="pt-8 pb-8 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
+      {/* Hero Section — matches events/services pattern */}
+      <section className="relative bg-gradient-to-br from-neutral-50 via-white to-teal-50/30 overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-teal-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+        <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
           <BreadcrumbLight />
-          <div className="mt-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              For <span className="text-teal-600">Worshippers</span>
-            </h1>
-            <p className="text-gray-600 max-w-2xl">
-              Join our congregation for daily prayers, Friday Jumu&apos;ah, and spiritual programs at the Australian Islamic Centre.
-            </p>
+
+          <div className="mt-8 grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-6">
+                <Clock className="w-4 h-4" />
+                Prayer Times &amp; Guidance
+              </div>
+
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                For <span className="text-teal-600">Worshippers</span>
+              </h1>
+
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                Join our congregation for daily prayers, Friday Jumu&apos;ah, and spiritual programs at the Australian Islamic Centre.
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                <span className="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-full text-sm font-medium">
+                  Daily Prayers
+                </span>
+                <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                  Friday Jumu&apos;ah
+                </span>
+                <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                  Special Prayers
+                </span>
+              </div>
+            </div>
+
+            <div className="relative hidden lg:block">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <Image
+                  src="/images/aic start.jpg"
+                  alt="Australian Islamic Centre prayer hall"
+                  width={600}
+                  height={400}
+                  className="w-full h-72 object-cover"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              </div>
+
+              {/* Next prayer card overlay */}
+              {isViewingToday && (
+                <div className="absolute -bottom-4 -right-4 bg-white rounded-xl p-4 shadow-xl">
+                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Next Prayer</p>
+                  <div className="flex items-center gap-3">
+                    {(() => {
+                      const Icon = PRAYER_ICONS[nextPrayerKey];
+                      return <Icon className="w-5 h-5 text-teal-600" />;
+                    })()}
+                    <div>
+                      <p className="text-lg font-bold text-gray-900">{nextPrayerData.displayName}</p>
+                      <p className="text-sm text-teal-600 font-semibold">{nextPrayerData.adhan}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Prayer Times Section */}
-      <section id="prayers" className="py-20 bg-white">
+      <section id="prayers" className="py-10 md:py-14 bg-white">
         <div className="max-w-7xl mx-auto px-6">
+          {/* Section header + date navigation */}
           <FadeIn>
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
-                <Clock className="w-4 h-4" />
-                {isToday(selectedDate) ? "Today's Prayer Times" : "Prayer Times"}
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+                  Prayer Schedule
+                </h2>
+                <p className="text-gray-500 text-sm">
+                  {isViewingToday ? "Today's prayer times for Melbourne" : "Prayer times for Melbourne"}
+                </p>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Prayer Schedule
-              </h2>
 
               {/* Date Navigation */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
-                {/* Navigation Buttons */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={goToPreviousDay}
-                    className="p-2.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
-                    aria-label="Previous day"
-                  >
-                    <ChevronLeft className="w-5 h-5 text-gray-600" />
-                  </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={goToPreviousDay}
+                  className="p-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                  aria-label="Previous day"
+                >
+                  <ChevronLeft className="w-4 h-4 text-gray-600" />
+                </button>
 
-                  {/* Date Display */}
-                  <div className="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm min-w-[240px] text-center">
-                    <span className="text-gray-900 font-medium">{formatDisplayDate(selectedDate)}</span>
-                  </div>
-
-                  <button
-                    onClick={goToNextDay}
-                    className="p-2.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
-                    aria-label="Next day"
-                  >
-                    <ChevronRight className="w-5 h-5 text-gray-600" />
-                  </button>
-
-                  {/* Calendar Button */}
-                  <div className="relative">
-                    <button
-                      className="p-2.5 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors shadow-sm"
-                      aria-label="Open calendar"
-                    >
-                      <Calendar className="w-5 h-5 text-white" />
-                    </button>
-                    <input
-                      type="date"
-                      value={formatInputDate(selectedDate)}
-                      onChange={handleDateChange}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                      aria-label="Select date"
-                    />
-                  </div>
+                <div className="px-4 py-2 bg-white border border-gray-200 rounded-lg min-w-[220px] text-center">
+                  <span className="text-gray-900 font-medium text-sm">{formatDisplayDate(selectedDate)}</span>
                 </div>
 
-                {/* Today Button */}
-                {!isToday(selectedDate) && (
+                <button
+                  onClick={goToNextDay}
+                  className="p-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                  aria-label="Next day"
+                >
+                  <ChevronRight className="w-4 h-4 text-gray-600" />
+                </button>
+
+                <div className="relative">
+                  <button
+                    className="p-2 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors"
+                    aria-label="Open calendar"
+                  >
+                    <Calendar className="w-4 h-4 text-white" />
+                  </button>
+                  <input
+                    type="date"
+                    value={formatInputDate(selectedDate)}
+                    onChange={handleDateChange}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    aria-label="Select date"
+                  />
+                </div>
+
+                {!isViewingToday && (
                   <button
                     onClick={goToToday}
-                    className="p-2.5 rounded-lg bg-gray-800 hover:bg-gray-900 transition-colors shadow-sm"
+                    className="p-2 rounded-lg bg-gray-800 hover:bg-gray-900 transition-colors"
                     aria-label="Back to today"
                     title="Back to today"
                   >
-                    <RotateCcw className="w-5 h-5 text-white" />
+                    <RotateCcw className="w-4 h-4 text-white" />
                   </button>
                 )}
               </div>
             </div>
           </FadeIn>
 
-          <StaggerContainer className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4 md:gap-6 mb-12">
-            {prayerList.map((prayer) => (
-              <StaggerItem key={prayer.name}>
-                <motion.div
-                  whileHover={{ y: -8, scale: 1.02 }}
-                  className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 shadow-lg border border-gray-100 text-center"
-                >
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto rounded-lg sm:rounded-xl bg-gradient-to-br ${prayer.color} flex items-center justify-center mb-2 sm:mb-3 md:mb-4 shadow-lg`}>
-                    <prayer.icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
-                  </div>
-                  <p className="text-teal-600 text-sm sm:text-base md:text-lg font-arabic mb-0.5 sm:mb-1">{prayer.arabic}</p>
-                  <h3 className="text-gray-900 font-semibold text-sm sm:text-base md:text-lg mb-1 sm:mb-2 md:mb-3">{prayer.name}</h3>
-                  <div className="space-y-0.5 sm:space-y-1 text-xs sm:text-sm">
-                    {prayer.isSunrise ? (
-                      <>
-                        <p className="text-gray-500">Sunrise: <span className="font-medium text-gray-700">{prayer.adhan}</span></p>
-                        <p className="text-neutral-700 font-bold">Shuruk: {prayer.iqamah}</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-gray-500">Adhan: <span className="font-medium text-gray-700">{prayer.adhan}</span></p>
-                        <p className="text-neutral-700 font-bold">Iqamah: {prayer.iqamah}</p>
-                      </>
-                    )}
-                  </div>
-                </motion.div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-
-          <FadeIn>
-            <div className="bg-neutral-50 rounded-2xl p-8 text-center">
-              <p className="text-gray-600">
-                <strong>Location:</strong> {info.address.full}
-              </p>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* Jumu'ah Section */}
-      <section id="jumuah" className="py-20 bg-gradient-to-r from-teal-600 to-teal-700">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <FadeIn direction="left">
-              <div className="text-white">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-teal-200 text-sm font-medium mb-6">
-                  <Calendar className="w-4 h-4" />
-                  Every Friday
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                  Friday Jumu&apos;ah Prayer
-                </h2>
-                <p className="text-white/80 text-lg mb-8 leading-relaxed">
-                  Join us every Friday for congregational prayer. We offer two sessions to
-                  accommodate our growing community - an Arabic khutbah session and an English
-                  khutbah session.
-                </p>
-                <ul className="space-y-3 mb-8">
-                  {[
-                    "Inspiring khutbahs on contemporary and spiritual topics",
-                    "Large prayer hall with ample space",
-                    "Separate women's prayer area",
-                    "Free parking available",
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-teal-400" />
-                      <span className="text-white/90">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </FadeIn>
-
-            <FadeIn direction="right">
-              <div className="grid gap-6">
-                {sanityJumuahSessions.map((session) => (
-                  <motion.div
-                    key={session.session}
-                    whileHover={{ scale: 1.02 }}
-                    className="bg-white rounded-2xl p-8 shadow-xl"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <p className="text-sm text-gray-500 mb-1">{session.language} Khutbah</p>
-                        <h3 className="text-xl font-bold text-gray-900">{session.session}</h3>
-                      </div>
-                      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
-                        <Clock className="w-8 h-8 text-white" />
-                      </div>
-                    </div>
-                    <p className="text-4xl font-bold text-neutral-700">{session.time}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </FadeIn>
-          </div>
-        </div>
-      </section>
-
-      {/* Taraweeh Section - Only during Ramadan */}
-      {taraweehActive && (
-        <section id="taraweeh" className="py-16 bg-gradient-to-r from-purple-600 to-indigo-700">
-          <div className="max-w-7xl mx-auto px-6">
-            <FadeIn>
-              <div className="text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-purple-200 text-sm font-medium mb-6">
-                  <Star className="w-4 h-4" />
-                  Ramadan Special
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                  Taraweeh Prayers
-                </h2>
-                <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
-                  Join us every night during Ramadan for Taraweeh prayers after Isha.
-                </p>
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="inline-block bg-white rounded-2xl p-8 shadow-xl"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-                      <Moon className="w-8 h-8 text-white" />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm text-gray-500 mb-1">Every Night</p>
-                      <p className="text-4xl font-bold text-gray-900">{taraweehTime}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            </FadeIn>
-          </div>
-        </section>
-      )}
-
-      {/* Eid Section - Only when Eid is active */}
-      {(eidFitrActive || eidAdhaActive) && (
-        <section id="eid" className="py-16 bg-gradient-to-r from-amber-500 to-orange-500">
-          <div className="max-w-7xl mx-auto px-6">
-            <FadeIn>
-              <div className="text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-amber-100 text-sm font-medium mb-6">
-                  <Star className="w-4 h-4" />
-                  Special Occasion
-                </div>
-                {eidFitrActive && (
-                  <>
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                      Eid al-Fitr Prayer
-                    </h2>
-                    <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-                      Eid Mubarak! Join us to celebrate the end of Ramadan with the community.
-                    </p>
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      className="inline-block bg-white rounded-2xl p-8 shadow-xl"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-                          <Star className="w-8 h-8 text-white" />
-                        </div>
-                        <div className="text-left">
-                          <p className="text-sm text-gray-500 mb-1">Eid al-Fitr Prayer</p>
-                          <p className="text-4xl font-bold text-gray-900">{eidFitrTime}</p>
-                          <p className="text-sm text-amber-600 font-medium">Main Prayer Hall & Courtyard</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-                {eidAdhaActive && (
-                  <>
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                      Eid al-Adha Prayer
-                    </h2>
-                    <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-                      Eid Mubarak! Join us to celebrate Eid al-Adha with the community.
-                    </p>
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      className="inline-block bg-white rounded-2xl p-8 shadow-xl"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-                          <Star className="w-8 h-8 text-white" />
-                        </div>
-                        <div className="text-left">
-                          <p className="text-sm text-gray-500 mb-1">Eid al-Adha Prayer</p>
-                          <p className="text-4xl font-bold text-gray-900">{eidAdhaTime}</p>
-                          <p className="text-sm text-amber-600 font-medium">Main Prayer Hall & Courtyard</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-              </div>
-            </FadeIn>
-          </div>
-        </section>
-      )}
-
-      {/* Mosque Etiquette Section */}
-      <section id="etiquette" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
-                <Heart className="w-4 h-4" />
-                Mosque Etiquette
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Guidelines for Worshippers
-              </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Please observe these guidelines to ensure a peaceful and respectful environment for all.
-              </p>
-            </div>
-          </FadeIn>
-
-          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {etiquetteItems.map((item) => {
-              const Icon = etiquetteIcons[item.icon] || CheckCircle2;
+          {/* Prayer Cards */}
+          <StaggerContainer className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+            {prayerList.map((prayer) => {
+              const isNext = isViewingToday && prayer.key === nextPrayerKey;
+              const Icon = PRAYER_ICONS[prayer.key];
               return (
-                <StaggerItem key={item.title}>
-                  <motion.div
-                    whileHover={{ y: -4 }}
-                    className="bg-neutral-50 rounded-xl p-6 border border-gray-100"
+                <StaggerItem key={prayer.key}>
+                  <div
+                    className={`rounded-xl p-4 text-center transition-all ${
+                      isNext
+                        ? "bg-teal-50 border-2 border-teal-500 shadow-md ring-1 ring-teal-500/20"
+                        : "bg-white border border-gray-100 hover:shadow-md"
+                    }`}
                   >
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6 text-white" />
+                    {isNext && (
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-teal-600 mb-2">Next Prayer</p>
+                    )}
+                    <div className={`w-10 h-10 mx-auto rounded-lg flex items-center justify-center mb-2 ${
+                      isNext ? "bg-teal-500" : "bg-gray-100"
+                    }`}>
+                      <Icon className={`w-5 h-5 ${isNext ? "text-white" : "text-gray-500"}`} />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-                    <p className="text-gray-600">{item.description}</p>
-                  </motion.div>
+                    <p className={`text-sm font-arabic mb-0.5 ${isNext ? "text-teal-600" : "text-gray-400"}`}>{prayer.arabic}</p>
+                    <h3 className={`font-semibold text-sm mb-2 ${isNext ? "text-teal-700" : "text-gray-900"}`}>{prayer.name}</h3>
+                    <div className="space-y-0.5 text-xs">
+                      {prayer.isSunrise ? (
+                        <>
+                          <p className="text-gray-500">Sunrise: <span className="font-medium text-gray-700">{prayer.adhan}</span></p>
+                          <p className={`font-bold ${isNext ? "text-teal-700" : "text-gray-900"}`}>Shuruk: {prayer.iqamah}</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-gray-500">Adhan: <span className="font-medium text-gray-700">{prayer.adhan}</span></p>
+                          <p className={`font-bold ${isNext ? "text-teal-700" : "text-gray-900"}`}>Iqamah: {prayer.iqamah}</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </StaggerItem>
               );
             })}
           </StaggerContainer>
+
+          {/* Jumu'ah, Taraweeh & Eid — inline row below prayer cards */}
+          <FadeIn>
+            <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-gray-100">
+              <span className="text-gray-500 text-sm font-medium">Jumu&apos;ah</span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-100">
+                <span className="text-gray-500 text-xs">Arabic</span>
+                <span className="text-teal-600 font-semibold text-sm">{jumuahArabicTime}</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-100">
+                <span className="text-gray-500 text-xs">English</span>
+                <span className="text-teal-600 font-semibold text-sm">{jumuahEnglishTime}</span>
+              </div>
+
+              {taraweehActive && (
+                <>
+                  <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block" />
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-50 border border-purple-100">
+                    <Star className="w-3.5 h-3.5 text-purple-500" />
+                    <span className="text-purple-700 text-xs font-medium">Taraweeh</span>
+                    <span className="text-purple-600 font-semibold text-sm">{taraweehTime}</span>
+                  </div>
+                </>
+              )}
+
+              {eidFitrActive && (
+                <>
+                  <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block" />
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-100">
+                    <Star className="w-3.5 h-3.5 text-amber-500" />
+                    <span className="text-amber-700 text-xs font-medium">Eid al-Fitr</span>
+                    <span className="text-amber-600 font-semibold text-sm">{eidFitrTime}</span>
+                  </div>
+                </>
+              )}
+
+              {eidAdhaActive && (
+                <>
+                  <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block" />
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-100">
+                    <Star className="w-3.5 h-3.5 text-amber-500" />
+                    <span className="text-amber-700 text-xs font-medium">Eid al-Adha</span>
+                    <span className="text-amber-600 font-semibold text-sm">{eidAdhaTime}</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </FadeIn>
         </div>
       </section>
 
-      {/* Religious Programs Section */}
-      <section id="programs" className="py-20 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
-                <Users className="w-4 h-4" />
-                Religious Programs
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Grow Your Faith
-              </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Explore our educational and spiritual programs designed to deepen your understanding of Islam.
-              </p>
-            </div>
-          </FadeIn>
-
-          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {programEvents.map((event) => (
-              <StaggerItem key={event.id}>
-                <motion.div
-                  whileHover={{ y: -8 }}
-                  className="bg-white rounded-2xl overflow-hidden shadow-lg"
+      {/* YouTube — Islamic Talks */}
+      {youtubeVideos.length > 0 && (
+        <section className="py-10 md:py-14 bg-neutral-50">
+          <div className="max-w-7xl mx-auto px-6">
+            <FadeIn>
+              <div className="flex items-end justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Islamic Talks</h2>
+                  <p className="text-gray-500 text-sm">Khutbahs and lectures from the Australian Islamic Centre</p>
+                </div>
+                <Link
+                  href="/media"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors"
                 >
-                  <div className="relative h-48">
-                    <Image
-                      src={event.image}
-                      alt={event.title}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 rounded-full bg-teal-600 text-white text-xs font-medium">
-                        {event.category}
-                      </span>
+                  View All
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </FadeIn>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {youtubeVideos.map((video) => (
+                <FadeIn key={video.id}>
+                  <a
+                    href={video.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block rounded-xl overflow-hidden bg-white border border-gray-100 hover:shadow-md transition-shadow"
+                  >
+                    <div className="relative aspect-video">
+                      <Image
+                        src={video.thumbnail}
+                        alt={video.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Play className="w-4 h-4 text-red-600 ml-0.5" />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{event.title}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{event.description}</p>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        {event.date}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {event.time}
-                      </span>
+                    <div className="p-3">
+                      <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-teal-600 transition-colors">
+                        {video.title}
+                      </h3>
                     </div>
-                  </div>
-                </motion.div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-
-          <FadeIn delay={0.3}>
-            <div className="text-center mt-12">
-              <Button href="/programs" variant="primary" icon={<ArrowRight className="w-5 h-5" />}>
-                View All Programs
-              </Button>
+                  </a>
+                </FadeIn>
+              ))}
             </div>
-          </FadeIn>
-        </div>
-      </section>
+            <Link
+              href="/media"
+              className="sm:hidden flex items-center justify-center gap-1.5 mt-4 text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors"
+            >
+              View All Videos
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </section>
+      )}
 
-      {/* Services Quick Links */}
-      <section className="py-20 bg-white">
+      {/* Mosque Etiquette */}
+      <section id="etiquette" className={`py-10 md:py-14 ${youtubeVideos.length > 0 ? "bg-white" : "bg-neutral-50"}`}>
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Our Services
+            <div className="mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+                Mosque Etiquette
               </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                We offer a range of religious services to support our community members.
+              <p className="text-gray-500 text-sm">
+                Please observe these guidelines for a peaceful environment.
               </p>
             </div>
           </FadeIn>
 
-          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {serviceItems.map((service) => (
-              <StaggerItem key={service.id}>
-                <Link href={`/services#${service.id}`}>
-                  <motion.div
-                    whileHover={{ y: -4, scale: 1.02 }}
-                    className="bg-neutral-50 rounded-xl p-6 border border-gray-100 hover:border-teal-200 hover:bg-teal-50 transition-all cursor-pointer"
-                  >
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{service.title}</h3>
-                    <p className="text-gray-600 text-sm">{service.description}</p>
-                    <div className="mt-4 flex items-center text-teal-600 text-sm font-medium">
-                      Learn more <ArrowRight className="w-4 h-4 ml-1" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {etiquetteItems.map((item) => {
+              const Icon = etiquetteIcons[item.icon] || CheckCircle2;
+              return (
+                <FadeIn key={item.title}>
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-50 border border-gray-100">
+                    <div className="w-9 h-9 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
+                      <Icon className="w-4 h-4 text-teal-600" />
                     </div>
-                  </motion.div>
-                </Link>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-sm">{item.title}</h3>
+                      <p className="text-gray-500 text-xs leading-relaxed mt-0.5">{item.description}</p>
+                    </div>
+                  </div>
+                </FadeIn>
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      {/* Getting to AIC */}
-      <section className="py-20 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800">
+      {/* Get Directions CTA */}
+      <section className={`py-10 ${youtubeVideos.length > 0 ? "bg-neutral-50" : "bg-white"}`}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <FadeIn direction="left">
-              <div className="text-white">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-teal-400 text-sm font-medium mb-6">
-                  <MapPin className="w-4 h-4" />
-                  Location
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                  Getting to AIC
-                </h2>
-                <p className="text-white/80 text-lg mb-6">
-                  The Australian Islamic Centre is conveniently located in Newport, Melbourne,
-                  with easy access by car and public transport.
-                </p>
-                <div className="space-y-4 mb-8">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-teal-400 flex-shrink-0 mt-1" />
-                    <p className="text-white/90">{info.address.full}</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Clock className="w-5 h-5 text-teal-400 flex-shrink-0 mt-1" />
-                    <p className="text-white/90">Open from Fajr to Isha daily</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-4">
-                  <Button
-                    href={`https://maps.google.com/?q=${encodeURIComponent(info.address.full)}`}
-                    variant="gold"
-                    icon={<MapPin className="w-5 h-5" />}
-                  >
-                    Get Directions
-                  </Button>
-                  <Button href="/visit" variant="outline" className="border-white/30 text-white hover:bg-white/10">
-                    Plan Your Visit
-                  </Button>
-                </div>
+          <FadeIn>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="flex items-center gap-2 text-gray-700">
+                <MapPin className="w-5 h-5 text-teal-600" />
+                <span className="font-medium text-sm">{info.address.full}</span>
               </div>
-            </FadeIn>
-
-            <FadeIn direction="right">
-              <div className="relative h-[400px] rounded-2xl overflow-hidden">
-                <Image
-                  src="/images/aic end.jpg"
-                  alt="Australian Islamic Centre"
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-neutral-900/50 to-transparent" />
-              </div>
-            </FadeIn>
-          </div>
+              <a
+                href="https://maps.app.goo.gl/DZUnHYjsaBvREAmw9"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors text-sm"
+              >
+                <MapPin className="w-4 h-4" />
+                Get Directions
+              </a>
+            </div>
+          </FadeIn>
         </div>
       </section>
     </>

@@ -17,6 +17,7 @@ import {
   Search,
   ArrowRight,
   AlertTriangle,
+  X,
 } from "lucide-react";
 
 // Helper to get image URL from Sanity
@@ -62,10 +63,10 @@ function AnnouncementCard({ announcement, index }: { announcement: SanityAnnounc
       transition={{ delay: index * 0.05 }}
     >
       <Link href={`/announcements/${announcement.slug}`} className="block group">
-        <div className={`bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border ${isHighlighted ? 'border-amber-200' : 'border-gray-100'} h-full flex flex-col`}>
+        <div className={`bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border ${announcement.priority === 'urgent' ? 'border-red-300' : isHighlighted ? 'border-amber-200' : 'border-gray-100'} h-full flex flex-col`}>
           {/* Image */}
           {imageUrl ? (
-            <div className="relative h-48 overflow-hidden">
+            <div className="relative h-40 overflow-hidden">
               <Image
                 src={imageUrl}
                 alt={announcement.title}
@@ -95,7 +96,7 @@ function AnnouncementCard({ announcement, index }: { announcement: SanityAnnounc
               </div>
             </div>
           ) : (
-            <div className={`h-2 ${isHighlighted ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-teal-500 to-teal-600'}`} />
+            <div className="h-2" style={{ background: announcement.priority === 'urgent' ? '#dc2626' : announcement.priority === 'important' ? '#f59e0b' : '#d97706' }} />
           )}
 
           {/* Content */}
@@ -259,8 +260,16 @@ export default function AnnouncementsContent({ announcements }: AnnouncementsCon
                 placeholder="Search announcements..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                className="w-full pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -282,6 +291,34 @@ export default function AnnouncementsContent({ announcements }: AnnouncementsCon
           </div>
         </div>
       </section>
+
+      {/* Results Summary */}
+      {(searchQuery || selectedCategory !== "All") && (
+        <div className="bg-white border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span className="font-medium text-gray-900">{filteredAnnouncements.length}</span>
+              <span>{filteredAnnouncements.length === 1 ? "result" : "results"}</span>
+              {searchQuery && (
+                <span>
+                  for &quot;<span className="font-medium text-amber-700">{searchQuery}</span>&quot;
+                </span>
+              )}
+              {selectedCategory !== "All" && (
+                <span>
+                  in <span className="font-medium text-amber-700">{selectedCategory}</span>
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => { setSelectedCategory("All"); setSearchQuery(""); }}
+              className="text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2 transition-colors"
+            >
+              Clear all
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Urgent Announcements Banner */}
       {urgentAnnouncements.length > 0 && (
@@ -323,7 +360,7 @@ export default function AnnouncementsContent({ announcements }: AnnouncementsCon
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+                className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8"
               >
                 {otherAnnouncements.map((announcement, index) => (
                   <AnnouncementCard
@@ -360,43 +397,6 @@ export default function AnnouncementsContent({ announcements }: AnnouncementsCon
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-      </section>
-
-      {/* Subscribe CTA */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-6">
-          <FadeIn>
-            <div className="bg-gradient-to-r from-amber-600 to-amber-700 rounded-3xl p-8 md:p-12 text-center">
-              <h2 className="text-3xl font-bold text-white mb-4">Never Miss an Update</h2>
-              <p className="text-white/80 mb-8 max-w-xl mx-auto">
-                Subscribe to our newsletter and get notified about important announcements and community news.
-              </p>
-              <form
-                className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const emailInput = e.currentTarget.querySelector('input[type="email"]') as HTMLInputElement;
-                  const email = emailInput?.value;
-                  if (email) {
-                    const mailtoLink = `mailto:contact@australianislamiccentre.org?subject=${encodeURIComponent('Newsletter Subscription Request')}&body=${encodeURIComponent(`Please add me to the AIC newsletter.\n\nEmail: ${email}`)}`;
-                    window.open(mailtoLink, '_blank');
-                    emailInput.value = '';
-                  }
-                }}
-              >
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  required
-                  className="flex-1 px-6 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-                <Button type="submit" variant="gold">
-                  Subscribe
-                </Button>
-              </form>
-            </div>
-          </FadeIn>
         </div>
       </section>
     </>

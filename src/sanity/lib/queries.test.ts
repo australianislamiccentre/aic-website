@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { donatePageSettingsQuery, formSettingsQuery } from "./queries";
+import {
+  donatePageSettingsQuery,
+  formSettingsQuery,
+  servicesQuery,
+  serviceBySlugQuery,
+  featuredServicesQuery,
+} from "./queries";
 
 describe("GROQ Queries", () => {
   describe("formSettingsQuery", () => {
@@ -107,6 +113,85 @@ describe("GROQ Queries", () => {
       expect(donatePageSettingsQuery).not.toContain("_rev");
       expect(donatePageSettingsQuery).not.toContain("_createdAt");
       expect(donatePageSettingsQuery).not.toContain("_updatedAt");
+    });
+  });
+
+  describe("servicesQuery", () => {
+    it("is defined", () => {
+      expect(servicesQuery).toBeDefined();
+    });
+
+    it("filters by active services", () => {
+      expect(servicesQuery).toContain("active != false");
+    });
+
+    it("orders by display order", () => {
+      expect(servicesQuery).toContain("order(order asc)");
+    });
+
+    it("includes new highlights field", () => {
+      expect(servicesQuery).toContain("highlights");
+    });
+
+    it("includes new keyFeatures field", () => {
+      expect(servicesQuery).toContain("keyFeatures");
+    });
+
+    it("includes new formRecipientEmail field", () => {
+      expect(servicesQuery).toContain("formRecipientEmail");
+    });
+
+    it("includes core service fields", () => {
+      expect(servicesQuery).toContain("title");
+      expect(servicesQuery).toContain("shortDescription");
+      expect(servicesQuery).toContain("icon");
+      expect(servicesQuery).toContain("image");
+      expect(servicesQuery).toContain("requirements");
+      expect(servicesQuery).toContain("contactEmail");
+    });
+  });
+
+  describe("serviceBySlugQuery", () => {
+    it("is defined", () => {
+      expect(serviceBySlugQuery).toBeDefined();
+    });
+
+    it("filters by slug parameter", () => {
+      expect(serviceBySlugQuery).toContain("slug.current == $slug");
+    });
+
+    it("returns a single document", () => {
+      expect(serviceBySlugQuery).toContain("[0]");
+    });
+
+    it("includes new highlights field", () => {
+      expect(serviceBySlugQuery).toContain("highlights");
+    });
+
+    it("includes new keyFeatures field", () => {
+      expect(serviceBySlugQuery).toContain("keyFeatures");
+    });
+
+    it("includes new formRecipientEmail field", () => {
+      expect(serviceBySlugQuery).toContain("formRecipientEmail");
+    });
+  });
+
+  describe("featuredServicesQuery", () => {
+    it("is defined", () => {
+      expect(featuredServicesQuery).toBeDefined();
+    });
+
+    it("filters by featured services", () => {
+      expect(featuredServicesQuery).toContain("featured == true");
+    });
+
+    it("filters by active services", () => {
+      expect(featuredServicesQuery).toContain("active != false");
+    });
+
+    it("limits results", () => {
+      expect(featuredServicesQuery).toContain("[0...6]");
     });
   });
 });

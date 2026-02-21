@@ -6,7 +6,7 @@ export const eventBySlugQuery = groq`
     _id,
     title,
     "slug": slug.current,
-    recurring,
+    eventType,
     date,
     endDate,
     recurringDay,
@@ -19,6 +19,7 @@ export const eventBySlugQuery = groq`
     image,
     shortDescription,
     description,
+    keyFeatures,
     features,
     ageGroup,
     externalLink,
@@ -26,23 +27,25 @@ export const eventBySlugQuery = groq`
     registrationUrl,
     contactEmail,
     contactPhone,
+    formType,
+    embedFormUrl,
     active
   }
 `;
 
 // Events - active events only, recurring always show, non-recurring only if not past
 // Also filter recurring events by recurringEndDate if set
-// Uses shortDescription for cards (falls back to truncated description)
+// Uses string comparison for dates to avoid timezone issues with now()
 export const eventsQuery = groq`
   *[_type == "event" && active != false && (
-    (recurring == true && (recurringEndDate == null || recurringEndDate >= now())) ||
-    date >= now() ||
-    endDate >= now()
-  )] | order(recurring asc, featured desc, date asc) {
+    (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
+    date >= string::split(string(now()), "T")[0] ||
+    endDate >= string::split(string(now()), "T")[0]
+  )] | order(eventType asc, featured desc, date asc) {
     _id,
     title,
     "slug": slug.current,
-    recurring,
+    eventType,
     date,
     endDate,
     recurringDay,
@@ -55,6 +58,7 @@ export const eventsQuery = groq`
     image,
     shortDescription,
     description,
+    keyFeatures,
     features,
     ageGroup,
     externalLink,
@@ -63,16 +67,17 @@ export const eventsQuery = groq`
   }
 `;
 
+// Featured events for homepage — only events with featured == true
 export const featuredEventsQuery = groq`
   *[_type == "event" && active != false && featured == true && (
-    (recurring == true && (recurringEndDate == null || recurringEndDate >= now())) ||
-    date >= now() ||
-    endDate >= now()
-  )] | order(recurring asc, featured desc, date asc) [0...5] {
+    (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
+    date >= string::split(string(now()), "T")[0] ||
+    endDate >= string::split(string(now()), "T")[0]
+  )] | order(eventType asc, date asc) [0...6] {
     _id,
     title,
     "slug": slug.current,
-    recurring,
+    eventType,
     date,
     endDate,
     recurringDay,
@@ -84,10 +89,7 @@ export const featuredEventsQuery = groq`
     categories,
     image,
     shortDescription,
-    description,
-    features,
     ageGroup,
-    externalLink,
     registrationUrl
   }
 `;
@@ -130,21 +132,6 @@ export const announcementBySlugQuery = groq`
   }
 `;
 
-// Featured announcements for homepage section
-export const featuredAnnouncementsQuery = groq`
-  *[_type == "announcement" && active != false && featured == true && (expiresAt == null || expiresAt > now())] | order(priority desc, date desc) [0...4] {
-    _id,
-    title,
-    "slug": slug.current,
-    date,
-    excerpt,
-    image,
-    category,
-    priority,
-    callToAction
-  }
-`;
-
 // Urgent announcements for alert banner
 export const urgentAnnouncementsQuery = groq`
   *[_type == "announcement" && active != false && priority == "urgent" && (expiresAt == null || expiresAt > now())] | order(date desc) [0...1] {
@@ -159,12 +146,12 @@ export const urgentAnnouncementsQuery = groq`
 
 // Programs - recurring events in Education, Youth, Sports, Women categories
 export const programsQuery = groq`
-  *[_type == "event" && active != false && recurring == true && (
+  *[_type == "event" && active != false && eventType == "recurring" && (
     "Education" in categories ||
     "Youth" in categories ||
     "Sports" in categories ||
     "Women" in categories
-  ) && (recurringEndDate == null || recurringEndDate >= now())] | order(featured desc, title asc) {
+  ) && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])] | order(featured desc, title asc) {
     _id,
     title,
     "slug": slug.current,
@@ -172,6 +159,7 @@ export const programsQuery = groq`
     description,
     image,
     categories,
+    keyFeatures,
     features,
     ageGroup,
     externalLink,
@@ -184,7 +172,7 @@ export const programsQuery = groq`
   }
 `;
 
-// Services - enhanced with new fields
+// Services - active only, ordered by display order
 export const servicesQuery = groq`
   *[_type == "service" && active != false] | order(order asc) {
     _id,
@@ -195,15 +183,14 @@ export const servicesQuery = groq`
     icon,
     image,
     availability,
+    highlights,
+    keyFeatures,
     requirements,
     processSteps,
     fee,
-    duration,
-    bookingRequired,
-    bookingUrl,
     contactEmail,
     contactPhone,
-    contactPerson,
+    formRecipientEmail,
     featured,
     active
   }
@@ -220,15 +207,14 @@ export const serviceBySlugQuery = groq`
     icon,
     image,
     availability,
+    highlights,
+    keyFeatures,
     requirements,
     processSteps,
     fee,
-    duration,
-    bookingRequired,
-    bookingUrl,
     contactEmail,
     contactPhone,
-    contactPerson,
+    formRecipientEmail,
     featured,
     active
   }
@@ -551,8 +537,14 @@ export const siteSettingsQuery = groq`
     welcomeSection,
     ctaBanner,
     externalLinks,
-    quickLinks
+    quickLinks,
+    "allowedEmbedDomains": allowedEmbedDomains[].domain
   }
+`;
+
+// Allowed embed domains — lightweight query for security checks
+export const allowedEmbedDomainsQuery = groq`
+  *[_id == "siteSettings"][0].allowedEmbedDomains[].domain
 `;
 
 // Prayer Settings (singleton) - flat structure
@@ -610,11 +602,10 @@ export const formSettingsQuery = groq`
 `;
 
 // ============================================
-// Latest Updates - Combined feed of announcements, events, and campaigns
+// Featured Announcements for homepage
 // ============================================
-export const latestUpdatesQuery = groq`
-{
-  "announcements": *[_type == "announcement" && active != false && (expiresAt == null || expiresAt > now())] | order(date desc) [0...4] {
+export const latestAnnouncementsQuery = groq`
+  *[_type == "announcement" && active != false && featured == true && (expiresAt == null || expiresAt > now())] | order(date desc) [0...6] {
     _id,
     _type,
     title,
@@ -625,18 +616,5 @@ export const latestUpdatesQuery = groq`
     category,
     priority,
     callToAction
-  },
-  "events": *[_type == "event" && active != false && recurring != true && (date >= now() || endDate >= now())] | order(date asc) [0...4] {
-    _id,
-    _type,
-    title,
-    "slug": slug.current,
-    "description": coalesce(shortDescription, description),
-    "date": date,
-    image,
-    "category": categories[0],
-    time,
-    location
-  },
-  "campaigns": []
-}`;
+  }
+`;

@@ -62,7 +62,7 @@ const structure = (S: StructureBuilder) =>
 
       S.divider(),
 
-      // Events with Published/Draft/Expired tabs
+      // Events — Live / Expired / Inactive views
       S.listItem()
         .title("Events")
         .child(
@@ -70,34 +70,42 @@ const structure = (S: StructureBuilder) =>
             .title("Events")
             .items([
               S.listItem()
-                .title("Published")
+                .title("Live on Website")
                 .child(
                   S.documentList()
-                    .title("Published Events")
-                    .filter('_type == "event" && !(_id in path("drafts.**")) && active == true')
+                    .title("Live Events")
+                    .filter(
+                      `_type == "event" && active == true && (
+                        (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= now())) ||
+                        date >= now() ||
+                        endDate >= now()
+                      )`
+                    )
                 ),
               S.listItem()
-                .title("Drafts")
+                .title("Expired")
                 .child(
                   S.documentList()
-                    .title("Draft Events")
-                    .filter('_type == "event" && _id in path("drafts.**")')
+                    .title("Expired Events")
+                    .filter(
+                      `_type == "event" && active == true && !(
+                        (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= now())) ||
+                        date >= now() ||
+                        endDate >= now()
+                      )`
+                    )
                 ),
               S.listItem()
                 .title("Inactive")
                 .child(
                   S.documentList()
                     .title("Inactive Events")
-                    .filter('_type == "event" && !(_id in path("drafts.**")) && active == false')
+                    .filter('_type == "event" && active == false')
                 ),
-              S.divider(),
-              S.listItem()
-                .title("All Events")
-                .child(S.documentTypeList("event").title("All Events")),
             ])
         ),
 
-      // Announcements with Published/Draft/Inactive tabs
+      // Announcements — Active/Inactive views
       S.listItem()
         .title("Announcements")
         .child(
@@ -105,30 +113,19 @@ const structure = (S: StructureBuilder) =>
             .title("Announcements")
             .items([
               S.listItem()
-                .title("Published")
+                .title("Active")
                 .child(
                   S.documentList()
-                    .title("Published Announcements")
-                    .filter('_type == "announcement" && !(_id in path("drafts.**")) && active == true')
-                ),
-              S.listItem()
-                .title("Drafts")
-                .child(
-                  S.documentList()
-                    .title("Draft Announcements")
-                    .filter('_type == "announcement" && _id in path("drafts.**")')
+                    .title("Active Announcements")
+                    .filter('_type == "announcement" && active == true')
                 ),
               S.listItem()
                 .title("Inactive")
                 .child(
                   S.documentList()
                     .title("Inactive Announcements")
-                    .filter('_type == "announcement" && !(_id in path("drafts.**")) && active == false')
+                    .filter('_type == "announcement" && active == false')
                 ),
-              S.divider(),
-              S.listItem()
-                .title("All Announcements")
-                .child(S.documentTypeList("announcement").title("All Announcements")),
             ])
         ),
 
@@ -152,7 +149,7 @@ const previewPaths: Record<string, (slug?: string) => string> = {
   event: (slug) => `/events${slug ? `/${slug}` : ""}`,
   announcement: (slug) => `/announcements${slug ? `/${slug}` : ""}`,
   service: () => "/services",
-  program: () => "/programs",
+  program: () => "/events",
   donationSettings: () => "/donate",
   galleryImage: () => "/media",
   faq: () => "/resources",

@@ -2,27 +2,22 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
+import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
-import { SanityTourType, SanityEtiquette, SanityFaq } from "@/types/sanity";
+import { SanityEtiquette, SanityFaq } from "@/types/sanity";
 import { PortableText } from "@portabletext/react";
 import {
   MapPin,
   Clock,
   Phone,
   Mail,
-  Car,
-  Train,
-  Bus,
   Calendar,
-  Camera,
   Users,
   Info,
   Navigation,
   CheckCircle2,
-  ArrowRight,
   HelpCircle,
   ChevronDown,
   Building,
@@ -45,10 +40,45 @@ const facilities = [
 ];
 
 const openingHours = [
-  { day: "Monday - Thursday", hours: "Fajr - Isha" },
-  { day: "Friday", hours: "Fajr - Late (Jumu'ah)" },
-  { day: "Saturday", hours: "Fajr - Isha" },
-  { day: "Sunday", hours: "Fajr - Isha" },
+  { day: "Daily", hours: "4:30 AM – 10:30 PM" },
+];
+
+const fallbackFaqs = [
+  {
+    _id: "faq-1",
+    question: "Is the mosque open to non-Muslim visitors?",
+    answer: "Yes! We welcome visitors of all faiths and backgrounds. We encourage everyone to come and experience our award-winning architecture and learn about our community.",
+  },
+  {
+    _id: "faq-2",
+    question: "What should I wear when visiting?",
+    answer: "We ask all visitors to dress modestly. For women, a headscarf is appreciated but not required — we have scarves available at the entrance. Please avoid shorts and sleeveless tops.",
+  },
+  {
+    _id: "faq-3",
+    question: "Do I need to remove my shoes?",
+    answer: "Yes, shoes must be removed before entering the prayer hall. Shoe racks are provided at the entrance. We recommend wearing clean socks.",
+  },
+  {
+    _id: "faq-4",
+    question: "Is there parking available?",
+    answer: "Yes, free parking is available on-site. The centre is accessible via Blenheim Road, Newport, with ample parking spaces for visitors.",
+  },
+  {
+    _id: "faq-5",
+    question: "How do I get to AIC by public transport?",
+    answer: "The nearest station is Newport Station on the Werribee line (Metro Trains), followed by a short walk or bus ride. Multiple bus routes also service the Newport area.",
+  },
+  {
+    _id: "faq-6",
+    question: "Can I take photos inside the mosque?",
+    answer: "Photography of the architecture is welcome outside of prayer times. Please be respectful and avoid photographing worshippers without their permission.",
+  },
+  {
+    _id: "faq-7",
+    question: "What are the prayer times?",
+    answer: "Prayer times change daily based on the position of the sun. You can find the current prayer times on our homepage or the Worshippers page. The mosque is open for all five daily prayers.",
+  },
 ];
 
 const etiquetteIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -60,20 +90,12 @@ const etiquetteIcons: Record<string, React.ComponentType<{ className?: string }>
   help: HelpCircle,
 };
 
-const tourTypeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  building: Building,
-  graduation: GraduationCap,
-  mosque: Building,
-  info: Info,
-};
-
 interface VisitContentProps {
-  tourTypes: SanityTourType[];
   etiquette: SanityEtiquette[];
   faqs: SanityFaq[];
 }
 
-export default function VisitContent({ tourTypes, etiquette, faqs }: VisitContentProps) {
+export default function VisitContent({ etiquette, faqs }: VisitContentProps) {
   const info = useSiteSettings();
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
@@ -95,11 +117,11 @@ export default function VisitContent({ tourTypes, etiquette, faqs }: VisitConten
       </section>
 
       {/* Visiting Hours */}
-      <section id="hours" className="py-20 bg-white">
+      <section id="hours" className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-12">
             <FadeIn direction="left">
-              <div className="relative h-[400px] lg:h-full min-h-[400px] rounded-2xl overflow-hidden shadow-xl">
+              <div className="relative h-[300px] lg:h-full min-h-[300px] rounded-2xl overflow-hidden shadow-xl">
                 <Image
                   src="/images/aic end.jpg"
                   alt="Australian Islamic Centre"
@@ -189,279 +211,8 @@ export default function VisitContent({ tourTypes, etiquette, faqs }: VisitConten
         </div>
       </section>
 
-      {/* Book a Visit */}
-      <section id="book" className="py-20 bg-gradient-to-r from-teal-600 to-teal-700">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-teal-200 text-sm font-medium mb-4">
-                <Calendar className="w-4 h-4" />
-                Book a Tour
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                Guided Tours Available
-              </h2>
-              <p className="text-white/80 max-w-2xl mx-auto">
-                Experience our award-winning architecture and learn about our community through our guided tours.
-                Each visit includes prayer observation, a guided building tour, and Q&A session.
-              </p>
-            </div>
-          </FadeIn>
-
-          {tourTypes.length > 0 && (
-            <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              {tourTypes.map((tour) => {
-                const Icon = tourTypeIcons[tour.icon] || Building;
-                return (
-                  <StaggerItem key={tour._id}>
-                    <motion.div
-                      whileHover={{ y: -4 }}
-                      className="bg-white rounded-2xl p-6 shadow-lg"
-                    >
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center mb-4">
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">{tour.title}</h3>
-                      <p className="text-gray-600 text-sm">{tour.description}</p>
-                    </motion.div>
-                  </StaggerItem>
-                );
-              })}
-            </StaggerContainer>
-          )}
-
-          <FadeIn>
-            <div className="text-center">
-              <Button
-                href="/contact"
-                variant="white"
-                size="lg"
-                icon={<Calendar className="w-5 h-5" />}
-              >
-                Book Your Visit
-              </Button>
-              <p className="text-white/70 text-sm mt-4">
-                Contact us to arrange a guided tour for individuals or groups
-              </p>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* Mosque Manners */}
-      <section id="manners" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
-                <Info className="w-4 h-4" />
-                Visitor Guidelines
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Mosque Manners
-              </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                We welcome visitors of all faiths. Please observe these guidelines during your visit.
-              </p>
-            </div>
-          </FadeIn>
-
-          {etiquette.length > 0 ? (
-            <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {etiquette.map((item) => {
-                const Icon = etiquetteIcons[item.icon] || CheckCircle2;
-                return (
-                  <StaggerItem key={item._id}>
-                    <motion.div
-                      whileHover={{ y: -4 }}
-                      className="bg-neutral-50 rounded-xl p-6 border border-gray-100"
-                    >
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center mb-4">
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-                      <p className="text-gray-600">{item.description}</p>
-                    </motion.div>
-                  </StaggerItem>
-                );
-              })}
-            </StaggerContainer>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500">
-                Please contact us for visitor guidelines before your visit.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Virtual Tour Placeholder */}
-      <section id="virtual-tour" className="py-20 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <FadeIn direction="left">
-              <div className="relative">
-                <Image
-                  src="/images/aic 2.jpg"
-                  alt="360 Virtual Tour"
-                  width={600}
-                  height={400}
-                  className="rounded-2xl shadow-2xl"
-                />
-                <div className="absolute inset-0 bg-neutral-900/50 rounded-2xl flex items-center justify-center">
-                  <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors">
-                    <Camera className="w-10 h-10 text-white" />
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
-
-            <FadeIn direction="right">
-              <div>
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-6">
-                  <Camera className="w-4 h-4" />
-                  360° Virtual Tour
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                  Explore from Anywhere
-                </h2>
-                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                  Can&apos;t visit in person? Take a virtual 360-degree tour of our award-winning
-                  architecture and facilities from the comfort of your home.
-                </p>
-                <p className="text-gray-600 mb-8">
-                  Experience the stunning design by Glenn Murcutt, featuring 96 lanterns that
-                  create a unique interplay of light and shadow inspired by traditional Islamic
-                  geometric patterns.
-                </p>
-                <Button
-                  href="/contact"
-                  variant="primary"
-                  icon={<ArrowRight className="w-5 h-5" />}
-                >
-                  Request Virtual Tour Access
-                </Button>
-              </div>
-            </FadeIn>
-          </div>
-        </div>
-      </section>
-
-      {/* Getting Here */}
-      <section id="directions" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Getting to AIC</h2>
-              <p className="text-gray-600 max-w-xl mx-auto">
-                The Australian Islamic Centre is easily accessible by car and public transport.
-              </p>
-            </div>
-          </FadeIn>
-
-          <StaggerContainer className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Car,
-                title: "By Car",
-                description: "Free parking available on-site. The centre is accessible via Blenheim Road, Newport.",
-                details: "Ample parking spaces available",
-              },
-              {
-                icon: Train,
-                title: "By Train",
-                description: "Nearest station is Newport Station on the Werribee line, followed by a short walk or bus.",
-                details: "Werribee Line - Metro Trains",
-              },
-              {
-                icon: Bus,
-                title: "By Bus",
-                description: "Multiple bus routes service the area around Newport and Williamstown.",
-                details: "Check PTV for route details",
-              },
-            ].map((item) => (
-              <StaggerItem key={item.title}>
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  className="bg-neutral-50 rounded-2xl p-8 shadow-lg text-center border border-gray-100"
-                >
-                  <div className="w-16 h-16 mx-auto rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center mb-6">
-                    <item.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
-                  <p className="text-gray-600 mb-4">{item.description}</p>
-                  <p className="text-sm text-teal-600 font-medium">{item.details}</p>
-                </motion.div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-        </div>
-      </section>
-
-      {/* FAQs */}
-      <section id="faq" className="py-20 bg-neutral-50">
-        <div className="max-w-3xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
-                <HelpCircle className="w-4 h-4" />
-                FAQs
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Frequently Asked Questions
-              </h2>
-              <p className="text-gray-600">
-                Find answers to common questions about visiting the Australian Islamic Centre.
-              </p>
-            </div>
-          </FadeIn>
-
-          {faqs.length > 0 ? (
-            <div className="space-y-4">
-              {faqs.map((faq, index) => (
-                <FadeIn key={faq._id} delay={index * 0.05}>
-                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <button
-                      onClick={() => setOpenFAQ(openFAQ === index ? null : index)}
-                      className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="font-semibold text-gray-900">{faq.question}</span>
-                      <ChevronDown
-                        className={`w-5 h-5 text-gray-500 transition-transform ${
-                          openFAQ === index ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-                    {openFAQ === index && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="px-6 pb-4"
-                      >
-                        <div className="text-gray-600 prose prose-sm max-w-none">
-                          <PortableText value={faq.answer} />
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-              <HelpCircle className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-              <p className="text-gray-500">
-                Have questions? Contact us and we&apos;ll be happy to help.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* Facilities */}
-      <section className="py-20 bg-white">
+      <section className="py-12 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <FadeIn direction="left">
@@ -476,7 +227,7 @@ export default function VisitContent({ tourTypes, etiquette, faqs }: VisitConten
                   {facilities.map((facility) => (
                     <div
                       key={facility.name}
-                      className="bg-neutral-50 rounded-xl p-4 flex items-center gap-3"
+                      className="bg-white rounded-xl p-4 flex items-center gap-3"
                     >
                       <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
                         <facility.icon className="w-5 h-5 text-teal-600" />
@@ -506,8 +257,115 @@ export default function VisitContent({ tourTypes, etiquette, faqs }: VisitConten
         </div>
       </section>
 
+      {/* Mosque Manners */}
+      <section id="manners" className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <FadeIn>
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
+                <Info className="w-4 h-4" />
+                Visitor Guidelines
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Mosque Manners
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                We welcome visitors of all faiths. Please observe these guidelines during your visit.
+              </p>
+            </div>
+          </FadeIn>
+
+          {etiquette.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-3 max-w-3xl mx-auto">
+              {etiquette.map((item) => {
+                const Icon = etiquetteIcons[item.icon] || CheckCircle2;
+                return (
+                  <div key={item._id} className="flex items-start gap-3 p-3 rounded-lg bg-neutral-50">
+                    <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Icon className="w-4 h-4 text-teal-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-sm">{item.title}</h3>
+                      <p className="text-gray-500 text-xs">{item.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">
+                Please contact us for visitor guidelines before your visit.
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* FAQs */}
+      <section id="faq" className="py-12 bg-neutral-50">
+        <div className="max-w-3xl mx-auto px-6">
+          <FadeIn>
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
+                <HelpCircle className="w-4 h-4" />
+                FAQs
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Frequently Asked Questions
+              </h2>
+              <p className="text-gray-600">
+                Find answers to common questions about visiting the Australian Islamic Centre.
+              </p>
+            </div>
+          </FadeIn>
+
+          {(() => {
+            const displayFaqs = faqs.length > 0 ? faqs : fallbackFaqs;
+            const isSanity = faqs.length > 0;
+            return (
+              <div className="space-y-3">
+                {displayFaqs.map((faq, index) => (
+                  <FadeIn key={faq._id} delay={index * 0.05}>
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      <button
+                        onClick={() => setOpenFAQ(openFAQ === index ? null : index)}
+                        className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="font-semibold text-gray-900">{faq.question}</span>
+                        <ChevronDown
+                          className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 ml-2 ${
+                            openFAQ === index ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      {openFAQ === index && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="px-6 pb-4"
+                        >
+                          <div className="text-gray-600 prose prose-sm max-w-none">
+                            {isSanity ? (
+                              <PortableText value={(faq as SanityFaq).answer} />
+                            ) : (
+                              <p>{(faq as typeof fallbackFaqs[number]).answer}</p>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+                  </FadeIn>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800">
+      <section className="py-16 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <FadeIn>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">

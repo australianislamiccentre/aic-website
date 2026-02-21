@@ -77,7 +77,7 @@ export default function DonateContent({ settings }: DonateContentProps) {
 
             {/* Right — donation form */}
             {showForm && (
-              <div className="bg-white rounded-2xl shadow-2xl p-1 lg:max-w-md lg:ml-auto">
+              <div className="bg-white rounded-2xl shadow-2xl p-1 w-full lg:max-w-md lg:ml-auto">
                 <div
                   className="fundraise-up-wrapper"
                   dangerouslySetInnerHTML={{

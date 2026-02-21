@@ -1,41 +1,78 @@
 import { HeroSection } from "@/components/sections/HeroSection";
 import { QuickAccessSection } from "@/components/sections/QuickAccessSection";
-import { QuickDonateSection } from "@/components/sections/QuickDonateSection";
 import { LatestUpdatesSection } from "@/components/sections/LatestUpdatesSection";
-import { UpcomingSection } from "@/components/sections/UpcomingSection";
-import { MediaHighlightSection } from "@/components/sections/MediaHighlightSection";
+import { WhatsOnSection } from "@/components/sections/WhatsOnSection";
 import { AboutPreviewSection } from "@/components/sections/AboutPreviewSection";
-import { ServicesSection } from "@/components/sections/ServicesSection";
-import { getEvents, getUrgentAnnouncements, getServices, getPrayerSettings, getLatestUpdates, getPrograms } from "@/sanity/lib/fetch";
-import { SanityEvent, SanityAnnouncement, SanityService, SanityPrayerSettings, SanityProgram } from "@/types/sanity";
+import { MeetImamsSection } from "@/components/sections/MeetImamsSection";
+import { GalleryStripSection } from "@/components/sections/GalleryStripSection";
+import { MediaHighlightSection } from "@/components/sections/MediaHighlightSection";
+import {
+  getFeaturedEvents,
+  getUrgentAnnouncements,
+  getFeaturedServices,
+  getPrayerSettings,
+  getLatestAnnouncements,
+  getPrograms,
+  getTeamMembersByCategory,
+  getFeaturedGalleryImages,
+} from "@/sanity/lib/fetch";
+import type { LatestUpdateItem } from "@/sanity/lib/fetch";
+import {
+  SanityEvent,
+  SanityAnnouncement,
+  SanityService,
+  SanityPrayerSettings,
+  SanityProgram,
+  SanityTeamMember,
+  SanityGalleryImage,
+} from "@/types/sanity";
 
 export default async function HomePage() {
-  // Fetch content from Sanity - single source of truth
-  const [allEvents, urgentAnnouncements, services, prayerSettings, latestUpdates, programs] = await Promise.all([
-    getEvents() as Promise<SanityEvent[]>,
-    getUrgentAnnouncements() as Promise<SanityAnnouncement[]>,
-    getServices() as Promise<SanityService[]>,
-    getPrayerSettings() as Promise<SanityPrayerSettings | null>,
-    getLatestUpdates(),
-    getPrograms() as Promise<SanityProgram[]>,
+  const results = await Promise.allSettled([
+    getFeaturedEvents(),
+    getUrgentAnnouncements(),
+    getFeaturedServices(),
+    getPrayerSettings(),
+    getLatestAnnouncements(),
+    getPrograms(),
+    getTeamMembersByCategory("imam"),
+    getFeaturedGalleryImages(),
   ]);
 
-  // Get the first urgent announcement for the banner (if any)
+  const allEvents = results[0].status === "fulfilled" ? (results[0].value as SanityEvent[]) : [];
+  const urgentAnnouncements = results[1].status === "fulfilled" ? (results[1].value as SanityAnnouncement[]) : [];
+  const services = results[2].status === "fulfilled" ? (results[2].value as SanityService[]) : [];
+  const prayerSettings = results[3].status === "fulfilled" ? (results[3].value as SanityPrayerSettings | null) : null;
+  const announcements = results[4].status === "fulfilled" ? (results[4].value as LatestUpdateItem[]) : [];
+  const programs = results[5].status === "fulfilled" ? (results[5].value as SanityProgram[]) : [];
+  const imams = results[6].status === "fulfilled" ? (results[6].value as SanityTeamMember[]) : [];
+  const galleryImages = results[7].status === "fulfilled" ? (results[7].value as SanityGalleryImage[]) : [];
+
   const urgentAnnouncement = urgentAnnouncements.length > 0 ? urgentAnnouncements[0] : null;
 
   return (
     <>
       <HeroSection prayerSettings={prayerSettings} />
+
       <QuickAccessSection />
+
       <LatestUpdatesSection
-        announcements={latestUpdates.announcements}
-        events={[]} // Events show in UpcomingSection now
+        announcements={announcements}
         urgentAnnouncement={urgentAnnouncement}
       />
-      <QuickDonateSection />
-      <UpcomingSection events={allEvents} programs={programs} />
+
+      <WhatsOnSection
+        events={allEvents}
+        programs={programs}
+        services={services}
+      />
+
       <AboutPreviewSection />
-      <ServicesSection services={services} />
+
+      <MeetImamsSection imams={imams} />
+
+      <GalleryStripSection images={galleryImages} />
+
       <MediaHighlightSection />
     </>
   );

@@ -217,7 +217,7 @@ export function ProgramsSection({ programs }: ProgramsSectionProps) {
             {/* View All Link */}
             <div className="pt-4 mt-2 border-t border-neutral-800">
               <Button
-                href="/programs"
+                href="/events"
                 variant="ghost"
                 className="text-neutral-400 hover:text-white w-full justify-center"
                 icon={<ArrowRight className="w-4 h-4" />}
@@ -300,7 +300,7 @@ export function ProgramsSection({ programs }: ProgramsSectionProps) {
                         </Button>
                       ) : (
                         <Button
-                          href={`/programs#${activeProgram.slug}`}
+                          href={`/events/${activeProgram.slug}`}
                           variant="primary"
                           size="sm"
                           icon={<ArrowRight className="w-4 h-4" />}

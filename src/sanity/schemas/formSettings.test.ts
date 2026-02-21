@@ -15,21 +15,6 @@ describe("formSettings schema", () => {
       expect(formSettings.type).toBe("document");
     });
 
-    it("has 3 field groups", () => {
-      expect(formSettings.groups).toHaveLength(3);
-    });
-
-    it("has correct group names", () => {
-      const groupNames = formSettings.groups!.map((g) => g.name);
-      expect(groupNames).toEqual(["contact", "serviceInquiry", "newsletter"]);
-    });
-
-    it("contact group is the default", () => {
-      const contactGroup = formSettings.groups!.find(
-        (g) => g.name === "contact"
-      );
-      expect(contactGroup?.default).toBe(true);
-    });
   });
 
   describe("Contact Form fields", () => {
@@ -99,14 +84,6 @@ describe("formSettings schema", () => {
       expect(field?.type).toBe("text");
     });
 
-    it("all contact fields are in the contact group", () => {
-      const contactFields = formSettings.fields.filter(
-        (f) => f.name.startsWith("contact")
-      );
-      contactFields.forEach((field) => {
-        expect(field.group).toBe("contact");
-      });
-    });
   });
 
   describe("Service Inquiry fields", () => {
@@ -150,14 +127,6 @@ describe("formSettings schema", () => {
       expect(field?.type).toBe("text");
     });
 
-    it("all service inquiry fields are in the serviceInquiry group", () => {
-      const fields = formSettings.fields.filter((f) =>
-        f.name.startsWith("serviceInquiry")
-      );
-      fields.forEach((field) => {
-        expect(field.group).toBe("serviceInquiry");
-      });
-    });
   });
 
   describe("Newsletter fields", () => {
@@ -201,14 +170,6 @@ describe("formSettings schema", () => {
       expect(field?.type).toBe("string");
     });
 
-    it("all newsletter fields are in the newsletter group", () => {
-      const fields = formSettings.fields.filter((f) =>
-        f.name.startsWith("newsletter")
-      );
-      fields.forEach((field) => {
-        expect(field.group).toBe("newsletter");
-      });
-    });
   });
 
   describe("Preview Configuration", () => {

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { formatDate } from "@/lib/utils";
@@ -19,6 +18,9 @@ import {
   List,
   ArrowRight,
   Sparkles,
+  Ticket,
+  Users,
+  X,
 } from "lucide-react";
 
 // Helper to get image URL from Sanity or fallback to static path
@@ -44,7 +46,7 @@ function isValidDate(dateStr: string | undefined): boolean {
 
 // Helper to format display date (handles multi-day events)
 function getDisplayDate(event: SanityEvent): string {
-  if (event.recurring) {
+  if (event.eventType === "recurring") {
     return event.recurringDay || event.date || "";
   }
   if (!event.date) return "";
@@ -93,7 +95,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
         className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all flex flex-col md:flex-row group"
       >
         <div className="relative md:w-1/3 overflow-hidden">
-          <div className="relative h-48 md:h-full">
+          <div className="relative h-40 md:h-full">
             <motion.div
               animate={{ scale: isHovered ? 1.1 : 1 }}
               transition={{ duration: 0.4 }}
@@ -107,7 +109,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
               />
             </motion.div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            {event.recurring && (
+            {event.eventType === "recurring" && (
               <motion.span
                 animate={{ scale: isHovered ? 1.1 : 1 }}
                 className="absolute top-4 left-4 px-3 py-1 bg-green-500 text-white text-sm font-semibold rounded-full"
@@ -164,7 +166,25 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
               <MapPin className="w-4 h-4 text-green-600" />
               <span>{event.locationDetails || event.location}</span>
             </motion.div>
+            {event.ageGroup && (
+              <motion.div
+                animate={{ x: isHovered ? 4 : 0 }}
+                transition={{ delay: 0.15 }}
+                className="flex items-center gap-2 text-sm text-gray-500"
+              >
+                <Users className="w-4 h-4 text-green-600" />
+                <span>{event.ageGroup}</span>
+              </motion.div>
+            )}
           </div>
+          {event.registrationUrl && (
+            <div className="mb-3">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 text-teal-700 text-xs font-medium rounded-full">
+                <Ticket className="w-3 h-3" />
+                Registration Required
+              </span>
+            </div>
+          )}
 
           <motion.div
             animate={{ opacity: isHovered ? 1 : 0.8, x: isHovered ? 4 : 0 }}
@@ -201,7 +221,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
       onHoverEnd={() => setIsHovered(false)}
       className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all group relative"
     >
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-40 overflow-hidden">
         <motion.div
           animate={{ scale: isHovered ? 1.15 : 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
@@ -216,7 +236,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-        {event.recurring && (
+        {event.eventType === "recurring" && (
           <motion.span
             animate={{ y: isHovered ? -2 : 0, scale: isHovered ? 1.05 : 1 }}
             className="absolute top-4 left-4 px-3 py-1 bg-green-500 text-white text-sm font-semibold rounded-full flex items-center gap-1"
@@ -247,7 +267,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
           className="absolute bottom-4 left-4 bg-white rounded-xl p-3 shadow-lg"
         >
           <div className="text-center">
-            {event.recurring ? (
+            {event.eventType === "recurring" ? (
               <>
                 <p className="text-sm font-bold text-green-600">Every</p>
                 <p className="text-lg font-bold text-gray-800">
@@ -295,7 +315,22 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
               <MapPin className="w-4 h-4 text-green-600" />
               <span>{event.locationDetails || event.location}</span>
             </div>
+            {event.ageGroup && (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Users className="w-4 h-4 text-green-600" />
+                <span>{event.ageGroup}</span>
+              </div>
+            )}
           </div>
+
+          {event.registrationUrl && (
+            <div className="mb-3">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 text-teal-700 text-xs font-medium rounded-full">
+                <Ticket className="w-3 h-3" />
+                Registration Required
+              </span>
+            </div>
+          )}
 
           <Button
             href={`/events/${event.slug || event._id}`}
@@ -349,12 +384,12 @@ export default function EventsContent({ events }: EventsContentProps) {
     const matchesSearch =
       event.title.toLowerCase().includes(searchLower) ||
       (event.shortDescription || "").toLowerCase().includes(searchLower) ||
-      event.description.toLowerCase().includes(searchLower);
+      (event.description || "").toLowerCase().includes(searchLower);
     return matchesCategory && matchesSearch;
   });
 
-  const filteredUpcomingEvents = filteredEvents.filter((e) => !e.recurring);
-  const filteredRecurringEvents = filteredEvents.filter((e) => e.recurring);
+  const filteredUpcomingEvents = filteredEvents.filter((e) => e.eventType !== "recurring");
+  const filteredRecurringEvents = filteredEvents.filter((e) => e.eventType === "recurring");
 
   return (
     <>
@@ -419,7 +454,7 @@ export default function EventsContent({ events }: EventsContentProps) {
                   </div>
                   <div className="w-px h-10 bg-gray-200" />
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">{events.filter(e => e.recurring).length}</p>
+                    <p className="text-2xl font-bold text-green-600">{events.filter(e => e.eventType === "recurring").length}</p>
                     <p className="text-xs text-gray-500">Weekly</p>
                   </div>
                 </div>
@@ -437,11 +472,19 @@ export default function EventsContent({ events }: EventsContentProps) {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search events..."
+                placeholder="Search by name, description..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -483,20 +526,48 @@ export default function EventsContent({ events }: EventsContentProps) {
         </div>
       </section>
 
+      {/* Results Summary */}
+      {(searchQuery || selectedCategory !== "All") && (
+        <div className="bg-white border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span className="font-medium text-gray-900">{filteredEvents.length}</span>
+              <span>{filteredEvents.length === 1 ? "result" : "results"}</span>
+              {searchQuery && (
+                <span>
+                  for &quot;<span className="font-medium text-green-700">{searchQuery}</span>&quot;
+                </span>
+              )}
+              {selectedCategory !== "All" && (
+                <span>
+                  in <span className="font-medium text-green-700">{selectedCategory}</span>
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => { setSelectedCategory("All"); setSearchQuery(""); }}
+              className="text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2 transition-colors"
+            >
+              Clear all
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Upcoming Events Section */}
-      <section className="py-16 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">Upcoming Events</h2>
-          <AnimatePresence mode="wait">
-            {filteredUpcomingEvents.length > 0 ? (
+      {filteredUpcomingEvents.length > 0 && (
+        <section className="py-16 bg-neutral-50">
+          <div className="max-w-7xl mx-auto px-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">Upcoming Events</h2>
+            <AnimatePresence mode="wait">
               <motion.div
-                key={selectedCategory + viewMode + "upcoming"}
+                key={selectedCategory + viewMode + searchQuery + "upcoming"}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 className={
                   viewMode === "grid"
-                    ? "grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+                    ? "grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8"
                     : "space-y-6"
                 }
               >
@@ -509,40 +580,26 @@ export default function EventsContent({ events }: EventsContentProps) {
                   />
                 ))}
               </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-12 bg-white rounded-2xl border border-gray-100"
-              >
-                <Calendar className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Upcoming Events</h3>
-                <p className="text-gray-500 max-w-md mx-auto">
-                  Subscribe to our mailing list for the latest updates on upcoming events and community gatherings.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </section>
+            </AnimatePresence>
+          </div>
+        </section>
+      )}
 
-      {/* Recurring Events Section */}
+      {/* Weekly / Recurring Programs Section */}
       {filteredRecurringEvents.length > 0 && (
         <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-center gap-3 mb-8">
-              <Sparkles className="w-6 h-6 text-green-600" />
-              <h2 className="text-2xl font-bold text-gray-900">Regular Programs</h2>
-            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Weekly Programs</h2>
+            <p className="text-gray-500 mb-8">Recurring events that run on a regular schedule</p>
             <AnimatePresence mode="wait">
               <motion.div
-                key={selectedCategory + viewMode + "recurring"}
+                key={selectedCategory + viewMode + searchQuery + "recurring"}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 className={
                   viewMode === "grid"
-                    ? "grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+                    ? "grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8"
                     : "space-y-6"
                 }
               >
@@ -560,43 +617,34 @@ export default function EventsContent({ events }: EventsContentProps) {
         </section>
       )}
 
-      {/* Subscribe CTA */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-6">
-          <FadeIn>
-            <div className="bg-gradient-to-r from-green-600 to-primary-700 rounded-3xl p-8 md:p-12 text-center">
-              <h2 className="text-3xl font-bold text-white mb-4">Never Miss an Event</h2>
-              <p className="text-white/80 mb-8 max-w-xl mx-auto">
-                Subscribe to our newsletter and get notified about upcoming events,
-                programs, and community gatherings.
+      {/* Empty state when no events match filters */}
+      {filteredUpcomingEvents.length === 0 && filteredRecurringEvents.length === 0 && (
+        <section className="py-16 bg-neutral-50">
+          <div className="max-w-7xl mx-auto px-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-12 bg-white rounded-2xl border border-gray-100"
+            >
+              <Calendar className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Events Found</h3>
+              <p className="text-gray-500 max-w-md mx-auto">
+                {selectedCategory !== "All" || searchQuery
+                  ? "No events match your current filters. Try adjusting your search or category."
+                  : "Subscribe to our mailing list for the latest updates on upcoming events and community gatherings."}
               </p>
-              <form
-                className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const emailInput = e.currentTarget.querySelector('input[type="email"]') as HTMLInputElement;
-                  const email = emailInput?.value;
-                  if (email) {
-                    const mailtoLink = `mailto:contact@australianislamiccentre.org?subject=${encodeURIComponent('Newsletter Subscription Request - Events')}&body=${encodeURIComponent(`Please add me to the AIC events newsletter.\n\nEmail: ${email}`)}`;
-                    window.open(mailtoLink, '_blank');
-                    emailInput.value = '';
-                  }
-                }}
-              >
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  required
-                  className="flex-1 px-6 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <Button type="submit" variant="gold">
-                  Subscribe
-                </Button>
-              </form>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
+              {(selectedCategory !== "All" || searchQuery) && (
+                <button
+                  onClick={() => { setSelectedCategory("All"); setSearchQuery(""); }}
+                  className="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </motion.div>
+          </div>
+        </section>
+      )}
     </>
   );
 }

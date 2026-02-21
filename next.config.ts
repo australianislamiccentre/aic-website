@@ -13,7 +13,36 @@ const nextConfig: NextConfig = {
         hostname: "cdn.sanity.io",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "i.ytimg.com",
+        pathname: "/**",
+      },
     ],
+  },
+  async redirects() {
+    return [
+      {
+        source: "/resources",
+        destination: "/",
+        permanent: false,
+      },
+      {
+        source: "/donate/success",
+        destination: "/donate",
+        permanent: false,
+      },
+      {
+        source: "/programs",
+        destination: "/events",
+        permanent: true,
+      },
+      {
+        source: "/programs/:path*",
+        destination: "/events",
+        permanent: true,
+      },
+    ];
   },
 };
 

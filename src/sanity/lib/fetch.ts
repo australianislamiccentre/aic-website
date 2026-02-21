@@ -8,7 +8,6 @@ import {
   featuredEventsQuery,
   announcementsQuery,
   announcementBySlugQuery,
-  featuredAnnouncementsQuery,
   urgentAnnouncementsQuery,
   programsQuery,
   servicesQuery,
@@ -39,9 +38,11 @@ import {
   resourcesQuery,
   resourceBySlugQuery,
   featuredResourcesQuery,
-  latestUpdatesQuery,
+  latestAnnouncementsQuery,
   // Form Settings
   formSettingsQuery,
+  // Embed Security
+  allowedEmbedDomainsQuery,
 } from "./queries";
 import {
   SanityEvent,
@@ -66,11 +67,13 @@ export interface DonationSettings {
   organizationKey?: string;
 }
 
-// Revalidation time in seconds (1 minute for faster updates)
-const REVALIDATE_TIME = 60;
+// Revalidation time in seconds
+// On-demand revalidation via webhook handles instant updates on publish.
+// This ISR fallback catches anything the webhook misses.
+// 120s is sufficient since the webhook provides real-time updates.
+const REVALIDATE_TIME = 120;
 
 // Generic fetch function with caching and draft mode support
-// skipCdn: bypass Sanity CDN for singleton settings that must be fresh
 async function sanityFetch<T>(
   query: string,
   params: Record<string, unknown> = {},
@@ -78,17 +81,17 @@ async function sanityFetch<T>(
   options: { skipCdn?: boolean } = {}
 ): Promise<T> {
   const { isEnabled: isDraftMode } = await draftMode();
-  const isDevelopment = process.env.NODE_ENV === "development";
 
-  // In draft mode OR development, use preview client to see draft documents
-  if (isDraftMode || isDevelopment) {
+  // Only use preview client when explicitly in draft mode (not all of dev)
+  // This ensures dev behaves like production — only published content shows
+  if (isDraftMode) {
     return previewClient.fetch<T>(query, params);
   }
 
   // Use noCdnClient for singleton settings that must always be fresh
   const fetchClient = options.skipCdn ? noCdnClient : client;
 
-  // In production mode, use client with caching
+  // Fetch with ISR caching (Next.js handles the caching layer)
   return fetchClient.fetch<T>(query, params, {
     next: {
       revalidate: REVALIDATE_TIME,
@@ -124,6 +127,16 @@ export async function getEventsForStaticGeneration(): Promise<SanityEvent[]> {
   }
 }
 
+export async function getEventBySlug(slug: string): Promise<SanityEvent | null> {
+  try {
+    return await sanityFetch<SanityEvent | null>(eventBySlugQuery, { slug }, ["events"]);
+  } catch (error) {
+    console.error(`Failed to fetch event "${slug}" from Sanity:`, error);
+    return null;
+  }
+}
+
+// Featured events for homepage
 export async function getFeaturedEvents(): Promise<SanityEvent[]> {
   try {
     const result = await sanityFetch<SanityEvent[]>(featuredEventsQuery, {}, ["events"]);
@@ -131,15 +144,6 @@ export async function getFeaturedEvents(): Promise<SanityEvent[]> {
   } catch (error) {
     console.error("Failed to fetch featured events from Sanity:", error);
     return [];
-  }
-}
-
-export async function getEventBySlug(slug: string): Promise<SanityEvent | null> {
-  try {
-    return await sanityFetch<SanityEvent | null>(eventBySlugQuery, { slug }, ["events"]);
-  } catch (error) {
-    console.error(`Failed to fetch event "${slug}" from Sanity:`, error);
-    return null;
   }
 }
 
@@ -175,16 +179,6 @@ export async function getAnnouncementsForStaticGeneration(): Promise<SanityAnnou
     return result ?? [];
   } catch (error) {
     console.error("Failed to fetch announcements for static generation:", error);
-    return [];
-  }
-}
-
-export async function getFeaturedAnnouncements(): Promise<SanityAnnouncement[]> {
-  try {
-    const result = await sanityFetch<SanityAnnouncement[]>(featuredAnnouncementsQuery, {}, ["announcements"]);
-    return result ?? [];
-  } catch (error) {
-    console.error("Failed to fetch featured announcements from Sanity:", error);
     return [];
   }
 }
@@ -547,19 +541,24 @@ export interface LatestUpdateItem {
   featured?: boolean;
 }
 
-export interface LatestUpdatesResult {
-  announcements: LatestUpdateItem[];
-  events: LatestUpdateItem[];
-  campaigns: LatestUpdateItem[];
+export async function getLatestAnnouncements(): Promise<LatestUpdateItem[]> {
+  try {
+    const result = await sanityFetch<LatestUpdateItem[]>(latestAnnouncementsQuery, {}, ["announcements"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch latest announcements from Sanity:", error);
+    return [];
+  }
 }
 
-export async function getLatestUpdates(): Promise<LatestUpdatesResult> {
+// Embed Security
+export async function getAllowedEmbedDomains(): Promise<string[]> {
   try {
-    const result = await sanityFetch<LatestUpdatesResult>(latestUpdatesQuery, {}, ["announcements", "events"]);
-    return result ?? { announcements: [], events: [], campaigns: [] };
+    const result = await sanityFetch<string[] | null>(allowedEmbedDomainsQuery, {}, ["siteSettings"]);
+    return result ?? [];
   } catch (error) {
-    console.error("Failed to fetch latest updates from Sanity:", error);
-    return { announcements: [], events: [], campaigns: [] };
+    console.error("Failed to fetch allowed embed domains from Sanity:", error);
+    return [];
   }
 }
 

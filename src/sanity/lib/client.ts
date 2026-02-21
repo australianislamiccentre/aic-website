@@ -10,22 +10,26 @@ export const client = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: true,
-  // Enable stega encoding for Presentation tool click-to-edit
+  // Disable CDN — use API directly for fresh data on every ISR revalidation.
+  // Next.js ISR (revalidate: 60) handles caching at the edge instead.
+  useCdn: false,
+  perspective: "published",
   stega: {
     studioUrl,
-    // Only enable in non-production or when explicitly in draft mode
-    enabled: process.env.NEXT_PUBLIC_VERCEL_ENV !== "production",
+    // Only enable stega when explicitly in draft/preview mode.
+    // Stega injects invisible zero-width characters into strings which breaks
+    // client-side filtering (e.g. Array.includes() for category filters).
+    enabled: false,
   },
 });
 
-// Client that bypasses CDN — for singleton settings that must be fresh
-// (prayer times, site settings, donation config)
+// Client for singleton settings (prayer times, site settings, donation config)
 export const noCdnClient = createClient({
   projectId,
   dataset,
   apiVersion,
   useCdn: false,
+  perspective: "published",
 });
 
 // Client with write permissions (for mutations)

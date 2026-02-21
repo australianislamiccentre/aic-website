@@ -4,12 +4,8 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
-import { StatCard } from "@/components/ui/Card";
-import { stats } from "@/data/content";
-import { ArrowRight, Users, GraduationCap, Heart, Calendar } from "lucide-react";
+import { ArrowRight, Globe, Users, BookOpen, Landmark } from "lucide-react";
 import Image from "next/image";
-
-const statIcons = [Calendar, Users, GraduationCap, Heart];
 
 export function AboutPreviewSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -18,17 +14,17 @@ export function AboutPreviewSection() {
     offset: ["start end", "end start"],
   });
 
-  const imageY = useTransform(scrollYProgress, [0, 1], ["10%", "-10%"]);
+  const imageY = useTransform(scrollYProgress, [0, 1], ["5%", "-5%"]);
 
   return (
-    <section ref={containerRef} className="py-24 bg-white relative overflow-hidden">
+    <section ref={containerRef} className="py-12 md:py-16 bg-white relative overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-neutral-100 rounded-full blur-3xl opacity-30 -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-100 rounded-full blur-3xl opacity-30 translate-x-1/2 translate-y-1/2" />
 
-      <div className="max-w-7xl mx-auto px-6 relative">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Image Side */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 relative">
+        <div className="grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
+          {/* Image Side with floating stat badges */}
           <FadeIn direction="left">
             <div className="relative">
               {/* Main image */}
@@ -38,77 +34,80 @@ export function AboutPreviewSection() {
               >
                 <Image
                   src="/images/aic 9.jpeg"
-                  alt="Australian Islamic Centre exterior"
+                  alt="Australian Islamic Centre aerial view with crescent moon"
                   width={600}
-                  height={700}
-                  className="w-full h-[500px] object-cover"
+                  height={800}
+                  className="w-full h-[340px] sm:h-[380px] md:h-[440px] object-cover object-top"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-neutral-800/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-800/40 to-transparent" />
               </motion.div>
 
-              {/* Floating card */}
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5 }}
-                className="absolute -bottom-4 right-0 md:-bottom-8 md:-right-8 bg-white rounded-2xl p-4 md:p-6 shadow-2xl max-w-[200px] md:max-w-xs"
-              >
-                <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center flex-shrink-0">
-                    <Heart className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-xl md:text-2xl font-bold text-neutral-700">40+</p>
-                    <p className="text-gray-600 text-xs md:text-sm">Years of Service</p>
-                  </div>
-                </div>
-                <p className="text-gray-600 text-xs md:text-sm hidden md:block">
-                  Serving the Muslim community of Sydney since 1983.
-                </p>
-              </motion.div>
+              {/* Decorative frame — hidden on small screens */}
+              <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-teal-500 rounded-tl-3xl hidden md:block" />
+              <div className="absolute -bottom-4 -right-4 w-24 h-24 border-b-4 border-r-4 border-teal-500 rounded-br-3xl hidden md:block" />
+            </div>
 
-              {/* Decorative frame */}
-              <div className="absolute -top-4 -left-4 w-32 h-32 border-t-4 border-l-4 border-teal-500 rounded-tl-3xl" />
-              <div className="absolute -bottom-4 -right-4 w-32 h-32 border-b-4 border-r-4 border-teal-500 rounded-br-3xl" />
+            {/* ── Stats row — detached under the image ── */}
+            <div className="grid grid-cols-4 gap-0 mt-3 md:mt-4">
+              {[
+                { value: "5", label: "Daily Prayers", icon: BookOpen, color: "from-teal-500 to-teal-600", delay: 0.3 },
+                { value: "40+", label: "Years Serving", icon: Users, color: "from-green-500 to-green-600", delay: 0.38 },
+                { value: "Global", label: "Recognition", icon: Globe, color: "from-amber-500 to-amber-600", delay: 0.46 },
+                { value: "20+", label: "Weekly Programs", icon: Landmark, color: "from-teal-600 to-teal-700", delay: 0.54 },
+              ].map((stat) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: stat.delay, type: "spring", stiffness: 200 }}
+                  className="text-center py-3 md:py-4 border border-gray-100 bg-white"
+                >
+                  <div className={`w-6 h-6 md:w-8 md:h-8 mx-auto mb-1.5 rounded-none bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+                    <stat.icon className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                  </div>
+                  <p className="text-sm md:text-base font-bold text-gray-900 leading-none">{stat.value}</p>
+                  <p className="text-[9px] md:text-xs text-gray-500 leading-tight mt-0.5">{stat.label}</p>
+                </motion.div>
+              ))}
             </div>
           </FadeIn>
 
           {/* Content Side */}
           <FadeIn direction="right">
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-neutral-100 text-neutral-700 text-xs sm:text-sm font-medium mb-4 md:mb-6">
                 About Our Centre
               </div>
 
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
                 A Beacon of Faith,{" "}
                 <span className="text-gradient">Knowledge & Unity</span>
               </h2>
 
-              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                The Australian Islamic Centre stands as one of Sydney&apos;s most significant
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-4 md:mb-6 leading-relaxed">
+                The Australian Islamic Centre stands as one of Melbourne&apos;s most significant
                 Islamic institutions. Our award-winning architecture houses a vibrant
                 community dedicated to worship, education, and service.
               </p>
 
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-6 md:mb-8 leading-relaxed hidden sm:block">
                 From daily prayers to comprehensive educational programs, from community
                 events to social services, we serve as a complete Islamic centre for
                 Muslims of all ages and backgrounds.
               </p>
 
               {/* Features */}
-              <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-6 md:mb-8">
                 {[
                   "Award-winning Architecture",
                   "5 Daily Prayers",
                   "Educational Programs",
                   "Community Services",
                 ].map((feature, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-gold-500" />
-                    <span className="text-gray-700">{feature}</span>
+                  <div key={index} className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-teal-500 flex-shrink-0" />
+                    <span className="text-gray-700 text-xs sm:text-sm md:text-base">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -116,32 +115,13 @@ export function AboutPreviewSection() {
               <Button
                 href="/about"
                 variant="primary"
-                size="lg"
-                icon={<ArrowRight className="w-5 h-5" />}
+                size="md"
+                icon={<ArrowRight className="w-4 h-4 md:w-5 md:h-5" />}
               >
                 Learn More About Us
               </Button>
             </div>
           </FadeIn>
-        </div>
-
-        {/* Stats Section */}
-        <div className="mt-16 md:mt-24">
-          <div className="bg-gradient-to-br from-neutral-800 via-neutral-700 to-sage-700 rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-12 pattern-overlay">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-              {stats.map((stat, index) => {
-                const Icon = statIcons[index];
-                return (
-                  <StatCard
-                    key={stat.label}
-                    value={stat.value}
-                    label={stat.label}
-                    icon={<Icon className="w-6 h-6 md:w-8 md:h-8" />}
-                  />
-                );
-              })}
-            </div>
-          </div>
         </div>
       </div>
     </section>

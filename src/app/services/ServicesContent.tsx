@@ -1,15 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
-import { Button } from "@/components/ui/Button";
-import { ServiceCard } from "@/components/ui/Card";
+import Link from "next/link";
+import { FadeIn } from "@/components/animations/FadeIn";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { SanityService } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
-import { PortableText } from "@portabletext/react";
 import {
   ArrowRight,
   Clock,
@@ -19,158 +16,61 @@ import {
   BookOpen,
   Users,
   Sparkles,
-  Award,
   HandHeart,
   CheckCircle2,
-  FileText,
-  Shield,
-  Building,
+  Moon,
+  Calendar,
+  Star,
+  Home,
+  GraduationCap,
+  Church,
+  Baby,
+  Scroll,
+  MessageCircle,
+  Scale,
   type LucideIcon,
 } from "lucide-react";
 
-// Icon mapping for Sanity icon strings
+// Icon mapping — keys must match Sanity schema icon values (PascalCase)
 const iconMap: Record<string, LucideIcon> = {
-  "book-open": BookOpen,
-  "hand-heart": HandHeart,
-  heart: Heart,
-  users: Users,
-  sparkles: Sparkles,
-  award: Award,
-  "file-text": FileText,
-  shield: Shield,
-  building: Building,
-  prayer: Sparkles,
-  mosque: Building,
-  support: Users,
-  certificate: FileText,
+  Moon,
+  Heart,
+  BookOpen,
+  Users,
+  Calendar,
+  Star,
+  Home,
+  HandHeart,
+  GraduationCap,
+  Church,
+  Baby,
+  Scroll,
+  MessageCircle,
+  Scale,
 };
 
-// Fallback service details when Sanity is empty
-// Note: contact fields use empty strings as placeholders; populated at component level via useSiteSettings
-const fallbackServiceDetails = [
-  {
-    id: "religious",
-    title: "Religious Services",
-    subtitle: "Comprehensive Islamic Guidance",
-    description: "We provide comprehensive religious services including advice and guidance on all aspects of Islamic practice, ceremonies related to births, marriages, and deaths, and general religious consultation.",
-    image: "/images/aic start.jpg",
-    features: [
-      "Religious advice and consultation",
-      "Birth ceremonies and aqiqah",
-      "Shahada (conversion) guidance",
-      "General Islamic guidance",
-    ],
-    schedule: "Available by appointment",
-    contact: "",
-    contactType: "email" as const,
-    iconKey: "book-open",
-  },
-  {
-    id: "funeral",
-    title: "Funeral Services",
-    subtitle: "Compassionate Care",
-    description: "During difficult times, we provide comprehensive and compassionate funeral services according to Islamic traditions, supporting families through the entire process with dignity and care.",
-    image: "/images/aic end.jpg",
-    features: [
-      "Ghusl (ritual washing) services",
-      "Janazah (funeral) prayers",
-      "Burial arrangement assistance",
-      "Grief counselling and support",
-    ],
-    schedule: "24/7 Emergency service available",
-    contact: "",
-    contactType: "phone" as const,
-    iconKey: "hand-heart",
-  },
-  {
-    id: "nikah",
-    title: "Nikah Services",
-    subtitle: "Islamic Marriage Ceremonies",
-    description: "We provide complete Islamic marriage services including nikah ceremonies, official Islamic Law certificates, pre-marital counselling, and all necessary documentation for a blessed union.",
-    image: "/images/aic 5.jpg",
-    features: [
-      "Traditional nikah ceremonies",
-      "Official Islamic Law certificates",
-      "Pre-marital counselling sessions",
-      "Venue available for ceremonies",
-    ],
-    schedule: "By appointment",
-    contact: "",
-    contactType: "email" as const,
-    iconKey: "heart",
-  },
-  {
-    id: "counselling",
-    title: "Counselling & Support",
-    subtitle: "Islamic Guidance & Care",
-    description: "Our qualified counsellors provide confidential Islamic counselling for individuals and families, addressing spiritual, personal, and relationship challenges with compassion and wisdom.",
-    image: "/images/aic 1.jpg",
-    features: [
-      "Individual counselling",
-      "Family & marriage counselling",
-      "Youth guidance and mentoring",
-      "Confidential and supportive sessions",
-    ],
-    schedule: "By appointment",
-    contact: "",
-    contactType: "email" as const,
-    iconKey: "users",
-  },
-];
-
-const additionalServices = [
-  {
-    title: "Daily Prayers",
-    description: "Join us for the five daily congregational prayers",
-    iconKey: "sparkles",
-    href: "/worshippers#prayers",
-  },
-  {
-    title: "Friday Jumu'ah",
-    description: "Arabic (1:00 PM) and English (2:15 PM) sessions",
-    iconKey: "book-open",
-    href: "/worshippers#jumuah",
-  },
-  {
-    title: "Library Services",
-    description: "Access our collection of Islamic books and resources",
-    iconKey: "book-open",
-    href: "/contact",
-  },
-  {
-    title: "Facility Hire",
-    description: "Hire our facilities for community events",
-    iconKey: "award",
-    href: "/contact",
-  },
-];
+// No hardcoded fallback — Sanity is the single source of truth for services.
 
 // Transform Sanity service to display format
 interface ServiceDisplay {
   id: string;
   title: string;
   subtitle: string;
-  description: string;
   image: string;
   features: string[];
   schedule: string;
-  contact: string;
   iconKey: string;
-  fullDescription?: SanityService["fullDescription"];
 }
 
-function transformSanityService(service: SanityService, defaultEmail: string): ServiceDisplay {
+function transformSanityService(service: SanityService): ServiceDisplay {
   return {
     id: service.slug,
     title: service.title,
     subtitle: service.shortDescription,
-    description: service.shortDescription, // Will use fullDescription in detail view if available
     image: service.image ? urlFor(service.image).width(600).height(400).url() : "/images/aic start.jpg",
-    features: service.requirements || [],
+    features: service.highlights || [],
     schedule: service.availability || "By appointment",
-    contact: service.contactEmail || service.contactPhone || defaultEmail,
-    iconKey: service.icon || "book-open",
-    fullDescription: service.fullDescription,
+    iconKey: service.icon || "Heart",
   };
 }
 
@@ -181,257 +81,175 @@ interface ServicesContentProps {
 export default function ServicesContent({ services }: ServicesContentProps) {
   const info = useSiteSettings();
 
-  // Use Sanity data if available, otherwise fallback
-  const serviceDetails: ServiceDisplay[] = services.length > 0
-    ? services.map((s) => transformSanityService(s, info.email))
-    : fallbackServiceDetails.map((s) => ({
-        ...s,
-        contact: s.contactType === "phone" ? info.phone : info.email,
-      }));
+  // Sanity is the single source of truth — no hardcoded fallback
+  const serviceDetails: ServiceDisplay[] = services.map((s) => transformSanityService(s));
 
   return (
     <>
-      {/* Services Overview - Quick Links on Mobile/Tablet, Cards on Desktop */}
-      <section className="pt-8 pb-8 lg:pb-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
-          {/* Breadcrumb */}
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-neutral-50 via-white to-teal-50/30 overflow-hidden">
+        {/* Decorative shapes */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-teal-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+        <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
           <BreadcrumbLight />
 
-          {/* Page Title */}
-          <div className="mt-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Our <span className="text-teal-600">Services</span>
-            </h1>
-            <p className="text-gray-600 max-w-2xl">
-              From spiritual guidance to practical support, we offer comprehensive services to meet the diverse needs of our community.
-            </p>
-          </div>
+          <div className="mt-8 grid lg:grid-cols-2 gap-12 items-center">
+            {/* Text Content */}
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-6">
+                <HandHeart className="w-4 h-4" />
+                Community Support
+              </div>
 
-          {/* Mobile/Tablet: Compact Quick Links */}
-          <div className="lg:hidden">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Our <span className="text-teal-600">Services</span>
+              </h1>
+
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                From spiritual guidance to practical support, we offer comprehensive services to meet the diverse needs of our community.
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                <span className="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-full text-sm font-medium">
+                  Religious Services
+                </span>
+                <span className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                  Counselling
+                </span>
+                <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                  Family Support
+                </span>
+              </div>
+            </div>
+
+            {/* Image */}
+            <div className="relative hidden lg:block">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <Image
+                  src="/images/aic end.jpg"
+                  alt="Australian Islamic Centre services"
+                  width={600}
+                  height={400}
+                  className="w-full h-72 object-cover"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              </div>
+
+              {/* Stats card */}
+              <div className="absolute -bottom-4 -right-4 bg-white rounded-xl p-4 shadow-xl">
+                <div className="flex items-center gap-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-teal-600">{services.length}</p>
+                    <p className="text-xs text-gray-500">Services</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Service Cards */}
+      <section className="py-12 md:py-16 bg-neutral-50">
+        <div className="max-w-7xl mx-auto px-6">
+          {serviceDetails.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+              <Heart className="w-14 h-14 mx-auto text-gray-300 mb-5" />
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Our Services Are Being Updated</h3>
+              <p className="text-gray-500 max-w-lg mx-auto mb-3">
+                We&apos;re currently adding our full range of services to the website. These include religious guidance,
+                nikah ceremonies, funeral services, counselling, and more.
+              </p>
+              <p className="text-gray-500 max-w-lg mx-auto mb-6">
+                In the meantime, please don&apos;t hesitate to reach out — we&apos;re here to help.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a
+                  href={`mailto:${info.email}`}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors text-sm"
+                >
+                  <Mail className="w-4 h-4" />
+                  Email Us
+                </a>
+                <a
+                  href={`tel:${info.phone.replace(/\s/g, "")}`}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-lg border border-gray-200 transition-colors text-sm"
+                >
+                  <Phone className="w-4 h-4" />
+                  {info.phone}
+                </a>
+              </div>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {serviceDetails.map((service) => {
-                const IconComponent = iconMap[service.iconKey] || BookOpen;
+                const IconComponent = iconMap[service.iconKey] || Sparkles;
                 return (
-                  <a
-                    key={service.id}
-                    href={`#${service.id}`}
-                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br from-teal-50 to-green-50 border border-teal-100 hover:border-teal-300 hover:shadow-md transition-all"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
-                      <IconComponent className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900 text-center leading-tight">
-                      {service.title}
-                    </span>
-                  </a>
+                  <FadeIn key={service.id}>
+                    <Link href={`/services/${service.id}`} className="block group">
+                      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                        {/* Image */}
+                        <div className="relative h-48 overflow-hidden">
+                          <Image
+                            src={service.image}
+                            alt={service.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                          <div className="absolute top-4 left-4">
+                            <div className="w-9 h-9 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm">
+                              <IconComponent className="w-5 h-5 text-teal-600" />
+                            </div>
+                          </div>
+                          <div className="absolute bottom-4 left-4 right-4">
+                            <h2 className="text-lg font-bold text-white leading-tight">{service.title}</h2>
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-5 flex-1 flex flex-col">
+                          <p className="text-gray-600 text-sm leading-relaxed line-clamp-2 mb-4">
+                            {service.subtitle}
+                          </p>
+
+                          {/* Highlights */}
+                          {service.features.length > 0 && (
+                            <div className="space-y-2 mb-4">
+                              {service.features.slice(0, 3).map((feature) => (
+                                <div key={feature} className="flex items-start gap-2">
+                                  <CheckCircle2 className="w-4 h-4 text-teal-500 flex-shrink-0 mt-0.5" />
+                                  <span className="text-gray-600 text-sm">{feature}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Spacer */}
+                          <div className="flex-1" />
+
+                          {/* Schedule */}
+                          <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-4 pt-4 border-t border-gray-100">
+                            <Clock className="w-3.5 h-3.5 text-teal-500" />
+                            <span>{service.schedule}</span>
+                          </div>
+
+                          {/* CTA */}
+                          <span className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-teal-600 group-hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors text-sm">
+                            Learn More
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  </FadeIn>
                 );
               })}
             </div>
-          </div>
-
-          {/* Desktop: Full Service Cards */}
-          <StaggerContainer className="hidden lg:grid lg:grid-cols-4 gap-6">
-            {serviceDetails.map((service) => {
-              const IconComponent = iconMap[service.iconKey] || BookOpen;
-              return (
-                <StaggerItem key={service.id}>
-                  <ServiceCard
-                    icon={<IconComponent className="w-6 h-6" />}
-                    title={service.title}
-                    description={service.subtitle}
-                    features={service.features}
-                    href={`#${service.id}`}
-                  />
-                </StaggerItem>
-              );
-            })}
-          </StaggerContainer>
-        </div>
-      </section>
-
-      {/* Detailed Service Sections */}
-      {serviceDetails.map((service, index) => {
-        const isEven = index % 2 === 0;
-        const IconComponent = iconMap[service.iconKey] || BookOpen;
-
-        return (
-          <section
-            key={service.id}
-            id={service.id}
-            className={`py-24 ${isEven ? "bg-white" : "bg-neutral-50"}`}
-          >
-            <div className="max-w-7xl mx-auto px-6">
-              <div className={`grid lg:grid-cols-2 gap-16 items-center ${!isEven ? "lg:flex-row-reverse" : ""}`}>
-                <FadeIn direction={isEven ? "left" : "right"}>
-                  <div className={`${!isEven ? "lg:order-2" : ""}`}>
-                    <div className="relative">
-                      <Image
-                        src={service.image}
-                        alt={service.title}
-                        width={600}
-                        height={400}
-                        className="rounded-2xl shadow-2xl"
-                      />
-                      <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl p-4 shadow-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
-                            <IconComponent className="w-6 h-6 text-white" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Service</p>
-                            <p className="font-semibold text-gray-900">{service.subtitle}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </FadeIn>
-
-                <FadeIn direction={isEven ? "right" : "left"}>
-                  <div className={`${!isEven ? "lg:order-1" : ""}`}>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
-                      {service.subtitle}
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                      {service.title}
-                    </h2>
-
-                    {/* Render full description from Sanity if available, otherwise plain text */}
-                    {service.fullDescription && service.fullDescription.length > 0 ? (
-                      <div className="prose prose-lg text-gray-600 mb-8 max-w-none">
-                        <PortableText value={service.fullDescription} />
-                      </div>
-                    ) : (
-                      <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                        {service.description}
-                      </p>
-                    )}
-
-                    {/* Features */}
-                    {service.features.length > 0 && (
-                      <div className="grid sm:grid-cols-2 gap-4 mb-8">
-                        {service.features.map((feature) => (
-                          <div key={feature} className="flex items-start gap-3">
-                            <CheckCircle2 className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
-                            <span className="text-gray-700">{feature}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Schedule & Contact */}
-                    <div className="space-y-3 mb-8">
-                      {service.schedule && (
-                        <div className="flex items-center gap-3 text-gray-600">
-                          <Clock className="w-5 h-5 text-teal-600" />
-                          <span>{service.schedule}</span>
-                        </div>
-                      )}
-                      {service.contact && (
-                        <div className="flex items-center gap-3 text-gray-600">
-                          {service.contact.includes("@") ? (
-                            <>
-                              <Mail className="w-5 h-5 text-teal-600" />
-                              <a href={`mailto:${service.contact}?subject=${encodeURIComponent(`${service.title} Enquiry - Australian Islamic Centre`)}`} target="_blank" rel="noopener noreferrer" className="hover:text-neutral-700">
-                                {service.contact}
-                              </a>
-                            </>
-                          ) : (
-                            <>
-                              <Phone className="w-5 h-5 text-teal-600" />
-                              <a href={`tel:${service.contact}`} className="hover:text-neutral-700">
-                                {service.contact}
-                              </a>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex flex-wrap gap-4">
-                      <Button
-                        href="/contact"
-                        variant="primary"
-                        icon={<ArrowRight className="w-5 h-5" />}
-                      >
-                        Enquire Now
-                      </Button>
-                    </div>
-                  </div>
-                </FadeIn>
-              </div>
-            </div>
-          </section>
-        );
-      })}
-
-      {/* Additional Services */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">More Services</h2>
-              <p className="text-gray-600 max-w-xl mx-auto">
-                Explore other services and facilities available at the Australian Islamic Centre.
-              </p>
-            </div>
-          </FadeIn>
-
-          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {additionalServices.map((service) => {
-              const IconComponent = iconMap[service.iconKey] || BookOpen;
-              return (
-                <StaggerItem key={service.title}>
-                  <motion.a
-                    href={service.href}
-                    whileHover={{ y: -4 }}
-                    className="block bg-neutral-50 rounded-xl p-6 border border-gray-100 hover:border-teal-200 hover:bg-teal-50 transition-all"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center mb-4">
-                      <IconComponent className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="font-bold text-gray-900 mb-2">{service.title}</h3>
-                    <p className="text-gray-600 text-sm">{service.description}</p>
-                  </motion.a>
-                </StaggerItem>
-              );
-            })}
-          </StaggerContainer>
-        </div>
-      </section>
-
-      {/* Contact CTA */}
-      <section className="py-24 bg-gradient-to-br from-neutral-800 via-neutral-700 to-sage-700">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <FadeIn>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Need Assistance with Our Services?
-            </h2>
-            <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-              Our friendly staff are here to help you with any enquiries.
-              Reach out to us and we&apos;ll be happy to assist.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button
-                href="/contact"
-                variant="white"
-                size="lg"
-                icon={<ArrowRight className="w-5 h-5" />}
-              >
-                Contact Us
-              </Button>
-              <Button
-                href={`tel:${info.phone}`}
-                variant="outline"
-                size="lg"
-                className="border-white/30 text-white hover:bg-white/10"
-                icon={<Phone className="w-5 h-5" />}
-              >
-                Call Now
-              </Button>
-            </div>
-          </FadeIn>
+          )}
         </div>
       </section>
     </>

@@ -41,7 +41,8 @@ export function ShareButton({ title, text }: ShareButtonProps) {
     <Button
       onClick={handleShare}
       variant="outline"
-      icon={<Share2 className="w-5 h-5" />}
+      icon={<Share2 className="w-4 h-4" />}
+      className="w-full"
     >
       Share
     </Button>

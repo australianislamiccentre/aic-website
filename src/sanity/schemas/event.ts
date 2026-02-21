@@ -56,26 +56,55 @@ export default defineType({
   name: "event",
   title: "Event",
   type: "document",
-  groups: [
-    { name: "basic", title: "Basic Info", default: true },
-    { name: "schedule", title: "Schedule" },
-    { name: "details", title: "Details" },
-    { name: "settings", title: "Settings" },
-  ],
   fields: [
-    // Basic Info
+    // ── Status (not on page, but admin needs first) ──
+    defineField({
+      name: "active",
+      title: "Active",
+      type: "boolean",
+      description: "When disabled, this event is hidden from the website entirely (listing page, homepage, and direct URL)",
+      initialValue: true,
+    }),
+    defineField({
+      name: "featured",
+      title: "Featured on Homepage",
+      type: "boolean",
+      initialValue: false,
+      description: "Only featured events appear on the homepage. Disabled when event is inactive.",
+      readOnly: ({ document }) => document?.active === false,
+      validation: (Rule) =>
+        Rule.custom((featured, context) => {
+          const doc = context.document as { active?: boolean } | undefined;
+          if (featured && doc?.active === false) {
+            return "Cannot feature an inactive event. Enable 'Active' first.";
+          }
+          return true;
+        }),
+    }),
+
+    // ── 1. Hero Image (banner at the top of the page) ──
+    defineField({
+      name: "image",
+      title: "Hero Image",
+      type: "image",
+      description: "Banner image shown at the top of the event page. Recommended: 1200x500px.",
+      options: {
+        hotspot: true,
+      },
+    }),
+
+    // ── 2. Title, Categories, Age Group (page header area) ──
     defineField({
       name: "title",
       title: "Title",
       type: "string",
-      group: "basic",
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "slug",
       title: "Slug",
       type: "slug",
-      group: "basic",
+      description: "URL-friendly name (auto-generated from title)",
       options: {
         source: "title",
         maxLength: 96,
@@ -83,50 +112,10 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: "shortDescription",
-      title: "Short Description",
-      type: "string",
-      group: "basic",
-      description: "Brief summary for event cards (max 150 characters). Required if no full description.",
-      validation: (Rule) =>
-        Rule.max(150).custom((shortDesc, context) => {
-          const doc = context.document as { description?: string } | undefined;
-          if (!shortDesc && !doc?.description) {
-            return "Either short description or full description is required";
-          }
-          return true;
-        }),
-    }),
-    defineField({
-      name: "description",
-      title: "Full Description",
-      type: "text",
-      group: "basic",
-      rows: 6,
-      description: "Detailed description shown on the event page. Required if no short description.",
-      validation: (Rule) =>
-        Rule.custom((desc, context) => {
-          const doc = context.document as { shortDescription?: string } | undefined;
-          if (!desc && !doc?.shortDescription) {
-            return "Either short description or full description is required";
-          }
-          return true;
-        }),
-    }),
-    defineField({
-      name: "image",
-      title: "Image",
-      type: "image",
-      group: "basic",
-      options: {
-        hotspot: true,
-      },
-    }),
-    defineField({
       name: "categories",
       title: "Categories",
       type: "array",
-      group: "basic",
+      description: 'Shown as coloured badges on the event page. IMPORTANT: Recurring events with Education, Youth, Sports, or Women categories are automatically treated as Programs and displayed in the "Weekly Programs" section on the Events page and homepage.',
       of: [{ type: "string" }],
       options: {
         list: [
@@ -144,72 +133,90 @@ export default defineType({
       validation: (Rule) => Rule.required().min(1).error("At least one category is required"),
     }),
     defineField({
-      name: "features",
-      title: "Key Features",
-      type: "array",
-      group: "basic",
-      of: [{ type: "string" }],
-      description: "Highlights or bullet points (e.g., 'Qualified instructors', 'All skill levels welcome')",
+      name: "ageGroup",
+      title: "Age Group",
+      type: "string",
+      description: "Shown as a blue badge next to categories (e.g., 'Ages 5-12', 'Adults', 'All ages')",
     }),
     defineField({
-      name: "tags",
-      title: "Tags",
-      type: "array",
-      group: "basic",
-      of: [{ type: "string" }],
-      options: {
-        layout: "tags",
-      },
-      description: "Optional tags for filtering and categorization",
+      name: "shortDescription",
+      title: "Short Description",
+      type: "string",
+      description: "Shown below the title on the event page, and on event cards (max 150 chars)",
+      validation: (Rule) =>
+        Rule.max(150).custom((shortDesc, context) => {
+          const doc = context.document as { description?: string } | undefined;
+          if (!shortDesc && !doc?.description) {
+            return "Either short description or full description is required";
+          }
+          return true;
+        }),
     }),
 
-    // Schedule
+    // ── 3. Date, Time, Location (info card) ──
     defineField({
-      name: "recurring",
-      title: "Is Recurring Event?",
-      type: "boolean",
-      group: "schedule",
-      initialValue: false,
-      description: "Toggle on for weekly/regular programs",
+      name: "eventType",
+      title: "Event Type",
+      type: "string",
+      initialValue: "single",
+      description: 'How is this event scheduled? To create a PROGRAM (e.g. weekly Quran class), select "Recurring" and choose Education, Youth, Sports, or Women as the category — it will automatically appear in the Programs section on the Events page.',
+      options: {
+        list: [
+          {
+            title: "Single Day — one date only (e.g. fundraiser dinner, workshop)",
+            value: "single",
+          },
+          {
+            title: "Multi-Day — spans several days with a start and end date (e.g. camp, conference)",
+            value: "multi",
+          },
+          {
+            title: "Recurring — repeats on a set day each week (e.g. weekly class, program, Friday prayers)",
+            value: "recurring",
+          },
+        ],
+        layout: "radio",
+      },
+      validation: (Rule) => Rule.required().error("Please select an event type"),
     }),
     defineField({
       name: "date",
-      title: "Start Date",
+      title: "Event Date",
       type: "date",
-      group: "schedule",
-      description: "Event start date (Melbourne/Australia time)",
-      hidden: ({ document }) => document?.recurring === true,
+      description: "The date this event takes place (Melbourne/Australia time)",
+      hidden: ({ document }) => document?.eventType === "recurring",
       validation: (Rule) =>
         Rule.custom((date, context) => {
-          const doc = context.document as { recurring?: boolean } | undefined;
-          if (!doc?.recurring && !date) {
-            return "Start date is required for non-recurring events";
+          const doc = context.document as { eventType?: string } | undefined;
+          if (doc?.eventType !== "recurring" && !date) {
+            return "Event date is required";
           }
           return true;
         }),
     }),
     defineField({
-      name: "isOneDayEvent",
-      title: "One Day Event",
-      type: "boolean",
-      group: "schedule",
-      initialValue: true,
-      description: "Toggle on if the event starts and ends on the same day (no end date needed)",
-      hidden: ({ document }) => document?.recurring === true,
-    }),
-    defineField({
       name: "endDate",
       title: "End Date",
       type: "date",
-      group: "schedule",
-      description: "For multi-day events only",
-      hidden: ({ document }) => document?.recurring === true || document?.isOneDayEvent === true,
+      description: "The last day of this event. It will be hidden from the website after this date passes.",
+      hidden: ({ document }) => document?.eventType !== "multi",
+      validation: (Rule) =>
+        Rule.custom((endDate, context) => {
+          const doc = context.document as { date?: string; eventType?: string } | undefined;
+          if (doc?.eventType === "multi" && !endDate) {
+            return "End date is required for multi-day events";
+          }
+          if (doc?.date && endDate && endDate < doc.date) {
+            return "End date must be on or after the start date";
+          }
+          return true;
+        }),
     }),
     defineField({
       name: "recurringDay",
-      title: "Recurring Day",
+      title: "Repeats On",
       type: "string",
-      group: "schedule",
+      description: "Which day(s) does this event repeat?",
       options: {
         list: [
           { title: "Every Monday", value: "Mondays" },
@@ -224,12 +231,12 @@ export default defineType({
           { title: "Daily", value: "Daily" },
         ],
       },
-      hidden: ({ document }) => document?.recurring !== true,
+      hidden: ({ document }) => document?.eventType !== "recurring",
       validation: (Rule) =>
         Rule.custom((recurringDay, context) => {
-          const doc = context.document as { recurring?: boolean } | undefined;
-          if (doc?.recurring && !recurringDay) {
-            return "Recurring day is required for recurring events";
+          const doc = context.document as { eventType?: string } | undefined;
+          if (doc?.eventType === "recurring" && !recurringDay) {
+            return "Please select which day(s) this event repeats on";
           }
           return true;
         }),
@@ -238,16 +245,14 @@ export default defineType({
       name: "recurringEndDate",
       title: "Recurring Until",
       type: "date",
-      group: "schedule",
-      description: "Optional - when does this recurring event stop?",
-      hidden: ({ document }) => document?.recurring !== true,
+      description: "Optional — leave blank if this event repeats indefinitely",
+      hidden: ({ document }) => document?.eventType !== "recurring",
     }),
     defineField({
       name: "time",
       title: "Start Time",
       type: "string",
-      group: "schedule",
-      description: "Optional - leave blank if time is flexible or TBA",
+      description: "Optional — leave blank if time is flexible or TBA",
       options: {
         list: timeOptions,
       },
@@ -256,19 +261,27 @@ export default defineType({
       name: "endTime",
       title: "End Time",
       type: "string",
-      group: "schedule",
-      description: "Optional",
+      description: "Optional — must be after start time",
       options: {
         list: timeOptions,
       },
+      validation: (Rule) =>
+        Rule.custom((endTime, context) => {
+          const doc = context.document as { time?: string } | undefined;
+          if (!endTime || !doc?.time) return true;
+          const timeToIndex = (t: string) => timeOptions.findIndex((o) => o.value === t);
+          const startIdx = timeToIndex(doc.time);
+          const endIdx = timeToIndex(endTime);
+          if (startIdx >= 0 && endIdx >= 0 && endIdx <= startIdx) {
+            return "End time must be after start time";
+          }
+          return true;
+        }),
     }),
-
-    // Details
     defineField({
       name: "location",
       title: "Street Address",
       type: "string",
-      group: "details",
       description: "Full street address. Only change for off-site events held elsewhere.",
       initialValue: "Australian Islamic Centre - 23-27 Blenheim Rd, Newport VIC 3015",
       validation: (Rule) => Rule.required().error("Street address is required"),
@@ -277,69 +290,120 @@ export default defineType({
       name: "locationDetails",
       title: "Venue / Room",
       type: "string",
-      group: "details",
       description: "Specific area within the centre (e.g., Youth Centre, Main Prayer Hall, Education Centre)",
     }),
+
+    // ── 4. Key Features (teal pill badges above description) ──
     defineField({
-      name: "registrationUrl",
-      title: "Registration/RSVP Link",
-      type: "url",
-      group: "details",
-      description: "External link for registration (if required)",
+      name: "keyFeatures",
+      title: "Key Features",
+      type: "array",
+      of: [{ type: "string" }],
+      description:
+        'Shown as teal badges ABOVE "About This Event". Use short phrases like "Free entry", "Halal catering", "Childcare available".',
     }),
+
+    // ── 5. About This Event (full description) ──
+    defineField({
+      name: "description",
+      title: "Full Description",
+      type: "text",
+      rows: 6,
+      description: 'Shown under "About This Event" on the event detail page',
+      validation: (Rule) =>
+        Rule.custom((desc, context) => {
+          const doc = context.document as { shortDescription?: string } | undefined;
+          if (!desc && !doc?.shortDescription) {
+            return "Either short description or full description is required";
+          }
+          return true;
+        }),
+    }),
+
+    // ── 6. What to Expect (checkmark list below description) ──
+    defineField({
+      name: "features",
+      title: "What to Expect",
+      type: "array",
+      of: [{ type: "string" }],
+      description:
+        'Shown as a checklist BELOW the description. Describe what happens, e.g. "Guest speaker", "Q&A session", "Networking dinner".',
+    }),
+
+    // ── 7. Contact Information ──
     defineField({
       name: "contactEmail",
       title: "Contact Email",
       type: "string",
-      group: "details",
-      description: "Email for inquiries about this event",
+      description: "Shown in the Contact Information section on the event page",
       initialValue: "contact@australianislamiccentre.org",
     }),
     defineField({
       name: "contactPhone",
       title: "Contact Phone",
       type: "string",
-      group: "details",
-      description: "Phone number for inquiries",
+      description: "Shown in the Contact Information section on the event page",
       initialValue: "03 9000 0177",
     }),
+
+    // ── 8. Action Buttons (Register, External Link) ──
     defineField({
-      name: "ageGroup",
-      title: "Age Group",
-      type: "string",
-      group: "details",
-      description: "Target age range (e.g., 'Ages 5-12', 'Adults', 'All ages')",
+      name: "registrationUrl",
+      title: "Registration / RSVP Link",
+      type: "url",
+      description: 'Shows a "Register / RSVP" button on the event page',
     }),
     defineField({
       name: "externalLink",
       title: "External Website",
       type: "url",
-      group: "details",
-      description: "Link to external website for more info (e.g., program website)",
+      description: 'Shows a "Visit Website" button on the event page',
     }),
 
-    // Settings
+    // ── 9. Embedded Form (sidebar on event page) ──
     defineField({
-      name: "active",
-      title: "Active",
-      type: "boolean",
-      group: "settings",
-      description: "Show this event on the website",
-      initialValue: true,
+      name: "formType",
+      title: "Embedded Form",
+      type: "string",
+      description: "Choose which form to show in the sidebar of the event page",
+      initialValue: "none",
+      options: {
+        list: [
+          { title: "No form", value: "none" },
+          {
+            title: "Contact / Enquiry form — built-in form that sends an email to the contact email above",
+            value: "contact",
+          },
+          {
+            title: "External form embed — paste a URL from any trusted provider (JotForm, Google Forms, Typeform, etc.)",
+            value: "embed",
+          },
+        ],
+        layout: "radio",
+      },
     }),
     defineField({
-      name: "featured",
-      title: "Featured on Homepage",
-      type: "boolean",
-      group: "settings",
-      initialValue: false,
-      description: "Show this event prominently. Disabled when event is inactive.",
-      readOnly: ({ document }) => document?.active === false,
+      name: "embedFormUrl",
+      title: "External Form URL",
+      type: "url",
+      description:
+        'Paste the form URL from your provider (e.g. https://form.jotform.com/12345). The domain must be added to the Allowed Embed Domains list in Site Settings.',
+      hidden: ({ document }) => document?.formType !== "embed",
       validation: (Rule) =>
-        Rule.custom((featured, context) => {
-          const doc = context.document as { active?: boolean } | undefined;
-          if (featured && doc?.active === false) {
-            return "Cannot feature an inactive event. Enable 'Active' first.";
+        Rule.custom((url, context) => {
+          const doc = context.document as { formType?: string } | undefined;
+          if (doc?.formType === "embed" && !url) {
+            return "Form URL is required when external form embed is selected";
+          }
+          if (url && typeof url === "string") {
+            try {
+              const parsed = new URL(url);
+              if (parsed.protocol !== "https:") {
+                return "Only HTTPS URLs are allowed for security";
+              }
+            } catch {
+              return "Please enter a valid URL";
+            }
           }
           return true;
         }),
@@ -349,13 +413,19 @@ export default defineType({
     select: {
       title: "title",
       date: "date",
+      endDate: "endDate",
       recurringDay: "recurringDay",
-      recurring: "recurring",
+      eventType: "eventType",
       active: "active",
       media: "image",
     },
-    prepare({ title, date, recurringDay, recurring, active, media }) {
-      const subtitle = recurring ? `📅 ${recurringDay}` : date;
+    prepare({ title, date, endDate, recurringDay, eventType, active, media }) {
+      let subtitle = date || "";
+      if (eventType === "recurring") {
+        subtitle = `📋 Program — ${recurringDay || "Recurring"}`;
+      } else if (eventType === "multi" && date && endDate) {
+        subtitle = `${date} → ${endDate}`;
+      }
       return {
         title: `${title}${active === false ? " (Inactive)" : ""}`,
         subtitle,

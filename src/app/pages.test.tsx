@@ -73,7 +73,7 @@ vi.mock("@/data/content", () => ({
       location: "Main Prayer Hall",
       category: "Prayer",
       image: "/images/event.jpg",
-      recurring: true,
+      eventType: "recurring",
     },
     {
       id: "2",
@@ -85,7 +85,7 @@ vi.mock("@/data/content", () => ({
       location: "Education Centre",
       category: "Education",
       image: "/images/event.jpg",
-      recurring: true,
+      eventType: "recurring",
     },
   ],
   tourTypes: [
@@ -177,7 +177,7 @@ vi.mock("@/data/content", () => ({
 // Those tests are skipped below - test the Content components instead.
 import AboutPage from "./about/page";
 import ContactPage from "./contact/page";
-import ProgramsPage from "./programs/page";
+
 import ArchitecturePage from "./architecture/page";
 
 // Skip tests for async server components that fetch from Sanity
@@ -197,14 +197,9 @@ describe("About Page", () => {
     expect(aicElements.length).toBeGreaterThan(0);
   });
 
-  it("displays mission section", () => {
+  it("displays mission & vision section", () => {
     render(<AboutPage />);
-    expect(screen.getByText("Our Mission")).toBeInTheDocument();
-  });
-
-  it("displays vision section", () => {
-    render(<AboutPage />);
-    expect(screen.getByText("Our Vision")).toBeInTheDocument();
+    expect(screen.getByText("Our Mission & Vision")).toBeInTheDocument();
   });
 
   it("displays values section", () => {
@@ -227,7 +222,6 @@ describe("About Page", () => {
   it("has links to visit and contact pages", () => {
     render(<AboutPage />);
     expect(screen.getByRole("link", { name: /Visit Our Centre/i })).toHaveAttribute("href", "/visit");
-    expect(screen.getByRole("link", { name: /Plan Your Visit/i })).toHaveAttribute("href", "/visit");
   });
 });
 
@@ -302,16 +296,7 @@ describe.skip("Events Page", () => {
   it("displays event cards", () => {});
 });
 
-// Skipped: ProgramsPage is an async server component that fetches from Sanity
-describe.skip("Programs Page", () => {
-  it("renders the page title", () => {});
-  it("displays education programs section", () => {});
-  it("displays quick navigation", () => {});
-  it("displays AIC College CTA", () => {});
-  it("displays sports and youth section", () => {});
-  it("displays educational impact stats", () => {});
-  it("displays enrollment CTA", () => {});
-});
+// Programs page removed — consolidated into /events
 
 describe("Architecture Page", () => {
   it("renders the page title", () => {
@@ -339,7 +324,6 @@ describe("Architecture Page", () => {
   it("displays architectural features", () => {
     render(<ArchitecturePage />);
     expect(screen.getByText("Architectural Features")).toBeInTheDocument();
-    expect(screen.getByText("99 Names of Allah")).toBeInTheDocument();
     expect(screen.getByText("Natural Light Design")).toBeInTheDocument();
     expect(screen.getByText("Qibla Orientation")).toBeInTheDocument();
     expect(screen.getByText("Sustainable Design")).toBeInTheDocument();

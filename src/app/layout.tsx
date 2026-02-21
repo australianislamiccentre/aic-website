@@ -39,18 +39,18 @@ export const metadata: Metadata = {
     template: "%s | Australian Islamic Centre",
   },
   description:
-    "The Australian Islamic Centre is one of Sydney's most significant Islamic institutions, serving the Muslim community with worship services, educational programs, and community support for over 40 years.",
+    "The Australian Islamic Centre in Newport, Melbourne is one of Australia's most significant Islamic institutions, serving the Muslim community with worship services, educational programs, and community support for over 40 years.",
   keywords: [
     "Australian Islamic Centre",
-    "mosque Sydney",
-    "Islamic centre",
-    "Muslim community",
-    "prayer times Sydney",
+    "mosque Melbourne",
+    "Islamic centre Newport",
+    "Muslim community Melbourne",
+    "prayer times Melbourne",
     "Islamic education",
     "Quran classes",
-    "halal certification",
+    "Newport mosque",
     "Islamic services",
-    "Bass Hill mosque",
+    "AIC Newport",
   ],
   authors: [{ name: "Australian Islamic Centre" }],
   creator: "Australian Islamic Centre",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     siteName: "Australian Islamic Centre",
     title: "Australian Islamic Centre | A Place of Worship, Learning & Community",
     description:
-      "Serving the Muslim community of Sydney for over 40 years with worship services, educational programs, and community support.",
+      "Serving the Muslim community of Melbourne for over 40 years with worship services, educational programs, and community support.",
     images: [
       {
         url: "/og-image.jpg",
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Australian Islamic Centre",
     description:
-      "A Place of Worship, Learning & Community - Serving Sydney for over 40 years.",
+      "A Place of Worship, Learning & Community - Serving Melbourne for over 40 years.",
     images: ["/og-image.jpg"],
   },
   robots: {
@@ -89,9 +89,10 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  verification: {
-    google: "your-google-verification-code",
-  },
+  // TODO: Replace with actual Google Search Console verification code
+  // verification: {
+  //   google: "REPLACE_WITH_REAL_CODE",
+  // },
 };
 
 export default async function RootLayout({
