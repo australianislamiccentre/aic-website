@@ -14,7 +14,6 @@ function generateTimeOptions() {
   return times;
 }
 
-// Generate delay options in minutes
 const delayOptions = [
   { title: "5 minutes", value: 5 },
   { title: "10 minutes", value: 10 },
@@ -30,23 +29,14 @@ export default defineType({
   name: "prayerSettings",
   title: "Prayer Settings",
   type: "document",
-  groups: [
-    { name: "daily", title: "Daily Prayers", default: true },
-    { name: "jumuah", title: "Jumu'ah (Friday)" },
-    { name: "taraweeh", title: "Taraweeh" },
-    { name: "eid", title: "Eid Prayers" },
-  ],
   fields: [
-    // ============================================================================
-    // DAILY PRAYER IQAMAH SETTINGS - Simplified flat structure
-    // ============================================================================
+    // ── Daily Prayers ──
 
-    // FAJR
+    // Fajr
     defineField({
       name: "fajrIqamahMode",
       title: "Fajr Iqamah",
       type: "string",
-      group: "daily",
       options: {
         list: [
           { title: "Fixed Time", value: "fixed" },
@@ -60,7 +50,6 @@ export default defineType({
       name: "fajrFixedTime",
       title: "Fajr Fixed Iqamah Time",
       type: "string",
-      group: "daily",
       options: { list: timeOptions },
       hidden: ({ document }) => document?.fajrIqamahMode !== "fixed",
       initialValue: "5:15 AM",
@@ -69,18 +58,16 @@ export default defineType({
       name: "fajrDelay",
       title: "Fajr Minutes after Adhan",
       type: "number",
-      group: "daily",
       options: { list: delayOptions },
       hidden: ({ document }) => document?.fajrIqamahMode !== "calculated",
       initialValue: 15,
     }),
 
-    // DHUHR
+    // Dhuhr
     defineField({
       name: "dhuhrIqamahMode",
       title: "Dhuhr Iqamah",
       type: "string",
-      group: "daily",
       options: {
         list: [
           { title: "Minutes after Adhan", value: "calculated" },
@@ -94,7 +81,6 @@ export default defineType({
       name: "dhuhrFixedTime",
       title: "Dhuhr Fixed Iqamah Time",
       type: "string",
-      group: "daily",
       options: { list: timeOptions },
       hidden: ({ document }) => document?.dhuhrIqamahMode !== "fixed",
     }),
@@ -102,18 +88,16 @@ export default defineType({
       name: "dhuhrDelay",
       title: "Dhuhr Minutes after Adhan",
       type: "number",
-      group: "daily",
       options: { list: delayOptions },
       hidden: ({ document }) => document?.dhuhrIqamahMode !== "calculated",
       initialValue: 10,
     }),
 
-    // ASR
+    // Asr
     defineField({
       name: "asrIqamahMode",
       title: "Asr Iqamah",
       type: "string",
-      group: "daily",
       options: {
         list: [
           { title: "Minutes after Adhan", value: "calculated" },
@@ -127,7 +111,6 @@ export default defineType({
       name: "asrFixedTime",
       title: "Asr Fixed Iqamah Time",
       type: "string",
-      group: "daily",
       options: { list: timeOptions },
       hidden: ({ document }) => document?.asrIqamahMode !== "fixed",
     }),
@@ -135,18 +118,16 @@ export default defineType({
       name: "asrDelay",
       title: "Asr Minutes after Adhan",
       type: "number",
-      group: "daily",
       options: { list: delayOptions },
       hidden: ({ document }) => document?.asrIqamahMode !== "calculated",
       initialValue: 10,
     }),
 
-    // MAGHRIB
+    // Maghrib
     defineField({
       name: "maghribIqamahMode",
       title: "Maghrib Iqamah",
       type: "string",
-      group: "daily",
       options: {
         list: [
           { title: "Minutes after Adhan", value: "calculated" },
@@ -160,7 +141,6 @@ export default defineType({
       name: "maghribFixedTime",
       title: "Maghrib Fixed Iqamah Time",
       type: "string",
-      group: "daily",
       options: { list: timeOptions },
       hidden: ({ document }) => document?.maghribIqamahMode !== "fixed",
     }),
@@ -168,18 +148,16 @@ export default defineType({
       name: "maghribDelay",
       title: "Maghrib Minutes after Adhan",
       type: "number",
-      group: "daily",
       options: { list: delayOptions },
       hidden: ({ document }) => document?.maghribIqamahMode !== "calculated",
       initialValue: 5,
     }),
 
-    // ISHA
+    // Isha
     defineField({
       name: "ishaIqamahMode",
       title: "Isha Iqamah",
       type: "string",
-      group: "daily",
       options: {
         list: [
           { title: "Minutes after Adhan", value: "calculated" },
@@ -193,7 +171,6 @@ export default defineType({
       name: "ishaFixedTime",
       title: "Isha Fixed Iqamah Time",
       type: "string",
-      group: "daily",
       options: { list: timeOptions },
       hidden: ({ document }) => document?.ishaIqamahMode !== "fixed",
     }),
@@ -201,20 +178,16 @@ export default defineType({
       name: "ishaDelay",
       title: "Isha Minutes after Adhan",
       type: "number",
-      group: "daily",
       options: { list: delayOptions },
       hidden: ({ document }) => document?.ishaIqamahMode !== "calculated",
       initialValue: 10,
     }),
 
-    // ============================================================================
-    // JUMU'AH (FRIDAY) - Simple: Arabic time, English time
-    // ============================================================================
+    // ── Jumu'ah (Friday) ──
     defineField({
       name: "jumuahArabicTime",
       title: "Arabic Jumu'ah",
       type: "string",
-      group: "jumuah",
       options: { list: timeOptions },
       initialValue: "1:00 PM",
     }),
@@ -222,19 +195,15 @@ export default defineType({
       name: "jumuahEnglishTime",
       title: "English Jumu'ah",
       type: "string",
-      group: "jumuah",
       options: { list: timeOptions },
       initialValue: "2:15 PM",
     }),
 
-    // ============================================================================
-    // TARAWEEH - Simple: toggle + time
-    // ============================================================================
+    // ── Taraweeh ──
     defineField({
       name: "taraweehEnabled",
       title: "Taraweeh Active",
       type: "boolean",
-      group: "taraweeh",
       description: "Toggle on during Ramadan",
       initialValue: false,
     }),
@@ -242,47 +211,36 @@ export default defineType({
       name: "taraweehTime",
       title: "Taraweeh Time",
       type: "string",
-      group: "taraweeh",
       options: { list: timeOptions },
       hidden: ({ document }) => !document?.taraweehEnabled,
       initialValue: "8:30 PM",
     }),
 
-    // ============================================================================
-    // EID AL-FITR - Simple: toggle + time
-    // ============================================================================
+    // ── Eid Prayers ──
     defineField({
       name: "eidFitrActive",
       title: "Show Eid al-Fitr on Site",
       type: "boolean",
-      group: "eid",
       initialValue: false,
     }),
     defineField({
       name: "eidFitrTime",
       title: "Eid al-Fitr Prayer Time",
       type: "string",
-      group: "eid",
       options: { list: timeOptions },
       hidden: ({ document }) => !document?.eidFitrActive,
       initialValue: "7:00 AM",
     }),
-
-    // ============================================================================
-    // EID AL-ADHA - Simple: toggle + time
-    // ============================================================================
     defineField({
       name: "eidAdhaActive",
       title: "Show Eid al-Adha on Site",
       type: "boolean",
-      group: "eid",
       initialValue: false,
     }),
     defineField({
       name: "eidAdhaTime",
       title: "Eid al-Adha Prayer Time",
       type: "string",
-      group: "eid",
       options: { list: timeOptions },
       hidden: ({ document }) => !document?.eidAdhaActive,
       initialValue: "7:00 AM",

@@ -76,7 +76,7 @@ const structure = (S: StructureBuilder) =>
                     .title("Live Events")
                     .filter(
                       `_type == "event" && active == true && (
-                        (recurring == true && (recurringEndDate == null || recurringEndDate >= now())) ||
+                        (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= now())) ||
                         date >= now() ||
                         endDate >= now()
                       )`
@@ -89,7 +89,7 @@ const structure = (S: StructureBuilder) =>
                     .title("Expired Events")
                     .filter(
                       `_type == "event" && active == true && !(
-                        (recurring == true && (recurringEndDate == null || recurringEndDate >= now())) ||
+                        (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= now())) ||
                         date >= now() ||
                         endDate >= now()
                       )`

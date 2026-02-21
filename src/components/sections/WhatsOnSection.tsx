@@ -116,13 +116,13 @@ function EventItem({ event, index }: { event: SanityEvent; index: number }) {
               </p>
             )}
             <div className="flex flex-wrap items-center gap-x-2.5 mt-0.5 text-xs text-gray-500">
-              {event.date && !event.recurring && (
+              {event.date && event.eventType !== "recurring" && (
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3 text-green-500" />
                   {formatEventDate(event.date)}
                 </span>
               )}
-              {event.recurring && event.recurringDay && (
+              {event.eventType === "recurring" && event.recurringDay && (
                 <span className="flex items-center gap-1">
                   <Repeat className="w-3 h-3 text-teal-500" />
                   {event.recurringDay}

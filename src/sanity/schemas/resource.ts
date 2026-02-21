@@ -4,25 +4,40 @@ export default defineType({
   name: "resource",
   title: "Resource",
   type: "document",
-  groups: [
-    { name: "basic", title: "Basic Info", default: true },
-    { name: "file", title: "File / Link" },
-    { name: "settings", title: "Settings" },
-  ],
   fields: [
-    // Basic Info
+    // ── 1. Status ──
+    defineField({
+      name: "active",
+      title: "Active",
+      type: "boolean",
+      description: "Show this resource on the website",
+      initialValue: true,
+    }),
+    defineField({
+      name: "featured",
+      title: "Featured",
+      type: "boolean",
+      description: "Show in featured resources section",
+      initialValue: false,
+    }),
+    defineField({
+      name: "order",
+      title: "Display Order",
+      type: "number",
+      description: "Lower numbers appear first",
+    }),
+
+    // ── 2. Title & Description ──
     defineField({
       name: "title",
       title: "Title",
       type: "string",
-      group: "basic",
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "slug",
       title: "Slug",
       type: "slug",
-      group: "basic",
       options: {
         source: "title",
         maxLength: 96,
@@ -34,24 +49,22 @@ export default defineType({
       title: "Description",
       type: "text",
       rows: 3,
-      group: "basic",
       description: "Brief description of this resource",
     }),
     defineField({
       name: "thumbnail",
       title: "Thumbnail Image",
       type: "image",
-      group: "basic",
       options: {
         hotspot: true,
       },
-      description: "Preview image for the resource",
     }),
+
+    // ── 3. Type & Category ──
     defineField({
       name: "resourceType",
       title: "Resource Type",
       type: "string",
-      group: "basic",
       options: {
         list: [
           { title: "PDF Document", value: "pdf" },
@@ -69,7 +82,6 @@ export default defineType({
       name: "category",
       title: "Category",
       type: "string",
-      group: "basic",
       options: {
         list: [
           { title: "Quran", value: "quran" },
@@ -91,12 +103,11 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
 
-    // File / Link
+    // ── 4. File / Link ──
     defineField({
       name: "file",
       title: "File Upload",
       type: "file",
-      group: "file",
       options: {
         accept: ".pdf,.mp3,.mp4,.wav,.m4a,.doc,.docx,.epub",
       },
@@ -107,7 +118,6 @@ export default defineType({
       name: "externalUrl",
       title: "External URL",
       type: "url",
-      group: "file",
       hidden: ({ document }) => document?.resourceType !== "link",
       description: "Link to external resource (YouTube, podcast, etc.)",
     }),
@@ -115,39 +125,33 @@ export default defineType({
       name: "fileSize",
       title: "File Size",
       type: "string",
-      group: "file",
-      description: "Approximate file size (e.g., '2.5 MB', '45 minutes')",
+      description: "Approximate file size (e.g., '2.5 MB')",
     }),
     defineField({
       name: "duration",
       title: "Duration",
       type: "string",
-      group: "file",
       hidden: ({ document }) =>
         document?.resourceType !== "audio" && document?.resourceType !== "video",
       description: "Length of audio/video (e.g., '45:30', '1 hour 20 minutes')",
     }),
 
-    // Metadata
+    // ── 5. Metadata ──
     defineField({
       name: "author",
       title: "Author / Speaker",
       type: "string",
-      group: "basic",
-      description: "Who created this resource?",
     }),
     defineField({
       name: "date",
       title: "Date",
       type: "date",
-      group: "basic",
       description: "When was this created/recorded?",
     }),
     defineField({
       name: "language",
       title: "Language",
       type: "string",
-      group: "basic",
       options: {
         list: [
           { title: "English", value: "en" },
@@ -165,46 +169,19 @@ export default defineType({
       name: "tags",
       title: "Tags",
       type: "array",
-      group: "basic",
       of: [{ type: "string" }],
       options: {
         layout: "tags",
       },
       description: "Keywords for search and filtering",
     }),
-
-    // Settings
-    defineField({
-      name: "featured",
-      title: "Featured",
-      type: "boolean",
-      group: "settings",
-      description: "Show in featured resources section",
-      initialValue: false,
-    }),
     defineField({
       name: "downloadCount",
       title: "Download Count",
       type: "number",
-      group: "settings",
-      description: "Number of downloads (for analytics)",
+      description: "Auto-tracked",
       initialValue: 0,
       readOnly: true,
-    }),
-    defineField({
-      name: "active",
-      title: "Active",
-      type: "boolean",
-      group: "settings",
-      description: "Show this resource on the website",
-      initialValue: true,
-    }),
-    defineField({
-      name: "order",
-      title: "Display Order",
-      type: "number",
-      group: "settings",
-      description: "Lower numbers appear first",
     }),
   ],
   preview: {

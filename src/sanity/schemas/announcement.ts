@@ -4,24 +4,64 @@ export default defineType({
   name: "announcement",
   title: "Announcement",
   type: "document",
-  groups: [
-    { name: "content", title: "Content", default: true },
-    { name: "settings", title: "Settings" },
-  ],
   fields: [
-    // Content
+    // ── 1. Status ──
+    defineField({
+      name: "active",
+      title: "Active",
+      type: "boolean",
+      description: "Show this announcement on the website",
+      initialValue: true,
+    }),
+    defineField({
+      name: "featured",
+      title: "Featured",
+      type: "boolean",
+      description: "Show prominently on homepage. Disabled when inactive.",
+      initialValue: false,
+      readOnly: ({ document }) => document?.active === false,
+      validation: (Rule) =>
+        Rule.custom((featured, context) => {
+          const doc = context.document as { active?: boolean } | undefined;
+          if (featured && doc?.active === false) {
+            return "Cannot feature an inactive announcement. Enable 'Active' first.";
+          }
+          return true;
+        }),
+    }),
+    defineField({
+      name: "priority",
+      title: "Priority",
+      type: "string",
+      options: {
+        list: [
+          { title: "Normal", value: "normal" },
+          { title: "Important — highlighted in lists", value: "important" },
+          { title: "Urgent — shows alert banner on homepage", value: "urgent" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "normal",
+      description: "Urgent announcements display as an alert banner at the top of the homepage",
+    }),
+    defineField({
+      name: "expiresAt",
+      title: "Expires At",
+      type: "date",
+      description: "Optional — announcement will auto-hide after this date",
+    }),
+
+    // ── 2. Content ──
     defineField({
       name: "title",
       title: "Title",
       type: "string",
-      group: "content",
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "slug",
       title: "Slug",
       type: "slug",
-      group: "content",
       options: {
         source: "title",
         maxLength: 96,
@@ -32,7 +72,6 @@ export default defineType({
       name: "date",
       title: "Publication Date",
       type: "date",
-      group: "content",
       validation: (Rule) => Rule.required(),
     }),
     defineField({
@@ -40,7 +79,6 @@ export default defineType({
       title: "Excerpt",
       type: "text",
       rows: 3,
-      group: "content",
       description: "Short summary shown in lists (max 200 characters)",
       validation: (Rule) => Rule.required().max(200),
     }),
@@ -48,7 +86,6 @@ export default defineType({
       name: "content",
       title: "Full Content",
       type: "array",
-      group: "content",
       of: [{ type: "block" }],
       description: "Detailed content for the announcement page",
     }),
@@ -56,19 +93,14 @@ export default defineType({
       name: "image",
       title: "Image",
       type: "image",
-      group: "content",
       options: {
         hotspot: true,
       },
-      description: "Optional image for the announcement",
     }),
-
-    // Settings
     defineField({
       name: "category",
       title: "Category",
       type: "string",
-      group: "settings",
       options: {
         list: [
           { title: "General", value: "General" },
@@ -94,7 +126,6 @@ export default defineType({
       name: "tags",
       title: "Tags",
       type: "array",
-      group: "settings",
       of: [{ type: "string" }],
       options: {
         layout: "tags",
@@ -105,7 +136,6 @@ export default defineType({
       name: "callToAction",
       title: "Call to Action",
       type: "object",
-      group: "content",
       description: "Optional button link",
       fields: [
         defineField({
@@ -144,7 +174,6 @@ export default defineType({
               { title: "Media", value: "/media" },
               { title: "Architecture", value: "/architecture" },
               { title: "Announcements", value: "/announcements" },
-              { title: "Donate", value: "/donate" },
             ],
           },
           hidden: ({ parent }) => parent?.linkType !== "internal",
@@ -161,54 +190,6 @@ export default defineType({
           hidden: ({ parent }) => parent?.linkType !== "external",
         }),
       ],
-    }),
-    defineField({
-      name: "priority",
-      title: "Priority",
-      type: "string",
-      group: "settings",
-      options: {
-        list: [
-          { title: "Normal", value: "normal" },
-          { title: "Important - Highlighted in lists", value: "important" },
-          { title: "Urgent - Shows alert banner on homepage", value: "urgent" },
-        ],
-        layout: "radio",
-      },
-      initialValue: "normal",
-      description: "Urgent announcements display as an alert banner at the top of the homepage",
-    }),
-    defineField({
-      name: "active",
-      title: "Active",
-      type: "boolean",
-      group: "settings",
-      description: "Show this announcement on the website",
-      initialValue: true,
-    }),
-    defineField({
-      name: "featured",
-      title: "Featured",
-      type: "boolean",
-      group: "settings",
-      description: "Show prominently on homepage. Disabled when announcement is inactive.",
-      initialValue: false,
-      readOnly: ({ document }) => document?.active === false,
-      validation: (Rule) =>
-        Rule.custom((featured, context) => {
-          const doc = context.document as { active?: boolean } | undefined;
-          if (featured && doc?.active === false) {
-            return "Cannot feature an inactive announcement. Enable 'Active' first.";
-          }
-          return true;
-        }),
-    }),
-    defineField({
-      name: "expiresAt",
-      title: "Expires At",
-      type: "date",
-      group: "settings",
-      description: "Optional - announcement will auto-hide after this date",
     }),
   ],
   preview: {

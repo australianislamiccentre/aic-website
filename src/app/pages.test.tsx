@@ -73,7 +73,7 @@ vi.mock("@/data/content", () => ({
       location: "Main Prayer Hall",
       category: "Prayer",
       image: "/images/event.jpg",
-      recurring: true,
+      eventType: "recurring",
     },
     {
       id: "2",
@@ -85,7 +85,7 @@ vi.mock("@/data/content", () => ({
       location: "Education Centre",
       category: "Education",
       image: "/images/event.jpg",
-      recurring: true,
+      eventType: "recurring",
     },
   ],
   tourTypes: [

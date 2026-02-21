@@ -4,25 +4,40 @@ export default defineType({
   name: "teamMember",
   title: "Team Member",
   type: "document",
-  groups: [
-    { name: "basic", title: "Basic Info", default: true },
-    { name: "contact", title: "Contact" },
-    { name: "settings", title: "Settings" },
-  ],
   fields: [
-    // Basic Info
+    // ── 1. Status ──
+    defineField({
+      name: "active",
+      title: "Active",
+      type: "boolean",
+      description: "Currently part of the team",
+      initialValue: true,
+    }),
+    defineField({
+      name: "featured",
+      title: "Featured",
+      type: "boolean",
+      description: "Show on homepage team section",
+      initialValue: false,
+    }),
+    defineField({
+      name: "order",
+      title: "Display Order",
+      type: "number",
+      description: "Lower numbers appear first within category",
+    }),
+
+    // ── 2. Identity ──
     defineField({
       name: "name",
       title: "Full Name",
       type: "string",
-      group: "basic",
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "slug",
       title: "Slug",
       type: "slug",
-      group: "basic",
       options: {
         source: "name",
         maxLength: 96,
@@ -33,7 +48,6 @@ export default defineType({
       name: "role",
       title: "Role / Title",
       type: "string",
-      group: "basic",
       validation: (Rule) => Rule.required(),
       description: "e.g., 'Head Imam', 'Quran Teacher', 'Board Member'",
     }),
@@ -41,7 +55,6 @@ export default defineType({
       name: "category",
       title: "Category",
       type: "string",
-      group: "basic",
       options: {
         list: [
           { title: "Imam / Religious Leader", value: "imam" },
@@ -60,34 +73,32 @@ export default defineType({
       name: "image",
       title: "Photo",
       type: "image",
-      group: "basic",
       options: {
         hotspot: true,
       },
       description: "Professional headshot recommended",
     }),
-    defineField({
-      name: "bio",
-      title: "Biography",
-      type: "array",
-      group: "basic",
-      of: [{ type: "block" }],
-      description: "Background, qualifications, experience",
-    }),
+
+    // ── 3. Bio & Expertise ──
     defineField({
       name: "shortBio",
       title: "Short Bio",
       type: "text",
       rows: 2,
-      group: "basic",
       description: "Brief description for cards (max 150 characters)",
       validation: (Rule) => Rule.max(150),
+    }),
+    defineField({
+      name: "bio",
+      title: "Full Biography",
+      type: "array",
+      of: [{ type: "block" }],
+      description: "Background, qualifications, experience",
     }),
     defineField({
       name: "qualifications",
       title: "Qualifications",
       type: "array",
-      group: "basic",
       of: [{ type: "string" }],
       description: "Degrees, certifications, etc.",
     }),
@@ -95,38 +106,40 @@ export default defineType({
       name: "specializations",
       title: "Specializations",
       type: "array",
-      group: "basic",
       of: [{ type: "string" }],
       description: "Areas of expertise (e.g., 'Fiqh', 'Quran Tajweed', 'Youth Counselling')",
     }),
 
-    // Contact
+    // ── 4. Contact ──
+    defineField({
+      name: "showContactInfo",
+      title: "Show Contact Information",
+      type: "boolean",
+      description: "Display email/phone publicly",
+      initialValue: false,
+    }),
     defineField({
       name: "email",
       title: "Email",
       type: "email",
-      group: "contact",
       description: "Public contact email (optional)",
     }),
     defineField({
       name: "phone",
       title: "Phone",
       type: "string",
-      group: "contact",
       description: "Public contact phone (optional)",
     }),
     defineField({
       name: "officeHours",
       title: "Office Hours",
       type: "string",
-      group: "contact",
       description: "e.g., 'Mon-Fri 9am-5pm' or 'By appointment'",
     }),
     defineField({
       name: "socialMedia",
       title: "Social Media",
       type: "object",
-      group: "contact",
       fields: [
         defineField({
           name: "linkedin",
@@ -144,39 +157,6 @@ export default defineType({
           type: "url",
         }),
       ],
-    }),
-
-    // Settings
-    defineField({
-      name: "featured",
-      title: "Featured",
-      type: "boolean",
-      group: "settings",
-      description: "Show on homepage team section",
-      initialValue: false,
-    }),
-    defineField({
-      name: "showContactInfo",
-      title: "Show Contact Information",
-      type: "boolean",
-      group: "settings",
-      description: "Display email/phone publicly",
-      initialValue: false,
-    }),
-    defineField({
-      name: "active",
-      title: "Active",
-      type: "boolean",
-      group: "settings",
-      description: "Currently part of the team",
-      initialValue: true,
-    }),
-    defineField({
-      name: "order",
-      title: "Display Order",
-      type: "number",
-      group: "settings",
-      description: "Lower numbers appear first within category",
     }),
   ],
   preview: {

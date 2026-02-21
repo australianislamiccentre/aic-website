@@ -67,7 +67,7 @@ export default async function EventPage({ params }: EventPageProps) {
     notFound();
   }
 
-  const isRecurring = event.recurring;
+  const isRecurring = event.eventType === "recurring";
 
   // Format the date display
   const getDateDisplay = () => {

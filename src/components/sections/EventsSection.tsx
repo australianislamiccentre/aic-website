@@ -15,7 +15,7 @@ const fallbackRecurringPrograms = [
   {
     _id: "jumuah",
     title: "Jumu'ah Prayer",
-    recurring: true,
+    eventType: "recurring" as const,
     recurringDay: "Fridays",
     time: "1:00 PM (Arabic) / 2:15 PM (English)",
     location: "Main Prayer Hall",
@@ -26,7 +26,7 @@ const fallbackRecurringPrograms = [
   {
     _id: "iqra-academy",
     title: "IQRA Academy",
-    recurring: true,
+    eventType: "recurring" as const,
     recurringDay: "Saturdays",
     time: "9:00 AM - 1:00 PM",
     location: "Education Centre",
@@ -37,7 +37,7 @@ const fallbackRecurringPrograms = [
   {
     _id: "salam-arabic",
     title: "Salam Arabic School",
-    recurring: true,
+    eventType: "recurring" as const,
     recurringDay: "Weekends",
     time: "Various Sessions",
     location: "Education Centre",
@@ -227,11 +227,11 @@ function RecurringCard({ event, index }: { event: SanityEvent; index: number }) 
 export function EventsSection({ events = [] }: EventsSectionProps) {
   // Separate dated events (non-recurring) and recurring events
   const datedEvents = events
-    .filter((e) => !e.recurring)
+    .filter((e) => e.eventType !== "recurring")
     .slice(0, 2); // Show only first 2 dated events
 
   // Get recurring events from Sanity or use fallback
-  const recurringEvents = events.filter((e) => e.recurring);
+  const recurringEvents = events.filter((e) => e.eventType === "recurring");
   const displayRecurring = recurringEvents.length > 0
     ? recurringEvents.slice(0, 3)
     : fallbackRecurringPrograms;

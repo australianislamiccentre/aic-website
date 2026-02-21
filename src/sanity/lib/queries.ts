@@ -6,7 +6,7 @@ export const eventBySlugQuery = groq`
     _id,
     title,
     "slug": slug.current,
-    recurring,
+    eventType,
     date,
     endDate,
     recurringDay,
@@ -35,14 +35,14 @@ export const eventBySlugQuery = groq`
 // Uses string comparison for dates to avoid timezone issues with now()
 export const eventsQuery = groq`
   *[_type == "event" && active != false && (
-    (recurring == true && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
+    (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
     date >= string::split(string(now()), "T")[0] ||
     endDate >= string::split(string(now()), "T")[0]
-  )] | order(recurring asc, featured desc, date asc) {
+  )] | order(eventType asc, featured desc, date asc) {
     _id,
     title,
     "slug": slug.current,
-    recurring,
+    eventType,
     date,
     endDate,
     recurringDay,
@@ -65,14 +65,14 @@ export const eventsQuery = groq`
 
 export const featuredEventsQuery = groq`
   *[_type == "event" && active != false && featured == true && (
-    (recurring == true && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
+    (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
     date >= string::split(string(now()), "T")[0] ||
     endDate >= string::split(string(now()), "T")[0]
-  )] | order(recurring asc, featured desc, date asc) [0...5] {
+  )] | order(eventType asc, featured desc, date asc) [0...5] {
     _id,
     title,
     "slug": slug.current,
-    recurring,
+    eventType,
     date,
     endDate,
     recurringDay,
@@ -159,7 +159,7 @@ export const urgentAnnouncementsQuery = groq`
 
 // Programs - recurring events in Education, Youth, Sports, Women categories
 export const programsQuery = groq`
-  *[_type == "event" && active != false && recurring == true && (
+  *[_type == "event" && active != false && eventType == "recurring" && (
     "Education" in categories ||
     "Youth" in categories ||
     "Sports" in categories ||

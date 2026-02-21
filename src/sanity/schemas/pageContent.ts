@@ -4,37 +4,52 @@ export default defineType({
   name: "pageContent",
   title: "Page Content",
   type: "document",
-  groups: [
-    { name: "content", title: "Content", default: true },
-    { name: "media", title: "Media" },
-    { name: "seo", title: "SEO" },
-  ],
   fields: [
-    // Content
+    // ── 1. Status ──
+    defineField({
+      name: "active",
+      title: "Active",
+      type: "boolean",
+      description: "Publish this page",
+      initialValue: true,
+    }),
+    defineField({
+      name: "showInNav",
+      title: "Show in Navigation",
+      type: "boolean",
+      description: "Include this page in the site navigation",
+      initialValue: false,
+    }),
+    defineField({
+      name: "navOrder",
+      title: "Navigation Order",
+      type: "number",
+      description: "Order in navigation menu (lower = earlier)",
+      hidden: ({ document }) => !document?.showInNav,
+    }),
+
+    // ── 2. Page Info ──
     defineField({
       name: "title",
       title: "Page Title",
       type: "string",
-      group: "content",
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "slug",
       title: "Slug",
       type: "slug",
-      group: "content",
       options: {
         source: "title",
         maxLength: 96,
       },
       validation: (Rule) => Rule.required(),
-      description: "URL identifier (e.g., 'about-us', 'history', 'vision')",
+      description: "URL identifier (e.g., 'about-us', 'history')",
     }),
     defineField({
       name: "pageType",
       title: "Page Type",
       type: "string",
-      group: "content",
       options: {
         list: [
           { title: "About Us", value: "about" },
@@ -54,7 +69,6 @@ export default defineType({
       name: "subtitle",
       title: "Subtitle",
       type: "string",
-      group: "content",
       description: "Optional subtitle displayed below the title",
     }),
     defineField({
@@ -62,14 +76,21 @@ export default defineType({
       title: "Introduction",
       type: "text",
       rows: 3,
-      group: "content",
       description: "Brief introduction shown at the top of the page",
+    }),
+
+    // ── 3. Content ──
+    defineField({
+      name: "heroImage",
+      title: "Hero Image",
+      type: "image",
+      options: { hotspot: true },
+      description: "Large banner image at the top of the page",
     }),
     defineField({
       name: "content",
       title: "Main Content",
       type: "array",
-      group: "content",
       of: [
         {
           type: "block",
@@ -115,17 +136,8 @@ export default defineType({
           type: "image",
           options: { hotspot: true },
           fields: [
-            {
-              name: "caption",
-              type: "string",
-              title: "Caption",
-            },
-            {
-              name: "alt",
-              type: "string",
-              title: "Alt Text",
-              validation: (Rule) => Rule.required(),
-            },
+            { name: "caption", type: "string", title: "Caption" },
+            { name: "alt", type: "string", title: "Alt Text", validation: (Rule) => Rule.required() },
           ],
         },
       ],
@@ -134,7 +146,6 @@ export default defineType({
       name: "sections",
       title: "Content Sections",
       type: "array",
-      group: "content",
       of: [
         {
           type: "object",
@@ -143,12 +154,7 @@ export default defineType({
           fields: [
             { name: "title", type: "string", title: "Section Title" },
             { name: "content", type: "array", title: "Content", of: [{ type: "block" }] },
-            {
-              name: "image",
-              type: "image",
-              title: "Section Image",
-              options: { hotspot: true },
-            },
+            { name: "image", type: "image", title: "Section Image", options: { hotspot: true } },
             {
               name: "imagePosition",
               type: "string",
@@ -165,30 +171,15 @@ export default defineType({
               initialValue: "right",
             },
           ],
-          preview: {
-            select: { title: "title" },
-          },
+          preview: { select: { title: "title" } },
         },
       ],
       description: "Add multiple content sections with optional images",
-    }),
-
-    // Media
-    defineField({
-      name: "heroImage",
-      title: "Hero Image",
-      type: "image",
-      group: "media",
-      options: {
-        hotspot: true,
-      },
-      description: "Large banner image at the top of the page",
     }),
     defineField({
       name: "gallery",
       title: "Image Gallery",
       type: "array",
-      group: "media",
       of: [
         {
           type: "image",
@@ -202,57 +193,16 @@ export default defineType({
       description: "Optional image gallery for the page",
     }),
 
-    // SEO
+    // ── 4. SEO ──
     defineField({
       name: "seo",
       title: "SEO Settings",
       type: "object",
-      group: "seo",
       fields: [
-        defineField({
-          name: "metaTitle",
-          title: "Meta Title",
-          type: "string",
-          description: "Override the default page title for search engines",
-        }),
-        defineField({
-          name: "metaDescription",
-          title: "Meta Description",
-          type: "text",
-          rows: 3,
-          description: "Description shown in search results (max 160 characters)",
-          validation: (Rule) => Rule.max(160),
-        }),
-        defineField({
-          name: "ogImage",
-          title: "Social Share Image",
-          type: "image",
-          description: "Image shown when page is shared on social media",
-        }),
+        defineField({ name: "metaTitle", title: "Meta Title", type: "string", description: "Override the default page title for search engines" }),
+        defineField({ name: "metaDescription", title: "Meta Description", type: "text", rows: 3, description: "Description shown in search results (max 160 characters)", validation: (Rule) => Rule.max(160) }),
+        defineField({ name: "ogImage", title: "Social Share Image", type: "image", description: "Image shown when page is shared on social media" }),
       ],
-    }),
-
-    // Settings
-    defineField({
-      name: "showInNav",
-      title: "Show in Navigation",
-      type: "boolean",
-      description: "Include this page in the site navigation",
-      initialValue: false,
-    }),
-    defineField({
-      name: "navOrder",
-      title: "Navigation Order",
-      type: "number",
-      description: "Order in navigation menu (lower = earlier)",
-      hidden: ({ document }) => !document?.showInNav,
-    }),
-    defineField({
-      name: "active",
-      title: "Active",
-      type: "boolean",
-      description: "Publish this page",
-      initialValue: true,
     }),
   ],
   preview: {

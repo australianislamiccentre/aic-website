@@ -16,8 +16,10 @@ export const client = createClient({
   perspective: "published",
   stega: {
     studioUrl,
-    // Only enable in non-production or when explicitly in draft mode
-    enabled: process.env.NEXT_PUBLIC_VERCEL_ENV !== "production",
+    // Only enable stega when explicitly in draft/preview mode.
+    // Stega injects invisible zero-width characters into strings which breaks
+    // client-side filtering (e.g. Array.includes() for category filters).
+    enabled: false,
   },
 });
 

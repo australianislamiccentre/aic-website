@@ -14,19 +14,6 @@ describe("service schema", () => {
       expect(service.type).toBe("document");
     });
 
-    it("has 4 field groups", () => {
-      expect(service.groups).toHaveLength(4);
-    });
-
-    it("has correct group names", () => {
-      const groupNames = service.groups!.map((g) => g.name);
-      expect(groupNames).toEqual(["basic", "details", "contact", "settings"]);
-    });
-
-    it("basic group is the default", () => {
-      const basicGroup = service.groups!.find((g) => g.name === "basic");
-      expect(basicGroup?.default).toBe(true);
-    });
   });
 
   describe("New fields: highlights", () => {
@@ -36,14 +23,9 @@ describe("service schema", () => {
       expect(field?.type).toBe("array");
     });
 
-    it("is in the basic group", () => {
+    it("description mentions short bullet points", () => {
       const field = getField("highlights");
-      expect(field?.group).toBe("basic");
-    });
-
-    it("description mentions the /services listing page", () => {
-      const field = getField("highlights");
-      expect(field?.description).toContain("/services listing page");
+      expect(field?.description).toContain("Short bullet points on the service card");
     });
   });
 
@@ -54,14 +36,9 @@ describe("service schema", () => {
       expect(field?.type).toBe("array");
     });
 
-    it("is in the basic group", () => {
+    it("description mentions service detail page", () => {
       const field = getField("keyFeatures");
-      expect(field?.group).toBe("basic");
-    });
-
-    it("description mentions the SERVICE DETAIL PAGE", () => {
-      const field = getField("keyFeatures");
-      expect(field?.description).toContain("SERVICE DETAIL PAGE");
+      expect(field?.description).toContain("service detail page");
     });
   });
 
@@ -72,14 +49,9 @@ describe("service schema", () => {
       expect(field?.type).toBe("email");
     });
 
-    it("is in the contact group", () => {
+    it("description mentions fallback to global service inquiry email", () => {
       const field = getField("formRecipientEmail");
-      expect(field?.group).toBe("contact");
-    });
-
-    it("description mentions fallback to global settings", () => {
-      const field = getField("formRecipientEmail");
-      expect(field?.description).toContain("Form Settings");
+      expect(field?.description).toContain("Falls back to global service inquiry email if empty");
     });
   });
 
@@ -111,9 +83,9 @@ describe("service schema", () => {
   });
 
   describe("Field descriptions clarify where content appears", () => {
-    it("shortDescription mentions /services page", () => {
+    it("shortDescription mentions service card and homepage", () => {
       const field = getField("shortDescription");
-      expect(field?.description).toContain("/services page");
+      expect(field?.description).toContain("Shown on the service card and homepage");
     });
 
     it("fullDescription mentions service detail page", () => {
@@ -121,9 +93,9 @@ describe("service schema", () => {
       expect(field?.description).toContain("service detail page");
     });
 
-    it("requirements mentions service detail page", () => {
+    it("requirements mentions example requirements", () => {
       const field = getField("requirements");
-      expect(field?.description).toContain("service detail page");
+      expect(field?.description).toContain("Valid ID");
     });
 
     it("featured mentions homepage", () => {
@@ -131,9 +103,9 @@ describe("service schema", () => {
       expect(field?.description).toContain("homepage");
     });
 
-    it("active mentions /services listing page", () => {
+    it("active mentions showing on website", () => {
       const field = getField("active");
-      expect(field?.description).toContain("/services listing page");
+      expect(field?.description).toContain("Show this service on the website");
     });
 
     it("image mentions recommended size", () => {

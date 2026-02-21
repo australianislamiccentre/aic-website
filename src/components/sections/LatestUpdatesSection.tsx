@@ -65,7 +65,10 @@ function UrgentBanner({ announcement }: { announcement: SanityAnnouncement }) {
 function AnnouncementCard({ item, index }: { item: LatestUpdateItem; index: number }) {
   const imageUrl = getImageUrl(item.image as SanityImage | undefined);
   const styles = getPriorityStyles(item.priority);
-  const isHighlighted = item.priority === "important" || item.priority === "urgent";
+  const isUrgent = item.priority === "urgent";
+  const isImportant = item.priority === "important";
+  const borderClass = isUrgent ? 'border-red-300' : isImportant ? 'border-amber-200' : 'border-gray-100';
+
 
   return (
     <motion.div
@@ -75,7 +78,7 @@ function AnnouncementCard({ item, index }: { item: LatestUpdateItem; index: numb
       transition={{ delay: index * 0.1 }}
     >
       <Link href={`/announcements/${item.slug}`} className="block group">
-        <div className={`bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border ${isHighlighted ? 'border-amber-200' : 'border-gray-100'} h-full`}>
+        <div className={`bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border ${borderClass} h-full`}>
           {imageUrl ? (
             <div className="relative h-40 overflow-hidden">
               <Image
@@ -94,7 +97,7 @@ function AnnouncementCard({ item, index }: { item: LatestUpdateItem; index: numb
               </div>
             </div>
           ) : (
-            <div className={`h-2 ${isHighlighted ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-amber-500 to-amber-600'}`} />
+            <div className="h-2" style={{ background: item.priority === 'urgent' ? '#dc2626' : item.priority === 'important' ? '#f59e0b' : '#d97706' }} />
           )}
 
           <div className="p-5">
@@ -130,7 +133,6 @@ export function LatestUpdatesSection({
   urgentAnnouncement,
 }: LatestUpdatesSectionProps) {
   const limitedAnnouncements = announcements.slice(0, 6);
-  const hasContent = limitedAnnouncements.length > 0 || !!urgentAnnouncement;
 
   return (
     <section className="py-10 md:py-20 bg-white relative overflow-hidden">

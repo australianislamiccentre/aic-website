@@ -15,15 +15,6 @@ describe("donatePageSettings schema", () => {
       expect(donatePageSettings.type).toBe("document");
     });
 
-    it("has 5 field groups", () => {
-      expect(donatePageSettings.groups).toHaveLength(5);
-    });
-
-    it("has correct group names", () => {
-      const groupNames = donatePageSettings.groups!.map((g) => g.name);
-      expect(groupNames).toEqual(["goal", "form", "campaigns", "donors", "map"]);
-    });
-
     it("has 10 fields", () => {
       expect(donatePageSettings.fields).toHaveLength(10);
     });

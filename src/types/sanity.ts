@@ -4,7 +4,7 @@ export interface SanityEvent {
   _id: string;
   title: string;
   slug: string;
-  recurring: boolean;
+  eventType?: "single" | "multi" | "recurring";
   date?: string;
   endDate?: string;
   recurringDay?: string;

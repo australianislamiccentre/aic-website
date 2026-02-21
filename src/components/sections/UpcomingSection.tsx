@@ -302,13 +302,13 @@ export function UpcomingSection({
 }: UpcomingSectionProps) {
   // Filter events to get upcoming dated events (not recurring)
   const datedEvents = events
-    .filter((event) => !event.recurring && event.date && !isPrayerProgram(event))
+    .filter((event) => event.eventType !== "recurring" && event.date && !isPrayerProgram(event))
     .sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime())
     .slice(0, 4);
 
   // Filter recurring/weekly events separately (exclude prayer-related)
   const weeklyEvents = events
-    .filter((event) => event.recurring && event.recurringDay && !isPrayerProgram(event))
+    .filter((event) => event.eventType === "recurring" && event.recurringDay && !isPrayerProgram(event))
     .sort((a, b) => getDayOrder(a.recurringDay) - getDayOrder(b.recurringDay))
     .slice(0, 4);
 
