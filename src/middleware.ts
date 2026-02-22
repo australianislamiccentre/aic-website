@@ -44,58 +44,106 @@ function refreshCacheInBackground(): void {
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
-  // Security headers
+  // ── Security Headers ──
   response.headers.set('X-Frame-Options', 'SAMEORIGIN');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
   response.headers.set(
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=(), interest-cohort=()'
   );
   response.headers.set('X-DNS-Prefetch-Control', 'off');
+  response.headers.set(
+    'Strict-Transport-Security',
+    'max-age=63072000; includeSubDomains; preload'
+  );
 
   // Trigger a background cache refresh if stale or empty
   if (!cachedDomains || Date.now() - lastFetchTs > CACHE_TTL) {
     refreshCacheInBackground();
   }
 
-  // Build CSP frame-src from cached domains (synchronous — no await)
-  const domains = cachedDomains ?? [];
-  // Core infrastructure domains — always allowed, not managed via Sanity
-  const INFRA_DOMAINS = [
-    "'self'",
-    // Sanity Studio
-    'https://*.sanity.io',
-    // Stripe (payments / donate page)
-    'https://js.stripe.com',
-    'https://*.stripe.com',
-    'https://*.stripe.network',
-    // Google (Maps embeds, Forms, Docs)
-    'https://*.google.com',
-    'https://*.googleapis.com',
-    'https://maps.app.goo.gl',
-    // YouTube (video embeds)
-    'https://www.youtube.com',
-    'https://www.youtube-nocookie.com',
-    // Facebook (social embeds / plugins)
-    'https://www.facebook.com',
-    'https://*.facebook.com',
-    // Instagram (social embeds)
-    'https://www.instagram.com',
-    'https://*.instagram.com',
-  ];
+  // ── Content Security Policy ──
+  // Content-driven embed domains from Sanity (JotForm, Typeform, etc.)
+  const sanityDomains = cachedDomains ?? [];
+  const dynamicFrameSrc = sanityDomains.flatMap((d) => [`https://${d}`, `https://*.${d}`]);
 
-  const frameSources = [
-    ...INFRA_DOMAINS,
-    // Content-driven embed domains from Sanity (JotForm, Typeform, etc.)
-    ...domains.flatMap((d) => [`https://${d}`, `https://*.${d}`]),
-  ].join(' ');
+  const csp = [
+    // Fallback for any directive not explicitly listed
+    "default-src 'self'",
 
-  response.headers.set(
-    'Content-Security-Policy',
-    `frame-src ${frameSources};`
-  );
+    // Scripts: self + inline (Next.js needs it) + eval (FundraiseUp widget) + trusted CDNs
+    [
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      'https://cdn.fundraiseup.com',
+      'https://js.stripe.com',
+      'https://*.sanity.io',
+      'https://www.googletagmanager.com',
+      'https://www.google-analytics.com',
+    ].join(' '),
+
+    // Styles: self + inline (Tailwind / Next.js injects inline styles)
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+
+    // Images
+    [
+      "img-src 'self' data: blob:",
+      'https://cdn.sanity.io',
+      'https://images.unsplash.com',
+      'https://i.ytimg.com',
+      'https://*.google.com',
+      'https://*.googleapis.com',
+      'https://*.gstatic.com',
+      'https://*.stripe.com',
+      'https://*.facebook.com',
+      'https://*.instagram.com',
+    ].join(' '),
+
+    // Fonts
+    "font-src 'self' https://fonts.gstatic.com",
+
+    // API / XHR / WebSocket connections
+    [
+      "connect-src 'self'",
+      'https://*.sanity.io',
+      'https://api.resend.com',
+      'https://*.stripe.com',
+      'https://*.google.com',
+      'https://*.googleapis.com',
+      'https://cdn.fundraiseup.com',
+      'https://*.fundraiseup.com',
+      'https://www.google-analytics.com',
+      'https://vitals.vercel-insights.com',
+    ].join(' '),
+
+    // Iframes: infrastructure + Sanity-managed content domains
+    [
+      "frame-src 'self'",
+      'https://*.sanity.io',
+      'https://js.stripe.com',
+      'https://*.stripe.com',
+      'https://*.stripe.network',
+      'https://*.google.com',
+      'https://*.googleapis.com',
+      'https://maps.app.goo.gl',
+      'https://www.youtube.com',
+      'https://www.youtube-nocookie.com',
+      'https://www.facebook.com',
+      'https://*.facebook.com',
+      'https://www.instagram.com',
+      'https://*.instagram.com',
+      ...dynamicFrameSrc,
+    ].join(' '),
+
+    // Media (audio/video)
+    "media-src 'self'",
+
+    // Web workers
+    "worker-src 'self' blob:",
+  ].join('; ');
+
+  // Using Report-Only initially — switch to Content-Security-Policy after verifying nothing breaks
+  response.headers.set('Content-Security-Policy-Report-Only', csp);
 
   return response;
 }

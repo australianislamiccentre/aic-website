@@ -6,6 +6,8 @@ interface FormSettings {
   contactEnabled?: boolean;
   serviceInquiryRecipientEmail?: string;
   serviceInquiryEnabled?: boolean;
+  eventInquiryRecipientEmail?: string;
+  eventInquiryEnabled?: boolean;
   newsletterRecipientEmail?: string;
   newsletterEnabled?: boolean;
 }
@@ -30,20 +32,24 @@ async function getSettings(): Promise<FormSettings> {
   }
 }
 
+type FormType = "contact" | "serviceInquiry" | "eventInquiry" | "newsletter";
+
 export async function getFormRecipientEmail(
-  form: "contact" | "serviceInquiry" | "newsletter"
+  form: FormType
 ): Promise<string> {
   const settings = await getSettings();
 
   const envFallbacks: Record<string, string | undefined> = {
     contact: process.env.CONTACT_FORM_TO_EMAIL || process.env.FORM_TO_EMAIL,
     serviceInquiry: process.env.SERVICE_INQUIRY_TO_EMAIL || process.env.FORM_TO_EMAIL,
+    eventInquiry: process.env.FORM_TO_EMAIL,
     newsletter: process.env.SUBSCRIBE_TO_EMAIL || process.env.FORM_TO_EMAIL,
   };
 
   const sanityEmails: Record<string, string | undefined> = {
     contact: settings.contactRecipientEmail,
     serviceInquiry: settings.serviceInquiryRecipientEmail,
+    eventInquiry: settings.eventInquiryRecipientEmail,
     newsletter: settings.newsletterRecipientEmail,
   };
 
@@ -52,13 +58,14 @@ export async function getFormRecipientEmail(
 }
 
 export async function isFormEnabled(
-  form: "contact" | "serviceInquiry" | "newsletter"
+  form: FormType
 ): Promise<boolean> {
   const settings = await getSettings();
 
   const enabledMap: Record<string, boolean | undefined> = {
     contact: settings.contactEnabled,
     serviceInquiry: settings.serviceInquiryEnabled,
+    eventInquiry: settings.eventInquiryEnabled,
     newsletter: settings.newsletterEnabled,
   };
 

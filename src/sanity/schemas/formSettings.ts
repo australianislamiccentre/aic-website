@@ -103,6 +103,20 @@ export default defineType({
       rows: 2,
     }),
 
+    // ── Event Inquiry ──
+    defineField({
+      name: "eventInquiryEnabled",
+      title: "Event Inquiry Enabled",
+      type: "boolean",
+      initialValue: true,
+    }),
+    defineField({
+      name: "eventInquiryRecipientEmail",
+      title: "Event Inquiry Recipient Email",
+      type: "email",
+      description: "Email that receives event inquiry submissions (falls back to contact email)",
+    }),
+
     // ── Newsletter ──
     defineField({
       name: "newsletterEnabled",

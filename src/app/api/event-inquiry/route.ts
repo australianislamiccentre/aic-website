@@ -6,13 +6,22 @@ import {
   eventNotificationEmail,
   eventConfirmationEmail,
 } from "@/lib/email-templates";
-import { getFormRecipientEmail } from "@/lib/form-settings";
+import { getFormRecipientEmail, isFormEnabled } from "@/lib/form-settings";
 
 const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if event inquiry form is enabled in Sanity
+    const enabled = await isFormEnabled("eventInquiry");
+    if (!enabled) {
+      return NextResponse.json(
+        { error: "Event inquiries are currently disabled." },
+        { status: 403 }
+      );
+    }
+
     // Rate limiting
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -40,8 +49,8 @@ export async function POST(request: NextRequest) {
     const { data } = result;
     const resend = getResendClient();
 
-    // Use event-specific contact email if provided, otherwise global contact
-    const toEmail = data.contactEmail || await getFormRecipientEmail("contact");
+    // Use event-specific contact email if provided, otherwise global event inquiry recipient
+    const toEmail = data.contactEmail || await getFormRecipientEmail("eventInquiry");
 
     // Send notification to AIC
     const notification = eventNotificationEmail(data);

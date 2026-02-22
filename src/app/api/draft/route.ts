@@ -36,15 +36,26 @@ export async function POST(request: NextRequest) {
   const referer = request.headers.get("referer");
 
   // Allow requests from the same domain or from Sanity Studio
+  // Uses exact origin match (not startsWith) to prevent subdomain spoofing
   const allowedOrigins = [
     process.env.NEXT_PUBLIC_BASE_URL,
     "https://aic-website.vercel.app",
     "http://localhost:3000",
-  ].filter(Boolean);
+  ].filter(Boolean) as string[];
 
-  const isAllowedOrigin = allowedOrigins.some(
-    (allowed) => origin?.startsWith(allowed!) || referer?.startsWith(allowed!)
-  );
+  // Prefer origin header; only fall back to referer origin if origin is absent
+  let requestOrigin = origin;
+  if (!requestOrigin && referer) {
+    try {
+      requestOrigin = new URL(referer).origin;
+    } catch {
+      // Invalid referer — leave as null
+    }
+  }
+
+  const isAllowedOrigin = requestOrigin
+    ? allowedOrigins.includes(requestOrigin)
+    : false;
 
   if (!isAllowedOrigin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

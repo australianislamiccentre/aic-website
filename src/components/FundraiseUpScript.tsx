@@ -21,23 +21,46 @@ function extractScriptContent(html: string): string {
   return html.trim();
 }
 
+/**
+ * Validate that a custom script from Sanity only loads from the known FundraiseUp CDN.
+ * Rejects scripts that reference any other external URL — prevents injection of
+ * arbitrary third-party scripts via a compromised Sanity account.
+ */
+function isValidFundraiseUpScript(scriptContent: string): boolean {
+  // Must contain the FundraiseUp CDN URL
+  if (!scriptContent.includes('cdn.fundraiseup.com/widget/')) {
+    return false;
+  }
+  // Check for suspicious external URLs (anything that isn't fundraiseup.com)
+  const urlPattern = /https?:\/\/(?!cdn\.fundraiseup\.com)[^\s'"]+/gi;
+  if (urlPattern.test(scriptContent)) {
+    console.error('FundraiseUp script contains unexpected external URLs — rejecting');
+    return false;
+  }
+  return true;
+}
+
 export function FundraiseUpScript({ settings }: FundraiseUpScriptProps) {
   // Use custom script from Sanity if provided, otherwise use default
   const customScript = settings?.installationScript;
   const orgKey = settings?.organizationKey || DEFAULT_ORG_KEY;
 
-  // If there's a custom script in Sanity, extract the JS and use it
+  // If there's a custom script in Sanity, validate and extract the JS
   if (customScript) {
     const scriptContent = extractScriptContent(customScript);
-    return (
-      <Script
-        id="fundraise-up"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: scriptContent,
-        }}
-      />
-    );
+    if (isValidFundraiseUpScript(scriptContent)) {
+      return (
+        <Script
+          id="fundraise-up"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: scriptContent,
+          }}
+        />
+      );
+    }
+    // If validation fails, fall through to the hardcoded default below
+    console.warn('Custom FundraiseUp script failed validation — using default');
   }
 
   // Default Fundraise Up installation script

@@ -146,12 +146,12 @@ export const urgentAnnouncementsQuery = groq`
 
 // Programs - recurring events in Education, Youth, Sports, Women categories
 export const programsQuery = groq`
-  *[_type == "event" && active != false && eventType == "recurring" && (
+  *[_type == "event" && active != false && featured == true && eventType == "recurring" && (
     "Education" in categories ||
     "Youth" in categories ||
     "Sports" in categories ||
     "Women" in categories
-  ) && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])] | order(featured desc, title asc) {
+  ) && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])] | order(title asc) {
     _id,
     title,
     "slug": slug.current,
@@ -591,6 +591,9 @@ export const formSettingsQuery = groq`
     serviceInquiryFormDescription,
     serviceInquirySuccessHeading,
     serviceInquirySuccessMessage,
+    // Event Inquiry
+    eventInquiryRecipientEmail,
+    eventInquiryEnabled,
     // Newsletter
     newsletterRecipientEmail,
     newsletterEnabled,

@@ -8,9 +8,27 @@ interface DonateContentProps {
   settings?: DonatePageSettings | null;
 }
 
-// Clean Fundraise Up element code of hidden Unicode characters
+// Clean Fundraise Up element code of hidden Unicode characters and strip dangerous HTML
 const cleanElementCode = (code: string) => {
   return code.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
+};
+
+/**
+ * Sanitise FundraiseUp element code from Sanity.
+ * Expected format: an anchor tag with data-fundraiseup attributes.
+ * Strips <script>, <iframe>, event handlers (onerror, onload, etc.), and javascript: URLs.
+ */
+const sanitizeFundraiseUpElement = (code: string): string => {
+  let cleaned = cleanElementCode(code);
+  // Remove <script> and <iframe> tags and their content
+  cleaned = cleaned.replace(/<script[\s\S]*?<\/script>/gi, "");
+  cleaned = cleaned.replace(/<iframe[\s\S]*?<\/iframe>/gi, "");
+  cleaned = cleaned.replace(/<iframe[^>]*\/?>/gi, "");
+  // Remove inline event handlers (onclick, onerror, onload, onmouseover, etc.)
+  cleaned = cleaned.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, "");
+  // Remove javascript: URLs
+  cleaned = cleaned.replace(/href\s*=\s*["']?\s*javascript:/gi, 'href="');
+  return cleaned;
 };
 
 export default function DonateContent({ settings }: DonateContentProps) {
@@ -81,7 +99,7 @@ export default function DonateContent({ settings }: DonateContentProps) {
                 <div
                   className="fundraise-up-wrapper"
                   dangerouslySetInnerHTML={{
-                    __html: cleanElementCode(settings!.formElement!),
+                    __html: sanitizeFundraiseUpElement(settings!.formElement!),
                   }}
                 />
               </div>
@@ -97,7 +115,7 @@ export default function DonateContent({ settings }: DonateContentProps) {
             <div
               className="fundraise-up-goal-meter"
               dangerouslySetInnerHTML={{
-                __html: cleanElementCode(settings!.goalElement!),
+                __html: sanitizeFundraiseUpElement(settings!.goalElement!),
               }}
             />
           </div>
@@ -143,7 +161,7 @@ export default function DonateContent({ settings }: DonateContentProps) {
                     <div
                       className="fundraise-up-wrapper"
                       dangerouslySetInnerHTML={{
-                        __html: cleanElementCode(campaign.fundraiseUpElement),
+                        __html: sanitizeFundraiseUpElement(campaign.fundraiseUpElement),
                       }}
                     />
                   </div>
@@ -160,7 +178,7 @@ export default function DonateContent({ settings }: DonateContentProps) {
           <div
             className="fundraise-up-wrapper"
             dangerouslySetInnerHTML={{
-              __html: cleanElementCode(settings!.donorListElement!),
+              __html: sanitizeFundraiseUpElement(settings!.donorListElement!),
             }}
           />
         </div>
@@ -176,7 +194,7 @@ export default function DonateContent({ settings }: DonateContentProps) {
             <div
               className="fundraise-up-wrapper"
               dangerouslySetInnerHTML={{
-                __html: cleanElementCode(settings!.mapElement!),
+                __html: sanitizeFundraiseUpElement(settings!.mapElement!),
               }}
             />
           </div>
