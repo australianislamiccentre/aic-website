@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getResendClient } from "@/lib/resend";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getFormRecipientEmail, isFormEnabled } from "@/lib/form-settings";
+import { subscribeNotificationEmail } from "@/lib/email-templates";
 
 const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
@@ -60,20 +61,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Notify admin
+    // Notify admin (uses branded template with HTML-escaped values)
     const toEmail = await getFormRecipientEmail("newsletter");
-    const details = [
-      `<p><strong>Email:</strong> ${email}</p>`,
-      name ? `<p><strong>Name:</strong> ${name}</p>` : "",
-      phone ? `<p><strong>Phone:</strong> ${phone}</p>` : "",
-    ].join("");
+    const notification = subscribeNotificationEmail({ email, name: name || undefined, phone: phone || undefined });
 
     await resend.emails.send({
       from: `AIC Website <${FROM_EMAIL}>`,
       to: toEmail,
       replyTo: email,
-      subject: `New Newsletter Subscriber: ${name || email}`,
-      html: `<p>A new subscriber has signed up for the AIC newsletter:</p>${details}`,
+      subject: notification.subject,
+      html: notification.html,
     });
 
     return NextResponse.json({ success: true });

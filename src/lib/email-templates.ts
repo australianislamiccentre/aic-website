@@ -83,7 +83,23 @@ export function eventConfirmationEmail(data: EventInquiryFormData): { subject: s
   };
 }
 
-function escapeHtml(str: string): string {
+// --- Newsletter Subscribe ---
+
+export interface SubscribeData {
+  email: string;
+  name?: string;
+  phone?: string;
+}
+
+export function subscribeNotificationEmail(data: SubscribeData): { subject: string; html: string } {
+  const rows = fieldRow("Email", escapeHtml(data.email), true) + (data.name ? fieldRow("Name", escapeHtml(data.name)) : "") + (data.phone ? fieldRow("Phone", escapeHtml(data.phone)) : "");
+  return {
+    subject: `New Newsletter Subscriber: ${data.name || data.email}`,
+    html: adminLayout("New Newsletter Subscriber", `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new subscriber has signed up for the AIC newsletter.</p>${detailsTable(rows)}`),
+  };
+}
+
+export function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
