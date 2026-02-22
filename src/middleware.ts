@@ -62,9 +62,33 @@ export function middleware(request: NextRequest) {
 
   // Build CSP frame-src from cached domains (synchronous — no await)
   const domains = cachedDomains ?? [];
-  const frameSources = [
+  // Core infrastructure domains — always allowed, not managed via Sanity
+  const INFRA_DOMAINS = [
     "'self'",
+    // Sanity Studio
     'https://*.sanity.io',
+    // Stripe (payments / donate page)
+    'https://js.stripe.com',
+    'https://*.stripe.com',
+    'https://*.stripe.network',
+    // Google (Maps embeds, Forms, Docs)
+    'https://*.google.com',
+    'https://*.googleapis.com',
+    'https://maps.app.goo.gl',
+    // YouTube (video embeds)
+    'https://www.youtube.com',
+    'https://www.youtube-nocookie.com',
+    // Facebook (social embeds / plugins)
+    'https://www.facebook.com',
+    'https://*.facebook.com',
+    // Instagram (social embeds)
+    'https://www.instagram.com',
+    'https://*.instagram.com',
+  ];
+
+  const frameSources = [
+    ...INFRA_DOMAINS,
+    // Content-driven embed domains from Sanity (JotForm, Typeform, etc.)
     ...domains.flatMap((d) => [`https://${d}`, `https://*.${d}`]),
   ].join(' ');
 
