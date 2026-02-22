@@ -185,17 +185,28 @@ export default defineConfig({
     structureTool({ structure }),
     presentationTool({
       previewUrl: {
-        initial: baseUrl,
+        origin: baseUrl,
         previewMode: {
           enable: "/api/draft-mode/enable",
         },
-        // Resolve URLs for different document types
-        resolve: (doc: { _type?: string; slug?: { current?: string } } | null) => {
-          const docType = doc?._type;
-          const slug = doc?.slug?.current;
-          if (!docType) return baseUrl;
-          return resolvePreviewUrl(docType, slug) || baseUrl;
-        },
+      },
+      resolve: {
+        locations: Object.fromEntries(
+          Object.entries(previewPaths).map(([type, pathFn]) => [
+            type,
+            {
+              select: { slug: "slug.current" },
+              resolve: (doc: Record<string, unknown> | null) => ({
+                locations: [
+                  {
+                    title: doc?.slug ? `${type}: ${String(doc.slug)}` : type,
+                    href: pathFn(typeof doc?.slug === "string" ? doc.slug : undefined),
+                  },
+                ],
+              }),
+            },
+          ])
+        ),
       },
     }),
     visionTool({ defaultApiVersion: "2024-01-01" }),
