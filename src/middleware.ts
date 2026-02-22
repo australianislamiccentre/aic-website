@@ -65,6 +65,9 @@ export function middleware(request: NextRequest) {
   const frameSources = [
     "'self'",
     'https://*.sanity.io',
+    'https://js.stripe.com',
+    'https://*.stripe.com',
+    'https://*.stripe.network',
     ...domains.flatMap((d) => [`https://${d}`, `https://*.${d}`]),
   ].join(' ');
 
