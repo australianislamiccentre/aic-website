@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: Team Member
+ *
+ * Content type for imam and staff profiles. Includes active/featured
+ * toggles, display order, full name, slug, role, bio, photo, and
+ * optional contact details. Displayed on the /about page team section
+ * and the /imams page, with featured members also shown on the homepage.
+ *
+ * @module sanity/schemas/teamMember
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

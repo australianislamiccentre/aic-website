@@ -1,3 +1,14 @@
+/**
+ * Sanity Schema: Tour Request
+ *
+ * Content type for visitor tour booking submissions. Stores contact
+ * name, email, phone, a reference to the selected tourType, preferred
+ * date and time, group size, message, and a status field (pending /
+ * confirmed / completed / cancelled). Created via the /visit page
+ * tour request form and managed in the Sanity Studio.
+ *
+ * @module sanity/schemas/tourRequest
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

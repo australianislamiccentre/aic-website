@@ -1,3 +1,18 @@
+/**
+ * Site Footer
+ *
+ * Full-width footer with four columns:
+ * 1. **About** — logo, tagline, social media icons.
+ * 2. **Explore / Worship** — quick-link columns to key pages.
+ * 3. **Contact Info** — address, phone, email, operating hours.
+ * 4. **Newsletter** — inline subscribe form (posts to /api/subscribe).
+ *
+ * Data sourced from `useSiteSettings()` and `useFormSettings()` contexts.
+ *
+ * @module components/layout/Footer
+ * @see src/contexts/SiteSettingsContext.tsx — provides address, phone, social links
+ * @see src/contexts/FormSettingsContext.tsx — provides newsletter copy and toggle
+ */
 "use client";
 
 import Link from "next/link";
@@ -22,6 +37,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
+/** Renders the site-wide footer. Consumes SiteSettings and FormSettings contexts. */
 export function Footer() {
   const info = useSiteSettings();
   const forms = useFormSettings();

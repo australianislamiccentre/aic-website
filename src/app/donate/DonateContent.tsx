@@ -1,3 +1,12 @@
+/**
+ * Donate Content
+ *
+ * Client component rendering the donation page UI. Sanitises FundraiseUp
+ * element codes from Sanity, displays campaign cards, and embeds the
+ * FundraiseUp donation widget for secure online giving.
+ *
+ * @module app/donate/DonateContent
+ */
 "use client";
 
 import Image from "next/image";

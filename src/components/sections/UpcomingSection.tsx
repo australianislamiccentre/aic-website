@@ -1,3 +1,12 @@
+/**
+ * UpcomingSection
+ *
+ * Compact upcoming events and programs listing combining SanityEvent[] and
+ * SanityProgram[] data into a unified timeline view. Supports single-day,
+ * multi-day, and recurring event types with date and location details.
+ *
+ * @module components/sections/UpcomingSection
+ */
 "use client";
 
 import { motion } from "framer-motion";

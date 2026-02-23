@@ -1,3 +1,13 @@
+/**
+ * Event Detail Page
+ *
+ * Server component that fetches a single event by slug from Sanity and renders
+ * its full details including date, time, location, description, contact info,
+ * an add-to-calendar button, and optional embedded registration forms.
+ *
+ * @route /events/[slug]
+ * @module app/events/[slug]/page
+ */
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getEventBySlug, getEventsForStaticGeneration, getAllowedEmbedDomains } from "@/sanity/lib/fetch";

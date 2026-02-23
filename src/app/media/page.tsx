@@ -1,3 +1,13 @@
+/**
+ * Media Page
+ *
+ * Server component that fetches gallery images from Sanity and YouTube
+ * videos from the channel API, then passes both to the MediaContent
+ * client component for tabbed photo/video display.
+ *
+ * @route /media
+ * @module app/media/page
+ */
 import { getGalleryImages } from "@/sanity/lib/fetch";
 import { SanityGalleryImage } from "@/types/sanity";
 import { getYouTubeVideos } from "@/lib/youtube";

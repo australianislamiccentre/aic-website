@@ -1,7 +1,25 @@
+/**
+ * Form Settings Context
+ *
+ * Provides CMS-editable form copy (headings, descriptions, success messages,
+ * inquiry type options, enabled/disabled toggles) to every client component.
+ * Data comes from the Sanity `formSettings` singleton, with sensible hardcoded
+ * defaults for every field so forms always render.
+ *
+ * Covers three form areas:
+ * - **Contact form** — heading, description, inquiry type dropdown, success text
+ * - **Service inquiry** — heading, description, success text
+ * - **Newsletter** — heading, description, button text, success text
+ *
+ * @module contexts/FormSettingsContext
+ * @see src/sanity/schemas/formSettings.ts — Sanity schema for this data
+ * @see src/lib/form-settings.ts           — server-side form toggle & recipient lookup
+ */
 "use client";
 
 import { createContext, useContext } from "react";
 
+/** A single option in the contact form inquiry type dropdown. */
 export interface InquiryType {
   value: string;
   label: string;
@@ -32,7 +50,7 @@ export interface FormSettingsData {
   newsletterSuccessMessage: string;
 }
 
-// Default inquiry types (used when Sanity has none configured)
+/** Fallback inquiry types when Sanity `formSettings.contactInquiryTypes` is empty. */
 const DEFAULT_INQUIRY_TYPES: string[] = [
   "General Enquiry",
   "Services",
@@ -47,12 +65,12 @@ const DEFAULT_INQUIRY_TYPES: string[] = [
   "Other",
 ];
 
-// Convert a plain string list to {value, label} for the Select component
+/** Converts a plain string list to `{value, label}` pairs for the Select component. */
 function toInquiryTypes(labels: string[]): InquiryType[] {
   return labels.map((label) => ({ value: label, label }));
 }
 
-// Sanity raw shape (all fields optional)
+/** Raw Sanity response shape — every field is optional because the document may not exist yet. */
 export interface SanityFormSettings {
   _id?: string;
   contactRecipientEmail?: string;
@@ -79,6 +97,10 @@ export interface SanityFormSettings {
   newsletterSuccessMessage?: string;
 }
 
+/**
+ * Merges raw Sanity form settings with hardcoded defaults.
+ * Guarantees every field is populated even if Sanity returns null.
+ */
 export function buildFormSettings(raw: SanityFormSettings | null): FormSettingsData {
   const inquiryLabels = raw?.contactInquiryTypes?.length ? raw.contactInquiryTypes : DEFAULT_INQUIRY_TYPES;
 
@@ -108,8 +130,13 @@ export function buildFormSettings(raw: SanityFormSettings | null): FormSettingsD
   };
 }
 
+/** Default value uses hardcoded fallbacks only (no Sanity data). */
 const FormSettingsContext = createContext<FormSettingsData>(buildFormSettings(null));
 
+/**
+ * Wraps the app tree and provides merged form settings to all descendants.
+ * Typically rendered once in the root layout with fresh Sanity data.
+ */
 export function FormSettingsProvider({
   formSettings,
   children,
@@ -125,6 +152,7 @@ export function FormSettingsProvider({
   );
 }
 
+/** Returns the merged form settings. Must be called inside `FormSettingsProvider`. */
 export function useFormSettings(): FormSettingsData {
   return useContext(FormSettingsContext);
 }

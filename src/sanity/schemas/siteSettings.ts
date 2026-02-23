@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: Site Settings (singleton)
+ *
+ * Global configuration document for the organisation. Stores the
+ * organisation name, short name, tagline, parent organisation, logo,
+ * physical address, phone number, email, and social media / external
+ * links. Consumed site-wide in the header, footer, and meta tags.
+ *
+ * @module sanity/schemas/siteSettings
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

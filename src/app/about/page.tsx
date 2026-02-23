@@ -1,3 +1,13 @@
+/**
+ * About Page
+ *
+ * Client component presenting the centre's history, mission, values, and
+ * leadership team. Includes an architecture preview section with key building
+ * features and links to the full architecture page.
+ *
+ * @route /about
+ * @module app/about/page
+ */
 "use client";
 
 import { motion } from "framer-motion";

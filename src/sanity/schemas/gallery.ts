@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: Gallery Image
+ *
+ * Content type for photo gallery entries. Each image has a required
+ * hotspot-enabled image, alt text, optional caption, a category
+ * (e.g. Prayer Hall, Architecture, Community, Events, Exterior),
+ * and display order. Displayed on the /media page gallery section.
+ *
+ * @module sanity/schemas/gallery
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

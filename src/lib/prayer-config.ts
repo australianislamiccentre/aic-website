@@ -9,6 +9,9 @@
  * - Jumu'ah Settings (singleton)
  * - Taraweeh Settings (singleton)
  * - Eid Prayer Settings (singleton)
+ *
+ * @module lib/prayer-config
+ * @see src/lib/prayer-times.ts — consumes this config for iqamah calculations
  */
 
 import type { PrayerName } from "./prayer-times";

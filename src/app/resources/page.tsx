@@ -1,3 +1,12 @@
+/**
+ * Resources Page
+ *
+ * Placeholder page displaying a "Coming Soon" message for the future
+ * community resource library. Links back to the homepage.
+ *
+ * @route /resources
+ * @module app/resources/page
+ */
 import Link from "next/link";
 
 export const metadata = {

@@ -1,3 +1,21 @@
+/**
+ * Site Header / Navigation
+ *
+ * Full-width sticky header with:
+ * - Logo + organisation name (from SiteSettingsContext).
+ * - Desktop mega-menu dropdowns (hover to open, click to navigate).
+ * - Mobile slide-out drawer with nested accordion sections.
+ * - Search dialog trigger (magnifying glass icon).
+ * - "Donate" CTA button (always visible).
+ *
+ * Scroll behaviour: shrinks padding and adds a blurred backdrop after
+ * the user scrolls past 50px. Uses `useSyncExternalStore` for scroll
+ * position to stay compatible with SSR hydration.
+ *
+ * @module components/layout/Header
+ * @see src/components/ui/SearchDialog.tsx — search overlay
+ * @see src/contexts/SiteSettingsContext.tsx — provides external links and info
+ */
 "use client";
 
 import { useState, useEffect, useSyncExternalStore, useCallback } from "react";
@@ -20,7 +38,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-// Navigation structure - simplified like MyCentre
+/** A single child link inside a nav category. */
 interface NavChild {
   name: string;
   href: string;

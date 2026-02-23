@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: Mosque Etiquette
+ *
+ * Content type for mosque etiquette guidelines. Each guideline has a
+ * title, description, a selectable Lucide icon (e.g. Footprints,
+ * VolumeX, Shirt), and display order. Shown on the /visit page to
+ * help visitors understand mosque conduct expectations.
+ *
+ * @module sanity/schemas/etiquette
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

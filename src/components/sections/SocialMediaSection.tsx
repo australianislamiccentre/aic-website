@@ -1,3 +1,12 @@
+/**
+ * SocialMediaSection
+ *
+ * Social media and video highlights section on the homepage featuring a
+ * hero video thumbnail and links to the centre's YouTube, Instagram, and
+ * Facebook channels. Pulls social URLs from SiteSettings context.
+ *
+ * @module components/sections/SocialMediaSection
+ */
 "use client";
 
 import { motion } from "framer-motion";

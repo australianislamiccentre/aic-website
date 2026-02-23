@@ -1,3 +1,12 @@
+/**
+ * LatestUpdatesSection
+ *
+ * Displays the most recent news and announcements on the homepage in a
+ * combined feed. Receives LatestUpdateItem[] data (merged events and
+ * announcements) sorted by date, with optional images and urgency badges.
+ *
+ * @module components/sections/LatestUpdatesSection
+ */
 "use client";
 
 import { motion } from "framer-motion";

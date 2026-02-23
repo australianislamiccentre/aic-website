@@ -1,10 +1,27 @@
+/**
+ * Site Settings Context
+ *
+ * Provides organisation-wide data (name, address, phone, social links, etc.)
+ * to every client component via React Context. Data comes from the Sanity
+ * `siteSettings` singleton, with hardcoded fallbacks in `aicInfo` for every
+ * field. This means the site always renders — even if Sanity is empty or down.
+ *
+ * Usage:
+ * ```tsx
+ * const { name, phone, socialMedia } = useSiteSettings();
+ * ```
+ *
+ * @module contexts/SiteSettingsContext
+ * @see src/data/content.ts — hardcoded fallback data (`aicInfo`)
+ * @see src/types/sanity.ts  — SanitySiteSettings type from CMS
+ */
 "use client";
 
 import { createContext, useContext } from "react";
 import type { SanitySiteSettings } from "@/types/sanity";
 import { aicInfo } from "@/data/content";
 
-// Unified shape with guaranteed fields (Sanity data merged with hardcoded fallbacks)
+/** Unified shape with guaranteed (non-optional) fields for all site info. */
 export interface SiteInfo {
   name: string;
   shortName: string;
@@ -76,8 +93,13 @@ export function buildSiteInfo(settings: SanitySiteSettings | null): SiteInfo {
   };
 }
 
+/** Default value uses hardcoded fallbacks only (no Sanity data). */
 const SiteSettingsContext = createContext<SiteInfo>(buildSiteInfo(null));
 
+/**
+ * Wraps the app tree and provides merged site info to all descendants.
+ * Typically rendered once in the root layout with fresh Sanity data.
+ */
 export function SiteSettingsProvider({
   siteSettings,
   children,
@@ -93,6 +115,7 @@ export function SiteSettingsProvider({
   );
 }
 
+/** Returns the merged site settings. Must be called inside `SiteSettingsProvider`. */
 export function useSiteSettings(): SiteInfo {
   return useContext(SiteSettingsContext);
 }

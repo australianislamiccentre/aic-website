@@ -1,3 +1,13 @@
+/**
+ * Worshippers Page
+ *
+ * Server component that fetches prayer settings, mosque etiquette, and
+ * YouTube khutbah videos, then passes them to the WorshippersClient
+ * component for display of prayer times, Jumuah info, and guidelines.
+ *
+ * @route /worshippers
+ * @module app/worshippers/page
+ */
 import { getPrayerSettings, getEtiquette } from "@/sanity/lib/fetch";
 import { getYouTubeVideos } from "@/lib/youtube";
 import type { SanityPrayerSettings, SanityEtiquette } from "@/types/sanity";

@@ -1,3 +1,13 @@
+/**
+ * Contact Page
+ *
+ * Client component with a contact form, phone/email details, office hours,
+ * and social media links. Reads site settings and form settings from context
+ * to populate contact information and form submission endpoints.
+ *
+ * @route /contact
+ * @module app/contact/page
+ */
 "use client";
 
 import { useState } from "react";

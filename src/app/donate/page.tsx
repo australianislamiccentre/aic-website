@@ -1,3 +1,13 @@
+/**
+ * Donate Page
+ *
+ * Server component that fetches donation page settings (campaigns, element
+ * codes) from Sanity and passes them to the DonateContent client component
+ * for interactive rendering.
+ *
+ * @route /donate
+ * @module app/donate/page
+ */
 import { getDonatePageSettings } from "@/sanity/lib/fetch";
 import DonateContent from "./DonateContent";
 

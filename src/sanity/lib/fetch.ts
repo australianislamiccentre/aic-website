@@ -1,3 +1,24 @@
+/**
+ * Sanity Data-Fetching Layer
+ *
+ * All page-level data fetching flows through this module. Provides a generic
+ * `sanityFetch` function and ~35 public getter functions (one per query).
+ *
+ * **Caching strategy:**
+ * - Next.js ISR with 120s revalidate is the primary cache layer.
+ * - Sanity CDN is disabled (`useCdn: false`) so ISR always gets fresh data.
+ * - On-demand revalidation via `/api/revalidate` webhook handles instant updates.
+ * - Singleton settings use `skipCdn` for extra freshness.
+ *
+ * **Error resilience:** Every public getter returns `[]` or `null` on failure —
+ * never throws. This ensures pages degrade gracefully if Sanity is unreachable.
+ *
+ * **Draft mode:** When active, switches to `previewClient` to show unpublished content.
+ *
+ * @module sanity/lib/fetch
+ * @see src/sanity/lib/client.ts for client configuration
+ * @see src/sanity/lib/queries.ts for GROQ query definitions
+ */
 import "server-only";
 
 import { draftMode } from "next/headers";

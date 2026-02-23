@@ -1,3 +1,12 @@
+/**
+ * Events Content
+ *
+ * Client component providing the interactive events listing UI. Supports
+ * category filtering, text search, grid/list view toggle, and date-based
+ * sorting. Renders event cards with images, dates, and location details.
+ *
+ * @module app/events/EventsContent
+ */
 "use client";
 
 import { useState } from "react";

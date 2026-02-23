@@ -1,3 +1,13 @@
+/**
+ * Announcements Listing Page
+ *
+ * Server component that fetches all announcements from Sanity and passes
+ * them to the AnnouncementsContent client component for category filtering,
+ * search, and display.
+ *
+ * @route /announcements
+ * @module app/announcements/page
+ */
 import { getAnnouncements } from "@/sanity/lib/fetch";
 import { SanityAnnouncement } from "@/types/sanity";
 import AnnouncementsContent from "./AnnouncementsContent";

@@ -1,3 +1,16 @@
+/**
+ * Global Test Setup
+ *
+ * Runs before every test file. Sets up:
+ * - jest-dom matchers (toBeInTheDocument, toHaveClass, etc.)
+ * - Auto-cleanup after each test
+ * - Mocks for Next.js modules (next/headers, next/navigation, next/image)
+ * - Mocks for all Sanity fetch functions (return empty arrays / null)
+ * - Browser API mocks (IntersectionObserver, ResizeObserver, matchMedia, scrollTo)
+ * - Console error suppression for jsdom navigation warnings
+ *
+ * @module test/setup
+ */
 import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";

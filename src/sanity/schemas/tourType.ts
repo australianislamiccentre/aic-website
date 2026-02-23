@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: Tour Type
+ *
+ * Content type for the different tour options offered by the mosque.
+ * Each tour type has a title, slug, description, selectable Lucide
+ * icon, and display order. Referenced by the tourRequest schema and
+ * displayed on the /visit page tour booking section.
+ *
+ * @module sanity/schemas/tourType
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

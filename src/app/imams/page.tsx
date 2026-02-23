@@ -1,3 +1,13 @@
+/**
+ * Imams Page
+ *
+ * Server component that fetches team members in the "imam" category from
+ * Sanity and passes them to ImamsContent for display of biographies,
+ * qualifications, and contact details.
+ *
+ * @route /imams
+ * @module app/imams/page
+ */
 import { Metadata } from "next";
 import { getTeamMembersByCategory } from "@/sanity/lib/fetch";
 import ImamsContent from "./ImamsContent";

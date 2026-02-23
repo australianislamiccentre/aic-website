@@ -1,3 +1,12 @@
+/**
+ * Form Embed
+ *
+ * Client component that renders an external registration or sign-up form
+ * inside a collapsible iframe. Validates the embed URL against an allowlist
+ * of trusted domains fetched from Sanity before rendering.
+ *
+ * @module app/events/[slug]/FormEmbed
+ */
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";

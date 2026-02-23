@@ -1,3 +1,12 @@
+/**
+ * DonationCTASection
+ *
+ * Donation call-to-action section displayed on the homepage with selectable
+ * giving amounts, impact statistics, and trust badges. Receives DonationSettings
+ * from Sanity and links out to the external donation platform.
+ *
+ * @module components/sections/DonationCTASection
+ */
 "use client";
 
 import { useState } from "react";

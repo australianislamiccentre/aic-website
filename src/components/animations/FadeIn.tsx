@@ -1,8 +1,23 @@
+/**
+ * Scroll-Triggered Animation Components
+ *
+ * A library of Framer Motion wrapper components that animate elements
+ * when they enter the viewport. Used throughout the site for entrance
+ * effects on sections, cards, headings, and images.
+ *
+ * Components: `FadeIn`, `SlideIn`, `ScaleIn`, `StaggerContainer`,
+ * `StaggerItem`, `ParallaxSection`, `TextReveal`, `CountUp`,
+ * `FloatingElement`, `GradientText`, `Shimmer`, `PulseGlow`,
+ * `TypeWriter`.
+ *
+ * @module components/animations/FadeIn
+ */
 "use client";
 
 import { motion, Variants } from "framer-motion";
 import { ReactNode } from "react";
 
+/** Props for the FadeIn wrapper. */
 interface FadeInProps {
   children: ReactNode;
   direction?: "up" | "down" | "left" | "right" | "none";

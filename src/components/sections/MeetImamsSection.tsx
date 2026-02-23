@@ -1,3 +1,12 @@
+/**
+ * MeetImamsSection
+ *
+ * Team member grid on the homepage showcasing the centre's imams.
+ * Receives SanityTeamMember[] data and renders each imam with a photo,
+ * name, role, and a link to the full team page.
+ *
+ * @module components/sections/MeetImamsSection
+ */
 "use client";
 
 import { motion } from "framer-motion";

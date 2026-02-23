@@ -1,3 +1,14 @@
+/**
+ * Sanity Schema Registry
+ *
+ * Registers all Sanity document schemas with the Studio. Schemas are grouped:
+ * - **Singletons** — One-per-site documents (siteSettings, prayerSettings, etc.)
+ * - **Content types** — User-created documents (events, services, team members, etc.)
+ * - **Form submissions** — Documents created by visitor interactions (tour requests)
+ *
+ * @module sanity/schemas
+ * @see sanity.config.ts for the Studio configuration that consumes this registry
+ */
 import event from "./event";
 import announcement from "./announcement";
 import service from "./service";

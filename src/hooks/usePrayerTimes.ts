@@ -1,3 +1,18 @@
+/**
+ * Prayer Times React Hooks
+ *
+ * Client-side hooks that wrap the prayer-times calculation engine.
+ * Automatically re-compute at the right intervals:
+ * - `usePrayerTimes` — re-computes at midnight (new day = new schedule).
+ * - `useNextPrayer` — re-computes every 60 seconds (countdown display).
+ *
+ * Both accept optional `SanityPrayerSettings` to apply CMS overrides
+ * (iqamah offsets, fixed times, Jumu'ah and Taraweeh config).
+ *
+ * @module hooks/usePrayerTimes
+ * @see src/lib/prayer-times.ts  — the calculation engine
+ * @see src/lib/prayer-config.ts — default iqamah configuration
+ */
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -10,8 +25,10 @@ import {
 import type { SanityPrayerSettings } from "@/types/sanity";
 
 /**
- * Hook to get current prayer times with automatic updates at midnight
- * Accepts optional Sanity prayerSettings to override iqamah config
+ * Returns today's full prayer schedule (all 6 prayers with athan + iqamah times).
+ * Automatically refreshes at midnight so the displayed times always match the current day.
+ *
+ * @param prayerSettings - Optional Sanity overrides for iqamah offsets / fixed times.
  */
 export function usePrayerTimes(
   prayerSettings?: SanityPrayerSettings | null
@@ -49,8 +66,10 @@ export function usePrayerTimes(
 }
 
 /**
- * Hook to get the next prayer with automatic updates every minute
- * Accepts optional Sanity prayerSettings to override iqamah config
+ * Returns the next upcoming prayer (name, time, and whether it's tomorrow).
+ * Re-computes every 60 seconds for countdown displays.
+ *
+ * @param prayerSettings - Optional Sanity overrides for iqamah offsets / fixed times.
  */
 export function useNextPrayer(
   prayerSettings?: SanityPrayerSettings | null

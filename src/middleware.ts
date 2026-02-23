@@ -1,3 +1,16 @@
+/**
+ * Edge Middleware — Security Headers & CSP
+ *
+ * Runs on every request at the Edge. Attaches HTTP security headers
+ * including a Content-Security-Policy (Report-Only) that whitelists
+ * trusted domains for scripts, styles, frames, and images.
+ *
+ * Embed domains for `frame-src` are fetched from Sanity's
+ * `siteSettings.allowedEmbedDomains` and cached for 5 minutes.
+ * The fetch is fire-and-forget (async, never blocks the request path).
+ *
+ * @module middleware
+ */
 import { NextRequest, NextResponse } from 'next/server';
 
 // ── Cached embed domains for CSP header ──

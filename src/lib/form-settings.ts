@@ -1,3 +1,18 @@
+/**
+ * Form Settings — Centralised Form Configuration
+ *
+ * Provides two functions consumed by all form API routes:
+ * - `getFormRecipientEmail(form)` — Resolves the recipient email using a
+ *   3-tier fallback: Sanity formSettings → environment variable → hardcoded default.
+ * - `isFormEnabled(form)` — Checks whether a form is enabled in Sanity CMS
+ *   (defaults to enabled if not explicitly set to false).
+ *
+ * Settings are cached in-memory for 60 seconds to avoid per-request Sanity fetches.
+ *
+ * @module lib/form-settings
+ * @see src/sanity/schemas/formSettings.ts for the Sanity schema
+ * @see src/sanity/lib/queries.ts#formSettingsQuery for the GROQ query
+ */
 import { noCdnClient } from "@/sanity/lib/client";
 import { formSettingsQuery } from "@/sanity/lib/queries";
 

@@ -1,3 +1,12 @@
+/**
+ * AnnouncementsSection
+ *
+ * Renders active announcements on the homepage, including support for
+ * an urgent/highlighted announcement. Receives SanityAnnouncement[] data
+ * and displays each with optional images, dates, and priority styling.
+ *
+ * @module components/sections/AnnouncementsSection
+ */
 "use client";
 
 import { motion } from "framer-motion";

@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: Announcement
+ *
+ * Content type for site-wide announcements with an active/inactive
+ * toggle, hero image, title, slug, excerpt, rich-text body, and
+ * optional call-to-action link. Displayed on the /announcements
+ * listing page and the homepage announcements section.
+ *
+ * @module sanity/schemas/announcement
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

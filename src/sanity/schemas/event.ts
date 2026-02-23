@@ -1,3 +1,14 @@
+/**
+ * Sanity Schema: Event
+ *
+ * Content type for mosque events with three event modes via the
+ * `eventType` radio field: "single" (one date), "multi" (date range),
+ * or "recurring" (weekly day with optional end date). Includes time
+ * selection, location, category, registration link, and rich-text body.
+ * Consumed by the /events listing page and homepage event sections.
+ *
+ * @module sanity/schemas/event
+ */
 import { defineField, defineType } from "sanity";
 
 // Time options in 30-minute intervals (full 24 hours)

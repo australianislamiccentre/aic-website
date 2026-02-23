@@ -1,16 +1,32 @@
-// Prayer times - Dynamically calculated based on the current date
-// Re-export from the prayer-times utility for convenience
+/**
+ * Hardcoded Fallback Data
+ *
+ * Static content used as the "last resort" when Sanity has no data.
+ * The site follows a **Sanity-first-with-fallback** pattern:
+ * - Server components fetch from Sanity
+ * - If the result is empty/null, these constants fill the gap
+ * - This guarantees the site always renders, even on a fresh Sanity project
+ *
+ * For dynamic data (prayer times, events, services), Sanity is the source
+ * of truth on the live site. These fallbacks exist for:
+ * 1. Initial development before Sanity content is populated
+ * 2. Test compatibility (unit tests don't need Sanity)
+ * 3. Disaster recovery (if Sanity is unreachable and ISR cache is cold)
+ *
+ * @module data/content
+ * @see src/contexts/SiteSettingsContext.tsx — merges `aicInfo` with Sanity siteSettings
+ * @see src/contexts/FormSettingsContext.tsx — similar fallback pattern for form copy
+ */
+
+// Re-export prayer time functions for convenience
 export { getPrayerTimesSimple as getDynamicPrayerTimes, getNextPrayer, getPrayerTimesForDate } from "@/lib/prayer-times";
 
-// Centralized prayer configuration - will be replaced by Sanity CMS
 import { getJumuahTimes } from "@/lib/prayer-config";
 
-// Jumu'ah (Friday) prayer times - now from centralized config
-// This will automatically update when JUMUAH_CONFIG changes in prayer-config.ts
-// Eventually this will come from Sanity CMS
+/** Jumu'ah prayer times from centralised config. Eventually sourced from Sanity. */
 export const jumuahTimes = getJumuahTimes();
 
-// AIC Images - Local images from public/images folder
+/** Local images from `/public/images`, organised by category. */
 export const aicImages = {
   exterior: {
     courtyard: "/images/aic 1.jpg", // Exterior courtyard with people
@@ -32,8 +48,10 @@ export const aicImages = {
   },
 };
 
-// AIC Information - Used as fallback when Sanity siteSettings is empty
-// Prefer using useSiteSettings() hook from @/contexts/SiteSettingsContext
+/**
+ * AIC organisation info — hardcoded fallback for when Sanity `siteSettings` is empty.
+ * Prefer using `useSiteSettings()` hook from `@/contexts/SiteSettingsContext` in components.
+ */
 export const aicInfo = {
   name: "Australian Islamic Centre",
   shortName: "AIC",
@@ -61,8 +79,10 @@ export const aicInfo = {
   },
 };
 
-// Upcoming Events - Legacy fallback (no longer used on the website; Sanity is the source of truth)
-// Kept for test compatibility only.
+/**
+ * Legacy event fallbacks — no longer displayed on the live site (Sanity is the source of truth).
+ * Kept for test compatibility only.
+ */
 export const upcomingEvents = [
   // Recurring events only — dated one-off events removed to avoid stale data
   {
@@ -139,7 +159,7 @@ export const upcomingEvents = [
   },
 ];
 
-// Services - Hardcoded fallback for when Sanity services are empty
+/** Service cards — hardcoded fallback for when Sanity services collection is empty. */
 export const services = [
   {
     id: "prayers",
@@ -185,7 +205,7 @@ export const services = [
   },
 ];
 
-// Mosque Etiquette - Hardcoded fallback for when Sanity etiquette is empty
+/** Mosque etiquette guidelines — hardcoded fallback for the Visit page. */
 export const mosqueEtiquette = [
   {
     title: "Remove Shoes",
@@ -219,7 +239,7 @@ export const mosqueEtiquette = [
   },
 ];
 
-// Stats
+/** Key statistics displayed on the homepage and about page. */
 export const stats = [
   { value: "5", label: "Daily Prayers" },
   { value: "40+", label: "Years Serving" },

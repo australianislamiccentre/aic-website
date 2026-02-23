@@ -1,3 +1,12 @@
+/**
+ * Media Content
+ *
+ * Client component providing the interactive media gallery. Supports category
+ * filtering for photos, a lightbox viewer with keyboard navigation, and a
+ * YouTube video grid section.
+ *
+ * @module app/media/MediaContent
+ */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";

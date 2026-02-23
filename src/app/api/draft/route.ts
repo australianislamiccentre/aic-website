@@ -1,11 +1,29 @@
+/**
+ * Draft Mode Toggle — Enable Preview of Unpublished Content
+ *
+ * Two entry points:
+ * - **GET** `/api/draft?secret=xxx&slug=/events` — Direct URL with secret (e.g. bookmark).
+ *   Validates the secret, enables draft mode, then redirects to the target page.
+ * - **POST** — Used by the Sanity Presentation tool (iframe). Validates same-origin
+ *   via `Origin`/`Referer` headers, enables draft mode, returns JSON.
+ *
+ * Security: GET requires `SANITY_PREVIEW_SECRET`; POST requires same-origin.
+ * Slug is validated as a relative path to prevent open-redirect attacks.
+ *
+ * @route GET  /api/draft?secret=xxx&slug=/events
+ * @route POST /api/draft
+ * @module api/draft
+ * @see src/app/api/disable-draft/route.ts — disables draft mode
+ * @see src/app/api/preview-url/route.ts   — generates draft URLs for Sanity Studio
+ */
 import { draftMode } from "next/headers";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 
-// Enable draft mode to preview unpublished content
-// Supports both:
-// 1. Direct URL access with secret (e.g., /api/draft?secret=xxx&slug=/events)
-// 2. Sanity Presentation tool (POST request from same origin)
+/**
+ * GET handler — enables draft mode via secret query parameter.
+ * After enabling, redirects to the requested slug.
+ */
 export async function GET(request: NextRequest) {
   const secret = request.nextUrl.searchParams.get("secret");
   const slug = request.nextUrl.searchParams.get("slug") || "/";
@@ -28,8 +46,11 @@ export async function GET(request: NextRequest) {
   redirect(slug);
 }
 
-// POST handler for Sanity Presentation tool
-// The Presentation tool embeds the site in an iframe and sends POST to enable draft mode
+/**
+ * POST handler — enables draft mode for the Sanity Presentation tool.
+ * The Presentation tool embeds the site in an iframe and sends a POST
+ * request from the same origin. Validates origin to prevent CSRF.
+ */
 export async function POST(request: NextRequest) {
   // Verify the request is from our Sanity Studio (same origin)
   const origin = request.headers.get("origin");

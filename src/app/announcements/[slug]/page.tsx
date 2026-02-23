@@ -1,3 +1,13 @@
+/**
+ * Announcement Detail Page
+ *
+ * Server component that fetches a single announcement by slug from Sanity
+ * and renders its full content using PortableText, along with category badge,
+ * publication date, and a share button.
+ *
+ * @route /announcements/[slug]
+ * @module app/announcements/[slug]/page
+ */
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getAnnouncementBySlug, getAnnouncementsForStaticGeneration } from "@/sanity/lib/fetch";

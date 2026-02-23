@@ -1,3 +1,14 @@
+/**
+ * Vitest Configuration
+ *
+ * Test runner setup for the AIC project. Uses jsdom environment with
+ * React plugin. Resolves `@/` alias and mocks `server-only` for tests
+ * that import server-side modules.
+ *
+ * @module vitest.config
+ * @see src/test/setup.tsx — global test setup (mocks for Next.js, Sanity, browser APIs)
+ * @see src/test/test-utils.tsx — custom render function with providers
+ */
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import path from "path";

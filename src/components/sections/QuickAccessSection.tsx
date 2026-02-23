@@ -1,3 +1,12 @@
+/**
+ * QuickAccessSection
+ *
+ * Quick-access cards section providing shortcuts to the most common visitor
+ * actions -- prayer times, event calendar, programs, directions, and more.
+ * Uses expandable category groups with animated reveal and icon-driven links.
+ *
+ * @module components/sections/QuickAccessSection
+ */
 "use client";
 
 import { useState } from "react";

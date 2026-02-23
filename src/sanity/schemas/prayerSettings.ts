@@ -1,3 +1,14 @@
+/**
+ * Sanity Schema: Prayer Settings (singleton)
+ *
+ * Configuration document for daily prayer iqamah times, Jumuah
+ * (Friday prayer) settings, Taraweeh, and Eid prayer overrides.
+ * Each prayer supports a mode of "delay after adhan" or "fixed time"
+ * with 5-minute-increment time options. Consumed by the prayer
+ * timetable on the homepage and /prayer-times page.
+ *
+ * @module sanity/schemas/prayerSettings
+ */
 import { defineField, defineType } from "sanity";
 
 // Generate time options in 5-minute increments

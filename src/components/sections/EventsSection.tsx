@@ -1,3 +1,12 @@
+/**
+ * EventsSection
+ *
+ * Displays upcoming events in a responsive grid on the homepage.
+ * Receives SanityEvent[] data from the server and falls back to
+ * hardcoded recurring programs when no CMS events are available.
+ *
+ * @module components/sections/EventsSection
+ */
 "use client";
 
 import { motion } from "framer-motion";

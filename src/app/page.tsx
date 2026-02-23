@@ -1,3 +1,13 @@
+/**
+ * Homepage
+ *
+ * Server component serving the landing page. Fetches featured events, urgent
+ * announcements, services, prayer settings, programs, team members, and gallery
+ * images from Sanity, then renders HeroSection and all homepage content sections.
+ *
+ * @route /
+ * @module app/page
+ */
 import { HeroSection } from "@/components/sections/HeroSection";
 import { QuickAccessSection } from "@/components/sections/QuickAccessSection";
 import { LatestUpdatesSection } from "@/components/sections/LatestUpdatesSection";
