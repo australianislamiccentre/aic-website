@@ -1,3 +1,12 @@
+/**
+ * Share Button
+ *
+ * Uses the Web Share API (mobile) or clipboard fallback (desktop)
+ * to let visitors share an announcement via their device's native
+ * share sheet.
+ *
+ * @module app/announcements/[slug]/ShareButton
+ */
 "use client";
 
 import { Button } from "@/components/ui/Button";

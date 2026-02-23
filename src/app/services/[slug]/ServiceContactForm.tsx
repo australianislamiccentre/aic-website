@@ -1,3 +1,14 @@
+/**
+ * Service Contact Form
+ *
+ * Inquiry form embedded on service detail pages. Posts to
+ * `/api/service-inquiry` with the service name and slug so the
+ * backend can route the notification to the correct recipient.
+ * Copy (heading, description, success message) comes from FormSettingsContext.
+ *
+ * @module app/services/[slug]/ServiceContactForm
+ * @see src/app/api/service-inquiry/route.ts — API endpoint
+ */
 "use client";
 
 import { useState } from "react";
