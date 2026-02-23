@@ -210,6 +210,10 @@ See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the development workflow, branch 
 
 ## Documentation
 
-Every source file has JSDoc documentation. Hover over any function or component in VS Code to see its purpose, parameters, and cross-references.
-
-For the full architecture with visual diagrams, see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+| Document | Audience | Description |
+|----------|----------|-------------|
+| **[docs/CMS-GUIDE.md](docs/CMS-GUIDE.md)** | Mosque admins | How to manage content in Sanity Studio |
+| **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | Developers | Visual diagrams of data flow and system design |
+| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Developers | Development workflow and troubleshooting |
+| **Inline JSDoc** | Developers | Hover over any function/component in VS Code |
+| **`npm run docs`** | Developers | Generate browsable HTML API reference |
