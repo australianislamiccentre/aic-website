@@ -1,3 +1,19 @@
+/**
+ * Sanity Client Configuration
+ *
+ * Creates and exports four Sanity clients, each for a different use case:
+ * - `client` — Default read client. Stega disabled to prevent zero-width chars
+ *   from breaking client-side string comparisons (e.g. category filters).
+ * - `noCdnClient` — Same as client but explicit no-CDN for singleton settings.
+ * - `writeClient` — Authenticated write client (server-only, uses SANITY_API_WRITE_TOKEN).
+ * - `previewClient` — Authenticated read client for draft mode with stega enabled
+ *   for click-to-edit overlays in the Sanity Presentation tool.
+ *
+ * CDN is disabled on all clients — Next.js ISR is the sole caching layer.
+ *
+ * @module sanity/lib/client
+ * @see src/sanity/lib/fetch.ts for the data-fetching functions that use these clients
+ */
 import { createClient } from "next-sanity";
 import { apiVersion, dataset, projectId } from "../env";
 

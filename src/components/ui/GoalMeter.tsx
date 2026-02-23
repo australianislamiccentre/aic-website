@@ -1,8 +1,17 @@
+/**
+ * Fundraising Goal Meter
+ *
+ * Animated progress bar showing raised vs. goal amounts in AUD.
+ * Caps at 100% visually. Used on donation cards and the donate page.
+ *
+ * @module components/ui/GoalMeter
+ */
 "use client";
 
 import { motion } from "framer-motion";
 import { Target, TrendingUp } from "lucide-react";
 
+/** Props for the GoalMeter component. */
 interface GoalMeterProps {
   label?: string;
   goal: number;

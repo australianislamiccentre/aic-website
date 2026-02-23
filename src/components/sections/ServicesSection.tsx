@@ -1,3 +1,12 @@
+/**
+ * ServicesSection
+ *
+ * Displays the centre's services in an animated, staggered grid on the homepage.
+ * Receives SanityService[] data from the CMS, mapping each service to an icon
+ * and linking through to its detail page.
+ *
+ * @module components/sections/ServicesSection
+ */
 "use client";
 
 import { motion } from "framer-motion";

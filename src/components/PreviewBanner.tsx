@@ -1,7 +1,18 @@
+/**
+ * Preview Mode Banner
+ *
+ * Floating amber badge fixed to the bottom-left corner. Shown only when
+ * Next.js draft mode is active (i.e. previewing unpublished Sanity content).
+ * The "Exit Preview" button calls `/api/disable-draft` to end the session.
+ *
+ * @module components/PreviewBanner
+ * @see src/app/api/disable-draft/route.ts — POST endpoint to disable draft mode
+ */
 "use client";
 
 import { useRouter } from "next/navigation";
 
+/** Renders the "Preview Mode" banner with an exit button. */
 export function PreviewBanner() {
   const router = useRouter();
 

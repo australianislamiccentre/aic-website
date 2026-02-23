@@ -1,9 +1,22 @@
-// Sanity document types
+/**
+ * Sanity Document Type Definitions
+ *
+ * TypeScript interface registry for all Sanity CMS document types used across
+ * the AIC website. Each interface maps 1:1 to a Sanity schema defined in
+ * `src/sanity/schemas/`. Fields are optional where the Sanity schema marks
+ * them as non-required or where a sensible fallback exists on the frontend.
+ *
+ * @module types/sanity
+ * @see src/sanity/schemas/ for the corresponding Sanity schema definitions
+ * @see src/sanity/lib/fetch.ts for the data-fetching functions that return these types
+ */
 
+/** A community event — single-day, multi-day, or recurring (e.g. weekly programs). */
 export interface SanityEvent {
   _id: string;
   title: string;
   slug: string;
+  /** Determines scheduling: "single" = one date, "multi" = date range, "recurring" = weekly. */
   eventType?: "single" | "multi" | "recurring";
   date?: string;
   endDate?: string;
@@ -26,17 +39,19 @@ export interface SanityEvent {
   registrationUrl?: string;
   contactEmail?: string;
   contactPhone?: string;
+  /** Controls the inquiry form on the detail page: "none" = hidden, "contact" = built-in, "embed" = third-party iframe. */
   formType?: "none" | "contact" | "embed";
   embedFormUrl?: string;
 }
 
-// Portable Text block type
+/** A single block within a Portable Text rich-text field. */
 export interface PortableTextBlock {
   _type: string;
   _key: string;
   [key: string]: unknown;
 }
 
+/** A site-wide or time-limited announcement (news item). */
 export interface SanityAnnouncement {
   _id: string;
   title: string;
@@ -46,6 +61,7 @@ export interface SanityAnnouncement {
   content?: PortableTextBlock[];
   image?: SanityImage;
   category: string;
+  /** Display urgency: "urgent" triggers the global alert banner. */
   priority: "normal" | "important" | "urgent";
   featured?: boolean;
   active?: boolean;
@@ -59,9 +75,10 @@ export interface SanityAnnouncement {
   };
 }
 
-// SanityProgram is now an alias for SanityEvent (programs are recurring events)
+/** Programs are recurring events in Education/Youth/Sports/Women categories. Alias for SanityEvent. */
 export type SanityProgram = SanityEvent;
 
+/** A mosque service (e.g. marriage, funeral, counselling). */
 export interface SanityService {
   _id: string;
   title: string;
@@ -91,6 +108,7 @@ export interface SanityService {
   order?: number;
 }
 
+/** A fundraising cause / donation campaign managed via Sanity. */
 export interface SanityDonationCause {
   _id: string;
   title: string;
@@ -118,6 +136,7 @@ export interface SanityDonationCause {
   order?: number;
 }
 
+/** A photo in the site gallery (/media page). */
 export interface SanityGalleryImage {
   _id: string;
   image: SanityImage;
@@ -127,6 +146,7 @@ export interface SanityGalleryImage {
   featured?: boolean;
 }
 
+/** A community testimonial / quote. */
 export interface SanityTestimonial {
   _id: string;
   quote: string;
@@ -135,6 +155,7 @@ export interface SanityTestimonial {
   image?: SanityImage;
 }
 
+/** A frequently asked question with a rich-text answer. */
 export interface SanityFaq {
   _id: string;
   question: string;
@@ -148,6 +169,7 @@ export interface SanityFaq {
   order?: number;
 }
 
+/** A visitor etiquette guideline (e.g. "Remove shoes", "Dress modestly"). */
 export interface SanityEtiquette {
   _id: string;
   title: string;
@@ -155,6 +177,7 @@ export interface SanityEtiquette {
   icon: string;
 }
 
+/** A guided tour option offered to visitors (/visit page). */
 export interface SanityTourType {
   _id: string;
   title: string;
@@ -166,6 +189,7 @@ export interface SanityTourType {
   groupSize?: string;
 }
 
+/** A Sanity image asset reference with optional alt text. */
 export interface SanityImage {
   _type: "image";
   asset: {
@@ -175,7 +199,7 @@ export interface SanityImage {
   alt?: string;
 }
 
-// New: Team Member
+/** A staff or volunteer team member (imam, teacher, board member, etc.). */
 export interface SanityTeamMember {
   _id: string;
   name: string;
@@ -201,7 +225,7 @@ export interface SanityTeamMember {
   order?: number;
 }
 
-// New: Page Content
+/** A CMS-managed content page (about, history, privacy policy, etc.). */
 export interface SanityPageContent {
   _id: string;
   title: string;
@@ -228,7 +252,7 @@ export interface SanityPageContent {
   active?: boolean;
 }
 
-// New: Resource
+/** A downloadable or linkable resource (PDF, audio, video, etc.). */
 export interface SanityResource {
   _id: string;
   title: string;
@@ -256,7 +280,7 @@ export interface SanityResource {
   order?: number;
 }
 
-// Enhanced Site Settings
+/** Global site settings singleton — organisation details, hero slides, social links, etc. */
 export interface SanitySiteSettings {
   _id: string;
   organizationName: string;
@@ -334,7 +358,14 @@ export interface SanitySiteSettings {
   allowedEmbedDomains?: string[];
 }
 
-// Prayer Settings - Flat structure for easy Sanity editing
+/**
+ * Prayer settings singleton — per-prayer iqamah configuration.
+ *
+ * Each prayer has three fields:
+ * - `*IqamahMode`: "calculated" adds a delay to the adhan time, "fixed" uses a static time.
+ * - `*FixedTime`: The static iqamah time (only used when mode is "fixed").
+ * - `*Delay`: Minutes after adhan (only used when mode is "calculated").
+ */
 export interface SanityPrayerSettings {
   _id: string;
   // Daily Prayers - Fajr

@@ -1,3 +1,12 @@
+/**
+ * Sanity Studio Layout
+ *
+ * Minimal full-screen wrapper for the embedded Sanity Studio. Positions the
+ * studio as a fixed overlay so it takes over the entire viewport, bypassing
+ * the site's main Header and Footer.
+ *
+ * @module app/studio/layout
+ */
 export const metadata = {
   title: "AIC Content Studio",
   description: "Content management for Australian Islamic Centre",

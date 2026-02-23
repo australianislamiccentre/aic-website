@@ -1,3 +1,17 @@
+/**
+ * Sanity Studio Configuration
+ *
+ * Configures the embedded Sanity Studio at `/studio`. Defines:
+ * - **Custom desk structure** — organises singletons (Prayer Times,
+ *   Donations, Site Settings, Form Settings) at the top level, then
+ *   groups content types (Events, Services, etc.) with filtered views
+ *   (e.g. Live / Expired / Inactive for events).
+ * - **Plugins** — Structure tool, Vision (GROQ playground), Presentation
+ *   tool (live preview with draft mode).
+ *
+ * @module sanity.config
+ * @see src/sanity/schemas/index.ts — schema registry
+ */
 "use client";
 
 import { defineConfig } from "sanity";
@@ -6,7 +20,7 @@ import { visionTool } from "@sanity/vision";
 import { presentationTool } from "sanity/presentation";
 import { schemaTypes } from "./src/sanity/schemas";
 
-// Custom structure for document organization
+/** Custom desk structure — organises singletons at top, content types below. */
 const structure = (S: StructureBuilder) =>
   S.list()
     .title("Content")

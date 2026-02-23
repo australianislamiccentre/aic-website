@@ -1,3 +1,12 @@
+/**
+ * Announcements Content
+ *
+ * Client component rendering the announcements listing with category
+ * filtering, text search, and priority-based styling. Displays announcement
+ * cards with images, dates, and category badges.
+ *
+ * @module app/announcements/AnnouncementsContent
+ */
 "use client";
 
 import { useState } from "react";

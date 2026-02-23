@@ -1,3 +1,12 @@
+/**
+ * Event Contact Form
+ *
+ * Client component providing an inline contact form on event detail pages.
+ * Collects name, email, phone, and message, then submits to the site's
+ * contact API endpoint with the event name pre-filled.
+ *
+ * @module app/events/[slug]/EventContactForm
+ */
 "use client";
 
 import { useState } from "react";

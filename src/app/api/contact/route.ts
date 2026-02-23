@@ -1,3 +1,19 @@
+/**
+ * Contact Form API Route
+ *
+ * Handles POST submissions from the /contact page. Validates the payload,
+ * checks rate limits and honeypot, then sends two emails via Resend:
+ * 1. **Admin notification** — to the AIC staff recipient configured in Sanity.
+ * 2. **User confirmation** — branded acknowledgement to the submitter.
+ *
+ * Security: Rate-limited (5 req/hr per IP), honeypot field, Sanity toggle.
+ *
+ * @route POST /api/contact
+ * @module api/contact
+ * @see src/lib/contact-validation.ts — validates the request body
+ * @see src/lib/email-templates.ts    — generates branded HTML emails
+ * @see src/lib/form-settings.ts      — Sanity-based form toggle & recipient lookup
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { getResendClient } from "@/lib/resend";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -8,13 +24,20 @@ import {
 } from "@/lib/email-templates";
 import { getFormRecipientEmail, isFormEnabled } from "@/lib/form-settings";
 
-// Use verified domain, fall back to Resend's testing sender
+/** Verified domain sender, falls back to Resend's testing sender during dev. */
 const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
+/**
+ * Processes a contact form submission.
+ *
+ * Pipeline: toggle check → rate limit → honeypot → validate → send emails.
+ *
+ * @returns `{ success: true }` on success, `{ error: string }` with appropriate HTTP status on failure.
+ */
 export async function POST(request: NextRequest) {
   try {
-    // Check if form is enabled in Sanity
+    // Check if form is enabled in Sanity (allows staff to disable without a deploy)
     const enabled = await isFormEnabled("contact");
     if (!enabled) {
       return NextResponse.json(
@@ -23,7 +46,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Rate limiting
+    // Rate limiting — 5 requests per hour per IP (best-effort on serverless)
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       "unknown";
@@ -35,10 +58,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse and validate
     const body = await request.json();
 
-    // Honeypot: if filled, it's a bot - return fake success
+    // Honeypot: hidden field filled by bots — return fake success to avoid tipping them off
     if (body._gotcha) {
       return NextResponse.json({ success: true });
     }
@@ -52,7 +74,7 @@ export async function POST(request: NextRequest) {
     const resend = getResendClient();
     const toEmail = await getFormRecipientEmail("contact");
 
-    // Send notification to AIC
+    // Send notification to AIC staff
     const notification = contactNotificationEmail(data);
     await resend.emails.send({
       from: `AIC Website <${FROM_EMAIL}>`,
@@ -73,7 +95,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Contact form error:", error);
+    console.error("[API] /api/contact POST error:", error);
     return NextResponse.json(
       { error: "Failed to send message. Please try again." },
       { status: 500 }

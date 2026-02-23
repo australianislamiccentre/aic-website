@@ -1,3 +1,12 @@
+/**
+ * GetInvolvedSection
+ *
+ * "Get Involved" section on the homepage presenting action cards for visiting,
+ * volunteering, donating, and contacting the centre. Each card links to the
+ * relevant page with an icon and short description.
+ *
+ * @module components/sections/GetInvolvedSection
+ */
 "use client";
 
 import { motion } from "framer-motion";

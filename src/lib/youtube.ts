@@ -1,3 +1,14 @@
+/**
+ * YouTube Video Fetcher
+ *
+ * Fetches the latest videos from the AIC YouTube channel via the YouTube
+ * Data API v3. Results are cached for 1 hour via Next.js ISR. Returns an
+ * empty array if the API key or channel ID is missing, or if the API fails.
+ *
+ * @module lib/youtube
+ */
+
+/** A YouTube video with metadata for display on the /media page. */
 export interface YouTubeVideo {
   id: string;
   title: string;
@@ -9,6 +20,7 @@ export interface YouTubeVideo {
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const YOUTUBE_CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || "UCxxxxxxx"; // Set in env
 
+/** Fetches the latest videos from the AIC YouTube channel. Cached for 1 hour. */
 export async function getYouTubeVideos(maxResults = 8): Promise<YouTubeVideo[]> {
   if (!YOUTUBE_API_KEY || !YOUTUBE_CHANNEL_ID) {
     return [];

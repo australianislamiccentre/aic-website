@@ -1,3 +1,13 @@
+/**
+ * AICC Partner Page
+ *
+ * Client component showcasing the Australian Islamic College of Commerce
+ * (AICC) partnership. Displays academic highlights, Islamic values focus,
+ * community involvement, and links to the college website.
+ *
+ * @route /partners/aicc
+ * @module app/partners/aicc/page
+ */
 "use client";
 
 import Image from "next/image";

@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: Resource
+ *
+ * Content type for downloadable resources and external links such as
+ * PDFs, documents, and useful URLs. Includes active/featured toggles,
+ * display order, title, slug, description, and file or link attachment.
+ * Consumed by the /resources page and the featured resources section.
+ *
+ * @module sanity/schemas/resource
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

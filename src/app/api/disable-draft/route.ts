@@ -1,9 +1,23 @@
+/**
+ * Disable Draft Mode
+ *
+ * POST-only endpoint to exit Next.js draft mode. Called by the preview
+ * banner's "Exit Preview" button. Validates same-origin to prevent CSRF.
+ * GET is blocked — state-changing operations must use POST.
+ *
+ * @route POST /api/disable-draft
+ * @module api/disable-draft
+ * @see src/app/api/draft/route.ts     — enables draft mode
+ * @see src/components/PreviewBanner.tsx — UI that calls this endpoint
+ */
 import { draftMode } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-// Disable draft mode - POST only to prevent CSRF via GET requests
+/**
+ * Disables draft mode after verifying same-origin.
+ * Checks `Origin` header against `Host` to prevent cross-site requests.
+ */
 export async function POST(request: NextRequest) {
-  // Verify request comes from same origin
   const origin = request.headers.get("origin");
   const host = request.headers.get("host");
 
@@ -18,7 +32,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ disabled: true });
 }
 
-// GET method not allowed for state-changing operations
+/** GET is blocked — state-changing operations must use POST. */
 export async function GET() {
   return NextResponse.json(
     { error: "Use POST method" },

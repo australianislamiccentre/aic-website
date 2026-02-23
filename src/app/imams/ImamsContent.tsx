@@ -1,3 +1,12 @@
+/**
+ * Imams Content
+ *
+ * Client component rendering imam profile cards with photos, biographies
+ * (via PortableText), qualifications, and contact information. Uses
+ * staggered animations for the card entrance sequence.
+ *
+ * @module app/imams/ImamsContent
+ */
 "use client";
 
 import { motion } from "framer-motion";

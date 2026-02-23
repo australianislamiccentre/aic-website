@@ -1,4 +1,8 @@
 /**
+ * In-Memory Rate Limiter
+ *
+ * @module lib/rate-limit
+ *
  * Simple in-memory rate limiter.
  *
  * Limitation: On Vercel (serverless), each cold start creates a fresh Map.
@@ -24,6 +28,10 @@ function pruneExpired(): void {
   }
 }
 
+/**
+ * Checks whether an IP address has exceeded the rate limit (5 requests/hour).
+ * Returns `{ allowed: false }` if the limit is reached.
+ */
 export function checkRateLimit(ip: string): { allowed: boolean } {
   // Periodic cleanup
   callsSinceCleanup++;

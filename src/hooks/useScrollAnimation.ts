@@ -1,13 +1,36 @@
+/**
+ * Scroll-Based Animation Hooks
+ *
+ * Two hooks for scroll-driven UI effects:
+ * - `useScrollAnimation` — triggers "visible" state when an element enters the viewport
+ *   (via IntersectionObserver). Used by FadeIn and other animation components.
+ * - `useScrollProgress` — tracks overall page scroll progress as a 0–100 percentage.
+ *   Used by the ScrollProgress bar at the top of long pages.
+ *
+ * @module hooks/useScrollAnimation
+ * @see src/components/animations/FadeIn.tsx — consumes useScrollAnimation
+ * @see src/components/ui/ScrollProgress.tsx — consumes useScrollProgress
+ */
 "use client";
 
 import { useEffect, useRef, useState, RefObject } from "react";
 
+/** Configuration for the IntersectionObserver that drives `useScrollAnimation`. */
 interface UseScrollAnimationOptions {
+  /** Fraction of the element that must be visible to trigger (0–1). Default: 0.1 */
   threshold?: number;
+  /** CSS-style margin around the root (viewport). Default: "0px" */
   rootMargin?: string;
+  /** If true (default), the element stays "visible" once triggered and never resets. */
   triggerOnce?: boolean;
 }
 
+/**
+ * Observes an element and returns `[ref, isVisible]`.
+ * Attach `ref` to the target element; `isVisible` flips to `true` when it enters the viewport.
+ *
+ * @typeParam T - The HTML element type (default: HTMLDivElement)
+ */
 export function useScrollAnimation<T extends HTMLElement = HTMLDivElement>(
   options: UseScrollAnimationOptions = {}
 ): [RefObject<T | null>, boolean] {
@@ -41,6 +64,10 @@ export function useScrollAnimation<T extends HTMLElement = HTMLDivElement>(
   return [ref, isVisible];
 }
 
+/**
+ * Tracks overall page scroll progress as a percentage (0–100).
+ * Updates on every scroll event (passive listener for performance).
+ */
 export function useScrollProgress(): number {
   const [progress, setProgress] = useState(0);
 

@@ -1,3 +1,18 @@
+/**
+ * Prayer Times Card
+ *
+ * Reusable display of the daily prayer schedule. Three layout variants:
+ * - `compact` — single-line horizontal strip for headers / bars.
+ * - `full` — card layout with icons, athan + iqamah columns.
+ * - `hero` — hero section optimised layout.
+ *
+ * Supports an optional `selectedDate` prop for the "browse by date"
+ * feature on the worshippers page; defaults to today.
+ *
+ * @module components/ui/PrayerTimesCard
+ * @see src/hooks/usePrayerTimes.ts — reactive hooks that power auto-updates
+ * @see src/lib/prayer-times.ts     — the underlying calculation engine
+ */
 "use client";
 
 import { motion } from "framer-motion";
@@ -5,14 +20,14 @@ import { Sunrise, Sun, Cloud, Sunset, Moon, Clock } from "lucide-react";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
 import { getPrayerTimesForDate, type PrayerName, type TodaysPrayerTimes } from "@/lib/prayer-times";
 
-// Helper to check if two dates are the same day (Melbourne timezone)
+/** Checks if two dates fall on the same calendar day in Melbourne timezone. */
 function isSameDay(date1: Date, date2: Date): boolean {
   const d1 = date1.toLocaleDateString("en-AU", { timeZone: "Australia/Melbourne" });
   const d2 = date2.toLocaleDateString("en-AU", { timeZone: "Australia/Melbourne" });
   return d1 === d2;
 }
 
-// Prayer icons and colors
+/** Visual config for each prayer — icon, Arabic name, accent colour. */
 const PRAYER_CONFIG: Record<PrayerName, {
   icon: typeof Moon;
   arabic: string;

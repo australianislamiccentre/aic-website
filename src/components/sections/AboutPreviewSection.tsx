@@ -1,3 +1,12 @@
+/**
+ * AboutPreviewSection
+ *
+ * "About the AIC" preview block on the homepage featuring a parallax image,
+ * key community statistics, and a call-to-action linking to the full About page.
+ * Uses scroll-driven motion for a subtle parallax effect on the image.
+ *
+ * @module components/sections/AboutPreviewSection
+ */
 "use client";
 
 import { useRef } from "react";

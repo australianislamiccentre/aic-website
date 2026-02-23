@@ -1,3 +1,13 @@
+/**
+ * Architecture Page
+ *
+ * Client component showcasing the award-winning architectural design of the
+ * Australian Islamic Centre. Highlights key design features such as natural
+ * light, Qibla orientation, and sustainability elements.
+ *
+ * @route /architecture
+ * @module app/architecture/page
+ */
 "use client";
 
 import { motion } from "framer-motion";

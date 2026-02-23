@@ -1,6 +1,10 @@
 /**
  * Prayer Times Calculator for Australian Islamic Centre
- * Based on fixed yearly schedule with DST handling for Melbourne, Australia
+ *
+ * Based on fixed yearly schedule with DST handling for Melbourne, Australia.
+ *
+ * @module lib/prayer-times
+ * @see src/lib/prayer-config.ts — iqamah offset & fixed-time configuration
  */
 
 import { getIqamahConfig } from "./prayer-config";

@@ -1,3 +1,17 @@
+/**
+ * GROQ Query Registry
+ *
+ * All Sanity GROQ queries used across the AIC website, organised by content type.
+ * Each query is a tagged template literal that fetches documents with specific
+ * projections (field selections) optimised for the consuming page/component.
+ *
+ * Date filtering uses `string::split(string(now()), "T")[0]` to extract just
+ * the date portion for fair date-to-date comparison (avoids timezone issues
+ * where `now()` includes time and could exclude today's events).
+ *
+ * @module sanity/lib/queries
+ * @see src/sanity/lib/fetch.ts for the getter functions that execute these queries
+ */
 import { groq } from "next-sanity";
 
 // Single event by slug (includes full description for detail page)

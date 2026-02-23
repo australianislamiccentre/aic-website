@@ -1,3 +1,16 @@
+/**
+ * Card Components
+ *
+ * A family of card variants used across the site:
+ * - `Card` — basic container with optional hover lift and glass effect.
+ * - `ImageCard` — card with an image header, overlay badge, and body content.
+ * - `InfoCard` — icon + title + description layout for feature grids.
+ * - `StatsCard` — numeric stat with label and optional trend indicator.
+ *
+ * All cards use Framer Motion for hover micro-animations.
+ *
+ * @module components/ui/Card
+ */
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -7,6 +20,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+/** Props for the base Card wrapper. */
 interface CardProps {
   children: ReactNode;
   className?: string;

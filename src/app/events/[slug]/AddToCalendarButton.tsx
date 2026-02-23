@@ -1,3 +1,12 @@
+/**
+ * Add to Calendar Button
+ *
+ * Client component that generates calendar download links (Google Calendar,
+ * Apple/Outlook .ics) for a given event. Opens a modal with format options
+ * and constructs the appropriate calendar URL from the event's date and time.
+ *
+ * @module app/events/[slug]/AddToCalendarButton
+ */
 "use client";
 
 import { useState } from "react";

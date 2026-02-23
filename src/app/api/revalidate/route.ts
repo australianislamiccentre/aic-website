@@ -1,10 +1,25 @@
+/**
+ * On-Demand ISR Revalidation Webhook
+ *
+ * Called by Sanity via a GROQ-powered webhook whenever a document is
+ * published, updated, or deleted. Looks up which Next.js paths display
+ * that document type and revalidates them so the site reflects changes
+ * within seconds (instead of waiting for the 120s ISR fallback).
+ *
+ * Security: Requires a shared secret (`SANITY_REVALIDATE_SECRET`) passed
+ * as a `?secret=` query parameter. GET is blocked (POST only).
+ *
+ * @route POST /api/revalidate?secret=xxx
+ * @module api/revalidate
+ * @see src/sanity/lib/fetch.ts — ISR caching with 120s revalidate fallback
+ */
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
-// Secret token to secure the webhook - set this in your environment variables
+/** Shared secret between Sanity webhook and this endpoint. */
 const REVALIDATION_SECRET = process.env.SANITY_REVALIDATE_SECRET;
 
-// Valid document types that can trigger revalidation
+/** Only these Sanity document types are allowed to trigger revalidation. */
 const validDocumentTypes = new Set([
   "event",
   "announcement",
@@ -24,7 +39,10 @@ const validDocumentTypes = new Set([
   "resource",
 ]);
 
-// Map Sanity document types to the paths that need revalidation
+/**
+ * Maps each Sanity document type to the Next.js pages that display it.
+ * When a document is published, every listed path is revalidated.
+ */
 const documentTypeToPath: Record<string, string[]> = {
   event: ["/events", "/", "/worshippers"],
   announcement: ["/announcements", "/"],
@@ -44,9 +62,16 @@ const documentTypeToPath: Record<string, string[]> = {
   resource: ["/resources"],
 };
 
+/**
+ * Handles Sanity webhook payloads. Validates the secret, resolves affected
+ * paths from the document type (and slug if present), then calls
+ * `revalidatePath()` on each.
+ *
+ * @returns `{ revalidated: true, paths, documentType }` on success.
+ */
 export async function POST(request: NextRequest) {
   try {
-    // Always require secret - no exceptions
+    // Always require secret — no exceptions
     const secret = request.nextUrl.searchParams.get("secret");
 
     if (!REVALIDATION_SECRET) {
@@ -121,7 +146,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Remove GET handler - state-changing operations should use POST only
+/** GET is blocked — state-changing operations must use POST. */
 export async function GET() {
   return NextResponse.json(
     { message: "Use POST method with valid secret" },

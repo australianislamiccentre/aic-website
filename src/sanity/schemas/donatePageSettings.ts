@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: Donate Page Settings (singleton)
+ *
+ * Page-level configuration for the /donate page. Controls the goal
+ * meter (enable/disable + Fundraise Up element code), the main
+ * donation form (enable/disable + element code), and hero section
+ * settings. Managed as a singleton in the Sanity Studio.
+ *
+ * @module sanity/schemas/donatePageSettings
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

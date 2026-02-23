@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: Page Content
+ *
+ * Generic content type for arbitrary CMS-driven pages. Supports an
+ * active toggle, optional navigation inclusion with ordering, page
+ * title, slug, hero image, and flexible rich-text body blocks.
+ * Used to create and manage pages that do not have dedicated routes.
+ *
+ * @module sanity/schemas/pageContent
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

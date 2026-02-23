@@ -1,3 +1,21 @@
+/**
+ * Form Validation — Server-Side Input Validation
+ *
+ * Validates and sanitises form submissions for all API routes (contact,
+ * service inquiry, event inquiry). Enforces required fields, email format,
+ * and maximum field lengths to prevent abuse from oversized payloads.
+ *
+ * Each validator returns a discriminated union:
+ * - `{ valid: true, data: T }` — Validated and safe to use
+ * - `{ valid: false, error: string }` — Human-readable error message
+ *
+ * @module lib/contact-validation
+ * @see src/app/api/contact/route.ts
+ * @see src/app/api/service-inquiry/route.ts
+ * @see src/app/api/event-inquiry/route.ts
+ */
+
+/** Validated contact form fields. */
 export interface ContactFormData {
   firstName: string;
   lastName: string;

@@ -1,3 +1,12 @@
+/**
+ * HeroSection
+ *
+ * Full-width homepage hero with an auto-advancing background image carousel,
+ * a live prayer-times strip, and primary call-to-action buttons.
+ * Appears at the top of the homepage as the first visible section.
+ *
+ * @module components/sections/HeroSection
+ */
 "use client";
 
 import { useRef, useState, useEffect } from "react";

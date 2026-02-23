@@ -1,3 +1,15 @@
+/**
+ * Breadcrumb Navigation
+ *
+ * Two variants for different backgrounds:
+ * - `Breadcrumb` — white text for dark hero sections.
+ * - `BreadcrumbLight` — grey/black text for light backgrounds.
+ *
+ * Can be used with explicit `items` prop or will auto-generate
+ * breadcrumbs from the current URL pathname using `pathLabels`.
+ *
+ * @module components/ui/Breadcrumb
+ */
 "use client";
 
 import Link from "next/link";
@@ -5,12 +17,13 @@ import { usePathname } from "next/navigation";
 import { ChevronRight, Home } from "lucide-react";
 import { motion } from "framer-motion";
 
+/** A single breadcrumb entry (label + link). */
 interface BreadcrumbItem {
   label: string;
   href: string;
 }
 
-// Map of path segments to display names
+/** Maps URL path segments to human-readable labels for auto-generated breadcrumbs. */
 const pathLabels: Record<string, string> = {
   about: "About Us",
   architecture: "Architecture",
@@ -92,7 +105,7 @@ function generateBreadcrumbs(pathname: string): BreadcrumbItem[] {
   return breadcrumbs;
 }
 
-// Light variant for use on light backgrounds
+/** Light-background variant — grey/black text instead of white. */
 export function BreadcrumbLight({ items, className = "" }: BreadcrumbProps) {
   const pathname = usePathname();
   const breadcrumbs: BreadcrumbItem[] = items || generateBreadcrumbs(pathname);

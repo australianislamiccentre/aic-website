@@ -1,3 +1,13 @@
+/**
+ * Visit Page
+ *
+ * Server component that fetches mosque etiquette guidelines and visitor FAQs
+ * from Sanity, then passes them to VisitContent for rendering directions,
+ * opening hours, and visitor information.
+ *
+ * @route /visit
+ * @module app/visit/page
+ */
 import { getEtiquette, getFaqsByCategory } from "@/sanity/lib/fetch";
 import { SanityEtiquette, SanityFaq } from "@/types/sanity";
 import VisitContent from "./VisitContent";

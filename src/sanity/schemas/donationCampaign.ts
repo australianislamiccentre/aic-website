@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: Donation Campaign
+ *
+ * Content type for individual fundraising campaigns. Each campaign
+ * has a public title, a Fundraise Up element HTML snippet, and an
+ * active toggle that completely removes inactive campaigns from the
+ * site. Displayed on the /donate page as selectable giving options.
+ *
+ * @module sanity/schemas/donationCampaign
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

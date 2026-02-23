@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: FAQ
+ *
+ * Content type for frequently asked questions. Each entry has a
+ * required question string, a rich-text answer (supporting bold,
+ * italic, and links), a category for grouping, and display order.
+ * Consumed by the /visit page and the /resources page FAQ sections.
+ *
+ * @module sanity/schemas/faq
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

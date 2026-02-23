@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: Form Settings (singleton)
+ *
+ * Configuration document for site-wide form behaviour. Controls
+ * enable/disable toggles, recipient emails, headings, descriptions,
+ * and copy for the contact form, tour request form, and any other
+ * configurable forms. Managed as a singleton in the Sanity Studio.
+ *
+ * @module sanity/schemas/formSettings
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

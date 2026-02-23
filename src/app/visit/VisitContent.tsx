@@ -1,3 +1,12 @@
+/**
+ * Visit Content
+ *
+ * Client component rendering the visit page UI with directions, opening
+ * hours, contact details, etiquette guidelines from Sanity, and an FAQ
+ * accordion for common visitor questions.
+ *
+ * @module app/visit/VisitContent
+ */
 "use client";
 
 import { motion } from "framer-motion";

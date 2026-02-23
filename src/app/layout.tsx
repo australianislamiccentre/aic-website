@@ -1,3 +1,12 @@
+/**
+ * Root Layout
+ *
+ * Top-level layout wrapping every page in the application. Fetches siteSettings,
+ * donationSettings, and formSettings from Sanity, then provides them via context.
+ * Renders the Header, Footer, ScrollToTop, ScrollProgress, and FundraiseUpScript.
+ *
+ * @module app/layout
+ */
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, Amiri } from "next/font/google";
 import { draftMode } from "next/headers";

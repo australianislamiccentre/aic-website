@@ -1,3 +1,13 @@
+/**
+ * Partners Hub Page
+ *
+ * Client component listing the centre's affiliated partner organisations
+ * (Newport Storm FC, AIC College). Displays partner cards with descriptions
+ * and links to individual partner detail pages.
+ *
+ * @route /partners
+ * @module app/partners/page
+ */
 "use client";
 
 import Image from "next/image";

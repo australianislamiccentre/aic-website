@@ -1,3 +1,12 @@
+/**
+ * Services Content
+ *
+ * Client component rendering the services listing page. Displays service
+ * cards with icons, descriptions, and links to individual service detail
+ * pages. Includes contact information from site settings context.
+ *
+ * @module app/services/ServicesContent
+ */
 "use client";
 
 import Image from "next/image";

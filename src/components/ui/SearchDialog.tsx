@@ -1,3 +1,14 @@
+/**
+ * Search Dialog
+ *
+ * Full-screen modal search overlay with keyboard navigation (Escape to close,
+ * arrow keys to navigate results). Currently uses a static mock result set;
+ * will be wired to Sanity search or Algolia in the future.
+ *
+ * Opened from the magnifying-glass icon in the Header via `open` prop.
+ *
+ * @module components/ui/SearchDialog
+ */
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -6,6 +17,7 @@ import { Search, X, ArrowRight, Calendar, FileText, Users, Book, Clock } from "l
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+/** Props for the SearchDialog component. */
 interface SearchDialogProps {
   open: boolean;
   onClose: () => void;

@@ -1,3 +1,13 @@
+/**
+ * Service Detail Page
+ *
+ * Server component that fetches a single service by slug from Sanity and
+ * renders its full details using PortableText, including availability,
+ * pricing, contact information, and requirements.
+ *
+ * @route /services/[slug]
+ * @module app/services/[slug]/page
+ */
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getServiceBySlug, getServicesForStaticGeneration } from "@/sanity/lib/fetch";

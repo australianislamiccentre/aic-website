@@ -1,3 +1,13 @@
+/**
+ * Sanity Schema: Donation Settings (singleton)
+ *
+ * Configuration document for the Fundraise Up integration. Stores
+ * the installation script (loaded on all pages) and the organisation
+ * key used to initialise the Fundraise Up widget. Managed as a
+ * singleton in the Sanity Studio.
+ *
+ * @module sanity/schemas/donationSettings
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

@@ -1,3 +1,12 @@
+/**
+ * Next.js Configuration
+ *
+ * - **Image domains**: Whitelists Unsplash, Sanity CDN, and YouTube thumbnails.
+ * - **Redirects**: Maps legacy routes (/programs → /events) and guards
+ *   pages that shouldn't be accessed directly (/donate/success → /donate).
+ *
+ * @module next.config
+ */
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {

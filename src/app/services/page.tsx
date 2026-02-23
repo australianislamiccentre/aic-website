@@ -1,3 +1,13 @@
+/**
+ * Services Listing Page
+ *
+ * Server component that fetches all services from Sanity and passes them
+ * to the ServicesContent client component for display. Covers religious
+ * guidance, nikah ceremonies, funeral services, and counselling.
+ *
+ * @route /services
+ * @module app/services/page
+ */
 import { getServices } from "@/sanity/lib/fetch";
 import { SanityService } from "@/types/sanity";
 import ServicesContent from "./ServicesContent";

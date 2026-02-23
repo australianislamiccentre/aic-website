@@ -1,3 +1,12 @@
+/**
+ * Worshippers Page Client Component
+ *
+ * Interactive client-side portion of the /worshippers page. Renders
+ * prayer times with date picker, Jumu'ah schedule, Taraweeh/Eid info,
+ * mosque etiquette guidelines, and the next-prayer countdown.
+ *
+ * @module app/worshippers/WorshippersClient
+ */
 "use client";
 
 import { useState } from "react";

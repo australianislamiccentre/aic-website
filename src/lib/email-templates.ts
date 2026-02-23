@@ -1,3 +1,16 @@
+/**
+ * Email Template System
+ *
+ * Generates branded HTML emails for all form submissions. Two email types:
+ * - **Admin notification** — Sent to AIC staff with form details (uses `adminLayout`).
+ * - **User confirmation** — Sent to the submitter acknowledging receipt (uses `confirmationLayout`).
+ *
+ * All user input is passed through `escapeHtml()` before interpolation
+ * to prevent XSS in email clients.
+ *
+ * @module lib/email-templates
+ * @see src/app/api/contact/route.ts for usage example
+ */
 import type { ContactFormData, ServiceInquiryFormData, EventInquiryFormData } from "./contact-validation";
 
 // AIC Brand Colors

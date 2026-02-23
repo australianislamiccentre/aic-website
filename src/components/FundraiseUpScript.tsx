@@ -1,3 +1,19 @@
+/**
+ * FundraiseUp Donation Widget Script
+ *
+ * Injects the FundraiseUp third-party script that powers donation modals.
+ * The organisation key and optional custom installation script can be
+ * managed from Sanity (`donationSettings` singleton).
+ *
+ * Security: If a custom script is provided from Sanity, it is validated
+ * to ensure it only loads from the known FundraiseUp CDN domain.
+ * Scripts referencing any other external URL are rejected, and the
+ * hardcoded default is used instead. This prevents injection of
+ * arbitrary third-party scripts via a compromised Sanity account.
+ *
+ * @module components/FundraiseUpScript
+ * @see src/sanity/schemas/donationSettings.ts — Sanity schema for org key and script
+ */
 "use client";
 
 import Script from "next/script";
@@ -7,10 +23,10 @@ interface FundraiseUpScriptProps {
   settings: DonationSettings | null;
 }
 
-// Default organization key (fallback if not set in Sanity)
+/** Fallback org key if not configured in Sanity. Public by design (like Stripe publishable key). */
 const DEFAULT_ORG_KEY = "AGUWBDNC";
 
-// Extract JavaScript content from HTML script tags
+/** Extracts raw JavaScript from a `<script>` tag string. Returns as-is if no tags present. */
 function extractScriptContent(html: string): string {
   // If it contains <script> tags, extract the content between them
   const scriptMatch = html.match(/<script[^>]*>([\s\S]*?)<\/script>/i);

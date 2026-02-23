@@ -1,3 +1,14 @@
+/**
+ * Sanity Schema: Service
+ *
+ * Content type for mosque services and programs. Each service has an
+ * active toggle, featured-on-homepage flag, display order, hero image,
+ * slug, description, rich-text body, and optional linked form settings.
+ * Consumed by the /services listing page and the homepage services section.
+ * Validation prevents featuring an inactive service.
+ *
+ * @module sanity/schemas/service
+ */
 import { defineField, defineType } from "sanity";
 
 export default defineType({

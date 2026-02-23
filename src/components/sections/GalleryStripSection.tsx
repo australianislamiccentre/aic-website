@@ -1,3 +1,12 @@
+/**
+ * GalleryStripSection
+ *
+ * Horizontal image strip showcasing gallery photos from Sanity on the homepage.
+ * Receives SanityGalleryImage[] data and renders a scrollable row of thumbnails
+ * with a link through to the full gallery page.
+ *
+ * @module components/sections/GalleryStripSection
+ */
 "use client";
 
 import { motion } from "framer-motion";

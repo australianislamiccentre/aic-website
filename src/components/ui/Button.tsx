@@ -1,3 +1,14 @@
+/**
+ * Button Component
+ *
+ * Polymorphic button that renders as either a `<button>` or a Next.js `<Link>`
+ * depending on whether `href` is provided. Supports 6 colour variants,
+ * 4 sizes, optional icon, and a loading spinner state.
+ *
+ * Uses Framer Motion for hover / tap micro-animations.
+ *
+ * @module components/ui/Button
+ */
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -5,6 +16,7 @@ import { motion } from "framer-motion";
 import { ReactNode } from "react";
 import Link from "next/link";
 
+/** Props for the Button component. */
 interface ButtonProps {
   children: ReactNode;
   variant?: "primary" | "secondary" | "outline" | "gold" | "ghost" | "white";

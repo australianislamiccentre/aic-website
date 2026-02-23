@@ -1,3 +1,12 @@
+/**
+ * ProgramsSection
+ *
+ * Programs and education listing section displaying categorised offerings
+ * from Sanity. Receives SanityProgram[] data and supports category filtering,
+ * enrolment status badges, and animated tab transitions.
+ *
+ * @module components/sections/ProgramsSection
+ */
 "use client";
 
 import { useState } from "react";

@@ -1,3 +1,12 @@
+/**
+ * WhatsOnSection
+ *
+ * Combined "What's On" section merging events, programs, and services into a
+ * single tabbed or filtered view on the homepage. Receives SanityEvent[],
+ * SanityProgram[], and SanityService[] data with category-based filtering.
+ *
+ * @module components/sections/WhatsOnSection
+ */
 "use client";
 
 import { useState, useMemo } from "react";

@@ -1,3 +1,13 @@
+/**
+ * Newport Storm Partner Page
+ *
+ * Client component showcasing the Newport Storm FC partnership. Displays
+ * the football club's highlights including competitive teams, community
+ * spirit, youth development, and links to the club's external site.
+ *
+ * @route /partners/newport-storm
+ * @module app/partners/newport-storm/page
+ */
 "use client";
 
 import Image from "next/image";

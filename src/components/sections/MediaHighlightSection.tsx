@@ -1,3 +1,12 @@
+/**
+ * MediaHighlightSection
+ *
+ * Featured media content section on the homepage highlighting a YouTube video
+ * tour of the centre alongside social media channel links. Pulls social URLs
+ * from SiteSettings context for Instagram, Facebook, and YouTube.
+ *
+ * @module components/sections/MediaHighlightSection
+ */
 "use client";
 
 import { motion } from "framer-motion";

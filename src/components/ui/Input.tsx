@@ -1,8 +1,23 @@
+/**
+ * Form Input Components
+ *
+ * Three form primitives with consistent styling, labels, and error display:
+ * - `Input` — standard text input (supports icon prefix).
+ * - `Textarea` — multi-line text area (auto-configures rows).
+ * - `Select` — dropdown with custom arrow styling.
+ *
+ * All are `forwardRef` components compatible with React Hook Form or
+ * uncontrolled usage. Each accepts `label`, `error`, and standard
+ * HTML attributes.
+ *
+ * @module components/ui/Input
+ */
 "use client";
 
 import { cn } from "@/lib/utils";
 import { InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, forwardRef } from "react";
 
+/** Props for the Input component. Extends native `<input>` attributes. */
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
