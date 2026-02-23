@@ -82,9 +82,6 @@ npm run type-check
 ### Environment Variables
 
 Required for production:
-- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe publishable key
-- `STRIPE_SECRET_KEY` - Stripe secret key
-- `STRIPE_WEBHOOK_SECRET` - Stripe webhook secret
 - `NEXT_PUBLIC_BASE_URL` - Your site URL (e.g., https://yoursite.com)
 
 ## GitHub Actions

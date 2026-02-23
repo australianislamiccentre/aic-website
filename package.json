@@ -14,7 +14,9 @@
     "test:coverage": "vitest run --coverage",
     "validate": "npm run type-check && npm run lint && npm run test:run && npm run build",
     "prepare": "husky",
-    "sanity:migrate": "tsx scripts/migrate-to-sanity.ts"
+    "sanity:migrate": "tsx scripts/migrate-to-sanity.ts",
+    "docs": "typedoc",
+    "docs:open": "typedoc && open docs/api/index.html"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -59,6 +61,7 @@
     "lint-staged": "^16.2.7",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
+    "typedoc": "^0.28.17",
     "typescript": "^5",
     "vite": "^6.0.0",
     "vitest": "^2.1.0"
