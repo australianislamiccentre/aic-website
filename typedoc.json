@@ -1,0 +1,39 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src/lib",
+    "src/types",
+    "src/sanity/lib",
+    "src/sanity/env.ts",
+    "src/contexts",
+    "src/hooks",
+    "src/data/content.ts",
+    "src/middleware.ts"
+  ],
+  "entryPointStrategy": "expand",
+  "out": "docs/api",
+  "name": "AIC Website — API Documentation",
+  "readme": "none",
+  "exclude": [
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/test/**",
+    "**/node_modules/**"
+  ],
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "includeVersion": false,
+  "categorizeByGroup": true,
+  "sort": ["source-order"],
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true
+  },
+  "visibilityFilters": {
+    "protected": false,
+    "private": false,
+    "inherited": true,
+    "@alpha": false,
+    "@beta": false
+  }
+}
