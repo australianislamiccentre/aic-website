@@ -292,10 +292,10 @@ export async function getDonationSettings(): Promise<DonationSettings | null> {
 // Donate Page Settings (singleton for /donate page)
 // ============================================
 export interface DonatePageCampaign {
-  _key: string;
-  title?: string;
+  _id: string;
+  title: string;
   fundraiseUpElement: string;
-  enabled?: boolean;
+  active?: boolean;
 }
 
 export interface DonatePageSettings {

@@ -42,7 +42,7 @@ const sanitizeFundraiseUpElement = (code: string): string => {
 
 export default function DonateContent({ settings }: DonateContentProps) {
   const enabledCampaigns = (settings?.campaigns || []).filter(
-    (c) => c.enabled !== false && c.fundraiseUpElement
+    (c) => c.active !== false && c.fundraiseUpElement
   );
 
   const showGoal = settings?.goalEnabled && settings?.goalElement;
@@ -160,7 +160,7 @@ export default function DonateContent({ settings }: DonateContentProps) {
 
             <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center sm:items-start gap-6">
               {enabledCampaigns.map((campaign: DonatePageCampaign) => (
-                <div key={campaign._key} className="flex flex-col items-center">
+                <div key={campaign._id} className="flex flex-col items-center">
                   {campaign.title && (
                     <h3 className="text-white text-sm font-semibold mb-2 text-center">
                       {campaign.title}

@@ -267,11 +267,11 @@ export const donatePageSettingsQuery = groq`
     goalElement,
     formEnabled,
     formElement,
-    campaigns[] {
-      _key,
+    campaigns[]-> {
+      _id,
       title,
       fundraiseUpElement,
-      enabled
+      active
     },
     donorListEnabled,
     donorListElement,

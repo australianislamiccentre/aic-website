@@ -54,43 +54,9 @@ export default defineType({
       name: "campaigns",
       title: "Campaigns",
       type: "array",
-      description: "Donation campaigns to display on the donate page",
-      of: [
-        {
-          type: "object",
-          fields: [
-            defineField({
-              name: "title",
-              title: "Campaign Title",
-              type: "string",
-              description: "Optional title displayed above the campaign widget",
-            }),
-            defineField({
-              name: "fundraiseUpElement",
-              title: "Fundraise Up Element Code",
-              type: "text",
-              rows: 3,
-              validation: (Rule) => Rule.required(),
-              description: "Paste the Fundraise Up campaign HTML snippet",
-            }),
-            defineField({
-              name: "enabled",
-              title: "Enabled",
-              type: "boolean",
-              initialValue: true,
-            }),
-          ],
-          preview: {
-            select: { title: "title", enabled: "enabled" },
-            prepare({ title, enabled }) {
-              return {
-                title: title || "Untitled Campaign",
-                subtitle: enabled !== false ? "Enabled" : "Disabled",
-              };
-            },
-          },
-        },
-      ],
+      description:
+        "Select donation campaigns to display on the donate page. Create campaigns under Donations > Campaigns first.",
+      of: [{ type: "reference", to: [{ type: "donationCampaign" }] }],
     }),
 
     // ── Recent Donors ──

@@ -24,22 +24,22 @@ describe("DonateContent", () => {
     formElement: '<a href="#FORM" style="display:none"></a>',
     campaigns: [
       {
-        _key: "c1",
+        _id: "c1",
         title: "Campaign One",
         fundraiseUpElement: '<a href="#C1" style="display:none"></a>',
-        enabled: true,
+        active: true,
       },
       {
-        _key: "c2",
+        _id: "c2",
         title: "Campaign Two",
         fundraiseUpElement: '<a href="#C2" style="display:none"></a>',
-        enabled: true,
+        active: true,
       },
       {
-        _key: "c3",
+        _id: "c3",
         title: "Disabled Campaign",
         fundraiseUpElement: '<a href="#C3" style="display:none"></a>',
-        enabled: false,
+        active: false,
       },
     ],
     donorListEnabled: true,
@@ -176,9 +176,10 @@ describe("DonateContent", () => {
         ...fullSettings,
         campaigns: [
           {
-            _key: "c1",
+            _id: "c1",
+            title: "Untitled Campaign",
             fundraiseUpElement: '<a href="#C1"></a>',
-            enabled: true,
+            active: true,
           },
         ],
       };
@@ -268,10 +269,10 @@ describe("DonateContent", () => {
         _id: "donatePageSettings",
         campaigns: [
           {
-            _key: "c1",
+            _id: "c1",
             title: "Test",
             fundraiseUpElement: '\u200B\u200C\u200D\uFEFF<a href="#TEST"></a>  ',
-            enabled: true,
+            active: true,
           },
         ],
       };

@@ -313,6 +313,9 @@ export function WhatsOnSection({ services = [], events = [], programs = [] }: Wh
 
   const activeTabHref = allTabs.find((t) => t.id === activeTab)?.href || "/";
 
+  // Hide entire section when there's no content at all
+  if (filteredEvents.length === 0 && filteredPrograms.length === 0 && filteredServices.length === 0) return null;
+
 
   return (
     <section className="py-10 md:py-16 bg-gray-50 relative overflow-hidden">

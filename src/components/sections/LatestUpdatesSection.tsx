@@ -141,6 +141,9 @@ export function LatestUpdatesSection({
   announcements = [],
   urgentAnnouncement,
 }: LatestUpdatesSectionProps) {
+  // Hide entire section when there's no content
+  if (announcements.length === 0 && !urgentAnnouncement) return null;
+
   const limitedAnnouncements = announcements.slice(0, 6);
 
   return (
