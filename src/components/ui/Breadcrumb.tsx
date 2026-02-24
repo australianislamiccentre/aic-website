@@ -26,6 +26,7 @@ interface BreadcrumbItem {
 /** Maps URL path segments to human-readable labels for auto-generated breadcrumbs. */
 const pathLabels: Record<string, string> = {
   about: "About Us",
+  "admin-guide": "Admin Guide",
   architecture: "Architecture",
   contact: "Contact",
   donate: "Donate",
