@@ -211,6 +211,45 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* What We Stand For */}
+      <section className="py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <FadeIn>
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-100 text-teal-700 text-xs font-medium mb-3">
+                <Heart className="w-3.5 h-3.5" />
+                Our Values
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                What We Stand For
+              </h2>
+              <p className="text-gray-600 max-w-xl mx-auto">
+                Our values guide everything we do at the Australian Islamic Centre
+              </p>
+            </div>
+          </FadeIn>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {values.map((value, index) => (
+              <motion.div
+                key={value.title}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08 }}
+                className="rounded-xl p-5 border border-gray-100 hover:border-teal-200 hover:shadow-md transition-all"
+              >
+                <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center mb-3">
+                  <value.icon className="w-5 h-5 text-teal-600" />
+                </div>
+                <h4 className="font-bold text-gray-900 mb-1">{value.title}</h4>
+                <p className="text-gray-600 text-sm leading-relaxed">{value.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Our Journey - Timeline */}
       <section className="py-12 md:py-16 bg-teal-50/40">
         <div className="max-w-4xl mx-auto px-6">
@@ -395,57 +434,33 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Our Values + CTA */}
-      <section className="py-12 md:py-16 bg-teal-600">
-        <div className="max-w-7xl mx-auto px-6">
+      {/* Closing CTA */}
+      <section className="py-12 md:py-16 bg-gray-50">
+        <div className="max-w-3xl mx-auto px-6">
           <FadeIn>
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                What We Stand For
+            <div className="text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                Come See It for Yourself
               </h2>
-              <p className="text-teal-100 max-w-xl mx-auto">
-                Our values guide everything we do at the Australian Islamic Centre
+              <p className="text-gray-600 mb-8 max-w-xl mx-auto">
+                Whether you&apos;re joining us for prayer, exploring the architecture, or simply curious — everyone is welcome at the Australian Islamic Centre.
               </p>
-            </div>
-          </FadeIn>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-            {values.map((value, index) => (
-              <motion.div
-                key={value.title}
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.08 }}
-                className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20 hover:bg-white/15 transition-colors"
-              >
-                <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center mb-3">
-                  <value.icon className="w-5 h-5 text-white" />
-                </div>
-                <h4 className="font-bold text-white mb-1">{value.title}</h4>
-                <p className="text-teal-100 text-sm leading-relaxed">{value.description}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          <FadeIn delay={0.3}>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button
-                href="/visit"
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-teal-700"
-                icon={<ArrowRight className="w-4 h-4" />}
-              >
-                Plan Your Visit
-              </Button>
-              <Button
-                href="/contact"
-                variant="outline"
-                className="border-white/50 text-white hover:bg-white hover:text-teal-700"
-                icon={<ArrowRight className="w-4 h-4" />}
-              >
-                Get In Touch
-              </Button>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button
+                  href="/visit"
+                  variant="primary"
+                  icon={<ArrowRight className="w-4 h-4" />}
+                >
+                  Plan Your Visit
+                </Button>
+                <Button
+                  href="/contact"
+                  variant="outline"
+                  icon={<ArrowRight className="w-4 h-4" />}
+                >
+                  Get In Touch
+                </Button>
+              </div>
             </div>
           </FadeIn>
         </div>
