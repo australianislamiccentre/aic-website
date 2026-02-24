@@ -179,10 +179,10 @@ export default async function EventPage({ params }: EventPageProps) {
       {/* Main Content — 2 column layout */}
       <section className="py-8 md:py-10 bg-neutral-50">
         <div className="max-w-5xl mx-auto px-6">
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-[1fr_320px] gap-8">
 
             {/* Left Column — Main Content */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="space-y-8">
 
               {/* Key Features — quick highlights */}
               {event.keyFeatures && event.keyFeatures.length > 0 && (
@@ -224,7 +224,7 @@ export default async function EventPage({ params }: EventPageProps) {
             </div>
 
             {/* Right Column — Sidebar */}
-            <div className="lg:col-span-1">
+            <div>
               <div className="lg:sticky lg:top-24 space-y-5">
 
                 {/* Event Details Card */}
@@ -279,7 +279,7 @@ export default async function EventPage({ params }: EventPageProps) {
                           className="flex items-center gap-2.5 text-sm text-teal-600 hover:text-teal-700 transition-colors"
                         >
                           <Mail className="w-4 h-4 flex-shrink-0" />
-                          <span className="truncate">{event.contactEmail}</span>
+                          <span className="break-all">{event.contactEmail}</span>
                         </a>
                       )}
                       {event.contactPhone && (
