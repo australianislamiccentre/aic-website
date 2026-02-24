@@ -28,14 +28,13 @@ export default defineType({
       name: "featured",
       title: "Featured on Homepage",
       type: "boolean",
-      description: "Only featured services appear on the homepage. Disabled when inactive.",
+      description: "Only featured services appear on the homepage.",
       initialValue: false,
-      readOnly: ({ document }) => document?.active === false,
       validation: (Rule) =>
         Rule.custom((featured, context) => {
           const doc = context.document as { active?: boolean } | undefined;
           if (featured && doc?.active === false) {
-            return "Cannot feature an inactive service. Enable 'Active' first.";
+            return "Cannot feature an inactive service. Turn off 'Featured' or enable 'Active' first.";
           }
           return true;
         }),
