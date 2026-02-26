@@ -84,29 +84,34 @@ describe("GROQ Queries", () => {
       expect(donatePageSettingsQuery).toContain("_id");
     });
 
-    it("includes goal fields", () => {
-      expect(donatePageSettingsQuery).toContain("goalEnabled");
-      expect(donatePageSettingsQuery).toContain("goalElement");
+    it("includes hero fields", () => {
+      expect(donatePageSettingsQuery).toContain("heroHeading");
+      expect(donatePageSettingsQuery).toContain("heroDescription");
     });
 
-    it("includes form fields", () => {
-      expect(donatePageSettingsQuery).toContain("formEnabled");
+    it("includes form element field", () => {
       expect(donatePageSettingsQuery).toContain("formElement");
     });
 
-    it("includes campaigns array", () => {
-      expect(donatePageSettingsQuery).toContain("campaigns[]");
+    it("includes campaigns array with dereference", () => {
+      expect(donatePageSettingsQuery).toContain("campaigns[]->");
     });
 
-    it("includes donor list fields", () => {
-      expect(donatePageSettingsQuery).toContain("donorListEnabled");
-      expect(donatePageSettingsQuery).toContain("donorListElement");
+    it("includes dereferenced campaign fields", () => {
+      expect(donatePageSettingsQuery).toContain("title");
+      expect(donatePageSettingsQuery).toContain("fundraiseUpElement");
+      expect(donatePageSettingsQuery).toContain("active");
     });
 
-    it("includes map fields", () => {
-      expect(donatePageSettingsQuery).toContain("mapEnabled");
-      expect(donatePageSettingsQuery).toContain("mapTitle");
-      expect(donatePageSettingsQuery).toContain("mapElement");
+    it("does not include removed settings fields", () => {
+      expect(donatePageSettingsQuery).not.toContain("goalElement");
+      expect(donatePageSettingsQuery).not.toContain("donorListElement");
+      expect(donatePageSettingsQuery).not.toContain("mapElement");
+    });
+
+    it("does not include removed campaign fields", () => {
+      // description and image are common words, so check for order specifically
+      expect(donatePageSettingsQuery).not.toContain("order");
     });
 
     it("does not include unnecessary fields", () => {

@@ -292,24 +292,18 @@ export async function getDonationSettings(): Promise<DonationSettings | null> {
 // Donate Page Settings (singleton for /donate page)
 // ============================================
 export interface DonatePageCampaign {
-  _key: string;
-  title?: string;
+  _id: string;
+  title: string;
   fundraiseUpElement: string;
-  enabled?: boolean;
+  active?: boolean;
 }
 
 export interface DonatePageSettings {
   _id: string;
-  goalEnabled?: boolean;
-  goalElement?: string;
-  formEnabled?: boolean;
+  heroHeading?: string;
+  heroDescription?: string;
   formElement?: string;
   campaigns?: DonatePageCampaign[];
-  donorListEnabled?: boolean;
-  donorListElement?: string;
-  mapEnabled?: boolean;
-  mapTitle?: string;
-  mapElement?: string;
 }
 
 export async function getDonatePageSettings(): Promise<DonatePageSettings | null> {

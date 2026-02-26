@@ -1,214 +1,183 @@
 /**
  * Donate Content
  *
- * Client component rendering the donation page UI. Sanitises FundraiseUp
- * element codes from Sanity, displays campaign cards, and embeds the
- * FundraiseUp donation widget for secure online giving.
+ * Client component rendering the /donate page UI. Hero image with text
+ * overlay and a donation form that floats across the image/white boundary
+ * on desktop, stacking cleanly and centred on mobile/tablet. Campaign cards
+ * in a responsive grid below. Fundraise Up HTML snippets are sanitised
+ * before rendering.
  *
  * @module app/donate/DonateContent
  */
 "use client";
 
 import Image from "next/image";
-import { Heart, Sparkles } from "lucide-react";
-import type { DonatePageSettings, DonatePageCampaign } from "@/sanity/lib/fetch";
+import { Heart, BookOpen, Users, Home } from "lucide-react";
+import type { DonatePageSettings } from "@/sanity/lib/fetch";
 
 interface DonateContentProps {
   settings?: DonatePageSettings | null;
 }
 
-// Clean Fundraise Up element code of hidden Unicode characters and strip dangerous HTML
+/** Strip invisible Unicode characters injected by Sanity stega encoding. */
 const cleanElementCode = (code: string) => {
   return code.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
 };
 
 /**
  * Sanitise FundraiseUp element code from Sanity.
- * Expected format: an anchor tag with data-fundraiseup attributes.
- * Strips <script>, <iframe>, event handlers (onerror, onload, etc.), and javascript: URLs.
+ * Strips <script>, <iframe>, event handlers, and javascript: URLs.
  */
 const sanitizeFundraiseUpElement = (code: string): string => {
   let cleaned = cleanElementCode(code);
-  // Remove <script> and <iframe> tags and their content
   cleaned = cleaned.replace(/<script[\s\S]*?<\/script>/gi, "");
   cleaned = cleaned.replace(/<iframe[\s\S]*?<\/iframe>/gi, "");
   cleaned = cleaned.replace(/<iframe[^>]*\/?>/gi, "");
-  // Remove inline event handlers (onclick, onerror, onload, onmouseover, etc.)
   cleaned = cleaned.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, "");
-  // Remove javascript: URLs
   cleaned = cleaned.replace(/href\s*=\s*["']?\s*javascript:/gi, 'href="');
   return cleaned;
 };
 
+/** Renders a sanitised Fundraise Up HTML snippet. */
+function FundraiseUpWidget({ html, className }: { html: string; className?: string }) {
+  return (
+    <div
+      className={className}
+      dangerouslySetInnerHTML={{ __html: sanitizeFundraiseUpElement(html) }}
+    />
+  );
+}
+
+const impactItems = [
+  { icon: BookOpen, text: "Educational programs for all ages" },
+  { icon: Users, text: "Community services and support" },
+  { icon: Home, text: "Maintaining our centre and facilities" },
+];
+
 export default function DonateContent({ settings }: DonateContentProps) {
-  const enabledCampaigns = (settings?.campaigns || []).filter(
-    (c) => c.enabled !== false && c.fundraiseUpElement
+  const activeCampaigns = (settings?.campaigns || []).filter(
+    (c) => c.active !== false && c.fundraiseUpElement
   );
 
-  const showGoal = settings?.goalEnabled && settings?.goalElement;
-  const showForm = settings?.formEnabled && settings?.formElement;
-  const showDonorList = settings?.donorListEnabled && settings?.donorListElement;
-  const showMap = settings?.mapEnabled && settings?.mapElement;
-  const showCampaigns = enabledCampaigns.length > 0;
+  const showForm = !!settings?.formElement;
+  const showCampaigns = activeCampaigns.length > 0;
+
+  const heroHeading = settings?.heroHeading || "Support Our Community";
+  const heroDescription =
+    settings?.heroDescription ||
+    "Your generosity helps us maintain our centre, run educational programs, and support those in need.";
 
   return (
-    <div className="bg-neutral-50">
-      {/* ── Hero: Image background + gradient overlay + text left / form right ── */}
-      <section className="relative overflow-hidden">
-        {/* Background image */}
-        <Image
-          src="/images/aic 2.jpg"
-          alt="Australian Islamic Centre"
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-        />
+    <>
+      {/* ── Hero with image ── */}
+      <section className="relative">
+        <div className="relative h-[300px] sm:h-[400px] lg:h-[520px]">
+          <Image
+            src="/images/aic 2.jpg"
+            alt="Australian Islamic Centre"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
 
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/90 via-neutral-900/60 to-neutral-900/30 z-10" />
-        <div className="absolute inset-0 bg-gradient-to-b from-neutral-900/40 via-transparent to-neutral-900/60 z-10" />
+          {/* Text overlay — centred on mobile, left-aligned on desktop */}
+          <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-center lg:justify-start">
+            <div className="max-w-xl text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/15 backdrop-blur-sm text-white text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+                <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                Make a Difference
+              </div>
 
-        {/* Islamic geometric pattern */}
-        <div
-          className="absolute inset-0 z-10 opacity-[0.04]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='%23ffffff' stroke-opacity='1' stroke-width='1'/%3E%3C/svg%3E")`,
-          }}
-        />
-
-        {/* Hero content */}
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center py-8 sm:py-12 md:py-16 lg:py-20">
-            {/* Left — text */}
-            <div>
-              <div className="h-1 w-16 bg-gradient-to-r from-lime-400 to-green-400 rounded-full mb-6" />
-
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
-                Support Our{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-300 via-green-400 to-lime-400">
-                  Community
-                </span>
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4">
+                {heroHeading}
               </h1>
 
-              <p className="text-white/70 text-base sm:text-lg max-w-md mb-6">
-                Your generosity helps us maintain our centre, run educational
-                programs, and support those in need.
+              <p className="text-sm sm:text-lg text-white/85 mb-5 sm:mb-8 leading-relaxed">
+                {heroDescription}
               </p>
 
-              <div className="flex items-center gap-3 text-white/50 text-sm">
-                <Heart className="w-4 h-4 text-lime-400" />
-                <span>Every contribution makes a difference</span>
+              <div className="hidden sm:flex flex-col items-center lg:items-start space-y-3" data-testid="impact-list">
+                {impactItems.map(({ icon: Icon, text }) => (
+                  <div key={text} className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-white/90 text-sm">{text}</span>
+                  </div>
+                ))}
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Right — donation form */}
-            {showForm && (
-              <div className="bg-white rounded-2xl shadow-2xl p-1 w-full lg:max-w-md lg:ml-auto">
-                <div
+        {/* Desktop floating form — overlaps image and white area below */}
+        {showForm && (
+          <div className="hidden lg:block relative z-20 max-w-7xl mx-auto px-6">
+            <div className="absolute right-6 top-0 -translate-y-1/2 w-[420px]">
+              <FundraiseUpWidget
+                html={settings!.formElement!}
+                className="fundraise-up-wrapper"
+              />
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* ── Ayah + Form area ── */}
+      <section className={`bg-white ${showForm ? "lg:min-h-[480px]" : ""} ${!showCampaigns ? "pb-10 sm:pb-14" : ""}`}>
+        <div className={`max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14 ${showForm ? "lg:pt-8 lg:pb-16" : "lg:py-16"}`}>
+          {/* Ayah — centred on mobile, left-aligned on desktop beside the floating form */}
+          <div className={`text-center lg:text-left ${showForm ? "lg:max-w-[calc(100%-460px)]" : "max-w-3xl mx-auto lg:mx-0"}`}>
+            <blockquote className="text-xl sm:text-2xl lg:text-3xl font-serif italic text-gray-700 leading-relaxed">
+              &ldquo;Who is it that would loan Allah a goodly loan so He may multiply it for him many times over?&rdquo;
+            </blockquote>
+            <p className="mt-3 sm:mt-4 text-sm text-gray-400">Surah Al-Baqarah 2:245</p>
+          </div>
+
+          {/* Mobile/tablet form — card wrapper, centred */}
+          {showForm && (
+            <div className="lg:hidden mt-10 flex justify-center">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 w-fit">
+                <FundraiseUpWidget
+                  html={settings!.formElement!}
                   className="fundraise-up-wrapper"
-                  dangerouslySetInnerHTML={{
-                    __html: sanitizeFundraiseUpElement(settings!.formElement!),
-                  }}
                 />
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* ── Goal Meter — centred between hero and campaigns ── */}
-      {showGoal && (
-        <div className="bg-white border-b border-gray-100">
-          <div className="max-w-xl mx-auto px-4 sm:px-6 py-6">
-            <div
-              className="fundraise-up-goal-meter"
-              dangerouslySetInnerHTML={{
-                __html: sanitizeFundraiseUpElement(settings!.goalElement!),
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* ── Active Campaigns — full-width styled section ── */}
+      {/* ── Campaign Cards ── */}
       {showCampaigns && (
-        <section className="relative overflow-hidden bg-gradient-to-b from-neutral-900 to-neutral-800 py-8 sm:py-12">
-          {/* Decorative background */}
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='%23ffffff' stroke-opacity='1' stroke-width='1'/%3E%3C/svg%3E")`,
-            }}
-          />
-          <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-lime-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-lime-400 text-xs font-medium mb-3">
-                <Sparkles className="w-3.5 h-3.5" />
-                Make an impact
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white">
+        <section className="py-10 sm:py-14 bg-white" data-testid="campaigns-section">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="mb-8 text-center lg:text-left">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Active Campaigns
               </h2>
-              <p className="text-white/50 text-sm mt-2 max-w-md mx-auto">
-                Choose a cause close to your heart and make a direct impact.
+              <p className="text-gray-500 text-sm mt-2">
+                Support a specific cause below.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center sm:items-start gap-6">
-              {enabledCampaigns.map((campaign: DonatePageCampaign) => (
-                <div key={campaign._key} className="flex flex-col items-center">
-                  {campaign.title && (
-                    <h3 className="text-white text-sm font-semibold mb-2 text-center">
-                      {campaign.title}
-                    </h3>
-                  )}
-                  <div className="group rounded-2xl overflow-hidden border border-white/10 hover:border-lime-400/30 transition-all duration-300">
-                    <div
-                      className="fundraise-up-wrapper"
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizeFundraiseUpElement(campaign.fundraiseUpElement),
-                      }}
-                    />
-                  </div>
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-md sm:max-w-none mx-auto lg:mx-0"
+              data-testid="campaigns-grid"
+            >
+              {activeCampaigns.map((campaign) => (
+                <div key={campaign._id}>
+                  <FundraiseUpWidget
+                    html={campaign.fundraiseUpElement}
+                    className="fundraise-up-wrapper [&>*]:!w-full [&>*]:!max-w-full"
+                  />
                 </div>
               ))}
             </div>
           </div>
         </section>
       )}
-
-      {/* ── Recent Donations ── */}
-      {showDonorList && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          <div
-            className="fundraise-up-wrapper"
-            dangerouslySetInnerHTML={{
-              __html: sanitizeFundraiseUpElement(settings!.donorListElement!),
-            }}
-          />
-        </div>
-      )}
-
-      {/* ── Donation Map ── */}
-      {showMap && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-8">
-          <div className="border-t border-gray-200 pt-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 text-center mb-4">
-              {settings!.mapTitle || "Donations Around the World"}
-            </h2>
-            <div
-              className="fundraise-up-wrapper"
-              dangerouslySetInnerHTML={{
-                __html: sanitizeFundraiseUpElement(settings!.mapElement!),
-              }}
-            />
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

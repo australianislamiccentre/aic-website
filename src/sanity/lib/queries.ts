@@ -263,21 +263,15 @@ export const donationSettingsQuery = groq`
 export const donatePageSettingsQuery = groq`
   *[_id == "donatePageSettings"][0] {
     _id,
-    goalEnabled,
-    goalElement,
-    formEnabled,
+    heroHeading,
+    heroDescription,
     formElement,
-    campaigns[] {
-      _key,
+    campaigns[]-> {
+      _id,
       title,
       fundraiseUpElement,
-      enabled
-    },
-    donorListEnabled,
-    donorListElement,
-    mapEnabled,
-    mapTitle,
-    mapElement
+      active
+    }
   }
 `;
 

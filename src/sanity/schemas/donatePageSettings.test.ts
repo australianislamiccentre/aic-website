@@ -15,50 +15,34 @@ describe("donatePageSettings schema", () => {
       expect(donatePageSettings.type).toBe("document");
     });
 
-    it("has 10 fields", () => {
-      expect(donatePageSettings.fields).toHaveLength(10);
+    it("has 4 fields", () => {
+      expect(donatePageSettings.fields).toHaveLength(4);
     });
   });
 
-  describe("Goal Meter fields", () => {
-    const goalEnabled = donatePageSettings.fields.find(
-      (f) => f.name === "goalEnabled"
+  describe("Hero fields", () => {
+    const heroHeading = donatePageSettings.fields.find(
+      (f) => f.name === "heroHeading"
     );
-    const goalElement = donatePageSettings.fields.find(
-      (f) => f.name === "goalElement"
+    const heroDescription = donatePageSettings.fields.find(
+      (f) => f.name === "heroDescription"
     );
 
-    it("goalEnabled exists and is boolean", () => {
-      expect(goalEnabled).toBeDefined();
-      expect(goalEnabled?.type).toBe("boolean");
+    it("heroHeading exists and is string", () => {
+      expect(heroHeading).toBeDefined();
+      expect(heroHeading?.type).toBe("string");
     });
 
-    it("goalEnabled defaults to false", () => {
-      expect(goalEnabled?.initialValue).toBe(false);
-    });
-
-    it("goalElement exists and is text", () => {
-      expect(goalElement).toBeDefined();
-      expect(goalElement?.type).toBe("text");
+    it("heroDescription exists and is text", () => {
+      expect(heroDescription).toBeDefined();
+      expect(heroDescription?.type).toBe("text");
     });
   });
 
-  describe("Form fields", () => {
-    const formEnabled = donatePageSettings.fields.find(
-      (f) => f.name === "formEnabled"
-    );
+  describe("Form field", () => {
     const formElement = donatePageSettings.fields.find(
       (f) => f.name === "formElement"
     );
-
-    it("formEnabled exists and is boolean", () => {
-      expect(formEnabled).toBeDefined();
-      expect(formEnabled?.type).toBe("boolean");
-    });
-
-    it("formEnabled defaults to false", () => {
-      expect(formEnabled?.initialValue).toBe(false);
-    });
 
     it("formElement exists and is text", () => {
       expect(formElement).toBeDefined();
@@ -75,51 +59,43 @@ describe("donatePageSettings schema", () => {
       expect(campaigns).toBeDefined();
       expect(campaigns?.type).toBe("array");
     });
-  });
 
-  describe("Donor List fields", () => {
-    const donorListEnabled = donatePageSettings.fields.find(
-      (f) => f.name === "donorListEnabled"
-    );
-    const donorListElement = donatePageSettings.fields.find(
-      (f) => f.name === "donorListElement"
-    );
-
-    it("donorListEnabled exists and is boolean", () => {
-      expect(donorListEnabled).toBeDefined();
-      expect(donorListEnabled?.type).toBe("boolean");
+    it("references donationCampaign documents", () => {
+      const refType = (campaigns as { of?: Array<{ type: string; to?: Array<{ type: string }> }> })?.of?.[0];
+      expect(refType?.type).toBe("reference");
+      expect(refType?.to).toEqual([{ type: "donationCampaign" }]);
     });
 
-    it("donorListElement exists and is text", () => {
-      expect(donorListElement).toBeDefined();
-      expect(donorListElement?.type).toBe("text");
+    it("filters to only show active campaigns in selector", () => {
+      const refType = (campaigns as { of?: Array<{ type: string; options?: { filter: string } }> })?.of?.[0];
+      expect(refType?.options?.filter).toBe("active == true");
     });
   });
 
-  describe("Map fields", () => {
-    const mapEnabled = donatePageSettings.fields.find(
-      (f) => f.name === "mapEnabled"
-    );
-    const mapTitle = donatePageSettings.fields.find(
-      (f) => f.name === "mapTitle"
-    );
-    const mapElement = donatePageSettings.fields.find(
-      (f) => f.name === "mapElement"
-    );
-
-    it("mapEnabled exists and is boolean", () => {
-      expect(mapEnabled).toBeDefined();
-      expect(mapEnabled?.type).toBe("boolean");
+  describe("Removed fields", () => {
+    it("does not have goalElement field", () => {
+      expect(
+        donatePageSettings.fields.find((f) => f.name === "goalElement")
+      ).toBeUndefined();
     });
 
-    it("mapTitle exists and is string", () => {
-      expect(mapTitle).toBeDefined();
-      expect(mapTitle?.type).toBe("string");
+    it("does not have donorListElement field", () => {
+      expect(
+        donatePageSettings.fields.find((f) => f.name === "donorListElement")
+      ).toBeUndefined();
     });
 
-    it("mapElement exists and is text", () => {
-      expect(mapElement).toBeDefined();
-      expect(mapElement?.type).toBe("text");
+    it("does not have mapElement field", () => {
+      expect(
+        donatePageSettings.fields.find((f) => f.name === "mapElement")
+      ).toBeUndefined();
+    });
+
+    it("does not have any boolean toggle fields", () => {
+      const booleanFields = donatePageSettings.fields.filter(
+        (f) => f.type === "boolean"
+      );
+      expect(booleanFields).toHaveLength(0);
     });
   });
 
@@ -135,7 +111,7 @@ describe("donatePageSettings schema", () => {
 
     it("prepare returns correct subtitle", () => {
       const result = donatePageSettings.preview?.prepare?.({});
-      expect(result?.subtitle).toBe("Manage donation page elements");
+      expect(result?.subtitle).toBe("Manage donation page layout");
     });
   });
 });

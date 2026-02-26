@@ -81,13 +81,12 @@ export default defineType({
       title: "Featured on Homepage",
       type: "boolean",
       initialValue: false,
-      description: "Only featured events appear on the homepage. Disabled when event is inactive.",
-      readOnly: ({ document }) => document?.active === false,
+      description: "Only featured events appear on the homepage.",
       validation: (Rule) =>
         Rule.custom((featured, context) => {
           const doc = context.document as { active?: boolean } | undefined;
           if (featured && doc?.active === false) {
-            return "Cannot feature an inactive event. Enable 'Active' first.";
+            return "Cannot feature an inactive event. Turn off 'Featured' or enable 'Active' first.";
           }
           return true;
         }),
