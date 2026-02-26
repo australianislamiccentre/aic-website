@@ -300,16 +300,10 @@ export interface DonatePageCampaign {
 
 export interface DonatePageSettings {
   _id: string;
-  goalEnabled?: boolean;
-  goalElement?: string;
-  formEnabled?: boolean;
+  heroHeading?: string;
+  heroDescription?: string;
   formElement?: string;
   campaigns?: DonatePageCampaign[];
-  donorListEnabled?: boolean;
-  donorListElement?: string;
-  mapEnabled?: boolean;
-  mapTitle?: string;
-  mapElement?: string;
 }
 
 export async function getDonatePageSettings(): Promise<DonatePageSettings | null> {

@@ -40,7 +40,7 @@ const structure = (S: StructureBuilder) =>
             .title("Donations")
             .items([
               S.listItem()
-                .title("Settings")
+                .title("Fundraise Up Settings")
                 .child(
                   S.document()
                     .schemaType("donationSettings")
@@ -56,7 +56,26 @@ const structure = (S: StructureBuilder) =>
               S.divider(),
               S.listItem()
                 .title("Campaigns")
-                .child(S.documentTypeList("donationCampaign").title("Donation Campaigns")),
+                .child(
+                  S.list()
+                    .title("Campaigns")
+                    .items([
+                      S.listItem()
+                        .title("Active")
+                        .child(
+                          S.documentList()
+                            .title("Active Campaigns")
+                            .filter('_type == "donationCampaign" && active == true')
+                        ),
+                      S.listItem()
+                        .title("Inactive")
+                        .child(
+                          S.documentList()
+                            .title("Inactive Campaigns")
+                            .filter('_type == "donationCampaign" && active == false')
+                        ),
+                    ])
+                ),
             ])
         ),
       S.listItem()
