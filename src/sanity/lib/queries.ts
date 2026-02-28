@@ -266,6 +266,10 @@ export const donatePageSettingsQuery = groq`
     heroHeading,
     heroDescription,
     formElement,
+    impactStats[] {
+      value,
+      label
+    },
     campaigns[]-> {
       _id,
       title,

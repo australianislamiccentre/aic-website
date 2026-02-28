@@ -298,11 +298,17 @@ export interface DonatePageCampaign {
   active?: boolean;
 }
 
+export interface DonatePageImpactStat {
+  value: string;
+  label: string;
+}
+
 export interface DonatePageSettings {
   _id: string;
   heroHeading?: string;
   heroDescription?: string;
   formElement?: string;
+  impactStats?: DonatePageImpactStat[];
   campaigns?: DonatePageCampaign[];
 }
 
