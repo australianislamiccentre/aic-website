@@ -143,7 +143,7 @@ export default function DonateContent({ settings }: DonateContentProps) {
               data-testid="campaigns-grid"
             >
               {activeCampaigns.map((campaign) => (
-                <div key={campaign._id}>
+                <div key={campaign._id} className="flex justify-center">
                   <FundraiseUpWidget
                     html={campaign.fundraiseUpElement}
                     className="fundraise-up-wrapper [&>*]:!w-full [&>*]:!max-w-full"
