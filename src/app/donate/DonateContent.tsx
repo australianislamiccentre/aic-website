@@ -76,9 +76,9 @@ export default function DonateContent({ settings }: DonateContentProps) {
       {/* Hero — warm gradient bg, side-by-side on desktop */}
       <section className="bg-gradient-to-br from-teal-50 via-green-50 to-emerald-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-20">
-          <div className={`flex flex-col ${showForm ? "lg:flex-row lg:items-start lg:gap-12" : ""}`}>
+          <div className={`flex flex-col items-center ${showForm ? "lg:flex-row lg:items-start lg:gap-12" : ""}`}>
             {/* Left column — text */}
-            <div className={`text-center lg:text-left ${showForm ? "lg:flex-1" : "max-w-3xl mx-auto"}`}>
+            <div className={`w-full text-center lg:text-left ${showForm ? "lg:flex-1" : "max-w-3xl mx-auto"}`}>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 text-green-700 text-xs sm:text-sm font-medium mb-4 sm:mb-6">
                 <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 Make a Difference
