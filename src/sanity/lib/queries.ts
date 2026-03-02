@@ -16,7 +16,7 @@ import { groq } from "next-sanity";
 
 // Single event by slug (includes full description for detail page)
 export const eventBySlugQuery = groq`
-  *[_type == "event" && slug.current == $slug][0] {
+  *[_type == "event" && slug.current == $slug && active != false][0] {
     _id,
     title,
     "slug": slug.current,
@@ -129,7 +129,7 @@ export const announcementsQuery = groq`
 
 // Single announcement by slug
 export const announcementBySlugQuery = groq`
-  *[_type == "announcement" && slug.current == $slug][0] {
+  *[_type == "announcement" && slug.current == $slug && active != false][0] {
     _id,
     title,
     "slug": slug.current,
@@ -212,7 +212,7 @@ export const servicesQuery = groq`
 
 // Single service by slug
 export const serviceBySlugQuery = groq`
-  *[_type == "service" && slug.current == $slug][0] {
+  *[_type == "service" && slug.current == $slug && active != false][0] {
     _id,
     title,
     "slug": slug.current,
