@@ -97,6 +97,10 @@ describe("GROQ Queries", () => {
       expect(donatePageSettingsQuery).toContain("campaigns[]->");
     });
 
+    it("includes impactStats field", () => {
+      expect(donatePageSettingsQuery).toContain("impactStats");
+    });
+
     it("includes dereferenced campaign fields", () => {
       expect(donatePageSettingsQuery).toContain("title");
       expect(donatePageSettingsQuery).toContain("fundraiseUpElement");

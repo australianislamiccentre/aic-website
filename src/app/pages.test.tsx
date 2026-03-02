@@ -58,10 +58,6 @@ vi.mock("@/data/content", () => ({
     { value: "40+", label: "Years of Service" },
     { value: "50+", label: "Weekly Classes" },
   ],
-  partners: [
-    { name: "Partner 1", category: "Government" },
-    { name: "Partner 2", category: "Community" },
-  ],
   upcomingEvents: [
     {
       id: "1",
