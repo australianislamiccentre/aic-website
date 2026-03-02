@@ -41,6 +41,40 @@ export default defineType({
         "Paste the Fundraise Up donation form HTML snippet. Leave empty to hide the form.",
     }),
 
+    // ── Impact Stats ──
+    defineField({
+      name: "impactStats",
+      title: "Impact Stats",
+      type: "array",
+      description:
+        'Up to 4 impact statistics shown below the hero (e.g. "500+" / "Families Supported"). Leave empty to use defaults.',
+      validation: (rule) => rule.max(4),
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({
+              name: "value",
+              title: "Value",
+              type: "string",
+              description: 'The number or stat (e.g. "500+", "20+", "$1M")',
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: "label",
+              title: "Label",
+              type: "string",
+              description: 'Short description (e.g. "Families Supported")',
+              validation: (rule) => rule.required(),
+            }),
+          ],
+          preview: {
+            select: { title: "value", subtitle: "label" },
+          },
+        },
+      ],
+    }),
+
     // ── Campaigns ──
     defineField({
       name: "campaigns",

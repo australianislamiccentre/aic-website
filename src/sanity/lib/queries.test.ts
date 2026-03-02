@@ -5,6 +5,8 @@ import {
   servicesQuery,
   serviceBySlugQuery,
   featuredServicesQuery,
+  eventBySlugQuery,
+  announcementBySlugQuery,
 } from "./queries";
 
 describe("GROQ Queries", () => {
@@ -97,6 +99,10 @@ describe("GROQ Queries", () => {
       expect(donatePageSettingsQuery).toContain("campaigns[]->");
     });
 
+    it("includes impactStats field", () => {
+      expect(donatePageSettingsQuery).toContain("impactStats");
+    });
+
     it("includes dereferenced campaign fields", () => {
       expect(donatePageSettingsQuery).toContain("title");
       expect(donatePageSettingsQuery).toContain("fundraiseUpElement");
@@ -165,6 +171,10 @@ describe("GROQ Queries", () => {
       expect(serviceBySlugQuery).toContain("slug.current == $slug");
     });
 
+    it("excludes inactive services", () => {
+      expect(serviceBySlugQuery).toContain("active != false");
+    });
+
     it("returns a single document", () => {
       expect(serviceBySlugQuery).toContain("[0]");
     });
@@ -179,6 +189,18 @@ describe("GROQ Queries", () => {
 
     it("includes new formRecipientEmail field", () => {
       expect(serviceBySlugQuery).toContain("formRecipientEmail");
+    });
+  });
+
+  describe("eventBySlugQuery", () => {
+    it("excludes inactive events", () => {
+      expect(eventBySlugQuery).toContain("active != false");
+    });
+  });
+
+  describe("announcementBySlugQuery", () => {
+    it("excludes inactive announcements", () => {
+      expect(announcementBySlugQuery).toContain("active != false");
     });
   });
 

@@ -15,8 +15,8 @@ describe("donatePageSettings schema", () => {
       expect(donatePageSettings.type).toBe("document");
     });
 
-    it("has 4 fields", () => {
-      expect(donatePageSettings.fields).toHaveLength(4);
+    it("has 5 fields", () => {
+      expect(donatePageSettings.fields).toHaveLength(5);
     });
   });
 
@@ -69,6 +69,25 @@ describe("donatePageSettings schema", () => {
     it("filters to only show active campaigns in selector", () => {
       const refType = (campaigns as { of?: Array<{ type: string; options?: { filter: string } }> })?.of?.[0];
       expect(refType?.options?.filter).toBe("active == true");
+    });
+  });
+
+  describe("Impact Stats field", () => {
+    const impactStats = donatePageSettings.fields.find(
+      (f) => f.name === "impactStats"
+    );
+
+    it("exists and is array", () => {
+      expect(impactStats).toBeDefined();
+      expect(impactStats?.type).toBe("array");
+    });
+
+    it("has object items with value and label fields", () => {
+      const itemType = (impactStats as { of?: Array<{ type: string; fields?: Array<{ name: string; type: string }> }> })?.of?.[0];
+      expect(itemType?.type).toBe("object");
+      const fieldNames = itemType?.fields?.map((f) => f.name);
+      expect(fieldNames).toContain("value");
+      expect(fieldNames).toContain("label");
     });
   });
 

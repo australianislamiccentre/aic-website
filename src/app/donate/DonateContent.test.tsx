@@ -1,23 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import DonateContent from "./DonateContent";
-import type { DonatePageSettings } from "@/sanity/lib/fetch";
-
-// Mock next/image
-vi.mock("next/image", () => ({
-  default: ({
-    src,
-    alt,
-    ...props
-  }: {
-    src: string;
-    alt: string;
-    [key: string]: unknown;
-  }) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt} {...props} />
-  ),
-}));
+import type { DonatePageSettings, DonatePageImpactStat } from "@/sanity/lib/fetch";
 
 describe("DonateContent", () => {
   const fullSettings: DonatePageSettings = {
@@ -25,6 +9,11 @@ describe("DonateContent", () => {
     heroHeading: "Give Generously",
     heroDescription: "Help us build a better future.",
     formElement: '<a href="#FORM" style="display:none"></a>',
+    impactStats: [
+      { value: "500+", label: "Families Supported" },
+      { value: "20+", label: "Years Serving" },
+      { value: "5", label: "Daily Prayers" },
+    ] as DonatePageImpactStat[],
     campaigns: [
       {
         _id: "c1",
@@ -58,7 +47,7 @@ describe("DonateContent", () => {
       expect(screen.getByText("Give Generously")).toBeInTheDocument();
     });
 
-    it("renders custom hero description from settings", () => {
+    it("renders custom hero description", () => {
       render(<DonateContent settings={fullSettings} />);
       expect(
         screen.getByText("Help us build a better future.")
@@ -77,28 +66,26 @@ describe("DonateContent", () => {
       expect(screen.getByText("Make a Difference")).toBeInTheDocument();
     });
 
-    it("renders impact list items", () => {
+    it("renders Quran ayah in hero", () => {
       render(<DonateContent />);
-      expect(
-        screen.getByText("Educational programs for all ages")
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("Community services and support")
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("Maintaining our centre and facilities")
-      ).toBeInTheDocument();
+      expect(screen.getByText(/loan Allah a goodly loan/)).toBeInTheDocument();
     });
 
-    it("renders hero background image", () => {
+    it("renders surah reference", () => {
       render(<DonateContent />);
-      const img = screen.getByAltText("Australian Islamic Centre");
-      expect(img).toBeInTheDocument();
+      expect(screen.getByText("Surah Al-Baqarah 2:245")).toBeInTheDocument();
+    });
+
+    it("does not render a hero background image", () => {
+      render(<DonateContent />);
+      expect(
+        screen.queryByAltText("Australian Islamic Centre")
+      ).not.toBeInTheDocument();
     });
   });
 
-  describe("Floating Donation Form", () => {
-    it("renders the form widget when formElement has content", () => {
+  describe("Donation Form", () => {
+    it("renders form widget when formElement has content", () => {
       const { container } = render(
         <DonateContent settings={fullSettings} />
       );
@@ -116,39 +103,48 @@ describe("DonateContent", () => {
       ).toHaveLength(0);
     });
 
-    it("renders form for both mobile and desktop viewports", () => {
-      const { container } = render(
-        <DonateContent settings={fullSettings} />
-      );
-      // Desktop (hidden on mobile) + mobile (hidden on desktop) = 2 instances
-      const formWrappers = container.querySelectorAll(".fundraise-up-wrapper");
-      expect(formWrappers.length).toBeGreaterThanOrEqual(2);
-    });
-
-    it("does not wrap form in a card", () => {
-      const { container } = render(
-        <DonateContent settings={fullSettings} />
-      );
+    it("does not render form when settings missing", () => {
+      const { container } = render(<DonateContent />);
       expect(
-        container.querySelector(".rounded-2xl.shadow-xl")
-      ).not.toBeInTheDocument();
-    });
-
-    it("does not render 'Make a Donation' heading", () => {
-      render(<DonateContent settings={fullSettings} />);
-      expect(screen.queryByText("Make a Donation")).not.toBeInTheDocument();
+        container.querySelectorAll(".fundraise-up-wrapper")
+      ).toHaveLength(0);
     });
   });
 
-  describe("Quran Ayah Section", () => {
-    it("renders the ayah quote", () => {
-      render(<DonateContent />);
-      expect(screen.getByText(/loan Allah a goodly loan/)).toBeInTheDocument();
+  describe("Impact Stats", () => {
+    it("renders impact stats from settings", () => {
+      render(<DonateContent settings={fullSettings} />);
+      expect(screen.getByText("500+")).toBeInTheDocument();
+      expect(screen.getByText("Families Supported")).toBeInTheDocument();
+      expect(screen.getByText("20+")).toBeInTheDocument();
+      expect(screen.getByText("Years Serving")).toBeInTheDocument();
+      expect(screen.getByText("5")).toBeInTheDocument();
+      expect(screen.getByText("Daily Prayers")).toBeInTheDocument();
     });
 
-    it("renders the surah reference", () => {
+    it("renders fallback stats when impactStats not provided", () => {
+      const settings: DonatePageSettings = {
+        _id: "donatePageSettings",
+        heroHeading: "Give Generously",
+      };
+      render(<DonateContent settings={settings} />);
+      expect(
+        screen.getByTestId("impact-stats-section")
+      ).toBeInTheDocument();
+    });
+
+    it("renders fallback stats when no settings", () => {
       render(<DonateContent />);
-      expect(screen.getByText("Surah Al-Baqarah 2:245")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("impact-stats-section")
+      ).toBeInTheDocument();
+    });
+
+    it("impact stats section has data-testid", () => {
+      render(<DonateContent settings={fullSettings} />);
+      expect(
+        document.querySelector('[data-testid="impact-stats-section"]')
+      ).toBeTruthy();
     });
   });
 
@@ -156,22 +152,6 @@ describe("DonateContent", () => {
     it("renders campaigns section when active campaigns exist", () => {
       render(<DonateContent settings={fullSettings} />);
       expect(screen.getByText("Active Campaigns")).toBeInTheDocument();
-      expect(
-        screen.getByText("Support a specific cause below.")
-      ).toBeInTheDocument();
-    });
-
-    it("left-aligns campaigns heading on desktop", () => {
-      const { container } = render(
-        <DonateContent settings={fullSettings} />
-      );
-      const section = container.querySelector(
-        '[data-testid="campaigns-section"]'
-      );
-      const headingWrapper = section?.querySelector("div > div:first-child");
-      // Centred on mobile, left-aligned on desktop
-      expect(headingWrapper?.className).toContain("text-center");
-      expect(headingWrapper?.className).toContain("lg:text-left");
     });
 
     it("renders correct number of campaign cards", () => {
@@ -231,20 +211,6 @@ describe("DonateContent", () => {
       };
       render(<DonateContent settings={settings} />);
       expect(screen.queryByText("Active Campaigns")).not.toBeInTheDocument();
-    });
-  });
-
-  describe("Responsive Campaign Grid", () => {
-    it("uses responsive grid columns", () => {
-      const { container } = render(
-        <DonateContent settings={fullSettings} />
-      );
-      const grid = container.querySelector('[data-testid="campaigns-grid"]');
-      // Mobile: 1 col, tablet: 2 col, desktop: 3 col, wide: 4 col
-      expect(grid?.className).toContain("grid-cols-1");
-      expect(grid?.className).toContain("sm:grid-cols-2");
-      expect(grid?.className).toContain("lg:grid-cols-3");
-      expect(grid?.className).toContain("xl:grid-cols-4");
     });
   });
 
