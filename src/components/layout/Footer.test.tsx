@@ -54,27 +54,33 @@ describe("Footer", () => {
   it("renders navigation link sections", () => {
     render(<Footer />);
 
-    // Explore section
-    expect(screen.getByText("Explore")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /About Us/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Services/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Programs/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Events/i })).toBeInTheDocument();
+    // About section
+    expect(screen.getByText("About")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Our Story/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Our Imams/i })).toBeInTheDocument();
 
-    // Worship section
-    expect(screen.getByText("Worship")).toBeInTheDocument();
+    // What's On section
+    expect(screen.getByText("What's On")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Events/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Services/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Announcements/i })
+    ).toBeInTheDocument();
+
+    // Our Mosque section
+    expect(screen.getByText("Our Mosque")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /Prayer Times/i })
     ).toBeInTheDocument();
+
+    // Media & Resources section
+    expect(screen.getByText("Media & Resources")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /Friday Jumu'ah/i })
+      screen.getByRole("link", { name: /Media Gallery/i })
     ).toBeInTheDocument();
 
     // Get Involved section
     expect(screen.getByText("Get Involved")).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /Book a Visit/i })
-    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Donate$/i })).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /Contact Us/i })

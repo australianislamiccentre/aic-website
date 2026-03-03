@@ -1,17 +1,20 @@
 /**
  * Site Footer
  *
- * Full-width footer with four columns:
- * 1. **About** — logo, tagline, social media icons.
- * 2. **Explore / Worship** — quick-link columns to key pages.
- * 3. **Contact Info** — address, phone, email, operating hours.
- * 4. **Newsletter** — inline subscribe form (posts to /api/subscribe).
+ * Full-width footer with six columns:
+ * 1-2. **Brand & Contact** — logo, tagline, address, phone, email, hours, social icons.
+ * 3.   **About + What's On** — two stacked nav groups from shared navigation data.
+ * 4.   **Our Mosque + Media & Resources** — two stacked nav groups.
+ * 5.   **Get Involved + Affiliates** — nav group + external affiliate links.
+ * 6.   **Support Us** — donate CTA and Quran verse.
  *
- * Data sourced from `useSiteSettings()` and `useFormSettings()` contexts.
+ * Data sourced from `useSiteSettings()`, `useFormSettings()` contexts,
+ * and shared navigation data from `src/data/navigation.ts`.
  *
  * @module components/layout/Footer
  * @see src/contexts/SiteSettingsContext.tsx — provides address, phone, social links
  * @see src/contexts/FormSettingsContext.tsx — provides newsletter copy and toggle
+ * @see src/data/navigation.ts — provides footerNavGroups and buildAffiliateLinks
  */
 "use client";
 
@@ -36,40 +39,14 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { footerNavGroups, buildAffiliateLinks } from "@/data/navigation";
 
 /** Renders the site-wide footer. Consumes SiteSettings and FormSettings contexts. */
 export function Footer() {
   const info = useSiteSettings();
   const forms = useFormSettings();
 
-  const footerLinks = {
-    explore: [
-      { name: "About Us", href: "/about" },
-      { name: "Services", href: "/services" },
-      { name: "Programs", href: "/events" },
-      { name: "Events", href: "/events" },
-      { name: "News & Media", href: "/media" },
-      { name: "Architecture", href: "/architecture" },
-    ],
-    worship: [
-      { name: "Prayer Times", href: "/#prayer-times" },
-      { name: "Friday Jumu'ah", href: "/worshippers#jumuah" },
-      { name: "Mosque Etiquette", href: "/worshippers#etiquette" },
-      { name: "For Worshippers", href: "/worshippers" },
-      { name: "For Visitors", href: "/visit" },
-    ],
-    getInvolved: [
-      { name: "Book a Visit", href: "/visit#book" },
-      { name: "Donate", href: "/donate" },
-      { name: "Volunteer", href: "/contact" },
-      { name: "Contact Us", href: "/contact" },
-    ],
-    external: [
-      { name: "AIC College", href: info.externalLinks.college },
-      { name: "AIC Bookstore", href: info.externalLinks.bookstore },
-      { name: "Newport Storm FC", href: info.externalLinks.newportStorm },
-    ],
-  };
+  const affiliateLinks = buildAffiliateLinks(info.externalLinks);
 
   const socialLinks = [
     { name: "Facebook", icon: Facebook, href: info.socialMedia.facebook },
@@ -262,63 +239,75 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Explore Links */}
+          {/* About + What's On */}
           <div>
-            <h4 className="font-semibold text-lg mb-6">Explore</h4>
-            <ul className="space-y-3">
-              {footerLinks.explore.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-white/70 hover:text-teal-400 transition-colors inline-flex items-center gap-2 group"
-                  >
-                    <span>{link.name}</span>
-                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {footerNavGroups.slice(0, 2).map((group, groupIndex) => (
+              <div key={group.label} className={groupIndex > 0 ? "mt-8" : ""}>
+                <h4 className="font-semibold text-lg mb-6">{group.label}</h4>
+                <ul className="space-y-3">
+                  {group.links.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href}
+                        className="text-white/70 hover:text-teal-400 transition-colors inline-flex items-center gap-2 group"
+                      >
+                        <span>{link.name}</span>
+                        <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
 
-          {/* Worship Links */}
+          {/* Our Mosque + Media & Resources */}
           <div>
-            <h4 className="font-semibold text-lg mb-6">Worship</h4>
-            <ul className="space-y-3">
-              {footerLinks.worship.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-white/70 hover:text-teal-400 transition-colors inline-flex items-center gap-2 group"
-                  >
-                    <span>{link.name}</span>
-                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {footerNavGroups.slice(2, 4).map((group, groupIndex) => (
+              <div key={group.label} className={groupIndex > 0 ? "mt-8" : ""}>
+                <h4 className="font-semibold text-lg mb-6">{group.label}</h4>
+                <ul className="space-y-3">
+                  {group.links.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href}
+                        className="text-white/70 hover:text-teal-400 transition-colors inline-flex items-center gap-2 group"
+                      >
+                        <span>{link.name}</span>
+                        <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
 
-          {/* Get Involved Links */}
+          {/* Get Involved + Affiliates */}
           <div>
-            <h4 className="font-semibold text-lg mb-6">Get Involved</h4>
-            <ul className="space-y-3">
-              {footerLinks.getInvolved.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-white/70 hover:text-teal-400 transition-colors inline-flex items-center gap-2 group"
-                  >
-                    <span>{link.name}</span>
-                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {footerNavGroups.slice(4).map((group) => (
+              <div key={group.label}>
+                <h4 className="font-semibold text-lg mb-6">{group.label}</h4>
+                <ul className="space-y-3">
+                  {group.links.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href}
+                        className="text-white/70 hover:text-teal-400 transition-colors inline-flex items-center gap-2 group"
+                      >
+                        <span>{link.name}</span>
+                        <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
 
-            {/* External Links */}
+            {/* Affiliate Links */}
             <h4 className="font-semibold text-lg mt-8 mb-4">Affiliates</h4>
             <ul className="space-y-3">
-              {footerLinks.external.map((link) => (
+              {affiliateLinks.map((link) => (
                 <li key={link.name}>
                   <a
                     href={link.href}
