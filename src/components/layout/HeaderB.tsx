@@ -503,12 +503,12 @@ export function HeaderB() {
               </div>
 
               {/* Nav grid — staggered entrance */}
-              <div className="relative px-4 md:px-12 lg:px-20 py-4 lg:py-8 flex-1 flex items-start lg:block overflow-hidden">
+              <div className="relative px-4 md:px-12 lg:px-20 py-3 lg:py-8 flex-1 overflow-hidden">
                 <motion.div
                   variants={groupContainerVariants}
                   initial="hidden"
                   animate="visible"
-                  className="max-w-5xl mx-auto w-full grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5 md:gap-8 lg:gap-10"
+                  className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8 lg:gap-10"
                 >
                   {headerNavGroups.map((group) => {
                     const meta = groupMeta[group.label];
@@ -517,11 +517,11 @@ export function HeaderB() {
                     return (
                       <motion.div key={group.label} variants={groupItemVariants}>
                         {/* Group heading with icon */}
-                        <div className="flex items-center gap-2.5 mb-1">
+                        <div className="flex items-center gap-2 lg:gap-2.5 mb-0.5 lg:mb-1">
                           {Icon && (
-                            <Icon className="w-4 h-4 text-lime-400/70" />
+                            <Icon className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-lime-400/70" />
                           )}
-                          <h2 className="text-sm font-semibold tracking-wider uppercase text-white/50">
+                          <h2 className="text-xs lg:text-sm font-semibold tracking-wider uppercase text-white/50">
                             {group.label}
                           </h2>
                         </div>
@@ -534,7 +534,7 @@ export function HeaderB() {
                         )}
 
                         {/* Group links */}
-                        <ul className="space-y-0 lg:space-y-0.5 mt-1 lg:mt-0">
+                        <ul className="space-y-0 lg:space-y-0.5">
                           {group.links.map((link) => (
                             <NavLinkItem
                               key={link.href}
@@ -552,16 +552,16 @@ export function HeaderB() {
 
                   {/* Get In Touch group (Contact only) */}
                   <motion.div variants={groupItemVariants}>
-                    <div className="flex items-center gap-2.5 mb-1">
-                      <MessageCircle className="w-4 h-4 text-lime-400/70" />
-                      <h2 className="text-sm font-semibold tracking-wider uppercase text-white/50">
+                    <div className="flex items-center gap-2 lg:gap-2.5 mb-0.5 lg:mb-1">
+                      <MessageCircle className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-lime-400/70" />
+                      <h2 className="text-xs lg:text-sm font-semibold tracking-wider uppercase text-white/50">
                         Get In Touch
                       </h2>
                     </div>
                     <p className="hidden lg:block text-xs text-white/25 mb-4 pl-[26px]">
                       Connect with us
                     </p>
-                    <ul className="space-y-0 lg:space-y-0.5 mt-1 lg:mt-0">
+                    <ul className="space-y-0 lg:space-y-0.5">
                       <NavLinkItem
                         href="/contact"
                         name="Contact Us"
@@ -577,7 +577,7 @@ export function HeaderB() {
                   variants={donateCardVariants}
                   initial="hidden"
                   animate="visible"
-                  className="max-w-5xl mx-auto mt-4 lg:mt-10"
+                  className="max-w-5xl mx-auto mt-3 lg:mt-10"
                 >
                   <Link
                     href="/donate"
