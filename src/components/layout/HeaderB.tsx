@@ -470,7 +470,7 @@ export function HeaderB() {
               animate="visible"
               exit="exit"
               transition={{ duration: 0.25 }}
-              className="fixed top-0 left-0 right-0 z-50 overflow-y-auto max-h-[85vh] shadow-2xl bg-gradient-to-b from-neutral-900 via-neutral-900 to-neutral-950"
+              className="fixed inset-0 z-50 flex flex-col lg:inset-auto lg:top-0 lg:left-0 lg:right-0 lg:block lg:overflow-y-auto lg:max-h-[85vh] shadow-2xl bg-gradient-to-b from-neutral-900 via-neutral-900 to-neutral-950"
               role="dialog"
               aria-modal="true"
               aria-label="Navigation menu"
@@ -485,30 +485,30 @@ export function HeaderB() {
               />
 
               {/* Panel header with logo + close */}
-              <div className="relative flex items-center justify-between px-6 py-4 border-b border-white/10">
+              <div className="relative flex items-center justify-between px-4 py-3 lg:px-6 lg:py-4 border-b border-white/10 flex-shrink-0">
                 <Image
                   src="/images/aic logo.png"
                   alt="Australian Islamic Centre"
                   width={100}
                   height={40}
-                  className="h-10 w-auto object-contain"
+                  className="h-8 lg:h-10 w-auto object-contain"
                 />
                 <button
                   onClick={() => setOverlayOpen(false)}
-                  className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 hover:rotate-90"
+                  className="p-2 lg:p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 hover:rotate-90"
                   aria-label="Close menu"
                 >
-                  <X className="w-6 h-6 text-white" />
+                  <X className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
                 </button>
               </div>
 
               {/* Nav grid — staggered entrance */}
-              <div className="relative px-6 md:px-12 lg:px-20 py-8">
+              <div className="relative px-4 md:px-12 lg:px-20 py-4 lg:py-8 flex-1 flex items-start lg:block overflow-hidden">
                 <motion.div
                   variants={groupContainerVariants}
                   initial="hidden"
                   animate="visible"
-                  className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
+                  className="max-w-5xl mx-auto w-full grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5 md:gap-8 lg:gap-10"
                 >
                   {headerNavGroups.map((group) => {
                     const meta = groupMeta[group.label];
@@ -526,15 +526,15 @@ export function HeaderB() {
                           </h2>
                         </div>
 
-                        {/* Group description */}
+                        {/* Group description — hidden on mobile to save space */}
                         {meta?.description && (
-                          <p className="text-xs text-white/25 mb-4 pl-[26px]">
+                          <p className="hidden lg:block text-xs text-white/25 mb-4 pl-[26px]">
                             {meta.description}
                           </p>
                         )}
 
                         {/* Group links */}
-                        <ul className="space-y-0.5">
+                        <ul className="space-y-0 lg:space-y-0.5 mt-1 lg:mt-0">
                           {group.links.map((link) => (
                             <NavLinkItem
                               key={link.href}
@@ -558,10 +558,10 @@ export function HeaderB() {
                         Get In Touch
                       </h2>
                     </div>
-                    <p className="text-xs text-white/25 mb-4 pl-[26px]">
+                    <p className="hidden lg:block text-xs text-white/25 mb-4 pl-[26px]">
                       Connect with us
                     </p>
-                    <ul className="space-y-0.5">
+                    <ul className="space-y-0 lg:space-y-0.5 mt-1 lg:mt-0">
                       <NavLinkItem
                         href="/contact"
                         name="Contact Us"
@@ -577,27 +577,27 @@ export function HeaderB() {
                   variants={donateCardVariants}
                   initial="hidden"
                   animate="visible"
-                  className="max-w-5xl mx-auto mt-10"
+                  className="max-w-5xl mx-auto mt-4 lg:mt-10"
                 >
                   <Link
                     href="/donate"
                     onClick={() => handleOverlayNavClick("/donate")}
-                    className="group/donate flex items-center justify-between gap-4 px-6 py-4 rounded-xl bg-gradient-to-r from-lime-500/15 to-green-500/10 border border-lime-500/20 hover:border-lime-400/40 transition-all duration-300"
+                    className="group/donate flex items-center justify-between gap-3 lg:gap-4 px-4 py-3 lg:px-6 lg:py-4 rounded-xl bg-gradient-to-r from-lime-500/15 to-green-500/10 border border-lime-500/20 hover:border-lime-400/40 transition-all duration-300"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-lime-500/20">
-                        <Heart className="w-5 h-5 text-lime-400" />
+                    <div className="flex items-center gap-3 lg:gap-4">
+                      <div className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-lime-500/20 flex-shrink-0">
+                        <Heart className="w-4 h-4 lg:w-5 lg:h-5 text-lime-400" />
                       </div>
                       <div>
-                        <span className="block text-base font-semibold text-white">
+                        <span className="block text-sm lg:text-base font-semibold text-white">
                           Support Our Community
                         </span>
-                        <span className="block text-sm text-white/40">
+                        <span className="hidden lg:block text-sm text-white/40">
                           Your generosity helps us serve the community
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 text-lime-400 font-semibold text-sm">
+                    <div className="flex items-center gap-2 text-lime-400 font-semibold text-sm flex-shrink-0">
                       <span className="hidden sm:inline">Donate</span>
                       <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover/donate:translate-x-1" />
                     </div>
@@ -605,9 +605,9 @@ export function HeaderB() {
                 </motion.div>
               </div>
 
-              {/* Contact info strip */}
-              <div className="relative border-t border-white/10 px-6 md:px-12 lg:px-20 py-4">
-                <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-8 text-sm text-white/40">
+              {/* Contact info strip — hidden on mobile (info already in top bar) */}
+              <div className="hidden lg:block relative border-t border-white/10 px-6 md:px-12 lg:px-20 py-4 flex-shrink-0">
+                <div className="max-w-5xl mx-auto flex flex-row items-center gap-8 text-sm text-white/40">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
                     <span>
