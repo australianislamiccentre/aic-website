@@ -72,12 +72,12 @@ function useIsScrolled(threshold = 50) {
 /*  Nav group metadata (icons + descriptions)                          */
 /* ------------------------------------------------------------------ */
 
-const groupMeta: Record<string, { icon: typeof Users; description: string }> = {
-  About: { icon: Users, description: "Learn about our centre" },
-  "What's On": { icon: Calendar, description: "Events, services & programs" },
-  "Our Mosque": { icon: Landmark, description: "Prayer, worship & visiting" },
-  "Media & Resources": { icon: Play, description: "Gallery & downloads" },
-  "Get In Touch": { icon: MessageCircle, description: "Connect with us" },
+const groupIcons: Record<string, typeof Users> = {
+  About: Users,
+  "What's On": Calendar,
+  "Our Mosque": Landmark,
+  "Media & Resources": Play,
+  "Get In Touch": MessageCircle,
 };
 
 /* ------------------------------------------------------------------ */
@@ -189,7 +189,7 @@ function NavLinkItem({
       {/* Left accent bar */}
       <span
         className={cn(
-          "absolute left-0 top-1/2 -translate-y-1/2 w-0.5 rounded-full transition-all duration-200",
+          "absolute -left-2.5 top-1/2 -translate-y-1/2 w-0.5 rounded-full transition-all duration-200",
           active
             ? "h-full bg-lime-400"
             : "h-0 bg-white/40 group-hover/link:h-full group-hover/link:bg-lime-400/70",
@@ -198,7 +198,7 @@ function NavLinkItem({
       {/* Link text */}
       <span
         className={cn(
-          "pl-2 transition-transform duration-200 group-hover/link:translate-x-1",
+          "transition-transform duration-200 group-hover/link:translate-x-1",
           active ? "translate-x-1" : "",
         )}
       >
@@ -511,8 +511,7 @@ export function HeaderB() {
                   className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8 lg:gap-10"
                 >
                   {headerNavGroups.map((group) => {
-                    const meta = groupMeta[group.label];
-                    const Icon = meta?.icon;
+                    const Icon = groupIcons[group.label];
 
                     return (
                       <motion.div key={group.label} variants={groupItemVariants}>
@@ -526,15 +525,8 @@ export function HeaderB() {
                           </h2>
                         </div>
 
-                        {/* Group description — hidden on mobile to save space */}
-                        {meta?.description && (
-                          <p className="hidden lg:block text-xs text-white/25 mb-4 pl-[26px]">
-                            {meta.description}
-                          </p>
-                        )}
-
                         {/* Group links */}
-                        <ul className="space-y-0 lg:space-y-0.5">
+                        <ul className="space-y-0 lg:space-y-0.5 pl-[21px] lg:pl-[25px]">
                           {group.links.map((link) => (
                             <NavLinkItem
                               key={link.href}
@@ -558,10 +550,7 @@ export function HeaderB() {
                         Get In Touch
                       </h2>
                     </div>
-                    <p className="hidden lg:block text-xs text-white/25 mb-4 pl-[26px]">
-                      Connect with us
-                    </p>
-                    <ul className="space-y-0 lg:space-y-0.5">
+                    <ul className="space-y-0 lg:space-y-0.5 pl-[21px] lg:pl-[25px]">
                       <NavLinkItem
                         href="/contact"
                         name="Contact Us"
