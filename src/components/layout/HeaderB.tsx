@@ -515,8 +515,8 @@ export function HeaderB() {
 
                     return (
                       <motion.div key={group.label} variants={groupItemVariants}>
-                        {/* Group heading with icon */}
-                        <div className="flex items-center gap-2 lg:gap-2.5 mb-0.5 lg:mb-1">
+                        {/* Group heading with icon + divider */}
+                        <div className="flex items-center gap-2 lg:gap-2.5 pb-1.5 lg:pb-2 mb-1.5 lg:mb-2 border-b border-white/10">
                           {Icon && (
                             <Icon className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-lime-400/70" />
                           )}
@@ -544,7 +544,7 @@ export function HeaderB() {
 
                   {/* Get In Touch group (Contact only) */}
                   <motion.div variants={groupItemVariants}>
-                    <div className="flex items-center gap-2 lg:gap-2.5 mb-0.5 lg:mb-1">
+                    <div className="flex items-center gap-2 lg:gap-2.5 pb-1.5 lg:pb-2 mb-1.5 lg:mb-2 border-b border-white/10">
                       <MessageCircle className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-lime-400/70" />
                       <h2 className="text-xs lg:text-sm font-semibold tracking-wider uppercase text-white/50">
                         Get In Touch
