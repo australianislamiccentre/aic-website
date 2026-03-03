@@ -12,7 +12,7 @@ import { Inter, Playfair_Display, Amiri } from "next/font/google";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity";
 import "./globals.css";
-import { Header } from "@/components/layout/Header";
+import { NavProvider } from "@/components/layout/NavProvider";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
@@ -126,7 +126,7 @@ export default async function RootLayout({
             <FundraiseUpScript settings={donationSettings} />
             <ScrollToTop />
             <ScrollProgress />
-            <Header />
+            <NavProvider />
             <main className="overflow-x-hidden">{children}</main>
             <Footer />
           </FormSettingsProvider>
