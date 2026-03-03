@@ -16,12 +16,11 @@
  *
  * @module components/layout/HeaderB
  * @see src/data/navigation.ts -- navigation data
- * @see src/components/layout/HeaderA.tsx -- scroll hook & pattern reference
  * @see src/components/layout/Header.tsx -- original header (kept intact)
  */
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -45,7 +44,29 @@ import {
   MessageCircle,
   ArrowRight,
 } from "lucide-react";
-import { useIsScrolled } from "./HeaderA";
+
+/* ------------------------------------------------------------------ */
+/*  Scroll hook                                                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Returns `true` once `window.scrollY` exceeds the given pixel threshold.
+ * Uses `useSyncExternalStore` for SSR-safe hydration.
+ */
+function useIsScrolled(threshold = 50) {
+  const subscribe = useCallback(
+    (callback: () => void) => {
+      window.addEventListener("scroll", callback, { passive: true });
+      return () => window.removeEventListener("scroll", callback);
+    },
+    [],
+  );
+
+  const getSnapshot = useCallback(() => window.scrollY > threshold, [threshold]);
+  const getServerSnapshot = useCallback(() => false, []);
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
 
 /* ------------------------------------------------------------------ */
 /*  Nav group metadata (icons + descriptions)                          */
