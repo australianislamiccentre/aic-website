@@ -36,15 +36,15 @@ vi.mock("@/contexts/SiteSettingsContext", () => ({
     shortName: "AIC",
     tagline: "A unique Islamic environment",
     parentOrganization: "Newport Islamic Society",
-    phone: "(03) 9391 9303",
-    email: "contact@aic.org.au",
+    phone: "03 9000 0177",
+    email: "contact@australianislamiccentre.org",
     address: {
-      street: "15 Corporate Crescent",
+      street: "23-27 Blenheim Rd",
       suburb: "Newport",
       state: "VIC",
       postcode: "3015",
       country: "Australia",
-      full: "15 Corporate Crescent, Newport VIC 3015",
+      full: "23-27 Blenheim Rd, Newport VIC 3015",
     },
     socialMedia: {
       facebook: "https://facebook.com/aic",
@@ -166,5 +166,52 @@ describe("HeaderB", () => {
       screen.getByText("Welcome to the Australian Islamic Centre"),
     ).toBeInTheDocument();
     expect(screen.getByText("Welcome to AIC")).toBeInTheDocument();
+  });
+
+  it("shows group descriptions when overlay is open", async () => {
+    const user = userEvent.setup();
+    render(<HeaderB />);
+
+    await user.click(screen.getByLabelText("Open menu"));
+
+    expect(screen.getByText("Learn about our centre")).toBeInTheDocument();
+    expect(
+      screen.getByText("Events, services & programs"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Prayer, worship & visiting"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Gallery & downloads")).toBeInTheDocument();
+    expect(screen.getByText("Connect with us")).toBeInTheDocument();
+  });
+
+  it("renders standalone Donate feature card in overlay", async () => {
+    const user = userEvent.setup();
+    render(<HeaderB />);
+
+    await user.click(screen.getByLabelText("Open menu"));
+
+    expect(screen.getByText("Support Our Community")).toBeInTheDocument();
+    expect(
+      screen.getByText("Your generosity helps us serve the community"),
+    ).toBeInTheDocument();
+  });
+
+  it("renders contact info strip in overlay", async () => {
+    const user = userEvent.setup();
+    render(<HeaderB />);
+
+    await user.click(screen.getByLabelText("Open menu"));
+
+    // Phone appears in top bars (desktop + mobile) AND the contact strip
+    const phoneElements = screen.getAllByText("03 9000 0177");
+    expect(phoneElements.length).toBeGreaterThanOrEqual(3);
+
+    expect(
+      screen.getByText("contact@australianislamiccentre.org"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/23-27 Blenheim Rd, Newport VIC 3015/),
+    ).toBeInTheDocument();
   });
 });
