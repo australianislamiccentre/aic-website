@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import userEvent from "@testing-library/user-event";
 import MediaContent from "./MediaContent";
-import { SanityGalleryImage } from "@/types/sanity";
+import type { MediaGalleryImage } from "@/types/sanity";
 import type { YouTubeVideo } from "@/lib/youtube";
 
 // Mock framer-motion
@@ -79,10 +79,9 @@ vi.mock("@/contexts/SiteSettingsContext", () => ({
 }));
 
 function makeImage(
-  overrides: Partial<SanityGalleryImage> = {},
-): SanityGalleryImage {
+  overrides: Partial<MediaGalleryImage> = {},
+): MediaGalleryImage {
   return {
-    _id: `img-${Math.random().toString(36).slice(2, 8)}`,
     image: {
       _type: "image",
       asset: { _ref: "image-abc-200x200-jpg", _type: "reference" },
@@ -112,12 +111,12 @@ describe("MediaContent", () => {
   // ── Page Header ──
 
   it("renders the page heading", () => {
-    render(<MediaContent galleryImages={[]} />);
+    render(<MediaContent mediaGalleryImages={[]} />);
     expect(screen.getByText("Gallery")).toBeInTheDocument();
   });
 
   it("renders breadcrumb navigation", () => {
-    render(<MediaContent galleryImages={[]} />);
+    render(<MediaContent mediaGalleryImages={[]} />);
     expect(screen.getByLabelText("Breadcrumb")).toBeInTheDocument();
   });
 
@@ -125,13 +124,13 @@ describe("MediaContent", () => {
 
   describe("video section", () => {
     it("does not render when no videos are provided", () => {
-      render(<MediaContent galleryImages={[]} youtubeVideos={[]} />);
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={[]} />);
       expect(screen.queryByText("Latest Videos")).not.toBeInTheDocument();
     });
 
     it("renders featured video iframe for the first video", () => {
       const videos = [makeVideo({ id: "abc123", title: "Friday Khutbah" })];
-      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       expect(screen.getByTitle("Friday Khutbah")).toBeInTheDocument();
     });
@@ -141,7 +140,7 @@ describe("MediaContent", () => {
         makeVideo({ id: "v1", title: "Video One" }),
         makeVideo({ id: "v2", title: "Video Two" }),
       ];
-      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       expect(screen.getByText("Latest Videos")).toBeInTheDocument();
     });
@@ -150,7 +149,7 @@ describe("MediaContent", () => {
       const videos = [
         makeVideo({ title: "Eid Prayer", publishedAt: "2025-03-30T08:00:00Z" }),
       ];
-      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       expect(screen.getByText("Eid Prayer")).toBeInTheDocument();
       expect(screen.getByText("30 March 2025")).toBeInTheDocument();
@@ -160,7 +159,7 @@ describe("MediaContent", () => {
       const videos = [
         makeVideo({ url: "https://www.youtube.com/watch?v=xyz" }),
       ];
-      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       const link = screen.getByText("View on YouTube");
       expect(link).toBeInTheDocument();
@@ -175,7 +174,7 @@ describe("MediaContent", () => {
       const videos = Array.from({ length: 8 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
-      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       // First 4 visible
       expect(screen.getByLabelText("Play Video 1")).toBeInTheDocument();
@@ -188,7 +187,7 @@ describe("MediaContent", () => {
       const videos = Array.from({ length: 8 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
-      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       expect(screen.getByText("Show More")).toBeInTheDocument();
     });
@@ -198,7 +197,7 @@ describe("MediaContent", () => {
       const videos = Array.from({ length: 8 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
-      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       await user.click(screen.getByText("Show More"));
 
@@ -214,7 +213,7 @@ describe("MediaContent", () => {
         makeVideo({ id: "v1", title: "First Video" }),
         makeVideo({ id: "v2", title: "Second Video" }),
       ];
-      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       // Initially shows first video
       expect(screen.getByTitle("First Video")).toBeInTheDocument();
@@ -231,7 +230,7 @@ describe("MediaContent", () => {
       const videos = Array.from({ length: 8 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
-      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       await user.click(screen.getByText("Show More"));
 
@@ -248,7 +247,7 @@ describe("MediaContent", () => {
         makeVideo({ id: "v1", title: "Video One" }),
         makeVideo({ id: "v2", title: "Video Two" }),
       ];
-      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       expect(screen.getByText("Now Playing")).toBeInTheDocument();
     });
@@ -256,7 +255,7 @@ describe("MediaContent", () => {
     it("shows LIVE NOW badge when live stream is active", () => {
       render(
         <MediaContent
-          galleryImages={[]}
+          mediaGalleryImages={[]}
           youtubeVideos={[makeVideo()]}
           liveStream={{
             isLive: true,
@@ -273,7 +272,7 @@ describe("MediaContent", () => {
     it("loads live stream into featured player when live", () => {
       render(
         <MediaContent
-          galleryImages={[]}
+          mediaGalleryImages={[]}
           youtubeVideos={[makeVideo({ id: "regular1" })]}
           liveStream={{
             isLive: true,
@@ -290,7 +289,7 @@ describe("MediaContent", () => {
     it("does not show LIVE badge when not live", () => {
       render(
         <MediaContent
-          galleryImages={[]}
+          mediaGalleryImages={[]}
           youtubeVideos={[makeVideo()]}
           liveStream={{ isLive: false }}
         />,
@@ -301,7 +300,7 @@ describe("MediaContent", () => {
 
     it("does not render video list for a single video", () => {
       const videos = [makeVideo({ id: "solo", title: "Solo Video" })];
-      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       // No list items (the solo video is in the player, not in a list)
       expect(
@@ -316,7 +315,7 @@ describe("MediaContent", () => {
     it("renders social media icons with correct links", () => {
       render(
         <MediaContent
-          galleryImages={[makeImage()]}
+          mediaGalleryImages={[makeImage()]}
           youtubeVideos={[makeVideo()]}
         />,
       );
@@ -335,7 +334,7 @@ describe("MediaContent", () => {
     it("renders Follow us heading", () => {
       render(
         <MediaContent
-          galleryImages={[makeImage()]}
+          mediaGalleryImages={[makeImage()]}
           youtubeVideos={[makeVideo()]}
         />,
       );
@@ -348,57 +347,27 @@ describe("MediaContent", () => {
 
   describe("photo gallery", () => {
     it("renders Photos heading", () => {
-      render(<MediaContent galleryImages={[makeImage()]} />);
+      render(<MediaContent mediaGalleryImages={[makeImage()]} />);
       expect(screen.getByText("Photos")).toBeInTheDocument();
     });
 
     it("renders all images without filtering", () => {
       const images = [
-        makeImage({ _id: "a", alt: "Prayer hall", category: "Prayer Hall" }),
-        makeImage({ _id: "b", alt: "Event photo", category: "Events" }),
-        makeImage({ _id: "c", alt: "Building", category: "Architecture" }),
+        makeImage({ alt: "Prayer hall" }),
+        makeImage({ alt: "Event photo" }),
+        makeImage({ alt: "Building" }),
       ];
-      render(<MediaContent galleryImages={images} />);
+      render(<MediaContent mediaGalleryImages={images} />);
 
       expect(screen.getByAltText("Prayer hall")).toBeInTheDocument();
       expect(screen.getByAltText("Event photo")).toBeInTheDocument();
       expect(screen.getByAltText("Building")).toBeInTheDocument();
     });
 
-    it("does not render category filter buttons", () => {
-      render(
-        <MediaContent
-          galleryImages={[
-            makeImage({ category: "Prayer Hall" }),
-            makeImage({ category: "Events" }),
-          ]}
-        />,
-      );
-
-      // No filter buttons — "All", "Prayer Hall" etc. should not appear as buttons
-      expect(
-        screen.queryByRole("button", { name: "All" }),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByRole("button", { name: "Prayer Hall" }),
-      ).not.toBeInTheDocument();
-    });
-
-    it("shows category badge on hover overlay", () => {
-      render(
-        <MediaContent
-          galleryImages={[makeImage({ category: "Events", alt: "Eid photo" })]}
-        />,
-      );
-
-      // The category badge is in the DOM but hidden via CSS opacity
-      expect(screen.getByText("Events")).toBeInTheDocument();
-    });
-
     it("shows caption in hover overlay", () => {
       render(
         <MediaContent
-          galleryImages={[
+          mediaGalleryImages={[
             makeImage({ caption: "Eid celebration 2025", alt: "Eid photo" }),
           ]}
         />,
@@ -410,7 +379,7 @@ describe("MediaContent", () => {
     it("falls back to alt text when caption is empty", () => {
       render(
         <MediaContent
-          galleryImages={[makeImage({ alt: "Community gathering" })]}
+          mediaGalleryImages={[makeImage({ alt: "Community gathering" })]}
         />,
       );
 
@@ -420,7 +389,7 @@ describe("MediaContent", () => {
     });
 
     it("shows empty state when no images", () => {
-      render(<MediaContent galleryImages={[]} />);
+      render(<MediaContent mediaGalleryImages={[]} />);
 
       expect(screen.getByText("No Photos Available")).toBeInTheDocument();
       expect(
@@ -430,14 +399,13 @@ describe("MediaContent", () => {
 
     it("filters out images with missing image data", () => {
       const images = [
-        makeImage({ _id: "good", alt: "Good image" }),
+        makeImage({ alt: "Good image" }),
         {
-          _id: "bad",
           alt: "Bad image",
-          image: null as unknown as SanityGalleryImage["image"],
+          image: null as unknown as MediaGalleryImage["image"],
         },
       ];
-      render(<MediaContent galleryImages={images} />);
+      render(<MediaContent mediaGalleryImages={images} />);
 
       expect(screen.getByAltText("Good image")).toBeInTheDocument();
       expect(screen.queryByAltText("Bad image")).not.toBeInTheDocument();
@@ -451,7 +419,7 @@ describe("MediaContent", () => {
       const user = userEvent.setup();
       render(
         <MediaContent
-          galleryImages={[makeImage({ alt: "Mosque exterior" })]}
+          mediaGalleryImages={[makeImage({ alt: "Mosque exterior" })]}
         />,
       );
 
@@ -464,11 +432,11 @@ describe("MediaContent", () => {
     it("shows image counter", async () => {
       const user = userEvent.setup();
       const images = [
-        makeImage({ _id: "a", alt: "Image A" }),
-        makeImage({ _id: "b", alt: "Image B" }),
-        makeImage({ _id: "c", alt: "Image C" }),
+        makeImage({ alt: "Image A" }),
+        makeImage({ alt: "Image B" }),
+        makeImage({ alt: "Image C" }),
       ];
-      render(<MediaContent galleryImages={images} />);
+      render(<MediaContent mediaGalleryImages={images} />);
 
       await user.click(screen.getByLabelText("View Image A"));
 
@@ -478,10 +446,10 @@ describe("MediaContent", () => {
     it("navigates to next image", async () => {
       const user = userEvent.setup();
       const images = [
-        makeImage({ _id: "a", alt: "Image A" }),
-        makeImage({ _id: "b", alt: "Image B" }),
+        makeImage({ alt: "Image A" }),
+        makeImage({ alt: "Image B" }),
       ];
-      render(<MediaContent galleryImages={images} />);
+      render(<MediaContent mediaGalleryImages={images} />);
 
       await user.click(screen.getByLabelText("View Image A"));
       expect(screen.getByText("1 / 2")).toBeInTheDocument();
@@ -493,10 +461,10 @@ describe("MediaContent", () => {
     it("navigates to previous image", async () => {
       const user = userEvent.setup();
       const images = [
-        makeImage({ _id: "a", alt: "Image A" }),
-        makeImage({ _id: "b", alt: "Image B" }),
+        makeImage({ alt: "Image A" }),
+        makeImage({ alt: "Image B" }),
       ];
-      render(<MediaContent galleryImages={images} />);
+      render(<MediaContent mediaGalleryImages={images} />);
 
       await user.click(screen.getByLabelText("View Image A"));
       await user.click(screen.getByLabelText("Previous image"));
@@ -508,7 +476,7 @@ describe("MediaContent", () => {
     it("closes on close button click", async () => {
       const user = userEvent.setup();
       render(
-        <MediaContent galleryImages={[makeImage({ alt: "Test image" })]} />,
+        <MediaContent mediaGalleryImages={[makeImage({ alt: "Test image" })]} />,
       );
 
       await user.click(screen.getByLabelText("View Test image"));
@@ -521,7 +489,7 @@ describe("MediaContent", () => {
     it("closes on Escape key", async () => {
       const user = userEvent.setup();
       render(
-        <MediaContent galleryImages={[makeImage({ alt: "Test image" })]} />,
+        <MediaContent mediaGalleryImages={[makeImage({ alt: "Test image" })]} />,
       );
 
       await user.click(screen.getByLabelText("View Test image"));
@@ -534,11 +502,11 @@ describe("MediaContent", () => {
     it("navigates with arrow keys", async () => {
       const user = userEvent.setup();
       const images = [
-        makeImage({ _id: "a", alt: "Image A" }),
-        makeImage({ _id: "b", alt: "Image B" }),
-        makeImage({ _id: "c", alt: "Image C" }),
+        makeImage({ alt: "Image A" }),
+        makeImage({ alt: "Image B" }),
+        makeImage({ alt: "Image C" }),
       ];
-      render(<MediaContent galleryImages={images} />);
+      render(<MediaContent mediaGalleryImages={images} />);
 
       await user.click(screen.getByLabelText("View Image A"));
       expect(screen.getByText("1 / 3")).toBeInTheDocument();
@@ -553,7 +521,7 @@ describe("MediaContent", () => {
     it("locks body scroll when open", async () => {
       const user = userEvent.setup();
       render(
-        <MediaContent galleryImages={[makeImage({ alt: "Test image" })]} />,
+        <MediaContent mediaGalleryImages={[makeImage({ alt: "Test image" })]} />,
       );
 
       await user.click(screen.getByLabelText("View Test image"));
@@ -563,15 +531,14 @@ describe("MediaContent", () => {
       expect(document.body.style.overflow).toBe("");
     });
 
-    it("shows caption and category in lightbox overlay", async () => {
+    it("shows caption in lightbox overlay", async () => {
       const user = userEvent.setup();
       render(
         <MediaContent
-          galleryImages={[
+          mediaGalleryImages={[
             makeImage({
               alt: "Eid prayer",
               caption: "Annual Eid celebration",
-              category: "Events",
             }),
           ]}
         />,
@@ -582,7 +549,6 @@ describe("MediaContent", () => {
       // Inside the lightbox dialog
       const dialog = screen.getByRole("dialog");
       expect(dialog).toHaveTextContent("Annual Eid celebration");
-      expect(dialog).toHaveTextContent("Events");
     });
   });
 });

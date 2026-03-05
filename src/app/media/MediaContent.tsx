@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
-import { SanityGalleryImage } from "@/types/sanity";
+import type { MediaGalleryImage } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
 import {
   Camera,
@@ -41,13 +41,13 @@ function formatDate(dateString: string): string {
 }
 
 interface MediaContentProps {
-  galleryImages: SanityGalleryImage[];
+  mediaGalleryImages: MediaGalleryImage[];
   youtubeVideos?: YouTubeVideo[];
   liveStream?: YouTubeLiveStream;
 }
 
 export default function MediaContent({
-  galleryImages,
+  mediaGalleryImages,
   youtubeVideos = [],
   liveStream,
 }: MediaContentProps) {
@@ -58,15 +58,14 @@ export default function MediaContent({
   const { socialMedia } = useSiteSettings();
 
   // Convert Sanity images — show ALL, no category filtering
-  const allImages = galleryImages
+  const allImages = mediaGalleryImages
     .filter((img) => img.image)
-    .map((img) => ({
-      id: img._id,
+    .map((img, index) => ({
+      id: `media-${index}`,
       src: urlFor(img.image).width(600).url(),
       lightboxSrc: urlFor(img.image).width(1200).url(),
       alt: img.alt,
       caption: img.caption || "",
-      category: img.category || "",
     }));
 
   const featuredVideo = youtubeVideos[featuredVideoIndex];
@@ -357,13 +356,8 @@ export default function MediaContent({
                       className="w-full h-auto"
                     />
 
-                    {/* Hover overlay with caption + category badge */}
+                    {/* Hover overlay with caption */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                      {image.category && (
-                        <span className="inline-block self-start px-2.5 py-1 bg-[#01476b]/90 text-white text-xs font-medium rounded-full mb-2">
-                          {image.category}
-                        </span>
-                      )}
                       <p className="text-white text-sm leading-snug">
                         {image.caption || image.alt}
                       </p>
@@ -457,11 +451,7 @@ export default function MediaContent({
                     {allImages[lightboxIndex].caption}
                   </p>
                 )}
-                {allImages[lightboxIndex]?.category && (
-                  <span className="inline-block mt-2 px-2.5 py-1 bg-[#01476b]/80 text-white text-xs font-medium rounded-full">
-                    {allImages[lightboxIndex].category}
-                  </span>
-                )}
+
               </div>
             </motion.div>
 

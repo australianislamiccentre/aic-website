@@ -8,8 +8,7 @@
  * @route /media
  * @module app/media/page
  */
-import { getGalleryImages } from "@/sanity/lib/fetch";
-import { SanityGalleryImage } from "@/types/sanity";
+import { getMediaGallery } from "@/sanity/lib/fetch";
 import { getYouTubeVideos, getYouTubeLiveStream } from "@/lib/youtube";
 import MediaContent from "./MediaContent";
 
@@ -19,15 +18,15 @@ export const metadata = {
 };
 
 export default async function MediaPage() {
-  const [galleryImages, youtubeVideos, liveStream] = await Promise.all([
-    getGalleryImages() as Promise<SanityGalleryImage[]>,
+  const [mediaGalleryImages, youtubeVideos, liveStream] = await Promise.all([
+    getMediaGallery(),
     getYouTubeVideos(),
     getYouTubeLiveStream(),
   ]);
 
   return (
     <MediaContent
-      galleryImages={galleryImages}
+      mediaGalleryImages={mediaGalleryImages}
       youtubeVideos={youtubeVideos}
       liveStream={liveStream}
     />
