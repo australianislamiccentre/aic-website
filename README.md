@@ -112,16 +112,6 @@ src/
 
 ## Architecture
 
-See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for detailed diagrams covering:
-
-- System overview (Sanity → Vercel → Browser)
-- Data fetching pipeline with ISR caching
-- On-demand revalidation via Sanity webhooks
-- Form submission security pipeline
-- Draft mode preview flow
-- Server vs client component split
-- Environment variable reference
-
 ### Key patterns
 
 **Sanity-first with fallback** — Pages fetch from Sanity CMS. If Sanity returns empty data or is unreachable, hardcoded defaults from `src/data/content.ts` keep the site functional.
@@ -204,16 +194,10 @@ For instant content updates, configure a Sanity webhook:
 - **Trigger**: On publish/unpublish
 - **Dataset**: production
 
-## Contributing
-
-See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the development workflow, branch naming, and troubleshooting.
-
 ## Documentation
 
-| Document | Audience | Description |
-|----------|----------|-------------|
-| **[docs/CMS-GUIDE.md](docs/CMS-GUIDE.md)** | Mosque admins | How to manage content in Sanity Studio |
-| **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | Developers | Visual diagrams of data flow and system design |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Developers | Development workflow and troubleshooting |
-| **Inline JSDoc** | Developers | Hover over any function/component in VS Code |
-| **`npm run docs`** | Developers | Generate browsable HTML API reference |
+| Resource | Description |
+|----------|-------------|
+| **[CLAUDE.md](CLAUDE.md)** | Architecture, conventions, code quality gates |
+| **Inline JSDoc** | Hover over any function/component in VS Code |
+| **`npm run docs`** | Generate browsable HTML API reference (TypeDoc) |
