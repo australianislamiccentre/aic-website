@@ -351,41 +351,46 @@ describe("MediaContent", () => {
       expect(screen.getByText("Photos")).toBeInTheDocument();
     });
 
-    it("renders all images without filtering", () => {
+    it("renders hero and thumbnail images", () => {
       const images = [
-        makeImage({ alt: "Prayer hall" }),
-        makeImage({ alt: "Event photo" }),
-        makeImage({ alt: "Building" }),
+        makeImage({ alt: "Hero photo" }),
+        makeImage({ alt: "Second photo" }),
+        makeImage({ alt: "Third photo" }),
       ];
       render(<MediaContent mediaGalleryImages={images} />);
 
-      expect(screen.getByAltText("Prayer hall")).toBeInTheDocument();
-      expect(screen.getByAltText("Event photo")).toBeInTheDocument();
-      expect(screen.getByAltText("Building")).toBeInTheDocument();
+      expect(screen.getByAltText("Hero photo")).toBeInTheDocument();
+      expect(screen.getByAltText("Second photo")).toBeInTheDocument();
+      expect(screen.getByAltText("Third photo")).toBeInTheDocument();
     });
 
-    it("shows caption in hover overlay", () => {
-      render(
-        <MediaContent
-          mediaGalleryImages={[
-            makeImage({ caption: "Eid celebration 2025", alt: "Eid photo" }),
-          ]}
-        />,
+    it("shows +N tile when more than 4 images", () => {
+      const images = Array.from({ length: 8 }, (_, i) =>
+        makeImage({ alt: `Photo ${i + 1}` }),
       );
-
-      expect(screen.getByText("Eid celebration 2025")).toBeInTheDocument();
+      render(<MediaContent mediaGalleryImages={images} />);
+      expect(screen.getByText("+4")).toBeInTheDocument();
     });
 
-    it("falls back to alt text when caption is empty", () => {
-      render(
-        <MediaContent
-          mediaGalleryImages={[makeImage({ alt: "Community gathering" })]}
-        />,
-      );
+    it("does not show +N tile when 4 or fewer images", () => {
+      const images = [
+        makeImage({ alt: "A" }),
+        makeImage({ alt: "B" }),
+        makeImage({ alt: "C" }),
+      ];
+      render(<MediaContent mediaGalleryImages={images} />);
+      expect(screen.queryByText(/^\+\d+$/)).not.toBeInTheDocument();
+    });
 
-      // alt appears in both img alt and overlay text
-      const elements = screen.getAllByText("Community gathering");
-      expect(elements.length).toBeGreaterThanOrEqual(1);
+    it("clicking +N tile opens lightbox", async () => {
+      const user = userEvent.setup();
+      const images = Array.from({ length: 6 }, (_, i) =>
+        makeImage({ alt: `Photo ${i + 1}` }),
+      );
+      render(<MediaContent mediaGalleryImages={images} />);
+
+      await user.click(screen.getByLabelText("View all 6 photos"));
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
     it("shows empty state when no images", () => {
