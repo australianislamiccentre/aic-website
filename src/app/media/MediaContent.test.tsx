@@ -67,6 +67,17 @@ vi.mock("@/components/ui/Breadcrumb", () => ({
   BreadcrumbLight: () => <nav aria-label="Breadcrumb">Home / Media</nav>,
 }));
 
+// Mock SiteSettingsContext
+vi.mock("@/contexts/SiteSettingsContext", () => ({
+  useSiteSettings: () => ({
+    socialMedia: {
+      facebook: "https://facebook.com/aic",
+      instagram: "https://instagram.com/aic",
+      youtube: "https://youtube.com/@aic",
+    },
+  }),
+}));
+
 function makeImage(
   overrides: Partial<SanityGalleryImage> = {},
 ): SanityGalleryImage {
@@ -151,28 +162,44 @@ describe("MediaContent", () => {
       expect(link.closest("a")).toHaveAttribute("target", "_blank");
     });
 
-    it("renders thumbnail strip when multiple videos exist", () => {
-      const videos = [
-        makeVideo({ id: "v1", title: "Video One" }),
-        makeVideo({ id: "v2", title: "Video Two" }),
-        makeVideo({ id: "v3", title: "Video Three" }),
-      ];
+    it("shows first 4 videos in the list", () => {
+      const videos = Array.from({ length: 8 }, (_, i) =>
+        makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
+      );
       render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
 
-      expect(screen.getByLabelText("Play Video Two")).toBeInTheDocument();
-      expect(screen.getByLabelText("Play Video Three")).toBeInTheDocument();
+      // First 4 visible
+      expect(screen.getByLabelText("Play Video 1")).toBeInTheDocument();
+      expect(screen.getByLabelText("Play Video 4")).toBeInTheDocument();
+      // 5th+ hidden
+      expect(screen.queryByLabelText("Play Video 5")).not.toBeInTheDocument();
     });
 
-    it("does not render thumbnail strip for a single video", () => {
-      const videos = [makeVideo({ id: "solo", title: "Solo Video" })];
+    it("hides remaining videos behind Show More button", () => {
+      const videos = Array.from({ length: 8 }, (_, i) =>
+        makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
+      );
       render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
 
-      expect(
-        screen.queryByLabelText("Play Solo Video"),
-      ).not.toBeInTheDocument();
+      expect(screen.getByText("Show More")).toBeInTheDocument();
     });
 
-    it("switches featured video when thumbnail is clicked", async () => {
+    it("Show More reveals all 8 videos", async () => {
+      const user = userEvent.setup();
+      const videos = Array.from({ length: 8 }, (_, i) =>
+        makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
+      );
+      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+
+      await user.click(screen.getByText("Show More"));
+
+      // All 8 now visible
+      expect(screen.getByLabelText("Play Video 8")).toBeInTheDocument();
+      // Show More gone
+      expect(screen.queryByText("Show More")).not.toBeInTheDocument();
+    });
+
+    it("clicking a video in the list loads it into the player", async () => {
       const user = userEvent.setup();
       const videos = [
         makeVideo({ id: "v1", title: "First Video" }),
@@ -183,11 +210,49 @@ describe("MediaContent", () => {
       // Initially shows first video
       expect(screen.getByTitle("First Video")).toBeInTheDocument();
 
-      // Click second video thumbnail
+      // Click second video in list
       await user.click(screen.getByLabelText("Play Second Video"));
 
       // Now shows second video
       expect(screen.getByTitle("Second Video")).toBeInTheDocument();
+    });
+
+    it("shows View all videos on YouTube link after expanding", async () => {
+      const user = userEvent.setup();
+      const videos = Array.from({ length: 8 }, (_, i) =>
+        makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
+      );
+      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+
+      await user.click(screen.getByText("Show More"));
+
+      const channelLink = screen.getByText("View all videos on YouTube");
+      expect(channelLink).toBeInTheDocument();
+      expect(channelLink.closest("a")).toHaveAttribute(
+        "href",
+        "https://youtube.com/@aic",
+      );
+    });
+
+    it("active video is visually distinguished", () => {
+      const videos = [
+        makeVideo({ id: "v1", title: "Video One" }),
+        makeVideo({ id: "v2", title: "Video Two" }),
+      ];
+      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+
+      const activeButton = screen.getByLabelText("Play Video One");
+      expect(activeButton.className).toContain("border-[#01476b]");
+    });
+
+    it("does not render video list for a single video", () => {
+      const videos = [makeVideo({ id: "solo", title: "Solo Video" })];
+      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+
+      // No list items (the solo video is in the player, not in a list)
+      expect(
+        screen.queryByLabelText("Play Solo Video"),
+      ).not.toBeInTheDocument();
     });
   });
 
