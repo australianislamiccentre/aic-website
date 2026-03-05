@@ -24,7 +24,7 @@ import {
   ChevronRight,
   ExternalLink,
 } from "lucide-react";
-import type { YouTubeVideo } from "@/lib/youtube";
+import type { YouTubeVideo, YouTubeLiveStream } from "@/lib/youtube";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
 /** Format an ISO date string to a human-readable Australian date. */
@@ -40,11 +40,13 @@ function formatDate(dateString: string): string {
 interface MediaContentProps {
   galleryImages: SanityGalleryImage[];
   youtubeVideos?: YouTubeVideo[];
+  liveStream?: YouTubeLiveStream;
 }
 
 export default function MediaContent({
   galleryImages,
   youtubeVideos = [],
+  liveStream,
 }: MediaContentProps) {
   const [featuredVideoIndex, setFeaturedVideoIndex] = useState(0);
   const [showAllVideos, setShowAllVideos] = useState(false);
@@ -65,6 +67,12 @@ export default function MediaContent({
     }));
 
   const featuredVideo = youtubeVideos[featuredVideoIndex];
+  const isLive = !!(liveStream?.isLive && liveStream.videoId);
+  const effectiveVideoId = isLive ? liveStream!.videoId! : featuredVideo?.id;
+  const effectiveTitle = isLive
+    ? liveStream!.title || "Live Stream"
+    : featuredVideo?.title;
+  const effectiveUrl = isLive ? liveStream!.url : featuredVideo?.url;
   const visibleVideos = showAllVideos
     ? youtubeVideos
     : youtubeVideos.slice(0, 4);
@@ -154,9 +162,15 @@ export default function MediaContent({
             <FadeIn>
               <div className="sm:max-w-[900px] sm:mx-auto">
                 <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-900 shadow-lg">
+                  {isLive && (
+                    <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-red-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
+                      <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                      LIVE
+                    </div>
+                  )}
                   <iframe
-                    src={`https://www.youtube.com/embed/${featuredVideo.id}`}
-                    title={featuredVideo.title}
+                    src={`https://www.youtube.com/embed/${effectiveVideoId}`}
+                    title={effectiveTitle || ""}
                     allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     className="absolute inset-0 w-full h-full"
@@ -167,21 +181,25 @@ export default function MediaContent({
                 <div className="mt-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                   <div className="min-w-0">
                     <h3 className="text-lg font-semibold text-gray-900 leading-snug">
-                      {featuredVideo.title}
+                      {effectiveTitle}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {formatDate(featuredVideo.publishedAt)}
-                    </p>
+                    {!isLive && featuredVideo && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        {formatDate(featuredVideo.publishedAt)}
+                      </p>
+                    )}
                   </div>
-                  <a
-                    href={featuredVideo.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-[#01476b] hover:text-[#01476b]/80 transition-colors shrink-0"
-                  >
-                    View on YouTube
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
+                  {effectiveUrl && (
+                    <a
+                      href={effectiveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-[#01476b] hover:text-[#01476b]/80 transition-colors shrink-0"
+                    >
+                      View on YouTube
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  )}
                 </div>
               </div>
             </FadeIn>

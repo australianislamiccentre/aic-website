@@ -245,6 +245,52 @@ describe("MediaContent", () => {
       expect(activeButton.className).toContain("ring-[#01476b]");
     });
 
+    it("shows LIVE NOW badge when live stream is active", () => {
+      render(
+        <MediaContent
+          galleryImages={[]}
+          youtubeVideos={[makeVideo()]}
+          liveStream={{
+            isLive: true,
+            videoId: "live1",
+            title: "Live Khutbah",
+            url: "https://youtube.com/watch?v=live1",
+          }}
+        />,
+      );
+
+      expect(screen.getByText("LIVE")).toBeInTheDocument();
+    });
+
+    it("loads live stream into featured player when live", () => {
+      render(
+        <MediaContent
+          galleryImages={[]}
+          youtubeVideos={[makeVideo({ id: "regular1" })]}
+          liveStream={{
+            isLive: true,
+            videoId: "live1",
+            title: "Live Khutbah",
+            url: "https://youtube.com/watch?v=live1",
+          }}
+        />,
+      );
+
+      expect(screen.getByTitle("Live Khutbah")).toBeInTheDocument();
+    });
+
+    it("does not show LIVE badge when not live", () => {
+      render(
+        <MediaContent
+          galleryImages={[]}
+          youtubeVideos={[makeVideo()]}
+          liveStream={{ isLive: false }}
+        />,
+      );
+
+      expect(screen.queryByText("LIVE")).not.toBeInTheDocument();
+    });
+
     it("does not render video list for a single video", () => {
       const videos = [makeVideo({ id: "solo", title: "Solo Video" })];
       render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);

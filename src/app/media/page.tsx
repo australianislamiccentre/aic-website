@@ -10,7 +10,7 @@
  */
 import { getGalleryImages } from "@/sanity/lib/fetch";
 import { SanityGalleryImage } from "@/types/sanity";
-import { getYouTubeVideos } from "@/lib/youtube";
+import { getYouTubeVideos, getYouTubeLiveStream } from "@/lib/youtube";
 import MediaContent from "./MediaContent";
 
 export const metadata = {
@@ -19,10 +19,17 @@ export const metadata = {
 };
 
 export default async function MediaPage() {
-  const [galleryImages, youtubeVideos] = await Promise.all([
+  const [galleryImages, youtubeVideos, liveStream] = await Promise.all([
     getGalleryImages() as Promise<SanityGalleryImage[]>,
     getYouTubeVideos(),
+    getYouTubeLiveStream(),
   ]);
 
-  return <MediaContent galleryImages={galleryImages} youtubeVideos={youtubeVideos} />;
+  return (
+    <MediaContent
+      galleryImages={galleryImages}
+      youtubeVideos={youtubeVideos}
+      liveStream={liveStream}
+    />
+  );
 }
