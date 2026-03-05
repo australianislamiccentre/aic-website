@@ -242,7 +242,7 @@ describe("MediaContent", () => {
       render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
 
       const activeButton = screen.getByLabelText("Play Video One");
-      expect(activeButton.className).toContain("border-[#01476b]");
+      expect(activeButton.className).toContain("ring-[#01476b]");
     });
 
     it("does not render video list for a single video", () => {

@@ -186,53 +186,55 @@ export default function MediaContent({
               </div>
             </FadeIn>
 
-            {/* Video List */}
+            {/* Video Grid */}
             {youtubeVideos.length > 1 && (
-              <div className="sm:max-w-[900px] sm:mx-auto mt-6 space-y-2">
-                {visibleVideos.map((video) => (
-                  <button
-                    key={video.id}
-                    onClick={() =>
-                      setFeaturedVideoIndex(
-                        youtubeVideos.findIndex((v) => v.id === video.id),
-                      )
-                    }
-                    className={`w-full flex items-center gap-4 p-3 rounded-lg text-left transition-colors ${
-                      youtubeVideos[featuredVideoIndex]?.id === video.id
-                        ? "bg-[#01476b]/5 border-l-4 border-[#01476b]"
-                        : "hover:bg-gray-50"
-                    }`}
-                    aria-label={`Play ${video.title}`}
-                  >
-                    <div className="relative shrink-0 w-28 sm:w-32 aspect-video rounded-md overflow-hidden">
-                      <Image
-                        src={video.thumbnail}
-                        alt={video.title}
-                        fill
-                        className="object-cover"
-                        sizes="128px"
-                      />
-                      {youtubeVideos[featuredVideoIndex]?.id !== video.id && (
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                          <div className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center">
-                            <Play className="w-3 h-3 text-red-600 ml-0.5" />
+              <div className="mt-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {visibleVideos.map((video) => (
+                    <button
+                      key={video.id}
+                      onClick={() =>
+                        setFeaturedVideoIndex(
+                          youtubeVideos.findIndex((v) => v.id === video.id),
+                        )
+                      }
+                      className={`group text-left rounded-lg overflow-hidden transition-all ${
+                        youtubeVideos[featuredVideoIndex]?.id === video.id
+                          ? "ring-2 ring-[#01476b] ring-offset-2"
+                          : "hover:shadow-md"
+                      }`}
+                      aria-label={`Play ${video.title}`}
+                    >
+                      <div className="relative aspect-video rounded-md overflow-hidden">
+                        <Image
+                          src={video.thumbnail}
+                          alt={video.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        />
+                        {youtubeVideos[featuredVideoIndex]?.id !== video.id && (
+                          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                              <Play className="w-3.5 h-3.5 text-red-600 ml-0.5" />
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">
-                        {video.title}
-                      </h4>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {formatDate(video.publishedAt)}
-                      </p>
-                    </div>
-                  </button>
-                ))}
+                        )}
+                      </div>
+                      <div className="pt-2 pb-1">
+                        <h4 className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">
+                          {video.title}
+                        </h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatDate(video.publishedAt)}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
 
                 {/* Show More / Channel Link */}
-                <div className="flex items-center justify-center gap-4 pt-2">
+                <div className="flex items-center justify-center gap-4 pt-6">
                   {!showAllVideos && youtubeVideos.length > 4 && (
                     <button
                       onClick={() => setShowAllVideos(true)}
