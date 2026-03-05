@@ -23,6 +23,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  Facebook,
+  Instagram,
+  Youtube,
 } from "lucide-react";
 import type { YouTubeVideo, YouTubeLiveStream } from "@/lib/youtube";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
@@ -278,6 +281,48 @@ export default function MediaContent({
           </div>
         </section>
       )}
+
+      {/* ── Social Links ── */}
+      <section className="py-8 bg-white border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <span className="text-sm font-medium text-gray-600">Follow Us</span>
+          <div className="flex items-center gap-4">
+            {socialMedia.facebook && (
+              <a
+                href={socialMedia.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-[#01476b] hover:text-white transition-colors"
+                aria-label="Follow us on Facebook"
+              >
+                <Facebook className="w-5 h-5" />
+              </a>
+            )}
+            {socialMedia.instagram && (
+              <a
+                href={socialMedia.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-[#01476b] hover:text-white transition-colors"
+                aria-label="Follow us on Instagram"
+              >
+                <Instagram className="w-5 h-5" />
+              </a>
+            )}
+            {socialMedia.youtube && (
+              <a
+                href={socialMedia.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-[#01476b] hover:text-white transition-colors"
+                aria-label="Follow us on YouTube"
+              >
+                <Youtube className="w-5 h-5" />
+              </a>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* ── Photo Gallery — Masonry ── */}
       <section className="py-12 bg-neutral-50">

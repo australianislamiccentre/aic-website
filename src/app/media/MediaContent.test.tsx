@@ -302,6 +302,40 @@ describe("MediaContent", () => {
     });
   });
 
+  // ── Social Links ──
+
+  describe("social links", () => {
+    it("renders social media icons with correct links", () => {
+      render(
+        <MediaContent
+          galleryImages={[makeImage()]}
+          youtubeVideos={[makeVideo()]}
+        />,
+      );
+
+      const fbLink = screen.getByLabelText("Follow us on Facebook");
+      expect(fbLink).toHaveAttribute("href", "https://facebook.com/aic");
+      expect(fbLink).toHaveAttribute("target", "_blank");
+
+      const igLink = screen.getByLabelText("Follow us on Instagram");
+      expect(igLink).toHaveAttribute("href", "https://instagram.com/aic");
+
+      const ytLink = screen.getByLabelText("Follow us on YouTube");
+      expect(ytLink).toHaveAttribute("href", "https://youtube.com/@aic");
+    });
+
+    it("renders Follow us heading", () => {
+      render(
+        <MediaContent
+          galleryImages={[makeImage()]}
+          youtubeVideos={[makeVideo()]}
+        />,
+      );
+
+      expect(screen.getByText("Follow Us")).toBeInTheDocument();
+    });
+  });
+
   // ── Photo Gallery ──
 
   describe("photo gallery", () => {
