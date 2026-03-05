@@ -220,7 +220,7 @@ export default function MediaContent({
                       }
                       className={`group text-left rounded-lg overflow-hidden transition-all ${
                         youtubeVideos[featuredVideoIndex]?.id === video.id
-                          ? "ring-2 ring-[#01476b] ring-offset-2"
+                          ? "bg-[#01476b]/5"
                           : "hover:shadow-md"
                       }`}
                       aria-label={`Play ${video.title}`}
@@ -233,7 +233,16 @@ export default function MediaContent({
                           className="object-cover"
                           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         />
-                        {youtubeVideos[featuredVideoIndex]?.id !== video.id && (
+                        {youtubeVideos[featuredVideoIndex]?.id === video.id ? (
+                          <div className="absolute inset-0 bg-[#01476b]/40 flex items-center justify-center">
+                            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-md">
+                              <span className="w-2 h-2 rounded-full bg-[#01476b] animate-pulse" />
+                              <span className="text-xs font-semibold text-[#01476b]">
+                                Now Playing
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
                           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                             <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
                               <Play className="w-3.5 h-3.5 text-red-600 ml-0.5" />

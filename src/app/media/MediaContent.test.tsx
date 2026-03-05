@@ -243,15 +243,14 @@ describe("MediaContent", () => {
       );
     });
 
-    it("active video is visually distinguished", () => {
+    it("active video shows Now Playing badge", () => {
       const videos = [
         makeVideo({ id: "v1", title: "Video One" }),
         makeVideo({ id: "v2", title: "Video Two" }),
       ];
       render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
 
-      const activeButton = screen.getByLabelText("Play Video One");
-      expect(activeButton.className).toContain("ring-[#01476b]");
+      expect(screen.getByText("Now Playing")).toBeInTheDocument();
     });
 
     it("shows LIVE NOW badge when live stream is active", () => {
