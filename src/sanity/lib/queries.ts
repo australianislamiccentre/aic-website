@@ -301,6 +301,17 @@ export const featuredGalleryQuery = groq`
   }
 `;
 
+// Media Page Gallery (singleton)
+export const mediaGalleryQuery = groq`
+  *[_id == "mediaGallery"][0] {
+    images[] {
+      image,
+      alt,
+      caption
+    }
+  }
+`;
+
 // FAQs - enhanced with rich text answer and related links
 export const faqsQuery = groq`
   *[_type == "faq"] | order(order asc) {

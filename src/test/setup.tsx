@@ -48,6 +48,7 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getFeaturedServices: vi.fn().mockResolvedValue([]),
   getGalleryImages: vi.fn().mockResolvedValue([]),
   getFeaturedGalleryImages: vi.fn().mockResolvedValue([]),
+  getMediaGallery: vi.fn().mockResolvedValue([]),
   getTestimonials: vi.fn().mockResolvedValue([]),
   getFaqs: vi.fn().mockResolvedValue([]),
   getFaqsByCategory: vi.fn().mockResolvedValue([]),

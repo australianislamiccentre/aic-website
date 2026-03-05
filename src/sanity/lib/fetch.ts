@@ -39,6 +39,7 @@ import {
   donatePageSettingsQuery,
   galleryQuery,
   featuredGalleryQuery,
+  mediaGalleryQuery,
   faqsQuery,
   faqsByCategoryQuery,
   featuredFaqsQuery,
@@ -71,6 +72,7 @@ import {
   SanityProgram,
   SanityService,
   SanityGalleryImage,
+  MediaGalleryImage,
   SanityFaq,
   SanityEtiquette,
   SanityTourType,
@@ -343,6 +345,21 @@ export async function getFeaturedGalleryImages(): Promise<SanityGalleryImage[]> 
     return result ?? [];
   } catch (error) {
     console.error("Failed to fetch featured gallery images from Sanity:", error);
+    return [];
+  }
+}
+
+// Media Page Gallery (singleton)
+export async function getMediaGallery(): Promise<MediaGalleryImage[]> {
+  try {
+    const result = await sanityFetch<{ images: MediaGalleryImage[] } | null>(
+      mediaGalleryQuery,
+      {},
+      ["mediaGallery"]
+    );
+    return result?.images ?? [];
+  } catch (error) {
+    console.error("Failed to fetch media gallery from Sanity:", error);
     return [];
   }
 }

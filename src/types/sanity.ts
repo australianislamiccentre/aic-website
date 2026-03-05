@@ -146,6 +146,13 @@ export interface SanityGalleryImage {
   featured?: boolean;
 }
 
+/** An image in the media page gallery (from the mediaGallery singleton). */
+export interface MediaGalleryImage {
+  image: SanityImage;
+  alt: string;
+  caption?: string;
+}
+
 /** A community testimonial / quote. */
 export interface SanityTestimonial {
   _id: string;
