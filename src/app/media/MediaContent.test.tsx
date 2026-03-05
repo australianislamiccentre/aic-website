@@ -133,8 +133,17 @@ describe("MediaContent", () => {
       const videos = [makeVideo({ id: "abc123", title: "Friday Khutbah" })];
       render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
 
-      expect(screen.getByText("Latest Videos")).toBeInTheDocument();
       expect(screen.getByTitle("Friday Khutbah")).toBeInTheDocument();
+    });
+
+    it("renders Latest Videos heading above the grid", () => {
+      const videos = [
+        makeVideo({ id: "v1", title: "Video One" }),
+        makeVideo({ id: "v2", title: "Video Two" }),
+      ];
+      render(<MediaContent galleryImages={[]} youtubeVideos={videos} />);
+
+      expect(screen.getByText("Latest Videos")).toBeInTheDocument();
     });
 
     it("displays video title and formatted date", () => {

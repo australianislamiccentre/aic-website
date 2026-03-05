@@ -155,12 +155,6 @@ export default function MediaContent({
       {youtubeVideos.length > 0 && featuredVideo && (
         <section className="py-12 bg-white">
           <div className="max-w-7xl mx-auto px-6">
-            <FadeIn>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Latest Videos
-              </h2>
-            </FadeIn>
-
             {/* Featured Player */}
             <FadeIn>
               <div className="sm:max-w-[900px] sm:mx-auto">
@@ -210,6 +204,11 @@ export default function MediaContent({
             {/* Video Grid */}
             {youtubeVideos.length > 1 && (
               <div className="mt-8">
+                <FadeIn>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    Latest Videos
+                  </h2>
+                </FadeIn>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {visibleVideos.map((video) => (
                     <button
