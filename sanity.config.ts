@@ -92,6 +92,13 @@ const structure = (S: StructureBuilder) =>
             .schemaType("formSettings")
             .documentId("formSettings")
         ),
+      S.listItem()
+        .title("Media Page Gallery")
+        .child(
+          S.document()
+            .schemaType("mediaGallery")
+            .documentId("mediaGallery")
+        ),
 
       S.divider(),
 
@@ -166,7 +173,7 @@ const structure = (S: StructureBuilder) =>
 
       // Rest of the document types (exclude the ones we customized and singletons)
       ...S.documentTypeListItems().filter(
-        (item) => !["event", "announcement", "siteSettings", "prayerSettings", "donationSettings", "donatePageSettings", "donationCampaign", "formSettings"].includes(item.getId() || "")
+        (item) => !["event", "announcement", "siteSettings", "prayerSettings", "donationSettings", "donatePageSettings", "donationCampaign", "formSettings", "mediaGallery"].includes(item.getId() || "")
       ),
     ]);
 
@@ -188,6 +195,7 @@ const previewPaths: Record<string, (slug?: string) => string> = {
   faq: () => "/resources",
   etiquette: () => "/visit",
   tourType: () => "/visit",
+  mediaGallery: () => "/media",
   siteSettings: () => "/",
   prayerSettings: () => "/worshippers",
   teamMember: (slug) => `/imams${slug ? `/${slug}` : ""}`,
