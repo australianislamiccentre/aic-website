@@ -331,7 +331,7 @@ export default function MediaContent({
         </div>
       </section>
 
-      {/* ── Photo Gallery — Masonry ── */}
+      {/* ── Photo Gallery — Album Preview ── */}
       <section className="py-12 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
@@ -339,33 +339,63 @@ export default function MediaContent({
           </FadeIn>
 
           {allImages.length > 0 ? (
-            <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
-              {allImages.map((image, index) => (
-                <div key={image.id} className="mb-4 break-inside-avoid">
-                  <button
-                    onClick={() => openLightbox(index)}
-                    className="relative w-full rounded-xl overflow-hidden group cursor-pointer block text-left"
-                    aria-label={`View ${image.alt}`}
-                  >
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      width={600}
-                      height={400}
-                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                      className="w-full h-auto"
-                    />
+            <FadeIn>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {/* Main/Hero Image — spans 2 cols and 2 rows */}
+                <button
+                  onClick={() => openLightbox(0)}
+                  className="relative col-span-2 row-span-2 rounded-xl overflow-hidden group cursor-pointer"
+                  aria-label={`View ${allImages[0].alt}`}
+                >
+                  <Image
+                    src={allImages[0].src}
+                    alt={allImages[0].alt}
+                    width={600}
+                    height={600}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 50vw"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                </button>
 
-                    {/* Hover overlay with caption */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                      <p className="text-white text-sm leading-snug">
-                        {image.caption || image.alt}
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              ))}
-            </div>
+                {/* Smaller thumbnails */}
+                {allImages.slice(1, 4).map((image, index) => {
+                  const isLastVisible = index === 2 && allImages.length > 4;
+                  const remaining = allImages.length - 4;
+
+                  return (
+                    <button
+                      key={image.id}
+                      onClick={() => openLightbox(index + 1)}
+                      className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer"
+                      aria-label={
+                        isLastVisible
+                          ? `View all ${allImages.length} photos`
+                          : `View ${image.alt}`
+                      }
+                    >
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        width={300}
+                        height={300}
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        className="w-full h-full object-cover"
+                      />
+                      {isLastVisible ? (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="text-white text-2xl font-bold">
+                            +{remaining}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </FadeIn>
           ) : (
             <div className="text-center py-16">
               <Camera className="w-16 h-16 mx-auto text-gray-300 mb-4" />
