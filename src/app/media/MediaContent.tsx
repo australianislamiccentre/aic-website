@@ -1,18 +1,18 @@
 /**
  * Media Content
  *
- * Client component providing the interactive media gallery. Supports category
- * filtering for photos, a lightbox viewer with keyboard navigation, and a
- * YouTube video grid section.
+ * Client component providing an embedded YouTube video player with
+ * thumbnail strip navigation, and a CSS-columns masonry photo gallery
+ * with lightbox viewer and keyboard navigation.
  *
  * @module app/media/MediaContent
  */
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { StaggerGrid, StaggerGridItem } from "@/components/animations/FadeIn";
+import { FadeIn } from "@/components/animations/FadeIn";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { SanityGalleryImage } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
@@ -22,95 +22,18 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  LayoutGrid,
+  ExternalLink,
 } from "lucide-react";
 import type { YouTubeVideo } from "@/lib/youtube";
 
-const categories = ["All", "Prayer Hall", "Architecture", "Education", "Events", "Community"];
-
-
-// Interactive Gallery Image component with hover effects
-interface GalleryImageProps {
-  image: {
-    id: string;
-    src: string;
-    alt: string;
-    category: string;
-  };
-  onClick: () => void;
-}
-
-function GalleryImage({ image, onClick }: GalleryImageProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
-  return (
-    <motion.div
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      onClick={onClick}
-      className="relative cursor-pointer rounded-xl overflow-hidden aspect-square"
-    >
-      <motion.div
-        animate={{ scale: isHovered ? 1.15 : 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="absolute inset-0"
-      >
-        <Image
-          src={image.src}
-          alt={image.alt}
-          fill
-          className="object-cover"
-        />
-      </motion.div>
-
-      {/* Gradient overlay */}
-      <motion.div
-        animate={{ opacity: isHovered ? 1 : 0 }}
-        transition={{ duration: 0.3 }}
-        className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"
-      />
-
-      {/* Center icon */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{
-          opacity: isHovered ? 1 : 0,
-          scale: isHovered ? 1 : 0.5,
-          rotate: isHovered ? 0 : -90
-        }}
-        transition={{ duration: 0.3 }}
-        className="absolute inset-0 flex items-center justify-center"
-      >
-        <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-          <LayoutGrid className="w-6 h-6 text-white" />
-        </div>
-      </motion.div>
-
-      {/* Category label */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{
-          y: isHovered ? 0 : 20,
-          opacity: isHovered ? 1 : 0
-        }}
-        transition={{ duration: 0.3 }}
-        className="absolute bottom-0 left-0 right-0 p-4"
-      >
-        <p className="text-white text-sm font-medium">{image.category}</p>
-        <p className="text-white/70 text-xs mt-1">Click to view</p>
-      </motion.div>
-
-      {/* Corner accent */}
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: isHovered ? 1 : 0 }}
-        transition={{ duration: 0.3 }}
-        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center"
-      >
-        <Camera className="w-4 h-4 text-white" />
-      </motion.div>
-    </motion.div>
-  );
+/** Format an ISO date string to a human-readable Australian date. */
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-AU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 interface MediaContentProps {
@@ -118,28 +41,30 @@ interface MediaContentProps {
   youtubeVideos?: YouTubeVideo[];
 }
 
-export default function MediaContent({ galleryImages, youtubeVideos = [] }: MediaContentProps) {
-  const [selectedCategory, setSelectedCategory] = useState("All");
+export default function MediaContent({
+  galleryImages,
+  youtubeVideos = [],
+}: MediaContentProps) {
+  const [featuredVideoIndex, setFeaturedVideoIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const thumbnailStripRef = useRef<HTMLDivElement>(null);
 
-  // Convert Sanity images to the format expected by the gallery
-  // Filter out any images with missing image data
-  const convertedImages = galleryImages
+  // Convert Sanity images — show ALL, no category filtering
+  const allImages = galleryImages
     .filter((img) => img.image)
     .map((img) => ({
       id: img._id,
-      src: urlFor(img.image).width(800).height(800).url(),
+      src: urlFor(img.image).width(600).url(),
+      lightboxSrc: urlFor(img.image).width(1200).url(),
       alt: img.alt,
-      category: img.category || "Uncategorized",
+      caption: img.caption || "",
+      category: img.category || "",
     }));
 
-  const filteredImages = convertedImages.filter((image) => {
-    if (selectedCategory === "All") return true;
-    return image.category === selectedCategory;
-  });
+  const featuredVideo = youtubeVideos[featuredVideoIndex];
 
-  // Handle body overflow when lightbox is open
+  // Lock body scroll when lightbox is open
   useEffect(() => {
     if (lightboxOpen) {
       document.body.style.overflow = "hidden";
@@ -160,13 +85,37 @@ export default function MediaContent({ galleryImages, youtubeVideos = [] }: Medi
     setLightboxOpen(false);
   }, []);
 
-  const goToNext = () => {
-    setLightboxIndex((prev) => (prev + 1) % filteredImages.length);
-  };
+  const goToNext = useCallback(() => {
+    setLightboxIndex((prev) => (prev + 1) % allImages.length);
+  }, [allImages.length]);
 
-  const goToPrev = () => {
-    setLightboxIndex((prev) => (prev - 1 + filteredImages.length) % filteredImages.length);
-  };
+  const goToPrev = useCallback(() => {
+    setLightboxIndex(
+      (prev) => (prev - 1 + allImages.length) % allImages.length,
+    );
+  }, [allImages.length]);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    if (!lightboxOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "Escape":
+          closeLightbox();
+          break;
+        case "ArrowRight":
+          goToNext();
+          break;
+        case "ArrowLeft":
+          goToPrev();
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxOpen, closeLightbox, goToNext, goToPrev]);
 
   return (
     <>
@@ -179,130 +128,199 @@ export default function MediaContent({ galleryImages, youtubeVideos = [] }: Medi
               Media <span className="text-teal-600">Gallery</span>
             </h1>
             <p className="text-gray-600 max-w-2xl">
-              Explore photos from the Australian Islamic Centre community.
+              Explore photos and videos from the Australian Islamic Centre
+              community.
             </p>
           </div>
         </div>
       </section>
 
-      {/* YouTube Videos */}
-      {youtubeVideos.length > 0 && (
+      {/* ── Video Section ── */}
+      {youtubeVideos.length > 0 && featuredVideo && (
         <section className="py-12 bg-white">
           <div className="max-w-7xl mx-auto px-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Latest Videos</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {youtubeVideos.map((video) => (
-                <a
-                  key={video.id}
-                  href={video.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group block rounded-xl overflow-hidden bg-neutral-50 border border-gray-100 hover:shadow-lg transition-shadow"
-                >
-                  <div className="relative aspect-video">
-                    <Image
-                      src={video.thumbnail}
-                      alt={video.title}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                      <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Play className="w-5 h-5 text-red-600 ml-0.5" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-3">
-                    <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-teal-600 transition-colors">
-                      {video.title}
+            <FadeIn>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                Latest Videos
+              </h2>
+            </FadeIn>
+
+            {/* Featured Player */}
+            <FadeIn>
+              <div className="max-w-[900px] mx-auto">
+                <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-900 shadow-lg">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${featuredVideo.id}`}
+                    title={featuredVideo.title}
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full"
+                  />
+                </div>
+
+                {/* Video Info */}
+                <div className="mt-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-semibold text-gray-900 leading-snug">
+                      {featuredVideo.title}
                     </h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {formatDate(featuredVideo.publishedAt)}
+                    </p>
                   </div>
-                </a>
-              ))}
-            </div>
+                  <a
+                    href={featuredVideo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-[#01476b] hover:text-[#01476b]/80 transition-colors shrink-0"
+                  >
+                    View on YouTube
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* Thumbnail Strip */}
+            {youtubeVideos.length > 1 && (
+              <div className="max-w-[900px] mx-auto mt-6">
+                <div
+                  ref={thumbnailStripRef}
+                  className="flex gap-3 overflow-x-auto pb-2"
+                  style={{ scrollbarWidth: "thin" }}
+                >
+                  {youtubeVideos.map((video, index) => (
+                    <button
+                      key={video.id}
+                      onClick={() => setFeaturedVideoIndex(index)}
+                      className={`relative shrink-0 w-36 sm:w-40 rounded-lg overflow-hidden transition-all group ${
+                        index === featuredVideoIndex
+                          ? "ring-2 ring-[#01476b] ring-offset-2"
+                          : "opacity-70 hover:opacity-100"
+                      }`}
+                      aria-label={`Play ${video.title}`}
+                    >
+                      <div className="aspect-video relative">
+                        <Image
+                          src={video.thumbnail}
+                          alt={video.title}
+                          fill
+                          className="object-cover"
+                          sizes="160px"
+                        />
+                        {index !== featuredVideoIndex && (
+                          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                              <Play className="w-3.5 h-3.5 text-red-600 ml-0.5" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
       )}
 
-      {/* Photo Gallery */}
+      {/* ── Photo Gallery — Masonry ── */}
       <section className="py-12 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
-          {/* Category Filter */}
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
-                  selectedCategory === category
-                    ? "bg-green-600 text-white shadow-lg"
-                    : "bg-white text-gray-700 hover:bg-gray-100 shadow"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
+          <FadeIn>
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">Photos</h2>
+          </FadeIn>
 
-          {/* Gallery Grid */}
-          {filteredImages.length > 0 ? (
-            <StaggerGrid className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredImages.map((image, index) => (
-                <StaggerGridItem key={image.id}>
-                  <GalleryImage image={image} onClick={() => openLightbox(index)} />
-                </StaggerGridItem>
+          {allImages.length > 0 ? (
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+              {allImages.map((image, index) => (
+                <div key={image.id} className="mb-4 break-inside-avoid">
+                  <button
+                    onClick={() => openLightbox(index)}
+                    className="relative w-full rounded-xl overflow-hidden group cursor-pointer block text-left"
+                    aria-label={`View ${image.alt}`}
+                  >
+                    <Image
+                      src={image.src}
+                      alt={image.alt}
+                      width={600}
+                      height={400}
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      className="w-full h-auto"
+                    />
+
+                    {/* Hover overlay with caption + category badge */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                      {image.category && (
+                        <span className="inline-block self-start px-2.5 py-1 bg-[#01476b]/90 text-white text-xs font-medium rounded-full mb-2">
+                          {image.category}
+                        </span>
+                      )}
+                      <p className="text-white text-sm leading-snug">
+                        {image.caption || image.alt}
+                      </p>
+                    </div>
+                  </button>
+                </div>
               ))}
-            </StaggerGrid>
+            </div>
           ) : (
             <div className="text-center py-16">
               <Camera className="w-16 h-16 mx-auto text-gray-300 mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {galleryImages.length === 0 ? "No Photos Available" : "No Photos Found"}
+                No Photos Available
               </h3>
               <p className="text-gray-500">
-                {galleryImages.length === 0
-                  ? "Gallery photos will appear here once added."
-                  : "Try selecting a different category."}
+                Gallery photos will appear here once added.
               </p>
             </div>
           )}
         </div>
       </section>
 
-      {/* Lightbox */}
+      {/* ── Lightbox ── */}
       <AnimatePresence>
-        {lightboxOpen && filteredImages.length > 0 && (
+        {lightboxOpen && allImages.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
             onClick={closeLightbox}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Image lightbox"
           >
-            {/* Close Button */}
+            {/* Close */}
             <button
               onClick={closeLightbox}
               className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+              aria-label="Close lightbox"
             >
               <X className="w-6 h-6" />
             </button>
 
-            {/* Navigation */}
+            {/* Prev */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 goToPrev();
               }}
               className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              aria-label="Previous image"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
+
+            {/* Next */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 goToNext();
               }}
               className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              aria-label="Next image"
             >
               <ChevronRight className="w-6 h-6" />
             </button>
@@ -317,42 +335,32 @@ export default function MediaContent({ galleryImages, youtubeVideos = [] }: Medi
               onClick={(e) => e.stopPropagation()}
             >
               <Image
-                src={filteredImages[lightboxIndex]?.src || ""}
-                alt={filteredImages[lightboxIndex]?.alt || ""}
+                src={allImages[lightboxIndex]?.lightboxSrc || ""}
+                alt={allImages[lightboxIndex]?.alt || ""}
                 width={1200}
                 height={800}
                 className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
               />
               <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg">
-                <p className="text-white text-lg">{filteredImages[lightboxIndex]?.alt}</p>
-                <p className="text-white/60 text-sm">{filteredImages[lightboxIndex]?.category}</p>
+                <p className="text-white text-lg">
+                  {allImages[lightboxIndex]?.alt}
+                </p>
+                {allImages[lightboxIndex]?.caption && (
+                  <p className="text-white/70 text-sm mt-1">
+                    {allImages[lightboxIndex].caption}
+                  </p>
+                )}
+                {allImages[lightboxIndex]?.category && (
+                  <span className="inline-block mt-2 px-2.5 py-1 bg-[#01476b]/80 text-white text-xs font-medium rounded-full">
+                    {allImages[lightboxIndex].category}
+                  </span>
+                )}
               </div>
             </motion.div>
 
-            {/* Thumbnails */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
-              {filteredImages.map((image, index) => (
-                <button
-                  key={image.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setLightboxIndex(index);
-                  }}
-                  className={`w-16 h-12 rounded overflow-hidden transition-all ${
-                    index === lightboxIndex
-                      ? "ring-2 ring-white opacity-100"
-                      : "opacity-50 hover:opacity-75"
-                  }`}
-                >
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    width={64}
-                    height={48}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
+            {/* Counter */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+              {lightboxIndex + 1} / {allImages.length}
             </div>
           </motion.div>
         )}
