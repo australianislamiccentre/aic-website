@@ -22,17 +22,16 @@ const previewUrlMap: Record<string, (slug?: string) => string> = {
   event: (slug) => `/events${slug ? `/${slug}` : ""}`,
   service: () => "/services",
   announcement: () => "/announcements",
-  donationCause: () => "/donate",
+  donationCampaign: () => "/donate",
   galleryImage: () => "/media",
-  testimonial: () => "/",
   faq: () => "/visit",
   etiquette: () => "/visit",
-  tourType: () => "/visit",
   siteSettings: () => "/",
   prayerSettings: () => "/worshippers",
   teamMember: () => "/about",
   pageContent: () => "/",
   resource: () => "/resources",
+  partner: (slug) => `/partners${slug ? `/${slug}` : ""}`,
 };
 
 /**

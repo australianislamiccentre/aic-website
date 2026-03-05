@@ -48,12 +48,10 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getFeaturedServices: vi.fn().mockResolvedValue([]),
   getGalleryImages: vi.fn().mockResolvedValue([]),
   getFeaturedGalleryImages: vi.fn().mockResolvedValue([]),
-  getTestimonials: vi.fn().mockResolvedValue([]),
   getFaqs: vi.fn().mockResolvedValue([]),
   getFaqsByCategory: vi.fn().mockResolvedValue([]),
   getFeaturedFaqs: vi.fn().mockResolvedValue([]),
   getEtiquette: vi.fn().mockResolvedValue([]),
-  getTourTypes: vi.fn().mockResolvedValue([]),
   getTeamMembers: vi.fn().mockResolvedValue([]),
   getTeamMemberBySlug: vi.fn().mockResolvedValue(null),
   getTeamMembersByCategory: vi.fn().mockResolvedValue([]),
@@ -66,11 +64,12 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getFeaturedResources: vi.fn().mockResolvedValue([]),
   getSiteSettings: vi.fn().mockResolvedValue(null),
   getPrayerSettings: vi.fn().mockResolvedValue(null),
-  // Campaign functions
-  getDonationCampaigns: vi.fn().mockResolvedValue([]),
-  getDonationCampaignBySlug: vi.fn().mockResolvedValue(null),
-  getDonationCampaignsForStaticGeneration: vi.fn().mockResolvedValue([]),
-  getFeaturedDonationCampaigns: vi.fn().mockResolvedValue([]),
+  // Donation
+  getDonationSettings: vi.fn().mockResolvedValue(null),
+  getDonatePageSettings: vi.fn().mockResolvedValue(null),
+  // Partners
+  getPartners: vi.fn().mockResolvedValue([]),
+  getPartnerBySlug: vi.fn().mockResolvedValue(null),
 }));
 
 // Mock next/navigation

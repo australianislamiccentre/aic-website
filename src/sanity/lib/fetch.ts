@@ -43,7 +43,6 @@ import {
   faqsByCategoryQuery,
   featuredFaqsQuery,
   etiquetteQuery,
-  tourTypesQuery,
   siteSettingsQuery,
   prayerSettingsQuery,
   // Team Members
@@ -64,6 +63,9 @@ import {
   formSettingsQuery,
   // Embed Security
   allowedEmbedDomainsQuery,
+  // Partners
+  partnersQuery,
+  partnerBySlugQuery,
 } from "./queries";
 import {
   SanityEvent,
@@ -73,12 +75,12 @@ import {
   SanityGalleryImage,
   SanityFaq,
   SanityEtiquette,
-  SanityTourType,
   SanitySiteSettings,
   SanityPrayerSettings,
   SanityTeamMember,
   SanityPageContent,
   SanityResource,
+  SanityPartner,
 } from "@/types/sanity";
 
 // Donation Settings type (Fundraise Up config)
@@ -389,19 +391,8 @@ export async function getEtiquette(): Promise<SanityEtiquette[]> {
   }
 }
 
-// Tour Types
-export async function getTourTypes(): Promise<SanityTourType[]> {
-  try {
-    const result = await sanityFetch<SanityTourType[]>(tourTypesQuery, {}, ["tourTypes"]);
-    return result ?? [];
-  } catch (error) {
-    console.error("Failed to fetch tour types from Sanity:", error);
-    return [];
-  }
-}
-
 // ============================================
-// NEW: Team Members
+// Team Members
 // ============================================
 export async function getTeamMembers(): Promise<SanityTeamMember[]> {
   try {
@@ -569,6 +560,28 @@ export async function getLatestAnnouncements(): Promise<LatestUpdateItem[]> {
   } catch (error) {
     console.error("Failed to fetch latest announcements from Sanity:", error);
     return [];
+  }
+}
+
+// ============================================
+// Partners
+// ============================================
+export async function getPartners(): Promise<SanityPartner[]> {
+  try {
+    const result = await sanityFetch<SanityPartner[]>(partnersQuery, {}, ["partners"]);
+    return result ?? [];
+  } catch (error) {
+    console.error("Failed to fetch partners from Sanity:", error);
+    return [];
+  }
+}
+
+export async function getPartnerBySlug(slug: string): Promise<SanityPartner | null> {
+  try {
+    return await sanityFetch<SanityPartner | null>(partnerBySlugQuery, { slug }, ["partners"]);
+  } catch (error) {
+    console.error(`Failed to fetch partner "${slug}" from Sanity:`, error);
+    return null;
   }
 }
 
