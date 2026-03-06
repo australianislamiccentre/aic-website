@@ -2,14 +2,15 @@
  * Media Content
  *
  * Client component providing an embedded YouTube video player with
- * thumbnail strip navigation, and a CSS-columns masonry photo gallery
- * with lightbox viewer and keyboard navigation.
+ * tabbed navigation (Latest Videos, Playlists, Friday Khutbas),
+ * autoplay on click, scroll-to-player behaviour, live stream polling,
+ * and a photo gallery with lightbox viewer and keyboard navigation.
  *
  * @module app/media/MediaContent
  */
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { FadeIn } from "@/components/animations/FadeIn";
@@ -26,8 +27,13 @@ import {
   Facebook,
   Instagram,
   Youtube,
+  ChevronDown,
 } from "lucide-react";
-import type { YouTubeVideo, YouTubeLiveStream } from "@/lib/youtube";
+import type {
+  YouTubeVideo,
+  YouTubeLiveStream,
+  YouTubePlaylist,
+} from "@/lib/youtube";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
 /** Format an ISO date string to a human-readable Australian date. */
@@ -40,22 +46,118 @@ function formatDate(dateString: string): string {
   });
 }
 
+/** Reusable video card used across Latest Videos, Playlists, and Khutbas tabs. */
+function VideoCard({
+  video,
+  isActive,
+  isLive,
+  onPlay,
+}: {
+  video: YouTubeVideo;
+  isActive: boolean;
+  isLive?: boolean;
+  onPlay: () => void;
+}) {
+  return (
+    <button
+      onClick={onPlay}
+      className={`group text-left rounded-lg overflow-hidden transition-all ${
+        isActive ? "bg-[#01476b]/5" : "hover:shadow-md"
+      }`}
+      aria-label={`Play ${video.title}`}
+    >
+      <div className="relative aspect-video rounded-md overflow-hidden">
+        <Image
+          src={video.thumbnail}
+          alt={video.title}
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        />
+        {isLive && (
+          <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            LIVE
+          </div>
+        )}
+        {isActive ? (
+          <div className="absolute inset-0 bg-[#01476b]/40 flex items-center justify-center">
+            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-md">
+              <span className="w-2 h-2 rounded-full bg-[#01476b] animate-pulse" />
+              <span className="text-xs font-semibold text-[#01476b]">
+                Now Playing
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+              <Play className="w-3.5 h-3.5 text-red-600 ml-0.5" />
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="pt-2 pb-1">
+        <h4 className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">
+          {video.title}
+        </h4>
+        <p className="text-xs text-gray-500 mt-1">
+          {formatDate(video.publishedAt)}
+        </p>
+      </div>
+    </button>
+  );
+}
+
 interface MediaContentProps {
   mediaGalleryImages: MediaGalleryImage[];
   youtubeVideos?: YouTubeVideo[];
   liveStream?: YouTubeLiveStream;
+  playlists?: YouTubePlaylist[];
 }
 
 export default function MediaContent({
   mediaGalleryImages,
   youtubeVideos = [],
   liveStream,
+  playlists = [],
 }: MediaContentProps) {
-  const [featuredVideoIndex, setFeaturedVideoIndex] = useState(0);
+  // Video state
+  const [currentVideo, setCurrentVideo] = useState<YouTubeVideo | null>(
+    youtubeVideos[0] || null,
+  );
+  const [autoplay, setAutoplay] = useState(false);
+  const [liveStreamState, setLiveStreamState] = useState(liveStream);
+  const [activeTab, setActiveTab] = useState<
+    "latest" | "playlists" | "khutbas"
+  >("latest");
   const [showAllVideos, setShowAllVideos] = useState(false);
+
+  // Playlist state
+  const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(
+    null,
+  );
+  const [playlistVideosCache, setPlaylistVideosCache] = useState<
+    Record<string, YouTubeVideo[]>
+  >({});
+  const [loadingPlaylistId, setLoadingPlaylistId] = useState<string | null>(
+    null,
+  );
+
+  // Khutba state
+  const [khutbaVideos, setKhutbaVideos] = useState<YouTubeVideo[]>([]);
+  const [khutbaLoading, setKhutbaLoading] = useState(false);
+  const [khutbaLoaded, setKhutbaLoaded] = useState(false);
+
+  // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  const playerRef = useRef<HTMLDivElement>(null);
   const { socialMedia } = useSiteSettings();
+
+  // Derive live status from polled state
+  const isLive = !!(liveStreamState?.isLive && liveStreamState.videoId);
 
   // Convert Sanity images — show ALL, no category filtering
   const allImages = mediaGalleryImages
@@ -68,18 +170,94 @@ export default function MediaContent({
       caption: img.caption || "",
     }));
 
-  const featuredVideo = youtubeVideos[featuredVideoIndex];
-  const isLive = !!(liveStream?.isLive && liveStream.videoId);
-  const effectiveVideoId = isLive ? liveStream!.videoId! : featuredVideo?.id;
-  const effectiveTitle = isLive
-    ? liveStream!.title || "Live Stream"
-    : featuredVideo?.title;
-  const effectiveUrl = isLive ? liveStream!.url : featuredVideo?.url;
   const visibleVideos = showAllVideos
     ? youtubeVideos
     : youtubeVideos.slice(0, 4);
 
-  // Lock body scroll when lightbox is open
+  // Find khutba playlist by title
+  const khutbaPlaylist = playlists.find((p) =>
+    p.title.toLowerCase().includes("khutba"),
+  );
+
+  // ── Live stream polling (same pattern as LiveBanner) ──
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/youtube/live");
+        if (res.ok) {
+          const data = await res.json();
+          setLiveStreamState(data);
+        }
+      } catch {
+        // Silently fail
+      }
+    };
+    const interval = setInterval(poll, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // ── Video play handler — scroll to player and autoplay ──
+  const handlePlayVideo = useCallback((video: YouTubeVideo) => {
+    setCurrentVideo(video);
+    setAutoplay(true);
+    playerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, []);
+
+  // ── Playlist accordion toggle ──
+  const togglePlaylist = useCallback(
+    async (playlistId: string) => {
+      if (expandedPlaylistId === playlistId) {
+        setExpandedPlaylistId(null);
+        return;
+      }
+      setExpandedPlaylistId(playlistId);
+      if (!playlistVideosCache[playlistId]) {
+        setLoadingPlaylistId(playlistId);
+        try {
+          const res = await fetch(`/api/youtube/playlists/${playlistId}`);
+          if (res.ok) {
+            const videos = await res.json();
+            setPlaylistVideosCache((prev) => ({
+              ...prev,
+              [playlistId]: videos,
+            }));
+          }
+        } catch {
+          // Silently fail
+        } finally {
+          setLoadingPlaylistId(null);
+        }
+      }
+    },
+    [expandedPlaylistId, playlistVideosCache],
+  );
+
+  // ── Load khutba videos when tab is selected ──
+  const loadKhutbaVideos = useCallback(async () => {
+    if (khutbaLoaded || !khutbaPlaylist) return;
+    setKhutbaLoading(true);
+    try {
+      const res = await fetch(`/api/youtube/playlists/${khutbaPlaylist.id}`);
+      if (res.ok) {
+        const videos = await res.json();
+        setKhutbaVideos(videos);
+      }
+    } catch {
+      // Silently fail
+    } finally {
+      setKhutbaLoading(false);
+      setKhutbaLoaded(true);
+    }
+  }, [khutbaLoaded, khutbaPlaylist]);
+
+  // Load khutba videos when khutbas tab becomes active
+  useEffect(() => {
+    if (activeTab === "khutbas") {
+      loadKhutbaVideos();
+    }
+  }, [activeTab, loadKhutbaVideos]);
+
+  // ── Lightbox handlers ──
   useEffect(() => {
     if (lightboxOpen) {
       document.body.style.overflow = "hidden";
@@ -151,113 +329,122 @@ export default function MediaContent({
       </section>
 
       {/* ── Video Section ── */}
-      {youtubeVideos.length > 0 && featuredVideo && (
+      {(youtubeVideos.length > 0 || isLive) && (
         <section className="py-12 bg-white">
           <div className="max-w-7xl mx-auto px-6">
             {/* Featured Player */}
-            <FadeIn>
-              <div className="sm:max-w-[900px] sm:mx-auto">
-                <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-900 shadow-lg">
-                  {isLive && (
-                    <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-red-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
-                      <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                      LIVE
-                    </div>
-                  )}
-                  <iframe
-                    src={`https://www.youtube.com/embed/${effectiveVideoId}`}
-                    title={effectiveTitle || ""}
-                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="absolute inset-0 w-full h-full"
-                  />
-                </div>
+            {currentVideo && (
+              <FadeIn>
+                <div ref={playerRef} className="sm:max-w-[900px] sm:mx-auto">
+                  <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-900 shadow-lg">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${currentVideo.id}${autoplay ? "?autoplay=1" : ""}`}
+                      title={currentVideo.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="absolute inset-0 w-full h-full"
+                    />
+                  </div>
 
-                {/* Video Info */}
-                <div className="mt-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                  <div className="min-w-0">
-                    <h3 className="text-lg font-semibold text-gray-900 leading-snug">
-                      {effectiveTitle}
-                    </h3>
-                    {!isLive && featuredVideo && (
+                  {/* Video Info */}
+                  <div className="mt-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-semibold text-gray-900 leading-snug">
+                        {currentVideo.title}
+                      </h3>
                       <p className="text-sm text-gray-500 mt-1">
-                        {formatDate(featuredVideo.publishedAt)}
+                        {formatDate(currentVideo.publishedAt)}
                       </p>
+                    </div>
+                    {currentVideo.url && (
+                      <a
+                        href={currentVideo.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-[#01476b] hover:text-[#01476b]/80 transition-colors shrink-0"
+                      >
+                        View on YouTube
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
                     )}
                   </div>
-                  {effectiveUrl && (
-                    <a
-                      href={effectiveUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-[#01476b] hover:text-[#01476b]/80 transition-colors shrink-0"
-                    >
-                      View on YouTube
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  )}
                 </div>
-              </div>
-            </FadeIn>
+              </FadeIn>
+            )}
 
-            {/* Video Grid */}
-            {youtubeVideos.length > 1 && (
-              <div className="mt-8">
-                <FadeIn>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                    Latest Videos
-                  </h2>
-                </FadeIn>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {visibleVideos.map((video) => (
+            {/* Tab Bar */}
+            <div className="mt-8 border-b border-gray-200">
+              <nav className="flex gap-1" aria-label="Media tabs">
+                {(["latest", "playlists", "khutbas"] as const).map((tab) => {
+                  const labels = {
+                    latest: "Latest Videos",
+                    playlists: "Playlists",
+                    khutbas: "Friday Khutbas",
+                  };
+                  return (
                     <button
-                      key={video.id}
-                      onClick={() =>
-                        setFeaturedVideoIndex(
-                          youtubeVideos.findIndex((v) => v.id === video.id),
-                        )
-                      }
-                      className={`group text-left rounded-lg overflow-hidden transition-all ${
-                        youtubeVideos[featuredVideoIndex]?.id === video.id
-                          ? "bg-[#01476b]/5"
-                          : "hover:shadow-md"
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`px-4 py-3 text-sm font-medium transition-colors relative ${
+                        activeTab === tab
+                          ? "text-[#01476b]"
+                          : "text-gray-500 hover:text-gray-700"
                       }`}
-                      aria-label={`Play ${video.title}`}
+                      aria-selected={activeTab === tab}
+                      role="tab"
                     >
-                      <div className="relative aspect-video rounded-md overflow-hidden">
-                        <Image
-                          src={video.thumbnail}
-                          alt={video.title}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        />
-                        {youtubeVideos[featuredVideoIndex]?.id === video.id ? (
-                          <div className="absolute inset-0 bg-[#01476b]/40 flex items-center justify-center">
-                            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-md">
-                              <span className="w-2 h-2 rounded-full bg-[#01476b] animate-pulse" />
-                              <span className="text-xs font-semibold text-[#01476b]">
-                                Now Playing
-                              </span>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                            <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
-                              <Play className="w-3.5 h-3.5 text-red-600 ml-0.5" />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="pt-2 pb-1">
-                        <h4 className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">
-                          {video.title}
-                        </h4>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {formatDate(video.publishedAt)}
-                        </p>
-                      </div>
+                      {labels[tab]}
+                      {activeTab === tab && (
+                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#01476b]" />
+                      )}
                     </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* ── Tab Content: Latest Videos ── */}
+            {activeTab === "latest" && (
+              <div className="mt-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {/* Live stream card — always first when live */}
+                  {isLive && liveStreamState?.videoId && (
+                    <VideoCard
+                      video={{
+                        id: liveStreamState.videoId,
+                        title: liveStreamState.title || "Live Stream",
+                        thumbnail: `https://img.youtube.com/vi/${liveStreamState.videoId}/hqdefault.jpg`,
+                        publishedAt: new Date().toISOString(),
+                        url:
+                          liveStreamState.url ||
+                          `https://www.youtube.com/watch?v=${liveStreamState.videoId}`,
+                      }}
+                      isActive={
+                        currentVideo?.id === liveStreamState.videoId
+                      }
+                      isLive
+                      onPlay={() =>
+                        handlePlayVideo({
+                          id: liveStreamState.videoId!,
+                          title:
+                            liveStreamState.title || "Live Stream",
+                          thumbnail: `https://img.youtube.com/vi/${liveStreamState.videoId}/hqdefault.jpg`,
+                          publishedAt: new Date().toISOString(),
+                          url:
+                            liveStreamState.url ||
+                            `https://www.youtube.com/watch?v=${liveStreamState.videoId}`,
+                        })
+                      }
+                    />
+                  )}
+
+                  {visibleVideos.map((video) => (
+                    <VideoCard
+                      key={video.id}
+                      video={video}
+                      isActive={currentVideo?.id === video.id}
+                      onPlay={() => handlePlayVideo(video)}
+                    />
                   ))}
                 </div>
 
@@ -271,7 +458,7 @@ export default function MediaContent({
                       Show More
                     </button>
                   )}
-                  {showAllVideos && (
+                  {showAllVideos && socialMedia.youtube && (
                     <a
                       href={socialMedia.youtube}
                       target="_blank"
@@ -283,6 +470,108 @@ export default function MediaContent({
                     </a>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* ── Tab Content: Playlists ── */}
+            {activeTab === "playlists" && (
+              <div className="mt-6 space-y-3">
+                {playlists.length > 0 ? (
+                  playlists.map((playlist) => (
+                    <div
+                      key={playlist.id}
+                      className="border border-gray-200 rounded-lg overflow-hidden"
+                    >
+                      <button
+                        onClick={() => togglePlaylist(playlist.id)}
+                        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Image
+                            src={playlist.thumbnail}
+                            alt={playlist.title}
+                            width={80}
+                            height={45}
+                            className="rounded"
+                          />
+                          <div className="text-left">
+                            <h3 className="font-medium text-gray-900">
+                              {playlist.title}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              {playlist.videoCount} videos
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronDown
+                          className={`w-5 h-5 text-gray-400 transition-transform ${
+                            expandedPlaylistId === playlist.id
+                              ? "rotate-180"
+                              : ""
+                          }`}
+                        />
+                      </button>
+                      {expandedPlaylistId === playlist.id && (
+                        <div className="p-4 pt-0 border-t border-gray-100">
+                          {loadingPlaylistId === playlist.id ? (
+                            <p className="text-sm text-gray-500 py-4 text-center">
+                              Loading videos...
+                            </p>
+                          ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 pt-4">
+                              {(playlistVideosCache[playlist.id] || []).map(
+                                (video) => (
+                                  <VideoCard
+                                    key={video.id}
+                                    video={video}
+                                    isActive={currentVideo?.id === video.id}
+                                    onPlay={() => handlePlayVideo(video)}
+                                  />
+                                ),
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <Youtube className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                    <p className="text-gray-500">No playlists available.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Tab Content: Friday Khutbas ── */}
+            {activeTab === "khutbas" && (
+              <div className="mt-6">
+                {khutbaLoading ? (
+                  <p className="text-sm text-gray-500 py-8 text-center">
+                    Loading khutbas...
+                  </p>
+                ) : khutbaVideos.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {khutbaVideos.map((video) => (
+                      <VideoCard
+                        key={video.id}
+                        video={video}
+                        isActive={currentVideo?.id === video.id}
+                        onPlay={() => handlePlayVideo(video)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Youtube className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                    <p className="text-gray-500">
+                      {khutbaPlaylist
+                        ? "No khutba videos available."
+                        : "No Friday Khutba playlist found."}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -481,7 +770,6 @@ export default function MediaContent({
                     {allImages[lightboxIndex].caption}
                   </p>
                 )}
-
               </div>
             </motion.div>
 
