@@ -54,4 +54,32 @@ describe("LiveBanner", () => {
 
     expect(screen.getByText(/Friday Khutbah/)).toBeInTheDocument();
   });
+
+  it("polls /api/youtube/live and updates when stream starts", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          isLive: true,
+          videoId: "live123",
+          title: "Friday Khutbah",
+          url: "https://www.youtube.com/watch?v=live123",
+        })
+      )
+    );
+
+    render(<LiveBanner liveStream={{ isLive: false }} />);
+
+    // Initially hidden
+    expect(screen.queryByText(/live/i)).not.toBeInTheDocument();
+
+    // Advance past the 60s interval
+    await vi.advanceTimersByTimeAsync(61_000);
+
+    // Should have polled
+    expect(fetchSpy).toHaveBeenCalledWith("/api/youtube/live");
+
+    fetchSpy.mockRestore();
+    vi.useRealTimers();
+  });
 });

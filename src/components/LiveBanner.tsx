@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import type { YouTubeLiveStream } from "@/lib/youtube";
@@ -8,7 +9,26 @@ interface LiveBannerProps {
   liveStream: YouTubeLiveStream;
 }
 
-export function LiveBanner({ liveStream }: LiveBannerProps) {
+export function LiveBanner({ liveStream: initialLiveStream }: LiveBannerProps) {
+  const [liveStream, setLiveStream] = useState(initialLiveStream);
+
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/youtube/live");
+        if (res.ok) {
+          const data = await res.json();
+          setLiveStream(data);
+        }
+      } catch {
+        // Silently fail — keep last known state
+      }
+    };
+
+    const interval = setInterval(poll, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
   if (!liveStream.isLive || !liveStream.url) return null;
 
   return (
