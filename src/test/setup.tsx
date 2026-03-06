@@ -74,6 +74,14 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getFeaturedDonationCampaigns: vi.fn().mockResolvedValue([]),
 }));
 
+// Mock YouTube API functions
+vi.mock("@/lib/youtube", () => ({
+  getYouTubeVideos: vi.fn().mockResolvedValue([]),
+  getYouTubeLiveStream: vi.fn().mockResolvedValue({ isLive: false }),
+  getYouTubePlaylists: vi.fn().mockResolvedValue([]),
+  getPlaylistVideos: vi.fn().mockResolvedValue([]),
+}));
+
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
