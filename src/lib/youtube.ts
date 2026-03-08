@@ -144,32 +144,73 @@ export async function getYouTubePlaylists(): Promise<YouTubePlaylist[]> {
   }
 }
 
-/** Fetches completed live streams (past broadcasts) from the channel. Cached for 1 hour. */
+/**
+ * Fetches completed live streams (past broadcasts) from the channel. Cached for 1 hour.
+ *
+ * Uses a two-step fetch: search API for video IDs, then videos.list for
+ * liveStreamingDetails.actualStartTime. This gives the real stream date
+ * instead of the processing/publish time, which can differ by a day when
+ * converted to Melbourne timezone.
+ */
 export async function getYouTubeStreams(maxResults = 50): Promise<YouTubeVideo[]> {
   if (!YOUTUBE_API_KEY || !YOUTUBE_CHANNEL_ID) {
     return [];
   }
 
   try {
-    const url = `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${YOUTUBE_CHANNEL_ID}&part=snippet&order=date&type=video&eventType=completed&maxResults=${maxResults}`;
-    const res = await fetch(url, { next: { revalidate: 3600 } });
+    // Step 1: Search for completed live streams to get video IDs
+    const searchUrl = `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${YOUTUBE_CHANNEL_ID}&part=snippet&order=date&type=video&eventType=completed&maxResults=${maxResults}`;
+    const searchRes = await fetch(searchUrl, { next: { revalidate: 3600 } });
 
-    if (!res.ok) {
-      console.error("YouTube Streams API error:", res.status, await res.text());
+    if (!searchRes.ok) {
+      console.error("YouTube Streams API error:", searchRes.status, await searchRes.text());
       return [];
     }
 
-    const data = await res.json();
+    const searchData = await searchRes.json();
+    const videoIds = (searchData.items || [])
+      .map((item: { id: { videoId: string } }) => item.id.videoId)
+      .filter(Boolean);
 
-    return (data.items || []).map(
-      (item: { id: { videoId: string }; snippet: { title: string; thumbnails: { high?: { url: string }; default?: { url: string } }; publishedAt: string } }) => ({
-        id: item.id.videoId,
-        title: item.snippet.title,
-        thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default?.url || "",
-        publishedAt: item.snippet.publishedAt,
-        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-      })
-    );
+    if (videoIds.length === 0) return [];
+
+    // Step 2: Fetch video details with liveStreamingDetails for actual start times
+    const videosUrl = `https://www.googleapis.com/youtube/v3/videos?key=${YOUTUBE_API_KEY}&id=${videoIds.join(",")}&part=snippet,liveStreamingDetails,status`;
+    const videosRes = await fetch(videosUrl, { next: { revalidate: 3600 } });
+
+    if (!videosRes.ok) {
+      console.error("YouTube Videos API error:", videosRes.status, await videosRes.text());
+      return [];
+    }
+
+    const videosData = await videosRes.json();
+
+    return (videosData.items || [])
+      .filter(
+        (item: { status: { privacyStatus: string } }) =>
+          item.status.privacyStatus === "public"
+      )
+      .map(
+        (item: {
+          id: string;
+          snippet: {
+            title: string;
+            thumbnails: { high?: { url: string }; default?: { url: string } };
+            publishedAt: string;
+          };
+          liveStreamingDetails?: { actualStartTime?: string };
+        }) => ({
+          id: item.id,
+          title: item.snippet.title,
+          thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default?.url || "",
+          publishedAt: item.liveStreamingDetails?.actualStartTime || item.snippet.publishedAt,
+          url: `https://www.youtube.com/watch?v=${item.id}`,
+        })
+      )
+      .sort(
+        (a: YouTubeVideo, b: YouTubeVideo) =>
+          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+      );
   } catch (error) {
     console.error("Failed to fetch YouTube streams:", error);
     return [];
