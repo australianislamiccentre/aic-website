@@ -116,10 +116,12 @@ function VideoCard({
   );
 }
 
-/** Initial number of videos shown per tab/playlist before "Show More". */
-const VIDEOS_PER_PAGE = 12;
+/** Number of videos shown initially. */
+const INITIAL_VIDEO_COUNT = 4;
+/** Maximum number of videos shown after expanding. */
+const EXPANDED_VIDEO_COUNT = 12;
 
-/** Videos grid with 12-item pagination for expanded playlists. */
+/** Videos grid with expand-to-12 for playlist accordions. */
 function PlaylistVideosGrid({
   videos,
   currentVideoId,
@@ -131,8 +133,10 @@ function PlaylistVideosGrid({
   onPlay: (video: YouTubeVideo) => void;
   youtubeUrl?: string;
 }) {
-  const [limit, setLimit] = useState(VIDEOS_PER_PAGE);
+  const [expanded, setExpanded] = useState(false);
+  const limit = expanded ? EXPANDED_VIDEO_COUNT : INITIAL_VIDEO_COUNT;
   const visible = videos.slice(0, limit);
+  const hasMore = !expanded && videos.length > INITIAL_VIDEO_COUNT;
 
   return (
     <>
@@ -147,12 +151,12 @@ function PlaylistVideosGrid({
         ))}
       </div>
       <div className="flex flex-col items-center gap-3 pt-4">
-        {videos.length > limit && (
+        {hasMore && (
           <button
-            onClick={() => setLimit((prev) => prev + VIDEOS_PER_PAGE)}
+            onClick={() => setExpanded(true)}
             className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
           >
-            Show More
+            View More
           </button>
         )}
         {youtubeUrl && videos.length > 0 && (
@@ -193,7 +197,7 @@ export default function MediaContent({
   const [activeTab, setActiveTab] = useState<
     "latest" | "playlists" | "khutbas"
   >("latest");
-  const [latestVideoLimit, setLatestVideoLimit] = useState(VIDEOS_PER_PAGE);
+  const [latestExpanded, setLatestExpanded] = useState(false);
 
   // Playlist state
   const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(
@@ -210,7 +214,7 @@ export default function MediaContent({
   const [khutbaVideos, setKhutbaVideos] = useState<YouTubeVideo[]>([]);
   const [khutbaLoading, setKhutbaLoading] = useState(false);
   const [khutbaLoaded, setKhutbaLoaded] = useState(false);
-  const [khutbaVideoLimit, setKhutbaVideoLimit] = useState(VIDEOS_PER_PAGE);
+  const [khutbaExpanded, setKhutbaExpanded] = useState(false);
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -234,6 +238,7 @@ export default function MediaContent({
       caption: img.caption || "",
     }));
 
+  const latestVideoLimit = latestExpanded ? EXPANDED_VIDEO_COUNT : INITIAL_VIDEO_COUNT;
   const visibleVideos = youtubeVideos.slice(0, latestVideoLimit);
 
   // Filter playlists to allowed IDs
@@ -519,16 +524,14 @@ export default function MediaContent({
                   ))}
                 </div>
 
-                {/* Show More / View All */}
+                {/* View More / View All */}
                 <div className="flex flex-col items-center gap-3 pt-6">
-                  {youtubeVideos.length > latestVideoLimit && (
+                  {!latestExpanded && youtubeVideos.length > INITIAL_VIDEO_COUNT && (
                     <button
-                      onClick={() =>
-                        setLatestVideoLimit((prev) => prev + VIDEOS_PER_PAGE)
-                      }
+                      onClick={() => setLatestExpanded(true)}
                       className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
                     >
-                      Show More
+                      View More
                     </button>
                   )}
                   {socialMedia.youtube && (
@@ -631,7 +634,7 @@ export default function MediaContent({
                   <>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                       {khutbaVideos
-                        .slice(0, khutbaVideoLimit)
+                        .slice(0, khutbaExpanded ? EXPANDED_VIDEO_COUNT : INITIAL_VIDEO_COUNT)
                         .map((video) => (
                           <VideoCard
                             key={video.id}
@@ -642,14 +645,12 @@ export default function MediaContent({
                         ))}
                     </div>
                     <div className="flex flex-col items-center gap-3 pt-6">
-                      {khutbaVideos.length > khutbaVideoLimit && (
+                      {!khutbaExpanded && khutbaVideos.length > INITIAL_VIDEO_COUNT && (
                         <button
-                          onClick={() =>
-                            setKhutbaVideoLimit((prev) => prev + VIDEOS_PER_PAGE)
-                          }
+                          onClick={() => setKhutbaExpanded(true)}
                           className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
                         >
-                          Show More
+                          View More
                         </button>
                       )}
                       {socialMedia.youtube && (

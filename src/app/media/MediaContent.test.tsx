@@ -193,41 +193,44 @@ describe("MediaContent", () => {
       expect(link.closest("a")).toHaveAttribute("target", "_blank");
     });
 
-    it("shows first 12 videos in the grid", () => {
-      const videos = Array.from({ length: 20 }, (_, i) =>
+    it("shows first 4 videos in the grid", () => {
+      const videos = Array.from({ length: 10 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       expect(screen.getByLabelText("Play Video 1")).toBeInTheDocument();
-      expect(screen.getByLabelText("Play Video 12")).toBeInTheDocument();
+      expect(screen.getByLabelText("Play Video 4")).toBeInTheDocument();
       expect(
-        screen.queryByLabelText("Play Video 13"),
+        screen.queryByLabelText("Play Video 5"),
       ).not.toBeInTheDocument();
     });
 
-    it("hides remaining videos behind Show More button", () => {
-      const videos = Array.from({ length: 20 }, (_, i) =>
+    it("hides remaining videos behind View More button", () => {
+      const videos = Array.from({ length: 10 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
-      expect(screen.getByText("Show More")).toBeInTheDocument();
+      expect(screen.getByText("View More")).toBeInTheDocument();
     });
 
-    it("Show More reveals next batch of videos", async () => {
+    it("View More expands to show up to 12 videos", async () => {
       const user = userEvent.setup();
-      const videos = Array.from({ length: 20 }, (_, i) =>
+      const videos = Array.from({ length: 10 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
-      await user.click(screen.getByText("Show More"));
+      // Only 4 visible initially
+      expect(screen.queryByLabelText("Play Video 5")).not.toBeInTheDocument();
 
-      // All 20 now visible
-      expect(screen.getByLabelText("Play Video 20")).toBeInTheDocument();
-      // Show More gone (20 <= 24)
-      expect(screen.queryByText("Show More")).not.toBeInTheDocument();
+      await user.click(screen.getByText("View More"));
+
+      // All 10 now visible (capped at 12)
+      expect(screen.getByLabelText("Play Video 10")).toBeInTheDocument();
+      // View More gone after expanding
+      expect(screen.queryByText("View More")).not.toBeInTheDocument();
     });
 
     it("clicking a video in the list loads it into the player", async () => {
