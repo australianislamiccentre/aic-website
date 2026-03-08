@@ -263,13 +263,13 @@ export default function MediaContent({
       }
       setExpandedPlaylistId(playlistId);
 
-      // Scroll to the playlist header
+      // Scroll to the playlist header after DOM settles
       setTimeout(() => {
         playlistRefs.current[playlistId]?.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
-      }, 100);
+      }, 250);
 
       if (!playlistVideosCache[playlistId]) {
         setLoadingPlaylistId(playlistId);
@@ -535,13 +535,13 @@ export default function MediaContent({
                       ref={(el) => {
                         playlistRefs.current[playlist.id] = el;
                       }}
-                      className="border border-white/10 rounded-lg overflow-hidden"
+                      className="border border-white/10 rounded-lg"
                     >
                       <button
                         onClick={() => togglePlaylist(playlist.id)}
                         className={`w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors ${
                           expandedPlaylistId === playlist.id
-                            ? "sticky top-0 z-10 bg-[#0a0a0a]"
+                            ? "sticky top-0 z-10 bg-[#0a0a0a] border-b border-white/10"
                             : ""
                         }`}
                       >
