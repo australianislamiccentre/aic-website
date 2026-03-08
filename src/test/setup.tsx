@@ -80,6 +80,15 @@ vi.mock("@/lib/youtube", () => ({
   getYouTubeLiveStream: vi.fn().mockResolvedValue({ isLive: false }),
   getYouTubePlaylists: vi.fn().mockResolvedValue([]),
   getPlaylistVideos: vi.fn().mockResolvedValue([]),
+  getYouTubeStreams: vi.fn().mockResolvedValue([]),
+  ALLOWED_PLAYLIST_IDS: [
+    "PL_XW5f-8WbWHW0gshPzOp_QCv4EEZeF_D",
+    "PL_XW5f-8WbWHgU5Piur86UHwb1dfDX10i",
+    "PL_XW5f-8WbWFH5RITspSW51Rh5nHPMbFv",
+    "PL_XW5f-8WbWFgFRRk6Mz9aMoQqLwtnN2Q",
+    "PL_XW5f-8WbWG1OhSGBSHzV78V6fYwUnEe",
+    "PL_XW5f-8WbWFLGdeEgS06fzlagL1fA6Ym",
+  ],
 }));
 
 // Mock next/navigation

@@ -34,6 +34,7 @@ import type {
   YouTubeLiveStream,
   YouTubePlaylist,
 } from "@/lib/youtube";
+import { ALLOWED_PLAYLIST_IDS } from "@/lib/youtube";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
 /** Format an ISO date string to a human-readable Australian date. */
@@ -62,18 +63,24 @@ function VideoCard({
     <button
       onClick={onPlay}
       className={`group text-left rounded-lg overflow-hidden transition-all ${
-        isActive ? "bg-[#01476b]/5" : "hover:shadow-md"
+        isActive ? "bg-white/5" : "hover:bg-white/5"
       }`}
       aria-label={`Play ${video.title}`}
     >
-      <div className="relative aspect-video rounded-md overflow-hidden">
-        <Image
-          src={video.thumbnail}
-          alt={video.title}
-          fill
-          className="object-cover"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-        />
+      <div className="relative aspect-video rounded-md overflow-hidden bg-white/10">
+        {video.thumbnail ? (
+          <Image
+            src={video.thumbnail}
+            alt={video.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+            <Play className="w-10 h-10" />
+          </div>
+        )}
         {isLive && (
           <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -97,15 +104,69 @@ function VideoCard({
           </div>
         )}
       </div>
-      <div className="pt-2 pb-1">
-        <h4 className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">
+      <div className="px-2 pt-2.5 pb-2">
+        <h4 className="text-sm font-medium text-white line-clamp-2 leading-snug h-[2.5rem]">
           {video.title}
         </h4>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-gray-400 mt-1">
           {formatDate(video.publishedAt)}
         </p>
       </div>
     </button>
+  );
+}
+
+/** Videos grid with 20-item pagination for expanded playlists. */
+function PlaylistVideosGrid({
+  videos,
+  currentVideoId,
+  onPlay,
+  youtubeUrl,
+}: {
+  videos: YouTubeVideo[];
+  currentVideoId?: string;
+  onPlay: (video: YouTubeVideo) => void;
+  youtubeUrl?: string;
+}) {
+  const [limit, setLimit] = useState(20);
+  const visible = videos.slice(0, limit);
+
+  return (
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 pt-4">
+        {visible.map((video) => (
+          <VideoCard
+            key={video.id}
+            video={video}
+            isActive={currentVideoId === video.id}
+            onPlay={() => onPlay(video)}
+          />
+        ))}
+      </div>
+      {videos.length > limit && (
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={() => setLimit((prev) => prev + 20)}
+            className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
+          >
+            Show More
+          </button>
+        </div>
+      )}
+      {youtubeUrl && videos.length > 0 && (
+        <div className="flex justify-center pt-2">
+          <a
+            href={youtubeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-white transition-colors"
+          >
+            View all videos on YouTube
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -131,7 +192,7 @@ export default function MediaContent({
   const [activeTab, setActiveTab] = useState<
     "latest" | "playlists" | "khutbas"
   >("latest");
-  const [showAllVideos, setShowAllVideos] = useState(false);
+  const [latestVideoLimit, setLatestVideoLimit] = useState(20);
 
   // Playlist state
   const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(
@@ -144,10 +205,11 @@ export default function MediaContent({
     null,
   );
 
-  // Khutba state
+  // Khutba (streams) state
   const [khutbaVideos, setKhutbaVideos] = useState<YouTubeVideo[]>([]);
   const [khutbaLoading, setKhutbaLoading] = useState(false);
   const [khutbaLoaded, setKhutbaLoaded] = useState(false);
+  const [khutbaVideoLimit, setKhutbaVideoLimit] = useState(20);
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -170,13 +232,11 @@ export default function MediaContent({
       caption: img.caption || "",
     }));
 
-  const visibleVideos = showAllVideos
-    ? youtubeVideos
-    : youtubeVideos.slice(0, 4);
+  const visibleVideos = youtubeVideos.slice(0, latestVideoLimit);
 
-  // Find khutba playlist by title
-  const khutbaPlaylist = playlists.find((p) =>
-    p.title.toLowerCase().includes("khutba"),
+  // Filter playlists to allowed IDs
+  const filteredPlaylists = playlists.filter((p) =>
+    ALLOWED_PLAYLIST_IDS.includes(p.id),
   );
 
   // ── Live stream polling (same pattern as LiveBanner) ──
@@ -232,12 +292,12 @@ export default function MediaContent({
     [expandedPlaylistId, playlistVideosCache],
   );
 
-  // ── Load khutba videos when tab is selected ──
+  // ── Load khutba streams when tab is selected ──
   const loadKhutbaVideos = useCallback(async () => {
-    if (khutbaLoaded || !khutbaPlaylist) return;
+    if (khutbaLoaded) return;
     setKhutbaLoading(true);
     try {
-      const res = await fetch(`/api/youtube/playlists/${khutbaPlaylist.id}`);
+      const res = await fetch("/api/youtube/streams");
       if (res.ok) {
         const videos = await res.json();
         setKhutbaVideos(videos);
@@ -248,7 +308,7 @@ export default function MediaContent({
       setKhutbaLoading(false);
       setKhutbaLoaded(true);
     }
-  }, [khutbaLoaded, khutbaPlaylist]);
+  }, [khutbaLoaded]);
 
   // Load khutba videos when khutbas tab becomes active
   useEffect(() => {
@@ -330,13 +390,13 @@ export default function MediaContent({
 
       {/* ── Video Section ── */}
       {(youtubeVideos.length > 0 || isLive) && (
-        <section className="py-12 bg-white">
+        <section className="py-12 bg-[#0a0a0a]">
           <div className="max-w-7xl mx-auto px-6">
             {/* Featured Player */}
             {currentVideo && (
               <FadeIn>
                 <div ref={playerRef} className="sm:max-w-[900px] sm:mx-auto">
-                  <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-900 shadow-lg">
+                  <div className="relative aspect-video rounded-xl overflow-hidden bg-black shadow-lg">
                     <iframe
                       src={`https://www.youtube.com/embed/${currentVideo.id}${autoplay ? "?autoplay=1" : ""}`}
                       title={currentVideo.title}
@@ -349,10 +409,10 @@ export default function MediaContent({
                   {/* Video Info */}
                   <div className="mt-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                     <div className="min-w-0">
-                      <h3 className="text-lg font-semibold text-gray-900 leading-snug">
+                      <h3 className="text-lg font-semibold text-white leading-snug">
                         {currentVideo.title}
                       </h3>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-gray-400 mt-1">
                         {formatDate(currentVideo.publishedAt)}
                       </p>
                     </div>
@@ -361,7 +421,7 @@ export default function MediaContent({
                         href={currentVideo.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-sm font-medium text-[#01476b] hover:text-[#01476b]/80 transition-colors shrink-0"
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-300 hover:text-white transition-colors shrink-0"
                       >
                         View on YouTube
                         <ExternalLink className="w-4 h-4" />
@@ -373,7 +433,7 @@ export default function MediaContent({
             )}
 
             {/* Tab Bar */}
-            <div className="mt-8 border-b border-gray-200">
+            <div className="mt-8 border-b border-white/10">
               <nav className="flex gap-1" aria-label="Media tabs">
                 {(["latest", "playlists", "khutbas"] as const).map((tab) => {
                   const labels = {
@@ -387,15 +447,15 @@ export default function MediaContent({
                       onClick={() => setActiveTab(tab)}
                       className={`px-4 py-3 text-sm font-medium transition-colors relative ${
                         activeTab === tab
-                          ? "text-[#01476b]"
-                          : "text-gray-500 hover:text-gray-700"
+                          ? "text-white"
+                          : "text-gray-400 hover:text-gray-200"
                       }`}
                       aria-selected={activeTab === tab}
                       role="tab"
                     >
                       {labels[tab]}
                       {activeTab === tab && (
-                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#01476b]" />
+                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                       )}
                     </button>
                   );
@@ -448,22 +508,24 @@ export default function MediaContent({
                   ))}
                 </div>
 
-                {/* Show More / Channel Link */}
-                <div className="flex items-center justify-center gap-4 pt-6">
-                  {!showAllVideos && youtubeVideos.length > 4 && (
+                {/* Show More / View All */}
+                <div className="flex flex-col items-center gap-3 pt-6">
+                  {youtubeVideos.length > latestVideoLimit && (
                     <button
-                      onClick={() => setShowAllVideos(true)}
-                      className="text-sm font-medium text-[#01476b] hover:text-[#01476b]/80 transition-colors"
+                      onClick={() =>
+                        setLatestVideoLimit((prev) => prev + 20)
+                      }
+                      className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
                     >
                       Show More
                     </button>
                   )}
-                  {showAllVideos && socialMedia.youtube && (
+                  {socialMedia.youtube && (
                     <a
                       href={socialMedia.youtube}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-[#01476b] hover:text-[#01476b]/80 transition-colors"
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-white transition-colors"
                     >
                       View all videos on YouTube
                       <ExternalLink className="w-3.5 h-3.5" />
@@ -476,29 +538,35 @@ export default function MediaContent({
             {/* ── Tab Content: Playlists ── */}
             {activeTab === "playlists" && (
               <div className="mt-6 space-y-3">
-                {playlists.length > 0 ? (
-                  playlists.map((playlist) => (
+                {filteredPlaylists.length > 0 ? (
+                  filteredPlaylists.map((playlist) => (
                     <div
                       key={playlist.id}
-                      className="border border-gray-200 rounded-lg overflow-hidden"
+                      className="border border-white/10 rounded-lg overflow-hidden"
                     >
                       <button
                         onClick={() => togglePlaylist(playlist.id)}
-                        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <Image
-                            src={playlist.thumbnail}
-                            alt={playlist.title}
-                            width={80}
-                            height={45}
-                            className="rounded"
-                          />
+                          {playlist.thumbnail ? (
+                            <Image
+                              src={playlist.thumbnail}
+                              alt={playlist.title}
+                              width={80}
+                              height={45}
+                              className="rounded"
+                            />
+                          ) : (
+                            <div className="w-[80px] h-[45px] rounded bg-white/10 flex items-center justify-center text-gray-400">
+                              <Play className="w-5 h-5" />
+                            </div>
+                          )}
                           <div className="text-left">
-                            <h3 className="font-medium text-gray-900">
+                            <h3 className="font-medium text-white">
                               {playlist.title}
                             </h3>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-400">
                               {playlist.videoCount} videos
                             </p>
                           </div>
@@ -512,24 +580,18 @@ export default function MediaContent({
                         />
                       </button>
                       {expandedPlaylistId === playlist.id && (
-                        <div className="p-4 pt-0 border-t border-gray-100">
+                        <div className="p-4 pt-0 border-t border-white/10">
                           {loadingPlaylistId === playlist.id ? (
-                            <p className="text-sm text-gray-500 py-4 text-center">
+                            <p className="text-sm text-gray-400 py-4 text-center">
                               Loading videos...
                             </p>
                           ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 pt-4">
-                              {(playlistVideosCache[playlist.id] || []).map(
-                                (video) => (
-                                  <VideoCard
-                                    key={video.id}
-                                    video={video}
-                                    isActive={currentVideo?.id === video.id}
-                                    onPlay={() => handlePlayVideo(video)}
-                                  />
-                                ),
-                              )}
-                            </div>
+                            <PlaylistVideosGrid
+                              videos={playlistVideosCache[playlist.id] || []}
+                              currentVideoId={currentVideo?.id}
+                              onPlay={handlePlayVideo}
+                              youtubeUrl={socialMedia.youtube}
+                            />
                           )}
                         </div>
                       )}
@@ -537,8 +599,8 @@ export default function MediaContent({
                   ))
                 ) : (
                   <div className="text-center py-12">
-                    <Youtube className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                    <p className="text-gray-500">No playlists available.</p>
+                    <Youtube className="w-12 h-12 mx-auto text-gray-500 mb-3" />
+                    <p className="text-gray-400">No playlists available.</p>
                   </div>
                 )}
               </div>
@@ -548,27 +610,52 @@ export default function MediaContent({
             {activeTab === "khutbas" && (
               <div className="mt-6">
                 {khutbaLoading ? (
-                  <p className="text-sm text-gray-500 py-8 text-center">
+                  <p className="text-sm text-gray-400 py-8 text-center">
                     Loading khutbas...
                   </p>
                 ) : khutbaVideos.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {khutbaVideos.map((video) => (
-                      <VideoCard
-                        key={video.id}
-                        video={video}
-                        isActive={currentVideo?.id === video.id}
-                        onPlay={() => handlePlayVideo(video)}
-                      />
-                    ))}
-                  </div>
+                  <>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {khutbaVideos
+                        .slice(0, khutbaVideoLimit)
+                        .map((video) => (
+                          <VideoCard
+                            key={video.id}
+                            video={video}
+                            isActive={currentVideo?.id === video.id}
+                            onPlay={() => handlePlayVideo(video)}
+                          />
+                        ))}
+                    </div>
+                    <div className="flex flex-col items-center gap-3 pt-6">
+                      {khutbaVideos.length > khutbaVideoLimit && (
+                        <button
+                          onClick={() =>
+                            setKhutbaVideoLimit((prev) => prev + 20)
+                          }
+                          className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                        >
+                          Show More
+                        </button>
+                      )}
+                      {socialMedia.youtube && (
+                        <a
+                          href={`${socialMedia.youtube}/streams`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                        >
+                          View all streams on YouTube
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  </>
                 ) : (
                   <div className="text-center py-12">
-                    <Youtube className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                    <p className="text-gray-500">
-                      {khutbaPlaylist
-                        ? "No khutba videos available."
-                        : "No Friday Khutba playlist found."}
+                    <Youtube className="w-12 h-12 mx-auto text-gray-500 mb-3" />
+                    <p className="text-gray-400">
+                      No khutba streams available.
                     </p>
                   </div>
                 )}

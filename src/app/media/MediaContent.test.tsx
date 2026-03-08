@@ -106,7 +106,7 @@ function makePlaylist(
   overrides: Partial<YouTubePlaylist> = {},
 ): YouTubePlaylist {
   return {
-    id: `pl-${Math.random().toString(36).slice(2, 8)}`,
+    id: `PL_XW5f-8WbWHW0gshPzOp_QCv4EEZeF_D`,
     title: "Test Playlist",
     description: "A test playlist",
     thumbnail: "https://i.ytimg.com/vi/abc/hqdefault.jpg",
@@ -172,10 +172,8 @@ describe("MediaContent", () => {
       ];
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
-      // Title appears in both the player info (h3) and the video card (h4)
       const titles = screen.getAllByText("Eid Prayer");
       expect(titles.length).toBeGreaterThanOrEqual(1);
-      // Date also appears in both player info and video card
       const dates = screen.getAllByText("30 March 2025");
       expect(dates.length).toBeGreaterThanOrEqual(1);
     });
@@ -195,23 +193,21 @@ describe("MediaContent", () => {
       expect(link.closest("a")).toHaveAttribute("target", "_blank");
     });
 
-    it("shows first 4 videos in the grid", () => {
-      const videos = Array.from({ length: 8 }, (_, i) =>
+    it("shows first 20 videos in the grid", () => {
+      const videos = Array.from({ length: 25 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
-      // First 4 visible in grid
       expect(screen.getByLabelText("Play Video 1")).toBeInTheDocument();
-      expect(screen.getByLabelText("Play Video 4")).toBeInTheDocument();
-      // 5th+ hidden behind Show More
+      expect(screen.getByLabelText("Play Video 20")).toBeInTheDocument();
       expect(
-        screen.queryByLabelText("Play Video 5"),
+        screen.queryByLabelText("Play Video 21"),
       ).not.toBeInTheDocument();
     });
 
     it("hides remaining videos behind Show More button", () => {
-      const videos = Array.from({ length: 8 }, (_, i) =>
+      const videos = Array.from({ length: 25 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
@@ -219,18 +215,18 @@ describe("MediaContent", () => {
       expect(screen.getByText("Show More")).toBeInTheDocument();
     });
 
-    it("Show More reveals all 8 videos", async () => {
+    it("Show More reveals next batch of videos", async () => {
       const user = userEvent.setup();
-      const videos = Array.from({ length: 8 }, (_, i) =>
+      const videos = Array.from({ length: 25 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       await user.click(screen.getByText("Show More"));
 
-      // All 8 now visible
-      expect(screen.getByLabelText("Play Video 8")).toBeInTheDocument();
-      // Show More gone
+      // All 25 now visible
+      expect(screen.getByLabelText("Play Video 25")).toBeInTheDocument();
+      // Show More gone (25 <= 40)
       expect(screen.queryByText("Show More")).not.toBeInTheDocument();
     });
 
@@ -242,24 +238,16 @@ describe("MediaContent", () => {
       ];
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
-      // Initially shows first video in the player iframe
       expect(screen.getByTitle("First Video")).toBeInTheDocument();
 
-      // Click second video in list
       await user.click(screen.getByLabelText("Play Second Video"));
 
-      // Now shows second video in the player iframe
       expect(screen.getByTitle("Second Video")).toBeInTheDocument();
     });
 
-    it("shows View all videos on YouTube link after expanding", async () => {
-      const user = userEvent.setup();
-      const videos = Array.from({ length: 8 }, (_, i) =>
-        makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
-      );
+    it("shows View all videos on YouTube link", () => {
+      const videos = [makeVideo({ id: "v1", title: "Video 1" })];
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
-
-      await user.click(screen.getByText("Show More"));
 
       const channelLink = screen.getByText("View all videos on YouTube");
       expect(channelLink).toBeInTheDocument();
@@ -314,9 +302,7 @@ describe("MediaContent", () => {
         />,
       );
 
-      // Player shows the first regular video, not the live stream
       expect(screen.getByTitle("Regular Video")).toBeInTheDocument();
-      // Live card is present with label
       expect(screen.getByLabelText("Play Live Khutbah")).toBeInTheDocument();
     });
 
@@ -336,7 +322,6 @@ describe("MediaContent", () => {
       const videos = [makeVideo({ id: "solo", title: "Solo Video" })];
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
-      // With tabs, even a single video shows in the grid
       expect(screen.getByLabelText("Play Solo Video")).toBeInTheDocument();
     });
   });
@@ -404,7 +389,7 @@ describe("MediaContent", () => {
 
       await user.click(screen.getByRole("tab", { name: "Friday Khutbas" }));
       expect(
-        screen.getByText("No Friday Khutba playlist found."),
+        screen.getByText("No khutba streams available."),
       ).toBeInTheDocument();
     });
   });
@@ -464,10 +449,8 @@ describe("MediaContent", () => {
         />,
       );
 
-      // Click the regular video
       await user.click(screen.getByLabelText("Play Regular Video"));
 
-      // Player should show regular video, not live
       expect(screen.getByTitle("Regular Video")).toBeInTheDocument();
     });
 
@@ -487,10 +470,8 @@ describe("MediaContent", () => {
         />,
       );
 
-      // Click regular video
       await user.click(screen.getByLabelText("Play Regular Video"));
 
-      // LIVE badge should still be visible on the live card
       expect(screen.getByText("LIVE")).toBeInTheDocument();
     });
 
@@ -518,11 +499,19 @@ describe("MediaContent", () => {
   // ── Playlists Tab ──
 
   describe("playlists tab", () => {
-    it("renders playlist accordion items", async () => {
+    it("renders playlist accordion items with allowed IDs", async () => {
       const user = userEvent.setup();
       const playlists = [
-        makePlaylist({ title: "Lectures", videoCount: 10 }),
-        makePlaylist({ title: "Events", videoCount: 5 }),
+        makePlaylist({
+          id: "PL_XW5f-8WbWHW0gshPzOp_QCv4EEZeF_D",
+          title: "Lectures",
+          videoCount: 10,
+        }),
+        makePlaylist({
+          id: "PL_XW5f-8WbWHgU5Piur86UHwb1dfDX10i",
+          title: "Events",
+          videoCount: 5,
+        }),
       ];
       render(
         <MediaContent
@@ -538,7 +527,36 @@ describe("MediaContent", () => {
       expect(screen.getByText("10 videos")).toBeInTheDocument();
     });
 
-    it("shows empty state when no playlists", async () => {
+    it("filters out playlists with non-allowed IDs", async () => {
+      const user = userEvent.setup();
+      const playlists = [
+        makePlaylist({
+          id: "PL_XW5f-8WbWHW0gshPzOp_QCv4EEZeF_D",
+          title: "Allowed Playlist",
+          videoCount: 10,
+        }),
+        makePlaylist({
+          id: "PL_NOT_ALLOWED",
+          title: "Not Allowed Playlist",
+          videoCount: 3,
+        }),
+      ];
+      render(
+        <MediaContent
+          mediaGalleryImages={[]}
+          youtubeVideos={[makeVideo()]}
+          playlists={playlists}
+        />,
+      );
+
+      await user.click(screen.getByRole("tab", { name: "Playlists" }));
+      expect(screen.getByText("Allowed Playlist")).toBeInTheDocument();
+      expect(
+        screen.queryByText("Not Allowed Playlist"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("shows empty state when no playlists match allowed IDs", async () => {
       const user = userEvent.setup();
       render(
         <MediaContent
@@ -552,6 +570,33 @@ describe("MediaContent", () => {
       expect(
         screen.getByText("No playlists available."),
       ).toBeInTheDocument();
+    });
+  });
+
+  // ── Video Card ──
+
+  describe("video card", () => {
+    it("renders title with fixed height for consistent cards", () => {
+      const videos = [
+        makeVideo({ id: "v1", title: "Short" }),
+        makeVideo({
+          id: "v2",
+          title: "A Much Longer Video Title That Spans Multiple Lines",
+        }),
+      ];
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
+
+      const titles = screen.getAllByRole("heading", { level: 4 });
+      titles.forEach((title) => {
+        expect(title.className).toContain("h-[2.5rem]");
+      });
+    });
+
+    it("renders placeholder when thumbnail is missing", () => {
+      const videos = [makeVideo({ id: "v1", title: "No Thumb", thumbnail: "" })];
+      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
+
+      expect(screen.getByLabelText("Play No Thumb")).toBeInTheDocument();
     });
   });
 
@@ -720,7 +765,6 @@ describe("MediaContent", () => {
       await user.click(screen.getByLabelText("View Image A"));
       await user.click(screen.getByLabelText("Previous image"));
 
-      // Wraps around to last image
       expect(screen.getByText("2 / 2")).toBeInTheDocument();
     });
 
@@ -803,7 +847,6 @@ describe("MediaContent", () => {
 
       await user.click(screen.getByLabelText("View Eid prayer"));
 
-      // Inside the lightbox dialog
       const dialog = screen.getByRole("dialog");
       expect(dialog).toHaveTextContent("Annual Eid celebration");
     });

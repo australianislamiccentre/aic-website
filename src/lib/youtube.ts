@@ -144,6 +144,48 @@ export async function getYouTubePlaylists(): Promise<YouTubePlaylist[]> {
   }
 }
 
+/** Fetches completed live streams (past broadcasts) from the channel. Cached for 1 hour. */
+export async function getYouTubeStreams(maxResults = 50): Promise<YouTubeVideo[]> {
+  if (!YOUTUBE_API_KEY || !YOUTUBE_CHANNEL_ID) {
+    return [];
+  }
+
+  try {
+    const url = `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${YOUTUBE_CHANNEL_ID}&part=snippet&order=date&type=video&eventType=completed&maxResults=${maxResults}`;
+    const res = await fetch(url, { next: { revalidate: 3600 } });
+
+    if (!res.ok) {
+      console.error("YouTube Streams API error:", res.status, await res.text());
+      return [];
+    }
+
+    const data = await res.json();
+
+    return (data.items || []).map(
+      (item: { id: { videoId: string }; snippet: { title: string; thumbnails: { high?: { url: string }; default?: { url: string } }; publishedAt: string } }) => ({
+        id: item.id.videoId,
+        title: item.snippet.title,
+        thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default?.url || "",
+        publishedAt: item.snippet.publishedAt,
+        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+      })
+    );
+  } catch (error) {
+    console.error("Failed to fetch YouTube streams:", error);
+    return [];
+  }
+}
+
+/** Playlist IDs to display on the media page. */
+export const ALLOWED_PLAYLIST_IDS = [
+  "PL_XW5f-8WbWHW0gshPzOp_QCv4EEZeF_D",
+  "PL_XW5f-8WbWHgU5Piur86UHwb1dfDX10i",
+  "PL_XW5f-8WbWFH5RITspSW51Rh5nHPMbFv",
+  "PL_XW5f-8WbWFgFRRk6Mz9aMoQqLwtnN2Q",
+  "PL_XW5f-8WbWG1OhSGBSHzV78V6fYwUnEe",
+  "PL_XW5f-8WbWFLGdeEgS06fzlagL1fA6Ym",
+];
+
 /** Fetches videos from a specific YouTube playlist. Cached for 1 hour. */
 export async function getPlaylistVideos(playlistId: string): Promise<YouTubeVideo[]> {
   if (!YOUTUBE_API_KEY || !playlistId) {
