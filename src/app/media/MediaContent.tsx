@@ -124,12 +124,12 @@ function PlaylistVideosGrid({
   videos,
   currentVideoId,
   onPlay,
-  youtubeUrl,
+  playlistId,
 }: {
   videos: YouTubeVideo[];
   currentVideoId?: string;
   onPlay: (video: YouTubeVideo) => void;
-  youtubeUrl?: string;
+  playlistId: string;
 }) {
   const visible = videos.slice(0, MAX_VIDEOS);
 
@@ -146,14 +146,14 @@ function PlaylistVideosGrid({
         ))}
       </div>
       <div className="flex flex-col items-center gap-3 pt-4">
-        {youtubeUrl && videos.length > 0 && (
+        {videos.length > 0 && (
           <a
-            href={youtubeUrl}
+            href={`https://www.youtube.com/playlist?list=${playlistId}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-white transition-colors"
           >
-            View all videos on YouTube
+            View full playlist on YouTube
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
         )}
@@ -512,7 +512,7 @@ export default function MediaContent({
                 <div className="flex flex-col items-center gap-3 pt-6">
                   {socialMedia.youtube && (
                     <a
-                      href={socialMedia.youtube}
+                      href={`${socialMedia.youtube}/videos`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-white transition-colors"
@@ -539,11 +539,7 @@ export default function MediaContent({
                     >
                       <button
                         onClick={() => togglePlaylist(playlist.id)}
-                        className={`w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors ${
-                          expandedPlaylistId === playlist.id
-                            ? "sticky top-0 z-10 bg-[#0a0a0a] border-b border-white/10"
-                            : ""
-                        }`}
+                        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
                       >
                         <div className="flex items-center gap-3">
                           {playlist.thumbnail ? (
@@ -587,7 +583,7 @@ export default function MediaContent({
                               videos={playlistVideosCache[playlist.id] || []}
                               currentVideoId={currentVideo?.id}
                               onPlay={handlePlayVideo}
-                              youtubeUrl={socialMedia.youtube}
+                              playlistId={playlist.id}
                             />
                           )}
                         </div>

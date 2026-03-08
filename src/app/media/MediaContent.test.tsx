@@ -229,7 +229,7 @@ describe("MediaContent", () => {
       expect(channelLink).toBeInTheDocument();
       expect(channelLink.closest("a")).toHaveAttribute(
         "href",
-        "https://youtube.com/@aic",
+        "https://youtube.com/@aic/videos",
       );
     });
 
