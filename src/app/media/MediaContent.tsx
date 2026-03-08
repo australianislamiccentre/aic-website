@@ -116,10 +116,8 @@ function VideoCard({
   );
 }
 
-/** Number of videos shown initially. */
-const INITIAL_VIDEO_COUNT = 4;
-/** Maximum number of videos shown after expanding. */
-const EXPANDED_VIDEO_COUNT = 12;
+/** Maximum number of videos shown per tab/playlist. */
+const MAX_VIDEOS = 12;
 
 /** Videos grid with expand-to-12 for playlist accordions. */
 function PlaylistVideosGrid({
@@ -133,10 +131,7 @@ function PlaylistVideosGrid({
   onPlay: (video: YouTubeVideo) => void;
   youtubeUrl?: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const limit = expanded ? EXPANDED_VIDEO_COUNT : INITIAL_VIDEO_COUNT;
-  const visible = videos.slice(0, limit);
-  const hasMore = !expanded && videos.length > INITIAL_VIDEO_COUNT;
+  const visible = videos.slice(0, MAX_VIDEOS);
 
   return (
     <>
@@ -151,14 +146,6 @@ function PlaylistVideosGrid({
         ))}
       </div>
       <div className="flex flex-col items-center gap-3 pt-4">
-        {hasMore && (
-          <button
-            onClick={() => setExpanded(true)}
-            className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
-          >
-            View More
-          </button>
-        )}
         {youtubeUrl && videos.length > 0 && (
           <a
             href={youtubeUrl}
@@ -197,7 +184,6 @@ export default function MediaContent({
   const [activeTab, setActiveTab] = useState<
     "latest" | "playlists" | "khutbas"
   >("latest");
-  const [latestExpanded, setLatestExpanded] = useState(false);
 
   // Playlist state
   const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(
@@ -214,7 +200,6 @@ export default function MediaContent({
   const [khutbaVideos, setKhutbaVideos] = useState<YouTubeVideo[]>([]);
   const [khutbaLoading, setKhutbaLoading] = useState(false);
   const [khutbaLoaded, setKhutbaLoaded] = useState(false);
-  const [khutbaExpanded, setKhutbaExpanded] = useState(false);
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -238,8 +223,7 @@ export default function MediaContent({
       caption: img.caption || "",
     }));
 
-  const latestVideoLimit = latestExpanded ? EXPANDED_VIDEO_COUNT : INITIAL_VIDEO_COUNT;
-  const visibleVideos = youtubeVideos.slice(0, latestVideoLimit);
+  const visibleVideos = youtubeVideos.slice(0, MAX_VIDEOS);
 
   // Filter playlists to allowed IDs
   const filteredPlaylists = playlists.filter((p) =>
@@ -524,16 +508,8 @@ export default function MediaContent({
                   ))}
                 </div>
 
-                {/* View More / View All */}
+                {/* View All */}
                 <div className="flex flex-col items-center gap-3 pt-6">
-                  {!latestExpanded && youtubeVideos.length > INITIAL_VIDEO_COUNT && (
-                    <button
-                      onClick={() => setLatestExpanded(true)}
-                      className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
-                    >
-                      View More
-                    </button>
-                  )}
                   {socialMedia.youtube && (
                     <a
                       href={socialMedia.youtube}
@@ -634,7 +610,7 @@ export default function MediaContent({
                   <>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                       {khutbaVideos
-                        .slice(0, khutbaExpanded ? EXPANDED_VIDEO_COUNT : INITIAL_VIDEO_COUNT)
+                        .slice(0, MAX_VIDEOS)
                         .map((video) => (
                           <VideoCard
                             key={video.id}
@@ -645,14 +621,6 @@ export default function MediaContent({
                         ))}
                     </div>
                     <div className="flex flex-col items-center gap-3 pt-6">
-                      {!khutbaExpanded && khutbaVideos.length > INITIAL_VIDEO_COUNT && (
-                        <button
-                          onClick={() => setKhutbaExpanded(true)}
-                          className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
-                        >
-                          View More
-                        </button>
-                      )}
                       {socialMedia.youtube && (
                         <a
                           href={`${socialMedia.youtube}/streams`}

@@ -193,44 +193,17 @@ describe("MediaContent", () => {
       expect(link.closest("a")).toHaveAttribute("target", "_blank");
     });
 
-    it("shows first 4 videos in the grid", () => {
-      const videos = Array.from({ length: 10 }, (_, i) =>
+    it("shows up to 12 videos in the grid", () => {
+      const videos = Array.from({ length: 15 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       expect(screen.getByLabelText("Play Video 1")).toBeInTheDocument();
-      expect(screen.getByLabelText("Play Video 4")).toBeInTheDocument();
+      expect(screen.getByLabelText("Play Video 12")).toBeInTheDocument();
       expect(
-        screen.queryByLabelText("Play Video 5"),
+        screen.queryByLabelText("Play Video 13"),
       ).not.toBeInTheDocument();
-    });
-
-    it("hides remaining videos behind View More button", () => {
-      const videos = Array.from({ length: 10 }, (_, i) =>
-        makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
-      );
-      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
-
-      expect(screen.getByText("View More")).toBeInTheDocument();
-    });
-
-    it("View More expands to show up to 12 videos", async () => {
-      const user = userEvent.setup();
-      const videos = Array.from({ length: 10 }, (_, i) =>
-        makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
-      );
-      render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
-
-      // Only 4 visible initially
-      expect(screen.queryByLabelText("Play Video 5")).not.toBeInTheDocument();
-
-      await user.click(screen.getByText("View More"));
-
-      // All 10 now visible (capped at 12)
-      expect(screen.getByLabelText("Play Video 10")).toBeInTheDocument();
-      // View More gone after expanding
-      expect(screen.queryByText("View More")).not.toBeInTheDocument();
     });
 
     it("clicking a video in the list loads it into the player", async () => {
