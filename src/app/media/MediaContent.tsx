@@ -116,7 +116,10 @@ function VideoCard({
   );
 }
 
-/** Videos grid with 20-item pagination for expanded playlists. */
+/** Initial number of videos shown per tab/playlist before "Show More". */
+const VIDEOS_PER_PAGE = 12;
+
+/** Videos grid with 12-item pagination for expanded playlists. */
 function PlaylistVideosGrid({
   videos,
   currentVideoId,
@@ -128,7 +131,7 @@ function PlaylistVideosGrid({
   onPlay: (video: YouTubeVideo) => void;
   youtubeUrl?: string;
 }) {
-  const [limit, setLimit] = useState(20);
+  const [limit, setLimit] = useState(VIDEOS_PER_PAGE);
   const visible = videos.slice(0, limit);
 
   return (
@@ -143,18 +146,16 @@ function PlaylistVideosGrid({
           />
         ))}
       </div>
-      {videos.length > limit && (
-        <div className="flex justify-center pt-4">
+      <div className="flex flex-col items-center gap-3 pt-4">
+        {videos.length > limit && (
           <button
-            onClick={() => setLimit((prev) => prev + 20)}
+            onClick={() => setLimit((prev) => prev + VIDEOS_PER_PAGE)}
             className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
           >
             Show More
           </button>
-        </div>
-      )}
-      {youtubeUrl && videos.length > 0 && (
-        <div className="flex justify-center pt-2">
+        )}
+        {youtubeUrl && videos.length > 0 && (
           <a
             href={youtubeUrl}
             target="_blank"
@@ -164,8 +165,8 @@ function PlaylistVideosGrid({
             View all videos on YouTube
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
-        </div>
-      )}
+        )}
+      </div>
     </>
   );
 }
@@ -192,7 +193,7 @@ export default function MediaContent({
   const [activeTab, setActiveTab] = useState<
     "latest" | "playlists" | "khutbas"
   >("latest");
-  const [latestVideoLimit, setLatestVideoLimit] = useState(20);
+  const [latestVideoLimit, setLatestVideoLimit] = useState(VIDEOS_PER_PAGE);
 
   // Playlist state
   const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(
@@ -209,13 +210,14 @@ export default function MediaContent({
   const [khutbaVideos, setKhutbaVideos] = useState<YouTubeVideo[]>([]);
   const [khutbaLoading, setKhutbaLoading] = useState(false);
   const [khutbaLoaded, setKhutbaLoaded] = useState(false);
-  const [khutbaVideoLimit, setKhutbaVideoLimit] = useState(20);
+  const [khutbaVideoLimit, setKhutbaVideoLimit] = useState(VIDEOS_PER_PAGE);
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const playerRef = useRef<HTMLDivElement>(null);
+  const playlistRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const { socialMedia } = useSiteSettings();
 
   // Derive live status from polled state
@@ -271,6 +273,15 @@ export default function MediaContent({
         return;
       }
       setExpandedPlaylistId(playlistId);
+
+      // Scroll to the playlist header
+      setTimeout(() => {
+        playlistRefs.current[playlistId]?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+
       if (!playlistVideosCache[playlistId]) {
         setLoadingPlaylistId(playlistId);
         try {
@@ -513,7 +524,7 @@ export default function MediaContent({
                   {youtubeVideos.length > latestVideoLimit && (
                     <button
                       onClick={() =>
-                        setLatestVideoLimit((prev) => prev + 20)
+                        setLatestVideoLimit((prev) => prev + VIDEOS_PER_PAGE)
                       }
                       className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
                     >
@@ -542,6 +553,9 @@ export default function MediaContent({
                   filteredPlaylists.map((playlist) => (
                     <div
                       key={playlist.id}
+                      ref={(el) => {
+                        playlistRefs.current[playlist.id] = el;
+                      }}
                       className="border border-white/10 rounded-lg overflow-hidden"
                     >
                       <button
@@ -631,7 +645,7 @@ export default function MediaContent({
                       {khutbaVideos.length > khutbaVideoLimit && (
                         <button
                           onClick={() =>
-                            setKhutbaVideoLimit((prev) => prev + 20)
+                            setKhutbaVideoLimit((prev) => prev + VIDEOS_PER_PAGE)
                           }
                           className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
                         >

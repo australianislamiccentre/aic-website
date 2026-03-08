@@ -186,43 +186,76 @@ export const ALLOWED_PLAYLIST_IDS = [
   "PL_XW5f-8WbWFLGdeEgS06fzlagL1fA6Ym",
 ];
 
-/** Fetches videos from a specific YouTube playlist. Cached for 1 hour. */
+/**
+ * Fetches videos from a specific YouTube playlist. Cached for 1 hour.
+ *
+ * Uses a two-step fetch: playlistItems for video IDs, then videos.list
+ * for actual publish dates and privacy status. Filters out private/scheduled
+ * videos and sorts by publish date (latest first).
+ */
 export async function getPlaylistVideos(playlistId: string): Promise<YouTubeVideo[]> {
   if (!YOUTUBE_API_KEY || !playlistId) {
     return [];
   }
 
   try {
-    const url = `https://www.googleapis.com/youtube/v3/playlistItems?key=${YOUTUBE_API_KEY}&playlistId=${playlistId}&part=snippet&maxResults=50`;
-    const res = await fetch(url, { next: { revalidate: 3600 } });
+    // Step 1: Get video IDs from playlist
+    const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?key=${YOUTUBE_API_KEY}&playlistId=${playlistId}&part=snippet&maxResults=50`;
+    const playlistRes = await fetch(playlistUrl, { next: { revalidate: 3600 } });
 
-    if (!res.ok) {
-      console.error("YouTube PlaylistItems API error:", res.status, await res.text());
+    if (!playlistRes.ok) {
+      console.error("YouTube PlaylistItems API error:", playlistRes.status, await playlistRes.text());
       return [];
     }
 
-    const data = await res.json();
-
-    return (data.items || [])
+    const playlistData = await playlistRes.json();
+    const videoIds = (playlistData.items || [])
       .filter(
         (item: { snippet: { resourceId?: { videoId?: string } } }) =>
           item.snippet.resourceId?.videoId
       )
       .map(
+        (item: { snippet: { resourceId: { videoId: string } } }) =>
+          item.snippet.resourceId.videoId
+      );
+
+    if (videoIds.length === 0) return [];
+
+    // Step 2: Fetch actual video details (publish date, privacy status)
+    const videosUrl = `https://www.googleapis.com/youtube/v3/videos?key=${YOUTUBE_API_KEY}&id=${videoIds.join(",")}&part=snippet,status`;
+    const videosRes = await fetch(videosUrl, { next: { revalidate: 3600 } });
+
+    if (!videosRes.ok) {
+      console.error("YouTube Videos API error:", videosRes.status, await videosRes.text());
+      return [];
+    }
+
+    const videosData = await videosRes.json();
+
+    return (videosData.items || [])
+      .filter(
+        (item: { status: { privacyStatus: string } }) =>
+          item.status.privacyStatus === "public"
+      )
+      .map(
         (item: {
+          id: string;
           snippet: {
-            resourceId: { videoId: string };
             title: string;
             thumbnails: { high?: { url: string }; default?: { url: string } };
             publishedAt: string;
           };
         }) => ({
-          id: item.snippet.resourceId.videoId,
+          id: item.id,
           title: item.snippet.title,
           thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default?.url || "",
           publishedAt: item.snippet.publishedAt,
-          url: `https://www.youtube.com/watch?v=${item.snippet.resourceId.videoId}`,
+          url: `https://www.youtube.com/watch?v=${item.id}`,
         })
+      )
+      .sort(
+        (a: YouTubeVideo, b: YouTubeVideo) =>
+          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       );
   } catch (error) {
     console.error("Failed to fetch playlist videos:", error);

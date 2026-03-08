@@ -193,21 +193,21 @@ describe("MediaContent", () => {
       expect(link.closest("a")).toHaveAttribute("target", "_blank");
     });
 
-    it("shows first 20 videos in the grid", () => {
-      const videos = Array.from({ length: 25 }, (_, i) =>
+    it("shows first 12 videos in the grid", () => {
+      const videos = Array.from({ length: 20 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       expect(screen.getByLabelText("Play Video 1")).toBeInTheDocument();
-      expect(screen.getByLabelText("Play Video 20")).toBeInTheDocument();
+      expect(screen.getByLabelText("Play Video 12")).toBeInTheDocument();
       expect(
-        screen.queryByLabelText("Play Video 21"),
+        screen.queryByLabelText("Play Video 13"),
       ).not.toBeInTheDocument();
     });
 
     it("hides remaining videos behind Show More button", () => {
-      const videos = Array.from({ length: 25 }, (_, i) =>
+      const videos = Array.from({ length: 20 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
@@ -217,16 +217,16 @@ describe("MediaContent", () => {
 
     it("Show More reveals next batch of videos", async () => {
       const user = userEvent.setup();
-      const videos = Array.from({ length: 25 }, (_, i) =>
+      const videos = Array.from({ length: 20 }, (_, i) =>
         makeVideo({ id: `v${i}`, title: `Video ${i + 1}` }),
       );
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       await user.click(screen.getByText("Show More"));
 
-      // All 25 now visible
-      expect(screen.getByLabelText("Play Video 25")).toBeInTheDocument();
-      // Show More gone (25 <= 40)
+      // All 20 now visible
+      expect(screen.getByLabelText("Play Video 20")).toBeInTheDocument();
+      // Show More gone (20 <= 24)
       expect(screen.queryByText("Show More")).not.toBeInTheDocument();
     });
 
