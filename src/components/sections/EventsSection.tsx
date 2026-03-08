@@ -115,10 +115,10 @@ function DatedEventCard({ event, index }: { event: SanityEvent; index: number })
             {eventDate && isValidDate(event.date) && (
               <div className="absolute top-4 left-4 bg-white rounded-xl px-3 py-2 shadow-md">
                 <p className="text-xs font-medium text-gray-500 uppercase">
-                  {eventDate.toLocaleDateString('en-AU', { month: 'short' })}
+                  {eventDate.toLocaleDateString('en-AU', { month: 'short', timeZone: 'Australia/Melbourne' })}
                 </p>
                 <p className="text-2xl font-bold text-teal-600 leading-none">
-                  {eventDate.getDate()}
+                  {parseInt(eventDate.toLocaleDateString('en-AU', { day: 'numeric', timeZone: 'Australia/Melbourne' }))}
                 </p>
               </div>
             )}
