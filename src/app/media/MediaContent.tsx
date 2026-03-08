@@ -539,7 +539,11 @@ export default function MediaContent({
                     >
                       <button
                         onClick={() => togglePlaylist(playlist.id)}
-                        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+                        className={`w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors ${
+                          expandedPlaylistId === playlist.id
+                            ? "sticky top-0 z-10 bg-[#0a0a0a]"
+                            : ""
+                        }`}
                       >
                         <div className="flex items-center gap-3">
                           {playlist.thumbnail ? (
