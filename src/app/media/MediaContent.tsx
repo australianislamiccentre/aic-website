@@ -437,9 +437,9 @@ export default function MediaContent({
               <nav className="flex gap-1" aria-label="Media tabs">
                 {(["latest", "playlists", "khutbas"] as const).map((tab) => {
                   const labels = {
-                    latest: "Latest Videos",
+                    latest: "Latest",
                     playlists: "Playlists",
-                    khutbas: "Friday Khutbas",
+                    khutbas: "Streams",
                   };
                   return (
                     <button

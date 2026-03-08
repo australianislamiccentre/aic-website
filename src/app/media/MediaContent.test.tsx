@@ -140,7 +140,7 @@ describe("MediaContent", () => {
     it("does not render when no videos are provided", () => {
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={[]} />);
       expect(
-        screen.queryByRole("tab", { name: "Latest Videos" }),
+        screen.queryByRole("tab", { name: "Latest" }),
       ).not.toBeInTheDocument();
     });
 
@@ -159,7 +159,7 @@ describe("MediaContent", () => {
       render(<MediaContent mediaGalleryImages={[]} youtubeVideos={videos} />);
 
       expect(
-        screen.getByRole("tab", { name: "Latest Videos" }),
+        screen.getByRole("tab", { name: "Latest" }),
       ).toBeInTheDocument();
     });
 
@@ -313,13 +313,13 @@ describe("MediaContent", () => {
         />,
       );
       expect(
-        screen.getByRole("tab", { name: "Latest Videos" }),
+        screen.getByRole("tab", { name: "Latest" }),
       ).toBeInTheDocument();
       expect(
         screen.getByRole("tab", { name: "Playlists" }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("tab", { name: "Friday Khutbas" }),
+        screen.getByRole("tab", { name: "Streams" }),
       ).toBeInTheDocument();
     });
 
@@ -331,7 +331,7 @@ describe("MediaContent", () => {
         />,
       );
       expect(
-        screen.getByRole("tab", { name: "Latest Videos" }),
+        screen.getByRole("tab", { name: "Latest" }),
       ).toHaveAttribute("aria-selected", "true");
     });
 
@@ -363,7 +363,7 @@ describe("MediaContent", () => {
         />,
       );
 
-      await user.click(screen.getByRole("tab", { name: "Friday Khutbas" }));
+      await user.click(screen.getByRole("tab", { name: "Streams" }));
       expect(
         screen.getByText("No khutba streams available."),
       ).toBeInTheDocument();
