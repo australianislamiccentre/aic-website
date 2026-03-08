@@ -20,7 +20,7 @@ export const metadata = {
 export default async function MediaPage() {
   const [mediaGalleryImages, youtubeVideos, liveStream, playlists] = await Promise.all([
     getMediaGallery(),
-    getYouTubeVideos(),
+    getYouTubeVideos(12),
     getYouTubeLiveStream(),
     getYouTubePlaylists(),
   ]);
