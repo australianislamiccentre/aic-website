@@ -1,9 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import type { YouTubeLiveStream } from "@/lib/youtube";
+
+/** Polls every 60s during Friday Khutbah window, 5 min otherwise. */
+const FRIDAY_POLL_MS = 60_000;
+const DEFAULT_POLL_MS = 300_000;
+
+/** Check if it's Friday 12pm–3pm in Melbourne (peak live stream window). */
+function isFridayPrayerWindow(): boolean {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Australia/Melbourne",
+    weekday: "long",
+    hour: "numeric",
+    hour12: false,
+  }).formatToParts(new Date());
+
+  const weekday = parts.find((p) => p.type === "weekday")?.value;
+  const hour = parseInt(parts.find((p) => p.type === "hour")?.value || "0");
+  return weekday === "Friday" && hour >= 12 && hour < 15;
+}
 
 interface LiveBannerProps {
   liveStream: YouTubeLiveStream;
@@ -12,22 +30,44 @@ interface LiveBannerProps {
 export function LiveBanner({ liveStream: initialLiveStream }: LiveBannerProps) {
   const [liveStream, setLiveStream] = useState(initialLiveStream);
 
-  useEffect(() => {
-    const poll = async () => {
-      try {
-        const res = await fetch("/api/youtube/live");
-        if (res.ok) {
-          const data = await res.json();
-          setLiveStream(data);
-        }
-      } catch {
-        // Silently fail — keep last known state
+  const poll = useCallback(async () => {
+    if (document.hidden) return;
+    try {
+      const res = await fetch("/api/youtube/live");
+      if (res.ok) {
+        const data = await res.json();
+        setLiveStream(data);
       }
+    } catch {
+      // Silently fail — keep last known state
+    }
+  }, []);
+
+  useEffect(() => {
+    // Use setTimeout chain so the interval adapts when Friday prayer window starts/ends
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const schedulePoll = () => {
+      const delay = isFridayPrayerWindow() ? FRIDAY_POLL_MS : DEFAULT_POLL_MS;
+      timeoutId = setTimeout(async () => {
+        await poll();
+        schedulePoll();
+      }, delay);
     };
 
-    const interval = setInterval(poll, 60_000);
-    return () => clearInterval(interval);
-  }, []);
+    schedulePoll();
+
+    // Also poll immediately when tab becomes visible after being hidden
+    const handleVisibilityChange = () => {
+      if (!document.hidden) poll();
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [poll]);
 
   if (!liveStream.isLive || !liveStream.url) return null;
 

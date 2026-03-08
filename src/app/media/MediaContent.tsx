@@ -231,22 +231,9 @@ export default function MediaContent({
     ALLOWED_PLAYLIST_IDS.includes(p.id),
   );
 
-  // ── Live stream polling (same pattern as LiveBanner) ──
-  useEffect(() => {
-    const poll = async () => {
-      try {
-        const res = await fetch("/api/youtube/live");
-        if (res.ok) {
-          const data = await res.json();
-          setLiveStreamState(data);
-        }
-      } catch {
-        // Silently fail
-      }
-    };
-    const interval = setInterval(poll, 60_000);
-    return () => clearInterval(interval);
-  }, []);
+  // Live stream status is provided by the server on initial load.
+  // The LiveBanner component (in root layout) handles ongoing polling
+  // every 5 minutes — no need for duplicate polling here.
 
   // ── Video play handler — scroll to player and autoplay ──
   const handlePlayVideo = useCallback((video: YouTubeVideo) => {
@@ -263,14 +250,6 @@ export default function MediaContent({
         return;
       }
       setExpandedPlaylistId(playlistId);
-
-      // Scroll to the playlist header after DOM settles
-      setTimeout(() => {
-        playlistRefs.current[playlistId]?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 250);
 
       if (!playlistVideosCache[playlistId]) {
         setLoadingPlaylistId(playlistId);
@@ -573,22 +552,36 @@ export default function MediaContent({
                           }`}
                         />
                       </button>
-                      {expandedPlaylistId === playlist.id && (
-                        <div className="p-4 pt-0 border-t border-white/10">
-                          {loadingPlaylistId === playlist.id ? (
-                            <p className="text-sm text-gray-400 py-4 text-center">
-                              Loading videos...
-                            </p>
-                          ) : (
-                            <PlaylistVideosGrid
-                              videos={playlistVideosCache[playlist.id] || []}
-                              currentVideoId={currentVideo?.id}
-                              onPlay={handlePlayVideo}
-                              playlistId={playlist.id}
-                            />
+                      {/* CSS grid-rows transition: 0fr ↔ 1fr for smooth accordion without layout thrash */}
+                      <div
+                        className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+                          expandedPlaylistId === playlist.id
+                            ? "grid-rows-[1fr]"
+                            : "grid-rows-[0fr]"
+                        }`}
+                      >
+                        <div className="overflow-hidden min-h-0">
+                          {(expandedPlaylistId === playlist.id ||
+                            playlistVideosCache[playlist.id]) && (
+                            <div className="p-4 pt-0 border-t border-white/10">
+                              {loadingPlaylistId === playlist.id ? (
+                                <p className="text-sm text-gray-400 py-4 text-center">
+                                  Loading videos...
+                                </p>
+                              ) : (
+                                <PlaylistVideosGrid
+                                  videos={
+                                    playlistVideosCache[playlist.id] || []
+                                  }
+                                  currentVideoId={currentVideo?.id}
+                                  onPlay={handlePlayVideo}
+                                  playlistId={playlist.id}
+                                />
+                              )}
+                            </div>
                           )}
                         </div>
-                      )}
+                      </div>
                     </div>
                   ))
                 ) : (

@@ -100,34 +100,71 @@ export interface YouTubeLiveStream {
   url?: string;
 }
 
-/** Checks if the AIC YouTube channel is currently live streaming. Cached for 60s. */
+/**
+ * Checks if the AIC YouTube channel is currently live streaming.
+ *
+ * Uses a quota-efficient two-step approach (2 units total) instead of the
+ * search API (100 units per call). Fetches the latest videos from the channel's
+ * uploads playlist, then checks their liveBroadcastContent via videos.list.
+ *
+ * Quota cost: 2 units per check (playlistItems=1 + videos.list=1)
+ * vs old approach: 100 units per check (search API)
+ *
+ * ISR revalidate is set to 60s. The API route's in-memory cache (60s on
+ * Fridays 12–3pm Melbourne, 5 min otherwise) is what actually gates quota.
+ */
 export async function getYouTubeLiveStream(): Promise<YouTubeLiveStream> {
   if (!YOUTUBE_API_KEY || !YOUTUBE_CHANNEL_ID) {
     return { isLive: false };
   }
 
   try {
-    const url = `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${YOUTUBE_CHANNEL_ID}&part=snippet&eventType=live&type=video&maxResults=1`;
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    // Derive uploads playlist ID from channel ID (UC... → UU...)
+    const uploadsPlaylistId = "UU" + YOUTUBE_CHANNEL_ID.slice(2);
 
-    if (!res.ok) {
-      console.error("YouTube Live API error:", res.status, await res.text());
+    // Step 1: Get latest 15 videos from uploads playlist (1 quota unit)
+    // Check 15 to catch a live stream even if other videos were uploaded after scheduling
+    const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?key=${YOUTUBE_API_KEY}&playlistId=${uploadsPlaylistId}&part=snippet&maxResults=15`;
+    const playlistRes = await fetch(playlistUrl, { next: { revalidate: 60 } });
+
+    if (!playlistRes.ok) {
+      console.error("YouTube Live check - playlist error:", playlistRes.status);
       return { isLive: false };
     }
 
-    const data = await res.json();
-    const items = data.items || [];
+    const playlistData = await playlistRes.json();
+    const videoIds = (playlistData.items || [])
+      .map(
+        (item: { snippet: { resourceId?: { videoId?: string } } }) =>
+          item.snippet.resourceId?.videoId
+      )
+      .filter(Boolean);
 
-    if (items.length === 0) {
+    if (videoIds.length === 0) return { isLive: false };
+
+    // Step 2: Check live status via videos.list (1 quota unit for up to 50 videos)
+    // snippet.liveBroadcastContent is "live" when actively streaming, "none" otherwise
+    const videosUrl = `https://www.googleapis.com/youtube/v3/videos?key=${YOUTUBE_API_KEY}&id=${videoIds.join(",")}&part=snippet`;
+    const videosRes = await fetch(videosUrl, { next: { revalidate: 60 } });
+
+    if (!videosRes.ok) {
+      console.error("YouTube Live check - videos error:", videosRes.status);
       return { isLive: false };
     }
 
-    const item = items[0];
+    const videosData = await videosRes.json();
+    const liveVideo = (videosData.items || []).find(
+      (item: { snippet: { liveBroadcastContent: string } }) =>
+        item.snippet.liveBroadcastContent === "live"
+    );
+
+    if (!liveVideo) return { isLive: false };
+
     return {
       isLive: true,
-      videoId: item.id.videoId,
-      title: item.snippet.title,
-      url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+      videoId: liveVideo.id,
+      title: liveVideo.snippet.title,
+      url: `https://www.youtube.com/watch?v=${liveVideo.id}`,
     };
   } catch (error) {
     console.error("Failed to check live stream:", error);
