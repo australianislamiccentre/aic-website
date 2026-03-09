@@ -849,7 +849,7 @@ export default function MediaContent({
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="relative max-w-5xl max-h-[80vh] w-full mx-6"
+              className="relative max-w-5xl w-full mx-4 sm:mx-6 sm:max-h-[80vh]"
               onClick={(e) => e.stopPropagation()}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
@@ -859,7 +859,7 @@ export default function MediaContent({
                 alt={allImages[lightboxIndex]?.alt || ""}
                 width={1200}
                 height={800}
-                className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+                className="w-full rounded-lg aspect-[3/4] object-cover sm:aspect-auto sm:object-contain sm:h-auto sm:max-h-[80vh]"
               />
               <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg">
                 <p className="text-white text-lg">
