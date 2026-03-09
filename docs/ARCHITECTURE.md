@@ -110,15 +110,23 @@ sequenceDiagram
 
 | Document Type | Revalidated Paths |
 |---------------|-------------------|
-| `event` | `/`, `/events` |
-| `announcement` | `/`, `/announcements` |
-| `service` | `/`, `/services` |
-| `teamMember` | `/`, `/imams` |
-| `galleryImage` | `/`, `/media` |
-| `faq` | `/` |
-| `siteSettings` | `/` (all pages via layout) |
-| `prayerSettings` | `/worshippers` |
+| `event` | `/events`, `/`, `/worshippers` |
+| `announcement` | `/announcements`, `/` |
+| `service` | `/services`, `/worshippers` |
+| `donationSettings` | `/`, `/donate` |
 | `donationCampaign` | `/`, `/donate` |
+| `donatePageSettings` | `/`, `/donate` |
+| `mediaGallery` | `/media` |
+| `galleryImage` | `/media`, `/` |
+| `faq` | `/resources`, `/visit` |
+| `etiquette` | `/visit`, `/worshippers` |
+| `siteSettings` | `/` (all pages via layout) |
+| `prayerSettings` | `/`, `/worshippers` |
+| `formSettings` | `/contact`, `/services` |
+| `teamMember` | `/about`, `/imams` |
+| `pageContent` | `/` |
+| `resource` | `/resources` |
+| `partner` | `/partners` |
 
 ---
 
@@ -273,12 +281,12 @@ src/
 | `RESEND_API_KEY` | Resend email API key |
 | `RESEND_FROM_EMAIL` | Verified sender email address |
 | `RESEND_AUDIENCE_ID` | Resend audience for newsletter |
-| `YOUTUBE_API_KEY` | YouTube Data API v3 key |
-| `YOUTUBE_CHANNEL_ID` | AIC YouTube channel ID |
 | `CONTACT_FORM_TO_EMAIL` | Contact form recipient |
 | `FORM_TO_EMAIL` | General form recipient |
 | `SERVICE_INQUIRY_TO_EMAIL` | Service inquiry recipient |
 | `SUBSCRIBE_TO_EMAIL` | Newsletter notification recipient |
+| `YOUTUBE_API_KEY` | YouTube Data API v3 key |
+| `YOUTUBE_CHANNEL_ID` | AIC YouTube channel ID |
 
 ---
 

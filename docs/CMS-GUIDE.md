@@ -19,6 +19,7 @@ These are one-off settings that apply to the entire website:
 | **Donations** | FundraiseUp integration + donate page + campaigns |
 | **Site Settings** | Organisation info, logos, social media, homepage content |
 | **Forms** | Enable/disable forms, set recipient emails, customise text |
+| **Media Page Gallery** | Curate which photos and categories appear on the /media page |
 
 ### Content (below the divider)
 These are lists where you create and manage multiple items:
@@ -32,8 +33,7 @@ These are lists where you create and manage multiple items:
 | **Gallery Images** | Photo gallery |
 | **FAQs** | Frequently asked questions |
 | **Mosque Etiquette** | Visitor guidelines shown on the Visit page |
-| **Tour Types** | Types of tours available for visitors |
-| **Tour Requests** | Submitted tour bookings (read-only, managed by staff) |
+| **Partners** | Partner organisations displayed on the site |
 | **Resources** | PDFs, videos, audio, external links |
 | **Page Content** | Custom pages (About, History, etc.) |
 
@@ -322,7 +322,6 @@ In description and content fields, you can:
 | Service Inquiry | /services/[service-name] pages | Service Inquiry Recipient Email (set in Forms) |
 | Event Inquiry | /events/[event-name] pages | Event Inquiry Recipient Email (set in Forms) |
 | Newsletter | Footer on all pages | Newsletter Recipient Email (set in Forms) |
-| Tour Request | /visit page | Saved to Sanity Studio (check Tour Requests) |
 
 ---
 
@@ -379,6 +378,5 @@ Unfortunately there's no way to redirect old slugs. Avoid changing slugs after p
 - [ ] Set expiry dates on Ramadan-specific announcements
 
 ### Weekly Admin Tasks
-- [ ] Check **Tour Requests** for new tour bookings — update status (New → Contacted → Confirmed)
 - [ ] Review **Events > Expired** and deactivate anything no longer needed
 - [ ] Check **Announcements** and remove or expire outdated ones
