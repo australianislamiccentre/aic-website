@@ -470,7 +470,7 @@ export function HeaderB() {
               animate="visible"
               exit="exit"
               transition={{ duration: 0.25 }}
-              className="fixed top-0 left-0 right-0 z-50 overflow-y-auto max-h-[85vh] shadow-2xl bg-gradient-to-b from-neutral-900 via-neutral-900 to-neutral-950"
+              className="fixed inset-0 md:inset-auto md:top-0 md:left-0 md:right-0 z-50 overflow-y-auto md:max-h-[85vh] shadow-2xl bg-gradient-to-b from-neutral-900 via-neutral-900 to-neutral-950"
               role="dialog"
               aria-modal="true"
               aria-label="Navigation menu"

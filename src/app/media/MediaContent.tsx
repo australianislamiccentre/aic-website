@@ -350,6 +350,28 @@ export default function MediaContent({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxOpen, closeLightbox, goToNext, goToPrev]);
 
+  // Touch swipe navigation for lightbox
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (touchStartX.current === null) return;
+      const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+      const SWIPE_THRESHOLD = 50;
+      if (deltaX > SWIPE_THRESHOLD) {
+        goToPrev();
+      } else if (deltaX < -SWIPE_THRESHOLD) {
+        goToNext();
+      }
+      touchStartX.current = null;
+    },
+    [goToNext, goToPrev],
+  );
+
   return (
     <>
       {/* Page Header */}
@@ -803,10 +825,10 @@ export default function MediaContent({
                 e.stopPropagation();
                 goToPrev();
               }}
-              className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/50 sm:bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
               aria-label="Previous image"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
             {/* Next */}
@@ -815,10 +837,10 @@ export default function MediaContent({
                 e.stopPropagation();
                 goToNext();
               }}
-              className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/50 sm:bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
               aria-label="Next image"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
             {/* Image */}
@@ -829,6 +851,8 @@ export default function MediaContent({
               exit={{ opacity: 0, scale: 0.9 }}
               className="relative max-w-5xl max-h-[80vh] w-full mx-6"
               onClick={(e) => e.stopPropagation()}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
             >
               <Image
                 src={allImages[lightboxIndex]?.lightboxSrc || ""}
