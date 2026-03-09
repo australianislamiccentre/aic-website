@@ -84,10 +84,6 @@ vi.mock("@/data/content", () => ({
       eventType: "recurring",
     },
   ],
-  tourTypes: [
-    { id: "1", title: "Architecture Tour", description: "Explore the building", icon: "building" },
-    { id: "2", title: "School Tour", description: "Educational visits", icon: "graduation" },
-  ],
   visitorFAQs: [
     { question: "Do I need to book?", answer: "Booking is recommended for groups." },
     { question: "What should I wear?", answer: "Modest dress is appreciated." },

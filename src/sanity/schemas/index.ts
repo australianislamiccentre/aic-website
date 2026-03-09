@@ -4,7 +4,7 @@
  * Registers all Sanity document schemas with the Studio. Schemas are grouped:
  * - **Singletons** — One-per-site documents (siteSettings, prayerSettings, etc.)
  * - **Content types** — User-created documents (events, services, team members, etc.)
- * - **Form submissions** — Documents created by visitor interactions (tour requests)
+ * - **Form submissions** — Documents created by visitor interactions
  *
  * @module sanity/schemas
  * @see sanity.config.ts for the Studio configuration that consumes this registry
@@ -18,8 +18,6 @@ import donatePageSettings from "./donatePageSettings";
 import galleryImage from "./gallery";
 import faq from "./faq";
 import etiquette from "./etiquette";
-import tourType from "./tourType";
-import tourRequest from "./tourRequest";
 import formSettings from "./formSettings";
 import mediaGallery from "./mediaGallery";
 import siteSettings from "./siteSettings";
@@ -27,6 +25,7 @@ import prayerSettings from "./prayerSettings";
 import teamMember from "./teamMember";
 import pageContent from "./pageContent";
 import resource from "./resource";
+import partner from "./partner";
 
 export const schemaTypes = [
   // Singletons
@@ -46,8 +45,6 @@ export const schemaTypes = [
   galleryImage,
   faq,
   etiquette,
-  tourType,
   donationCampaign,
-  // Form submissions
-  tourRequest,
+  partner,
 ];

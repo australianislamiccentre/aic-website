@@ -194,7 +194,6 @@ const previewPaths: Record<string, (slug?: string) => string> = {
   galleryImage: () => "/media",
   faq: () => "/resources",
   etiquette: () => "/visit",
-  tourType: () => "/visit",
   mediaGallery: () => "/media",
   siteSettings: () => "/",
   prayerSettings: () => "/worshippers",

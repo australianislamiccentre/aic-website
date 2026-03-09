@@ -31,13 +31,13 @@ const validDocumentTypes = new Set([
   "galleryImage",
   "faq",
   "etiquette",
-  "tourType",
   "siteSettings",
   "prayerSettings",
   "formSettings",
   "teamMember",
   "pageContent",
   "resource",
+  "partner",
 ]);
 
 /**
@@ -55,13 +55,13 @@ const documentTypeToPath: Record<string, string[]> = {
   galleryImage: ["/media", "/"],
   faq: ["/resources", "/visit"],
   etiquette: ["/visit", "/worshippers"],
-  tourType: ["/visit"],
   siteSettings: ["/"],
   prayerSettings: ["/", "/worshippers"],
   formSettings: ["/contact", "/services"],
   teamMember: ["/about", "/imams"],
   pageContent: ["/"],
   resource: ["/resources"],
+  partner: ["/partners"],
 };
 
 /**
@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
         service: "/services",
         resource: "/resources",
         teamMember: "/about",
+        partner: "/partners",
       };
       const prefix = detailPathPrefix[documentType];
       if (prefix) {

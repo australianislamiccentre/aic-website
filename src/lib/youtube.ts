@@ -18,7 +18,7 @@ export interface YouTubeVideo {
 }
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
-const YOUTUBE_CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || "UCxxxxxxx"; // Set in env
+const YOUTUBE_CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || "UCCuJMwoUc-tMXhT-ASOm5qg";
 
 /**
  * Fetches the latest videos from the AIC YouTube channel. Cached for 1 hour.

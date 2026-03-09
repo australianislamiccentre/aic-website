@@ -54,7 +54,6 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getFaqsByCategory: vi.fn().mockResolvedValue([]),
   getFeaturedFaqs: vi.fn().mockResolvedValue([]),
   getEtiquette: vi.fn().mockResolvedValue([]),
-  getTourTypes: vi.fn().mockResolvedValue([]),
   getTeamMembers: vi.fn().mockResolvedValue([]),
   getTeamMemberBySlug: vi.fn().mockResolvedValue(null),
   getTeamMembersByCategory: vi.fn().mockResolvedValue([]),
@@ -67,11 +66,12 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getFeaturedResources: vi.fn().mockResolvedValue([]),
   getSiteSettings: vi.fn().mockResolvedValue(null),
   getPrayerSettings: vi.fn().mockResolvedValue(null),
-  // Campaign functions
-  getDonationCampaigns: vi.fn().mockResolvedValue([]),
-  getDonationCampaignBySlug: vi.fn().mockResolvedValue(null),
-  getDonationCampaignsForStaticGeneration: vi.fn().mockResolvedValue([]),
-  getFeaturedDonationCampaigns: vi.fn().mockResolvedValue([]),
+  // Donation
+  getDonationSettings: vi.fn().mockResolvedValue(null),
+  getDonatePageSettings: vi.fn().mockResolvedValue(null),
+  // Partners
+  getPartners: vi.fn().mockResolvedValue([]),
+  getPartnerBySlug: vi.fn().mockResolvedValue(null),
 }));
 
 // Mock YouTube API functions

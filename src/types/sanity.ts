@@ -108,34 +108,6 @@ export interface SanityService {
   order?: number;
 }
 
-/** A fundraising cause / donation campaign managed via Sanity. */
-export interface SanityDonationCause {
-  _id: string;
-  title: string;
-  slug: string;
-  description: string;
-  fullDescription?: PortableTextBlock[];
-  image?: SanityImage;
-  icon: string;
-  campaignType?: "ongoing" | "campaign" | "emergency";
-  startDate?: string;
-  endDate?: string;
-  goal?: number;
-  raised?: number;
-  showProgress?: boolean;
-  paymentOptions?: {
-    useDefaultPayment?: boolean;
-    externalPaymentUrl?: string;
-    suggestedAmounts?: number[];
-    allowCustomAmount?: boolean;
-    allowRecurring?: boolean;
-  };
-  featured?: boolean;
-  priority?: "normal" | "high" | "urgent";
-  active?: boolean;
-  order?: number;
-}
-
 /** A photo in the site gallery (/media page). */
 export interface SanityGalleryImage {
   _id: string;
@@ -161,7 +133,6 @@ export interface SanityTestimonial {
   role?: string;
   image?: SanityImage;
 }
-
 /** A frequently asked question with a rich-text answer. */
 export interface SanityFaq {
   _id: string;
@@ -182,18 +153,6 @@ export interface SanityEtiquette {
   title: string;
   description: string;
   icon: string;
-}
-
-/** A guided tour option offered to visitors (/visit page). */
-export interface SanityTourType {
-  _id: string;
-  title: string;
-  slug: string;
-  description: string;
-  icon: string;
-  image?: SanityImage;
-  duration?: string;
-  groupSize?: string;
 }
 
 /** A Sanity image asset reference with optional alt text. */
@@ -275,6 +234,8 @@ export interface SanityResource {
     };
   };
   externalUrl?: string;
+  /** Resolved file URL from GROQ projection: `file.asset->url`. */
+  fileUrl?: string;
   fileSize?: string;
   duration?: string;
   author?: string;
@@ -283,6 +244,25 @@ export interface SanityResource {
   tags?: string[];
   featured?: boolean;
   downloadCount?: number;
+  active?: boolean;
+  order?: number;
+}
+
+/** An affiliated partner organisation (e.g. Newport Storm FC, AICC). */
+export interface SanityPartner {
+  _id: string;
+  name: string;
+  slug: string;
+  shortDescription?: string;
+  fullDescription?: PortableTextBlock[];
+  logo?: SanityImage;
+  coverImage?: SanityImage;
+  icon?: string;
+  color?: string;
+  website?: string;
+  email?: string;
+  phone?: string;
+  featured?: boolean;
   active?: boolean;
   order?: number;
 }

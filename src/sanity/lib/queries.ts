@@ -352,20 +352,6 @@ export const etiquetteQuery = groq`
   }
 `;
 
-// Tour Types
-export const tourTypesQuery = groq`
-  *[_type == "tourType" && active != false] | order(order asc) {
-    _id,
-    title,
-    "slug": slug.current,
-    description,
-    icon,
-    image,
-    duration,
-    groupSize
-  }
-`;
-
 // ============================================
 // Team Members
 // ============================================
@@ -642,5 +628,42 @@ export const latestAnnouncementsQuery = groq`
     category,
     priority,
     callToAction
+  }
+`;
+
+// ============================================
+// Partners
+// ============================================
+export const partnersQuery = groq`
+  *[_type == "partner" && active != false] | order(order asc) {
+    _id,
+    name,
+    "slug": slug.current,
+    shortDescription,
+    logo,
+    coverImage,
+    icon,
+    color,
+    website,
+    featured
+  }
+`;
+
+export const partnerBySlugQuery = groq`
+  *[_type == "partner" && slug.current == $slug && active != false][0] {
+    _id,
+    name,
+    "slug": slug.current,
+    shortDescription,
+    fullDescription,
+    logo,
+    coverImage,
+    icon,
+    color,
+    website,
+    email,
+    phone,
+    featured,
+    active
   }
 `;
