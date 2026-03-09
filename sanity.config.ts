@@ -246,6 +246,23 @@ export default defineConfig({
   },
 
   document: {
+    // Prevent deletion of singleton documents — these are essential and should never be removed
+    actions: (prev, context) => {
+      const singletonTypes = [
+        "siteSettings",
+        "prayerSettings",
+        "donationSettings",
+        "donatePageSettings",
+        "formSettings",
+        "mediaGallery",
+      ];
+      if (singletonTypes.includes(context.schemaType)) {
+        return prev.filter(
+          (action) => action.action !== "delete" && action.action !== "duplicate"
+        );
+      }
+      return prev;
+    },
     // productionUrl adds "Open preview" link in document header
     productionUrl: async (prev, context) => {
       const { document } = context;

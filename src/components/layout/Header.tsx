@@ -104,7 +104,6 @@ function buildNavigation(externalLinks: { college: string; bookstore: string; ne
           title: "Prayer & Worship",
           icon: null,
           items: [
-            { name: "Prayer Times", href: "/#prayer-times" },
             { name: "For Worshippers", href: "/worshippers" },
           ],
         },
@@ -284,15 +283,15 @@ export function Header() {
           <nav className="max-w-7xl mx-auto px-6">
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
-              <Link href="/" onClick={handleLogoClick} className="flex items-center group relative h-10 flex-shrink-0">
+              <Link href="/" onClick={handleLogoClick} className="flex items-center group relative h-14 flex-shrink-0">
                 {/* Logo for dark background (not scrolled) */}
                 <Image
                   src="/images/aic logo.png"
                   alt="Australian Islamic Centre"
-                  width={100}
-                  height={40}
+                  width={150}
+                  height={60}
                   className={cn(
-                    "h-10 w-auto object-contain transition-opacity duration-300",
+                    "h-14 w-auto object-contain transition-opacity duration-300",
                     isScrolled ? "opacity-0" : "opacity-100"
                   )}
                 />
@@ -300,10 +299,10 @@ export function Header() {
                 <Image
                   src="/images/aic website logo.svg"
                   alt="Australian Islamic Centre"
-                  width={100}
-                  height={40}
+                  width={150}
+                  height={60}
                   className={cn(
-                    "h-10 w-auto object-contain absolute left-0 top-0 transition-opacity duration-300",
+                    "h-14 w-auto object-contain absolute left-0 top-0 transition-opacity duration-300",
                     isScrolled ? "opacity-100" : "opacity-0"
                   )}
                 />
@@ -493,9 +492,9 @@ export function Header() {
                 <Image
                   src="/images/aic logo.png"
                   alt="Australian Islamic Centre"
-                  width={100}
-                  height={40}
-                  className="h-10 w-auto object-contain"
+                  width={150}
+                  height={60}
+                  className="h-14 w-auto object-contain"
                 />
                 <button
                   onClick={() => setMobileMenuOpen(false)}

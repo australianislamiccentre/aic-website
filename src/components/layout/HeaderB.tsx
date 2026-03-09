@@ -182,7 +182,7 @@ function NavLinkItem({
   onClick?: () => void;
 }) {
   const baseClasses =
-    "group/link relative flex items-center py-0.5 text-xs transition-all duration-200";
+    "group/link relative flex items-center py-0.5 text-sm transition-all duration-200";
 
   const content = (
     <>
@@ -198,7 +198,7 @@ function NavLinkItem({
       {/* Link text */}
       <span
         className={cn(
-          "pl-2 transition-transform duration-200 group-hover/link:translate-x-1",
+          "pl-[26px] transition-transform duration-200 group-hover/link:translate-x-1",
           active ? "translate-x-1" : "",
         )}
       >
@@ -376,16 +376,16 @@ export function HeaderB() {
               <Link
                 href="/"
                 onClick={handleLogoClick}
-                className="flex items-center group relative h-10 flex-shrink-0"
+                className="flex items-center group relative h-14 flex-shrink-0"
               >
                 {/* Dark-background logo (visible when NOT scrolled) */}
                 <Image
                   src="/images/aic logo.png"
                   alt="Australian Islamic Centre"
-                  width={100}
-                  height={40}
+                  width={150}
+                  height={60}
                   className={cn(
-                    "h-10 w-auto object-contain transition-opacity duration-300",
+                    "h-14 w-auto object-contain transition-opacity duration-300",
                     isScrolled ? "opacity-0" : "opacity-100",
                   )}
                 />
@@ -393,10 +393,10 @@ export function HeaderB() {
                 <Image
                   src="/images/aic website logo.svg"
                   alt="Australian Islamic Centre"
-                  width={100}
-                  height={40}
+                  width={150}
+                  height={60}
                   className={cn(
-                    "h-10 w-auto object-contain absolute left-0 top-0 transition-opacity duration-300",
+                    "h-14 w-auto object-contain absolute left-0 top-0 transition-opacity duration-300",
                     isScrolled ? "opacity-100" : "opacity-0",
                   )}
                 />
@@ -489,9 +489,9 @@ export function HeaderB() {
                 <Image
                   src="/images/aic logo.png"
                   alt="Australian Islamic Centre"
-                  width={100}
-                  height={40}
-                  className="h-10 w-auto object-contain"
+                  width={150}
+                  height={60}
+                  className="h-14 w-auto object-contain"
                 />
                 <button
                   onClick={() => setOverlayOpen(false)}
@@ -508,7 +508,7 @@ export function HeaderB() {
                   variants={groupContainerVariants}
                   initial="hidden"
                   animate="visible"
-                  className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
+                  className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6"
                 >
                   {headerNavGroups.map((group) => {
                     const meta = groupMeta[group.label];
@@ -517,7 +517,7 @@ export function HeaderB() {
                     return (
                       <motion.div key={group.label} variants={groupItemVariants}>
                         {/* Group heading with icon */}
-                        <div className="flex items-center gap-2.5 mb-1">
+                        <div className="flex items-center gap-2.5 mb-3">
                           {Icon && (
                             <Icon className="w-4 h-4 text-lime-400/70" />
                           )}
@@ -525,13 +525,6 @@ export function HeaderB() {
                             {group.label}
                           </h2>
                         </div>
-
-                        {/* Group description */}
-                        {meta?.description && (
-                          <p className="text-xs text-white/25 mb-4 pl-[26px]">
-                            {meta.description}
-                          </p>
-                        )}
 
                         {/* Group links */}
                         <ul className="space-y-0.5">
@@ -552,15 +545,12 @@ export function HeaderB() {
 
                   {/* Get In Touch group (Contact only) */}
                   <motion.div variants={groupItemVariants}>
-                    <div className="flex items-center gap-2.5 mb-1">
+                    <div className="flex items-center gap-2.5 mb-3">
                       <MessageCircle className="w-4 h-4 text-lime-400/70" />
                       <h2 className="text-sm font-semibold tracking-wider uppercase text-white/50">
                         Get In Touch
                       </h2>
                     </div>
-                    <p className="text-xs text-white/25 mb-4 pl-[26px]">
-                      Connect with us
-                    </p>
                     <ul className="space-y-0.5">
                       <NavLinkItem
                         href="/contact"
@@ -577,7 +567,7 @@ export function HeaderB() {
                   variants={donateCardVariants}
                   initial="hidden"
                   animate="visible"
-                  className="max-w-5xl mx-auto mt-10"
+                  className="max-w-6xl mx-auto mt-10"
                 >
                   <Link
                     href="/donate"
@@ -607,7 +597,7 @@ export function HeaderB() {
 
               {/* Contact info strip */}
               <div className="relative border-t border-white/10 px-6 md:px-12 lg:px-20 py-4">
-                <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-8 text-sm text-white/40">
+                <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-8 text-sm text-white/40">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
                     <span>

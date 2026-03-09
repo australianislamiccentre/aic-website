@@ -5,6 +5,9 @@
  * Supports bulk upload — drag-and-drop multiple images into the array.
  * First image in the array is the hero/main image.
  *
+ * Uses plain `image` type (not object wrapper) so Sanity supports
+ * native multi-file drag-and-drop upload.
+ *
  * @module sanity/schemas/mediaGallery
  */
 import { defineField, defineType } from "sanity";
@@ -21,24 +24,22 @@ export default defineType({
       title: "Gallery Images",
       type: "array",
       description:
-        "Drag and drop multiple images here. The first image will be the main/hero image on the media page.",
+        "To bulk upload: drag and drop photos directly onto this field. To add one at a time: use the '+ Add Item' button below. The first image will be the main/hero image on the media page.",
+      options: { layout: "grid" },
       of: [
         {
-          type: "object",
+          type: "image",
+          options: { hotspot: true },
           fields: [
-            defineField({
-              name: "image",
-              title: "Image",
-              type: "image",
-              options: { hotspot: true },
-              validation: (Rule) => Rule.required(),
-            }),
             defineField({
               name: "alt",
               title: "Alt Text",
               type: "string",
-              description: "Describe the image for accessibility",
-              validation: (Rule) => Rule.required(),
+              description: "Describe the image for accessibility (recommended)",
+              validation: (Rule) =>
+                Rule.warning(
+                  "Alt text improves accessibility for screen readers"
+                ),
             }),
             defineField({
               name: "caption",
@@ -47,15 +48,6 @@ export default defineType({
               description: "Optional caption displayed in the lightbox",
             }),
           ],
-          preview: {
-            select: {
-              alt: "alt",
-              media: "image",
-            },
-            prepare({ alt, media }) {
-              return { title: alt || "Untitled image", media };
-            },
-          },
         },
       ],
     }),

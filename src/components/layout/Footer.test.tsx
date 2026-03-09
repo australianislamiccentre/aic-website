@@ -70,7 +70,7 @@ describe("Footer", () => {
     // Our Mosque section
     expect(screen.getByText("Our Mosque")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /Prayer Times/i })
+      screen.getByRole("link", { name: /For Worshippers/i })
     ).toBeInTheDocument();
 
     // Media & Resources section

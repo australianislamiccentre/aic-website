@@ -215,12 +215,12 @@ export default function MediaContent({
 
   // Convert Sanity images — show ALL, no category filtering
   const allImages = mediaGalleryImages
-    .filter((img) => img.image)
+    .filter((img) => img.asset)
     .map((img, index) => ({
-      id: `media-${index}`,
-      src: urlFor(img.image).width(600).url(),
-      lightboxSrc: urlFor(img.image).width(1200).url(),
-      alt: img.alt,
+      id: img._key || `media-${index}`,
+      src: urlFor(img).width(600).url(),
+      lightboxSrc: urlFor(img).width(1200).url(),
+      alt: img.alt || "Gallery image",
       caption: img.caption || "",
     }));
 
@@ -642,6 +642,97 @@ export default function MediaContent({
         </section>
       )}
 
+      {/* ── Photo Gallery — Album Preview ── */}
+      <section className="py-12 bg-neutral-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <FadeIn>
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">Photos</h2>
+          </FadeIn>
+
+          {allImages.length > 0 ? (
+            <FadeIn>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {/* Main/Hero Image — spans 2 cols and 2 rows */}
+                <button
+                  onClick={() => openLightbox(0)}
+                  className="relative col-span-2 row-span-2 rounded-xl overflow-hidden group cursor-pointer"
+                  aria-label={
+                    allImages.length > 1
+                      ? `View all ${allImages.length} photos`
+                      : `View ${allImages[0].alt}`
+                  }
+                >
+                  <Image
+                    src={allImages[0].src}
+                    alt={allImages[0].alt}
+                    width={600}
+                    height={600}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 50vw"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                  {/* Mobile count overlay — visible only on small screens */}
+                  {allImages.length > 1 && (
+                    <div className="absolute bottom-3 right-3 sm:hidden bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm font-semibold flex items-center gap-1.5">
+                      <Camera className="w-4 h-4" />
+                      +{allImages.length - 1}
+                    </div>
+                  )}
+                </button>
+
+                {/* Smaller thumbnails — hidden on mobile, show up to 5 on sm+ with counter on the last */}
+                {allImages.slice(1, 6).map((image, index) => {
+                  const isLastVisible =
+                    index === 4 && allImages.length > 6;
+                  const remaining = allImages.length - 6;
+
+                  return (
+                    <button
+                      key={image.id}
+                      onClick={() => openLightbox(index + 1)}
+                      className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer hidden sm:block"
+                      aria-label={
+                        isLastVisible
+                          ? `+${remaining} more photos`
+                          : `View ${image.alt}`
+                      }
+                    >
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        width={300}
+                        height={300}
+                        sizes="33vw"
+                        className="w-full h-full object-cover"
+                      />
+                      {isLastVisible ? (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="text-white text-2xl font-bold">
+                            +{remaining}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </FadeIn>
+          ) : (
+            <div className="text-center py-16">
+              <Camera className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No Photos Available
+              </h3>
+              <p className="text-gray-500">
+                Gallery photos will appear here once added.
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* ── Social Links ── */}
       <section className="py-8 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -681,85 +772,6 @@ export default function MediaContent({
               </a>
             )}
           </div>
-        </div>
-      </section>
-
-      {/* ── Photo Gallery — Album Preview ── */}
-      <section className="py-12 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">Photos</h2>
-          </FadeIn>
-
-          {allImages.length > 0 ? (
-            <FadeIn>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {/* Main/Hero Image — spans 2 cols and 2 rows */}
-                <button
-                  onClick={() => openLightbox(0)}
-                  className="relative col-span-2 row-span-2 rounded-xl overflow-hidden group cursor-pointer"
-                  aria-label={`View ${allImages[0].alt}`}
-                >
-                  <Image
-                    src={allImages[0].src}
-                    alt={allImages[0].alt}
-                    width={600}
-                    height={600}
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 50vw"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                </button>
-
-                {/* Smaller thumbnails */}
-                {allImages.slice(1, 4).map((image, index) => {
-                  const isLastVisible = index === 2 && allImages.length > 4;
-                  const remaining = allImages.length - 4;
-
-                  return (
-                    <button
-                      key={image.id}
-                      onClick={() => openLightbox(index + 1)}
-                      className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer"
-                      aria-label={
-                        isLastVisible
-                          ? `View all ${allImages.length} photos`
-                          : `View ${image.alt}`
-                      }
-                    >
-                      <Image
-                        src={image.src}
-                        alt={image.alt}
-                        width={300}
-                        height={300}
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        className="w-full h-full object-cover"
-                      />
-                      {isLastVisible ? (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="text-white text-2xl font-bold">
-                            +{remaining}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </FadeIn>
-          ) : (
-            <div className="text-center py-16">
-              <Camera className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No Photos Available
-              </h3>
-              <p className="text-gray-500">
-                Gallery photos will appear here once added.
-              </p>
-            </div>
-          )}
         </div>
       </section>
 

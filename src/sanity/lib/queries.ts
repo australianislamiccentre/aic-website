@@ -305,9 +305,12 @@ export const featuredGalleryQuery = groq`
 export const mediaGalleryQuery = groq`
   *[_id == "mediaGallery"][0] {
     images[] {
-      image,
+      _key,
+      asset,
       alt,
-      caption
+      caption,
+      hotspot,
+      crop
     }
   }
 `;

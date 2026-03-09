@@ -120,9 +120,17 @@ export interface SanityGalleryImage {
 
 /** An image in the media page gallery (from the mediaGallery singleton). */
 export interface MediaGalleryImage {
-  image: SanityImage;
-  alt: string;
+  _key: string;
+  asset: SanityImage["asset"];
+  alt?: string;
   caption?: string;
+  hotspot?: { x: number; y: number; height: number; width: number };
+  crop?: {
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+  };
 }
 
 /** A community testimonial / quote. */

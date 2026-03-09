@@ -168,21 +168,21 @@ describe("HeaderB", () => {
     expect(screen.getByText("Welcome to AIC")).toBeInTheDocument();
   });
 
-  it("shows group descriptions when overlay is open", async () => {
+  it("does not show group descriptions in overlay", async () => {
     const user = userEvent.setup();
     render(<HeaderB />);
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    expect(screen.getByText("Learn about our centre")).toBeInTheDocument();
+    expect(screen.queryByText("Learn about our centre")).not.toBeInTheDocument();
     expect(
-      screen.getByText("Events, services & programs"),
-    ).toBeInTheDocument();
+      screen.queryByText("Events, services & programs"),
+    ).not.toBeInTheDocument();
     expect(
-      screen.getByText("Prayer, worship & visiting"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Gallery & downloads")).toBeInTheDocument();
-    expect(screen.getByText("Connect with us")).toBeInTheDocument();
+      screen.queryByText("Prayer, worship & visiting"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Gallery & downloads")).not.toBeInTheDocument();
+    expect(screen.queryByText("Connect with us")).not.toBeInTheDocument();
   });
 
   it("renders standalone Donate feature card in overlay", async () => {

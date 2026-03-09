@@ -82,10 +82,8 @@ function makeImage(
   overrides: Partial<MediaGalleryImage> = {},
 ): MediaGalleryImage {
   return {
-    image: {
-      _type: "image",
-      asset: { _ref: "image-abc-200x200-jpg", _type: "reference" },
-    },
+    _key: `key-${Math.random().toString(36).slice(2, 8)}`,
+    asset: { _ref: "image-abc-200x200-jpg", _type: "reference" },
     alt: "Test image",
     ...overrides,
   };
@@ -631,32 +629,62 @@ describe("MediaContent", () => {
       expect(screen.getByAltText("Third photo")).toBeInTheDocument();
     });
 
-    it("shows +N tile when more than 4 images", () => {
-      const images = Array.from({ length: 8 }, (_, i) =>
+    it("shows mobile count overlay on hero when multiple images exist", () => {
+      const images = Array.from({ length: 5 }, (_, i) =>
+        makeImage({ alt: `Photo ${i + 1}` }),
+      );
+      render(<MediaContent mediaGalleryImages={images} />);
+
+      // The mobile overlay shows +N where N = total - 1 (the hero)
+      expect(screen.getByText("+4")).toBeInTheDocument();
+    });
+
+    it("does not show mobile count overlay when only one image", () => {
+      render(
+        <MediaContent mediaGalleryImages={[makeImage({ alt: "Solo" })]} />,
+      );
+
+      expect(screen.queryByText(/^\+\d+$/)).not.toBeInTheDocument();
+    });
+
+    it("thumbnails have hidden sm:block class for mobile hiding", () => {
+      const images = [
+        makeImage({ alt: "Hero" }),
+        makeImage({ alt: "Thumb" }),
+      ];
+      render(<MediaContent mediaGalleryImages={images} />);
+
+      // The thumbnail button (second image) should have hidden sm:block classes
+      const thumbButton = screen.getByLabelText("View Thumb");
+      expect(thumbButton.className).toContain("hidden");
+      expect(thumbButton.className).toContain("sm:block");
+    });
+
+    it("shows +N tile when more than 6 images", () => {
+      const images = Array.from({ length: 10 }, (_, i) =>
         makeImage({ alt: `Photo ${i + 1}` }),
       );
       render(<MediaContent mediaGalleryImages={images} />);
       expect(screen.getByText("+4")).toBeInTheDocument();
     });
 
-    it("does not show +N tile when 4 or fewer images", () => {
-      const images = [
-        makeImage({ alt: "A" }),
-        makeImage({ alt: "B" }),
-        makeImage({ alt: "C" }),
-      ];
-      render(<MediaContent mediaGalleryImages={images} />);
-      expect(screen.queryByText(/^\+\d+$/)).not.toBeInTheDocument();
-    });
-
-    it("clicking +N tile opens lightbox", async () => {
-      const user = userEvent.setup();
+    it("does not show +N tile on thumbnails when 6 or fewer images", () => {
       const images = Array.from({ length: 6 }, (_, i) =>
         makeImage({ alt: `Photo ${i + 1}` }),
       );
       render(<MediaContent mediaGalleryImages={images} />);
+      // Last thumbnail (Photo 6) should have a regular label, not a +N overlay
+      expect(screen.getByLabelText("View Photo 6")).toBeInTheDocument();
+    });
 
-      await user.click(screen.getByLabelText("View all 6 photos"));
+    it("clicking +N tile opens lightbox", async () => {
+      const user = userEvent.setup();
+      const images = Array.from({ length: 10 }, (_, i) =>
+        makeImage({ alt: `Photo ${i + 1}` }),
+      );
+      render(<MediaContent mediaGalleryImages={images} />);
+
+      await user.click(screen.getByLabelText("+4 more photos"));
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
@@ -669,12 +697,13 @@ describe("MediaContent", () => {
       ).toBeInTheDocument();
     });
 
-    it("filters out images with missing image data", () => {
+    it("filters out images with missing asset data", () => {
       const images = [
         makeImage({ alt: "Good image" }),
         {
+          _key: "bad-key",
           alt: "Bad image",
-          image: null as unknown as MediaGalleryImage["image"],
+          asset: null as unknown as MediaGalleryImage["asset"],
         },
       ];
       render(<MediaContent mediaGalleryImages={images} />);
@@ -710,7 +739,7 @@ describe("MediaContent", () => {
       ];
       render(<MediaContent mediaGalleryImages={images} />);
 
-      await user.click(screen.getByLabelText("View Image A"));
+      await user.click(screen.getByLabelText("View all 3 photos"));
 
       expect(screen.getByText("1 / 3")).toBeInTheDocument();
     });
@@ -723,7 +752,7 @@ describe("MediaContent", () => {
       ];
       render(<MediaContent mediaGalleryImages={images} />);
 
-      await user.click(screen.getByLabelText("View Image A"));
+      await user.click(screen.getByLabelText("View all 2 photos"));
       expect(screen.getByText("1 / 2")).toBeInTheDocument();
 
       await user.click(screen.getByLabelText("Next image"));
@@ -738,7 +767,7 @@ describe("MediaContent", () => {
       ];
       render(<MediaContent mediaGalleryImages={images} />);
 
-      await user.click(screen.getByLabelText("View Image A"));
+      await user.click(screen.getByLabelText("View all 2 photos"));
       await user.click(screen.getByLabelText("Previous image"));
 
       expect(screen.getByText("2 / 2")).toBeInTheDocument();
@@ -783,7 +812,7 @@ describe("MediaContent", () => {
       ];
       render(<MediaContent mediaGalleryImages={images} />);
 
-      await user.click(screen.getByLabelText("View Image A"));
+      await user.click(screen.getByLabelText("View all 3 photos"));
       expect(screen.getByText("1 / 3")).toBeInTheDocument();
 
       await user.keyboard("{ArrowRight}");
