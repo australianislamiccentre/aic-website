@@ -60,13 +60,14 @@ function getImageUrl(image: SanityImage | undefined): string | null {
   return urlFor(image).width(400).height(250).url();
 }
 
-// Format date for display
+// Format date for display (Melbourne timezone)
 function formatEventDate(dateStr: string): string {
   const date = new Date(dateStr);
   return date.toLocaleDateString("en-AU", {
     weekday: "short",
     month: "short",
     day: "numeric",
+    timeZone: "Australia/Melbourne",
   });
 }
 

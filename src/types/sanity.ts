@@ -118,6 +118,29 @@ export interface SanityGalleryImage {
   featured?: boolean;
 }
 
+/** An image in the media page gallery (from the mediaGallery singleton). */
+export interface MediaGalleryImage {
+  _key: string;
+  asset: SanityImage["asset"];
+  alt?: string;
+  caption?: string;
+  hotspot?: { x: number; y: number; height: number; width: number };
+  crop?: {
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+  };
+}
+
+/** A community testimonial / quote. */
+export interface SanityTestimonial {
+  _id: string;
+  quote: string;
+  author: string;
+  role?: string;
+  image?: SanityImage;
+}
 /** A frequently asked question with a rich-text answer. */
 export interface SanityFaq {
   _id: string;

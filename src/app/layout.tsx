@@ -20,6 +20,8 @@ import { PreviewBanner } from "@/components/PreviewBanner";
 import { getSiteSettings, getDonationSettings, getFormSettings } from "@/sanity/lib/fetch";
 import { FundraiseUpScript } from "@/components/FundraiseUpScript";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
+import { getYouTubeLiveStream } from "@/lib/youtube";
+import { LiveBanner } from "@/components/LiveBanner";
 import { FormSettingsProvider } from "@/contexts/FormSettingsContext";
 import type { SanityFormSettings } from "@/contexts/FormSettingsContext";
 
@@ -109,11 +111,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, formSettingsRaw] = await Promise.all([
+  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, formSettingsRaw, liveStream] = await Promise.all([
     draftMode(),
     getSiteSettings(),
     getDonationSettings(),
     getFormSettings(),
+    getYouTubeLiveStream(),
   ]);
 
   return (
@@ -126,6 +129,7 @@ export default async function RootLayout({
             <FundraiseUpScript settings={donationSettings} />
             <ScrollToTop />
             <ScrollProgress />
+            <LiveBanner liveStream={liveStream} />
             <HeaderB />
             <main className="overflow-x-hidden">{children}</main>
             <Footer />

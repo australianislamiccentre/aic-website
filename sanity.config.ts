@@ -92,6 +92,13 @@ const structure = (S: StructureBuilder) =>
             .schemaType("formSettings")
             .documentId("formSettings")
         ),
+      S.listItem()
+        .title("Media Page Gallery")
+        .child(
+          S.document()
+            .schemaType("mediaGallery")
+            .documentId("mediaGallery")
+        ),
 
       S.divider(),
 
@@ -166,7 +173,7 @@ const structure = (S: StructureBuilder) =>
 
       // Rest of the document types (exclude the ones we customized and singletons)
       ...S.documentTypeListItems().filter(
-        (item) => !["event", "announcement", "siteSettings", "prayerSettings", "donationSettings", "donatePageSettings", "donationCampaign", "formSettings"].includes(item.getId() || "")
+        (item) => !["event", "announcement", "siteSettings", "prayerSettings", "donationSettings", "donatePageSettings", "donationCampaign", "formSettings", "mediaGallery"].includes(item.getId() || "")
       ),
     ]);
 
@@ -187,6 +194,7 @@ const previewPaths: Record<string, (slug?: string) => string> = {
   galleryImage: () => "/media",
   faq: () => "/resources",
   etiquette: () => "/visit",
+  mediaGallery: () => "/media",
   siteSettings: () => "/",
   prayerSettings: () => "/worshippers",
   teamMember: (slug) => `/imams${slug ? `/${slug}` : ""}`,
@@ -238,6 +246,23 @@ export default defineConfig({
   },
 
   document: {
+    // Prevent deletion of singleton documents — these are essential and should never be removed
+    actions: (prev, context) => {
+      const singletonTypes = [
+        "siteSettings",
+        "prayerSettings",
+        "donationSettings",
+        "donatePageSettings",
+        "formSettings",
+        "mediaGallery",
+      ];
+      if (singletonTypes.includes(context.schemaType)) {
+        return prev.filter(
+          (action) => action.action !== "delete" && action.action !== "duplicate"
+        );
+      }
+      return prev;
+    },
     // productionUrl adds "Open preview" link in document header
     productionUrl: async (prev, context) => {
       const { document } = context;

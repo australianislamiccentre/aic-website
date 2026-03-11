@@ -42,7 +42,6 @@ export const headerNavGroups: NavGroup[] = [
   {
     label: "Our Mosque",
     links: [
-      { name: "Prayer Times", href: "/#prayer-times" },
       { name: "For Worshippers", href: "/worshippers" },
       { name: "Plan Your Visit", href: "/visit" },
       { name: "Architecture", href: "/architecture" },

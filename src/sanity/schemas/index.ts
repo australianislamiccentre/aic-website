@@ -19,6 +19,7 @@ import galleryImage from "./gallery";
 import faq from "./faq";
 import etiquette from "./etiquette";
 import formSettings from "./formSettings";
+import mediaGallery from "./mediaGallery";
 import siteSettings from "./siteSettings";
 import prayerSettings from "./prayerSettings";
 import teamMember from "./teamMember";
@@ -33,6 +34,7 @@ export const schemaTypes = [
   donationSettings,
   donatePageSettings,
   formSettings,
+  mediaGallery,
   // Content types
   event,
   announcement,

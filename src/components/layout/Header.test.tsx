@@ -155,7 +155,7 @@ describe("Header", () => {
 
     // Check that category items are visible
     await waitFor(() => {
-      expect(screen.getByText("Prayer Times")).toBeInTheDocument();
+      expect(screen.getByText("For Worshippers")).toBeInTheDocument();
     });
   });
 

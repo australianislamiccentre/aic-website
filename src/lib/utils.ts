@@ -18,7 +18,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Formats a date as "Saturday, 22 February 2026" (en-AU full format). */
+/** Formats a date as "Saturday, 22 February 2026" (en-AU, Melbourne timezone). */
 export function formatDate(date: Date | string): string {
   const d = new Date(date);
   return d.toLocaleDateString("en-AU", {
@@ -26,16 +26,18 @@ export function formatDate(date: Date | string): string {
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: "Australia/Melbourne",
   });
 }
 
-/** Formats a time as "2:30 pm" (en-AU 12-hour format). */
+/** Formats a time as "2:30 pm" (en-AU 12-hour format, Melbourne timezone). */
 export function formatTime(date: Date | string): string {
   const d = new Date(date);
   return d.toLocaleTimeString("en-AU", {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
+    timeZone: "Australia/Melbourne",
   });
 }
 
