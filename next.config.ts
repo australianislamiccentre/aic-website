@@ -27,6 +27,11 @@ const nextConfig: NextConfig = {
         hostname: "i.ytimg.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "img.youtube.com",
+        pathname: "/**",
+      },
     ],
   },
   async redirects() {

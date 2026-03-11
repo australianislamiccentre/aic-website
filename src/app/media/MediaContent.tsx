@@ -168,6 +168,7 @@ interface MediaContentProps {
   youtubeVideos?: YouTubeVideo[];
   liveStream?: YouTubeLiveStream;
   playlists?: YouTubePlaylist[];
+  initialVideoId?: string;
 }
 
 export default function MediaContent({
@@ -175,12 +176,25 @@ export default function MediaContent({
   youtubeVideos = [],
   liveStream,
   playlists = [],
+  initialVideoId,
 }: MediaContentProps) {
+  // If a video ID was passed via ?v= query param, find it in the list
+  // or create a minimal entry so the player can still embed it
+  const initialVideo = initialVideoId
+    ? youtubeVideos.find((v) => v.id === initialVideoId) || (initialVideoId ? {
+        id: initialVideoId,
+        title: "",
+        thumbnail: `https://img.youtube.com/vi/${initialVideoId}/hqdefault.jpg`,
+        publishedAt: new Date().toISOString(),
+        url: `https://www.youtube.com/watch?v=${initialVideoId}`,
+      } : null)
+    : null;
+
   // Video state
   const [currentVideo, setCurrentVideo] = useState<YouTubeVideo | null>(
-    youtubeVideos[0] || null,
+    initialVideo || youtubeVideos[0] || null,
   );
-  const [autoplay, setAutoplay] = useState(false);
+  const [autoplay, setAutoplay] = useState(!!initialVideo);
   const [liveStreamState, setLiveStreamState] = useState(liveStream);
   const [activeTab, setActiveTab] = useState<
     "latest" | "playlists" | "khutbas"
@@ -234,6 +248,13 @@ export default function MediaContent({
   // Live stream status is provided by the server on initial load.
   // The LiveBanner component (in root layout) handles ongoing polling
   // every 5 minutes — no need for duplicate polling here.
+
+  // Scroll to player on mount when a video was selected via ?v= param
+  useEffect(() => {
+    if (initialVideoId && playerRef.current) {
+      playerRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Video play handler — scroll to player and autoplay ──
   const handlePlayVideo = useCallback((video: YouTubeVideo) => {

@@ -50,7 +50,18 @@
       "Bash(npx vitest run src/components/layout/Header.test.tsx src/components/layout/HeaderB.test.tsx src/components/layout/Footer.test.tsx)",
       "Bash(npx vitest run src/components/layout/HeaderB.test.tsx src/components/layout/Header.test.tsx src/components/layout/Footer.test.tsx)",
       "Bash(npm run validate)",
-      "Bash(git stash push -m \"WIP: sanity-improvements\" --include-untracked)"
+      "Bash(git stash push -m \"WIP: sanity-improvements\" --include-untracked)",
+      "Bash(~/Downloads/CMS-GUIDE.md)",
+      "Bash(~/Downloads/ARCHITECTURE.md)",
+      "Bash(npx vitest run src/components/layout/HeaderB.test.tsx)",
+      "Bash(gh pr view 35 --json headRefName,commits --jq '{branch: .headRefName, commitCount: \\(.commits | length\\), lastCommits: [.commits[-3:][] | {sha: .oid[0:7], message: .messageHeadline}]}')",
+      "Bash(gh pr view 35 --json state,mergedAt,closedAt,headRefName,baseRefName,mergeCommit)",
+      "Bash(gh api repos/australianislamiccentre/aic-website/pulls/35/events --jq '.[] | {event: .event, created_at: .created_at, actor: .actor.login}')",
+      "Bash(gh api repos/australianislamiccentre/aic-website/issues/35/events --jq '.[] | {event: .event, created_at: .created_at}')",
+      "Bash(gh api repos/australianislamiccentre/aic-website/issues/35/timeline --jq '.[] | select\\(.event == \"\"merged\"\" or .event == \"\"reopened\"\" or .event == \"\"closed\"\" or .event == \"\"head_ref_deleted\"\" or .event == \"\"head_ref_restored\"\"\\) | {event: .event, created_at: .created_at}')",
+      "Bash(gh api repos/australianislamiccentre/aic-website/issues/35/timeline --paginate --jq '.[] | select\\(.event == \"\"merged\"\" or .event == \"\"reopened\"\" or .event == \"\"closed\"\" or .event == \"\"head_ref_deleted\"\" or .event == \"\"head_ref_restored\"\"\\) | {event: .event, created_at: .created_at}')",
+      "Bash(git checkout main)",
+      "Bash(git pull origin main)"
     ],
     "additionalDirectories": [
       "/Users/rashidelhouli/australian-islamic-centre/src/components/sections",

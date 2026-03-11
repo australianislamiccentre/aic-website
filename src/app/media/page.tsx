@@ -17,12 +17,17 @@ export const metadata = {
   description: "Photos and videos from the Australian Islamic Centre community.",
 };
 
-export default async function MediaPage() {
-  const [mediaGalleryImages, youtubeVideos, liveStream, playlists] = await Promise.all([
+export default async function MediaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ v?: string }>;
+}) {
+  const [mediaGalleryImages, youtubeVideos, liveStream, playlists, params] = await Promise.all([
     getMediaGallery(),
     getYouTubeVideos(12),
     getYouTubeLiveStream(),
     getYouTubePlaylists(),
+    searchParams,
   ]);
 
   return (
@@ -31,6 +36,7 @@ export default async function MediaPage() {
       youtubeVideos={youtubeVideos}
       liveStream={liveStream}
       playlists={playlists}
+      initialVideoId={params.v}
     />
   );
 }

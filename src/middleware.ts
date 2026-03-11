@@ -104,6 +104,7 @@ export function middleware(request: NextRequest) {
       'https://cdn.sanity.io',
       'https://images.unsplash.com',
       'https://i.ytimg.com',
+      'https://img.youtube.com',
       'https://*.google.com',
       'https://*.googleapis.com',
       'https://*.gstatic.com',
