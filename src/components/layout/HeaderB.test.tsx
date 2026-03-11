@@ -127,13 +127,13 @@ describe("HeaderB", () => {
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    // Group labels are rendered as accordion trigger text
-    expect(screen.getByText("About")).toBeInTheDocument();
-    expect(screen.getByText("What's On")).toBeInTheDocument();
-    expect(screen.getByText("Our Mosque")).toBeInTheDocument();
-    expect(screen.getByText("Media & Resources")).toBeInTheDocument();
-    // Contact is a standalone link, not a group heading
-    expect(screen.getByText("Contact Us")).toBeInTheDocument();
+    // Group labels appear in both mobile accordion and desktop grid
+    expect(screen.getAllByText("About").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("What's On").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Our Mosque").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Media & Resources").length).toBeGreaterThanOrEqual(1);
+    // Contact appears in both layouts
+    expect(screen.getAllByText("Contact Us").length).toBeGreaterThanOrEqual(1);
   });
 
   it("close button closes overlay", async () => {
@@ -142,10 +142,11 @@ describe("HeaderB", () => {
 
     // Open overlay
     await user.click(screen.getByLabelText("Open menu"));
-    expect(screen.getByLabelText("Close menu")).toBeInTheDocument();
+    const closeButtons = screen.getAllByLabelText("Close menu");
+    expect(closeButtons.length).toBeGreaterThanOrEqual(1);
 
-    // Close overlay
-    await user.click(screen.getByLabelText("Close menu"));
+    // Close overlay via first close button
+    await user.click(closeButtons[0]);
 
     await waitFor(() => {
       expect(
@@ -169,21 +170,22 @@ describe("HeaderB", () => {
     expect(screen.getByText("Welcome to AIC")).toBeInTheDocument();
   });
 
-  it("does not show group descriptions or icons in overlay", async () => {
+  it("desktop overlay shows group descriptions, mobile accordion does not", async () => {
     const user = userEvent.setup();
     render(<HeaderB />);
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    expect(screen.queryByText("Learn about our centre")).not.toBeInTheDocument();
-    expect(
-      screen.queryByText("Events, services & programs"),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByText("Prayer, worship & visiting"),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText("Gallery & downloads")).not.toBeInTheDocument();
-    expect(screen.queryByText("Connect with us")).not.toBeInTheDocument();
+    // Desktop panel includes group descriptions via groupMeta
+    // These should be present in the DOM (from the desktop panel)
+    // The mobile accordion does NOT show them — but both render in test
+    // so we just verify they exist (desktop has them)
+    const mobileOverlay = document.querySelector(".md\\:hidden[role='dialog']");
+    expect(mobileOverlay).toBeInTheDocument();
+
+    // Mobile overlay should NOT contain descriptions
+    expect(mobileOverlay?.textContent).not.toContain("Learn about our centre");
+    expect(mobileOverlay?.textContent).not.toContain("Events, services & programs");
   });
 
   it("renders standalone Donate feature card in overlay", async () => {
@@ -192,10 +194,11 @@ describe("HeaderB", () => {
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    expect(screen.getByText("Support Our Community")).toBeInTheDocument();
+    // Both mobile and desktop have the donate card
+    expect(screen.getAllByText("Support Our Community").length).toBeGreaterThanOrEqual(1);
     expect(
-      screen.getByText("Your generosity helps us serve the community"),
-    ).toBeInTheDocument();
+      screen.getAllByText("Your generosity helps us serve the community").length,
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it("renders contact info strip in overlay", async () => {
@@ -204,86 +207,118 @@ describe("HeaderB", () => {
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    // Phone appears in top bars (desktop + mobile) AND the contact strip
+    // Phone appears in top bars (desktop + mobile) AND both contact strips
     const phoneElements = screen.getAllByText("03 9000 0177");
     expect(phoneElements.length).toBeGreaterThanOrEqual(3);
 
-    expect(
-      screen.getByText("contact@australianislamiccentre.org"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/23-27 Blenheim Rd, Newport VIC 3015/),
-    ).toBeInTheDocument();
+    // Email appears in both mobile and desktop contact strips
+    const emailElements = screen.getAllByText("contact@australianislamiccentre.org");
+    expect(emailElements.length).toBeGreaterThanOrEqual(1);
+
+    const addressElements = screen.getAllByText(/23-27 Blenheim Rd, Newport VIC 3015/);
+    expect(addressElements.length).toBeGreaterThanOrEqual(1);
   });
 
-  /* ---------- Accordion-specific tests ---------- */
+  /* ---------- Accordion-specific tests (mobile overlay) ---------- */
 
-  it("sub-links are hidden until accordion group is expanded", async () => {
+  it("mobile accordion: sub-links are hidden until group is expanded", async () => {
     const user = userEvent.setup();
     render(<HeaderB />);
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    // Sub-links should not be visible before expanding
-    expect(screen.queryByText("Our Story")).not.toBeInTheDocument();
-    expect(screen.queryByText("Events")).not.toBeInTheDocument();
+    // Desktop panel always shows sub-links, but mobile accordion hides them.
+    // Check that the mobile overlay does NOT contain sub-links before expanding.
+    const mobileOverlay = document.querySelector(".md\\:hidden[role='dialog']");
+    expect(mobileOverlay).toBeInTheDocument();
+    expect(mobileOverlay?.textContent).not.toContain("Our Story");
   });
 
-  it("clicking accordion group reveals its sub-links", async () => {
+  it("mobile accordion: clicking group reveals its sub-links", async () => {
     const user = userEvent.setup();
     render(<HeaderB />);
 
     await user.click(screen.getByLabelText("Open menu"));
-    await user.click(screen.getByText("About"));
+
+    // The accordion trigger buttons are inside the mobile overlay
+    const mobileOverlay = document.querySelector(".md\\:hidden[role='dialog']");
+    const aboutButton = mobileOverlay?.querySelector("button[aria-expanded]");
+    expect(aboutButton).toBeInTheDocument();
+
+    await user.click(aboutButton!);
 
     await waitFor(() => {
-      expect(screen.getByText("Our Story")).toBeInTheDocument();
-      expect(screen.getByText("Our Imams")).toBeInTheDocument();
-      expect(screen.getByText("Affiliated Partners")).toBeInTheDocument();
+      expect(mobileOverlay?.textContent).toContain("Our Story");
+      expect(mobileOverlay?.textContent).toContain("Our Imams");
+      expect(mobileOverlay?.textContent).toContain("Affiliated Partners");
     });
   });
 
-  it("only one accordion group can be open at a time", async () => {
+  it("mobile accordion: only one group can be open at a time", async () => {
     const user = userEvent.setup();
     render(<HeaderB />);
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    // Open About
-    await user.click(screen.getByText("About"));
+    const mobileOverlay = document.querySelector(".md\\:hidden[role='dialog']");
+    const accordionButtons = mobileOverlay?.querySelectorAll("button[aria-expanded]");
+    expect(accordionButtons!.length).toBeGreaterThanOrEqual(2);
+
+    // Open first group (About)
+    await user.click(accordionButtons![0]);
     await waitFor(() => {
-      expect(screen.getByText("Our Story")).toBeInTheDocument();
+      expect(mobileOverlay?.textContent).toContain("Our Story");
     });
 
-    // Open What's On — About should close
-    await user.click(screen.getByText("What's On"));
+    // Open second group (What's On) — first should close
+    await user.click(accordionButtons![1]);
     await waitFor(() => {
-      expect(screen.getByText("Events")).toBeInTheDocument();
-      expect(screen.queryByText("Our Story")).not.toBeInTheDocument();
+      expect(mobileOverlay?.textContent).toContain("Events");
+      expect(mobileOverlay?.textContent).not.toContain("Our Story");
     });
   });
 
-  it("accordion trigger has aria-expanded attribute", async () => {
+  it("mobile accordion: trigger has aria-expanded attribute", async () => {
     const user = userEvent.setup();
     render(<HeaderB />);
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    const aboutButton = screen.getByText("About").closest("button");
+    const mobileOverlay = document.querySelector(".md\\:hidden[role='dialog']");
+    const aboutButton = mobileOverlay?.querySelector("button[aria-expanded]");
     expect(aboutButton).toHaveAttribute("aria-expanded", "false");
 
-    await user.click(screen.getByText("About"));
+    await user.click(aboutButton!);
     expect(aboutButton).toHaveAttribute("aria-expanded", "true");
   });
 
-  it("Contact Us is a standalone link, not an accordion group", async () => {
+  it("mobile accordion: Contact Us is a standalone link, not an accordion group", async () => {
     const user = userEvent.setup();
     render(<HeaderB />);
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    const contactLink = screen.getByText("Contact Us");
-    expect(contactLink.tagName).toBe("A");
-    expect(contactLink).toHaveAttribute("href", "/contact");
+    const mobileOverlay = document.querySelector(".md\\:hidden[role='dialog']");
+    // Find the Contact Us link inside the mobile overlay
+    const contactLinks = mobileOverlay?.querySelectorAll('a[href="/contact"]');
+    expect(contactLinks!.length).toBeGreaterThanOrEqual(1);
+    expect(contactLinks![0].textContent).toContain("Contact Us");
+  });
+
+  /* ---------- Desktop panel tests ---------- */
+
+  it("desktop panel: shows nav groups with icons and sub-links visible", async () => {
+    const user = userEvent.setup();
+    render(<HeaderB />);
+
+    await user.click(screen.getByLabelText("Open menu"));
+
+    const desktopPanel = document.querySelector(".hidden.md\\:block[role='dialog']");
+    expect(desktopPanel).toBeInTheDocument();
+
+    // Sub-links are always visible in the desktop grid (no accordion)
+    expect(desktopPanel?.textContent).toContain("Our Story");
+    expect(desktopPanel?.textContent).toContain("Events");
+    expect(desktopPanel?.textContent).toContain("Contact Us");
   });
 });

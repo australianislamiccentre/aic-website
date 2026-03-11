@@ -57,9 +57,11 @@ const PRAYER_ICONS: Record<PrayerName, typeof Moon> = {
 
 interface HeroSectionProps {
   prayerSettings?: SanityPrayerSettings | null;
+  heroMode?: "carousel" | "video";
+  heroVideoUrl?: string;
 }
 
-export function HeroSection({ prayerSettings }: HeroSectionProps) {
+export function HeroSection({ prayerSettings, heroMode, heroVideoUrl }: HeroSectionProps) {
   // Use Sanity data with fallback to hardcoded config
   const taraweehActive = prayerSettings?.taraweehEnabled ?? TARAWEEH_CONFIG.enabled;
   const taraweehTime = prayerSettings?.taraweehTime ?? TARAWEEH_CONFIG.time;
@@ -71,6 +73,10 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [videoError, setVideoError] = useState(false);
+
+  // Determine effective display mode — fall back to carousel if video URL missing or errored
+  const isVideoMode = heroMode === "video" && !!heroVideoUrl && !videoError;
 
   // Use dynamic prayer times with Sanity iqamah overrides
   const prayerTimes = usePrayerTimes(prayerSettings);
@@ -159,33 +165,63 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
   return (
     <>
     <section ref={containerRef} className="relative h-[45vh] md:h-[55vh] lg:h-[65vh] min-h-[400px] overflow-hidden bg-black">
-      {/* Background Images with Carousel */}
+      {/* Background — Video or Image Carousel */}
       <motion.div
         style={{ y, scale }}
         className="absolute inset-[-20px]"
       >
-        <AnimatePresence initial={false} mode="sync">
-          <motion.div
-            key={currentSlide}
-            initial={getSlideVariant("enter", direction)}
-            animate={centerVariant}
-            exit={getSlideVariant("exit", direction)}
-            transition={{
-              x: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.5 },
-            }}
-            className="absolute inset-0"
+        {isVideoMode ? (
+          /* Video background — looping, muted, decorative */
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            aria-hidden="true"
+            onError={() => setVideoError(true)}
+            className="absolute inset-0 w-full h-full object-cover object-center motion-safe:block motion-reduce:hidden"
           >
+            <source src={heroVideoUrl} type="video/mp4" />
+          </video>
+        ) : (
+          /* Image carousel */
+          <AnimatePresence initial={false} mode="sync">
+            <motion.div
+              key={currentSlide}
+              initial={getSlideVariant("enter", direction)}
+              animate={centerVariant}
+              exit={getSlideVariant("exit", direction)}
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.5 },
+              }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={currentSlideData.image}
+                alt={currentSlideData.highlight}
+                fill
+                priority={currentSlide === 0}
+                className="object-cover object-center"
+                sizes="100vw"
+              />
+            </motion.div>
+          </AnimatePresence>
+        )}
+
+        {/* Static poster for reduced-motion users in video mode */}
+        {isVideoMode && (
+          <div className="absolute inset-0 motion-safe:hidden motion-reduce:block">
             <Image
-              src={currentSlideData.image}
-              alt={currentSlideData.highlight}
+              src={heroSlides[0].image}
+              alt={heroSlides[0].highlight}
               fill
-              priority={currentSlide === 0}
+              priority
               className="object-cover object-center"
               sizes="100vw"
             />
-          </motion.div>
-        </AnimatePresence>
+          </div>
+        )}
 
         {/* Gradient overlays */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10" />
@@ -267,63 +303,67 @@ export function HeroSection({ prayerSettings }: HeroSectionProps) {
               </motion.div>
             </motion.div>
 
-            {/* Slide indicators */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.2 }}
-              className="flex items-center gap-3"
-            >
-              {heroSlides.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToSlide(index)}
-                  className="group relative"
-                  aria-label={`Go to slide ${index + 1}`}
-                >
-                  <div
-                    className={`h-1.5 rounded-full transition-all duration-500 ${
-                      index === currentSlide
-                        ? "w-12 bg-gradient-to-r from-lime-400 to-green-400"
-                        : "w-6 bg-white/30 hover:bg-white/50"
-                    }`}
-                  />
-                  {index === currentSlide && isAutoPlaying && (
-                    <motion.div
-                      className="absolute inset-0 h-1.5 rounded-full bg-white/30 origin-left"
-                      initial={{ scaleX: 0 }}
-                      animate={{ scaleX: 1 }}
-                      transition={{ duration: 6, ease: "linear" }}
-                      key={`progress-${currentSlide}`}
+            {/* Slide indicators — hidden in video mode */}
+            {!isVideoMode && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2 }}
+                className="flex items-center gap-3"
+              >
+                {heroSlides.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => goToSlide(index)}
+                    className="group relative"
+                    aria-label={`Go to slide ${index + 1}`}
+                  >
+                    <div
+                      className={`h-1.5 rounded-full transition-all duration-500 ${
+                        index === currentSlide
+                          ? "w-12 bg-gradient-to-r from-lime-400 to-green-400"
+                          : "w-6 bg-white/30 hover:bg-white/50"
+                      }`}
                     />
-                  )}
-                </button>
-              ))}
-            </motion.div>
+                    {index === currentSlide && isAutoPlaying && (
+                      <motion.div
+                        className="absolute inset-0 h-1.5 rounded-full bg-white/30 origin-left"
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ duration: 6, ease: "linear" }}
+                        key={`progress-${currentSlide}`}
+                      />
+                    )}
+                  </button>
+                ))}
+              </motion.div>
+            )}
           </div>
         </div>
 
-        {/* Navigation arrows */}
-        <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-3 z-40">
-          <motion.button
-            whileHover={{ scale: 1.1, x: -3 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={prevSlide}
-            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1, x: 3 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={nextSlide}
-            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-            aria-label="Next slide"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </motion.button>
-        </div>
+        {/* Navigation arrows — hidden in video mode */}
+        {!isVideoMode && (
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-3 z-40">
+            <motion.button
+              whileHover={{ scale: 1.1, x: -3 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={prevSlide}
+              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1, x: 3 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={nextSlide}
+              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </motion.button>
+          </div>
+        )}
       </motion.div>
     </section>
 

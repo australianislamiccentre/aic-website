@@ -5,6 +5,12 @@
  * single tabbed or filtered view on the homepage. Receives SanityEvent[],
  * SanityProgram[], and SanityService[] data with category-based filtering.
  *
+ * Only renders categories that have active items. Card size and grid layout
+ * adapt dynamically based on how many categories are populated:
+ * - 1 active: full-width, expanded cards with more detail
+ * - 2 active: two-column grid, medium cards
+ * - 3 active: three-column grid, compact cards (original behaviour)
+ *
  * @module components/sections/WhatsOnSection
  */
 "use client";
@@ -35,6 +41,7 @@ import {
   Scroll,
   MessageCircle,
   Scale,
+  MapPin,
 } from "lucide-react";
 
 interface WhatsOnSectionProps {
@@ -42,6 +49,9 @@ interface WhatsOnSectionProps {
   events?: SanityEvent[];
   programs?: SanityProgram[];
 }
+
+// Card size tier — determined by how many categories have content
+type CardSize = "compact" | "medium" | "expanded";
 
 // Get image URL from Sanity — safe against null/invalid sources
 function getImageUrl(image: SanityImage | undefined, w = 400, h = 300): string | null {
@@ -93,10 +103,37 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Scale,
 };
 
+// ─── Thumbnail sizing per card tier ────────────────────────────────
+
+function thumbnailClasses(size: CardSize): string {
+  switch (size) {
+    case "expanded":
+      return "w-20 h-20 sm:w-24 sm:h-24 rounded-xl";
+    case "medium":
+      return "w-16 h-16 sm:w-20 sm:h-20 rounded-xl";
+    case "compact":
+    default:
+      return "w-11 h-11 sm:w-14 sm:h-14 rounded-lg";
+  }
+}
+
+function titleClamp(size: CardSize): string {
+  return size === "compact" ? "line-clamp-1" : "line-clamp-2";
+}
+
+function descClamp(size: CardSize): string {
+  return size === "expanded" ? "line-clamp-3" : size === "medium" ? "line-clamp-2" : "line-clamp-1";
+}
+
+function maxItems(size: CardSize): number {
+  return size === "expanded" ? 6 : size === "medium" ? 4 : 3;
+}
+
 // ─── Card Components ───────────────────────────────────────────────
 
-function EventItem({ event, index }: { event: SanityEvent; index: number }) {
-  const imageUrl = event.image ? getImageUrl(event.image, 200, 200) : null;
+function EventItem({ event, index, size = "compact" }: { event: SanityEvent; index: number; size?: CardSize }) {
+  const imgDim = size === "expanded" ? 300 : size === "medium" ? 240 : 200;
+  const imageUrl = event.image ? getImageUrl(event.image, imgDim, imgDim) : null;
 
   return (
     <motion.div
@@ -106,7 +143,7 @@ function EventItem({ event, index }: { event: SanityEvent; index: number }) {
     >
       <Link href={`/events/${event.slug}`} className="block group">
         <div className="flex gap-3 p-2.5 sm:p-3 rounded-xl bg-white border border-gray-100 hover:border-green-200 hover:shadow-md transition-all duration-200">
-          <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-lg overflow-hidden flex-shrink-0">
+          <div className={`relative ${thumbnailClasses(size)} overflow-hidden flex-shrink-0`}>
             {imageUrl ? (
               <Image src={imageUrl} alt={event.title} fill className="object-cover" />
             ) : (
@@ -116,11 +153,11 @@ function EventItem({ event, index }: { event: SanityEvent; index: number }) {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-gray-900 text-sm line-clamp-1 group-hover:text-green-600 transition-colors">
+            <h4 className={`font-semibold text-gray-900 text-sm ${titleClamp(size)} group-hover:text-green-600 transition-colors`}>
               {event.title}
             </h4>
             {event.shortDescription && (
-              <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+              <p className={`text-xs text-gray-500 ${descClamp(size)} mt-0.5`}>
                 {event.shortDescription}
               </p>
             )}
@@ -143,6 +180,12 @@ function EventItem({ event, index }: { event: SanityEvent; index: number }) {
                   {event.time}
                 </span>
               )}
+              {size !== "compact" && event.location && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-green-500" />
+                  {event.location}
+                </span>
+              )}
             </div>
           </div>
           <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-green-500 transition-all flex-shrink-0 mt-1 hidden sm:block" />
@@ -152,8 +195,9 @@ function EventItem({ event, index }: { event: SanityEvent; index: number }) {
   );
 }
 
-function ProgramItem({ program, index }: { program: SanityProgram; index: number }) {
-  const imageUrl = program.image ? getImageUrl(program.image, 200, 200) : null;
+function ProgramItem({ program, index, size = "compact" }: { program: SanityProgram; index: number; size?: CardSize }) {
+  const imgDim = size === "expanded" ? 300 : size === "medium" ? 240 : 200;
+  const imageUrl = program.image ? getImageUrl(program.image, imgDim, imgDim) : null;
 
   return (
     <motion.div
@@ -168,7 +212,7 @@ function ProgramItem({ program, index }: { program: SanityProgram; index: number
         rel={program.externalLink ? "noopener noreferrer" : undefined}
       >
         <div className="flex gap-3 p-2.5 sm:p-3 rounded-xl bg-white border border-gray-100 hover:border-teal-200 hover:shadow-md transition-all duration-200">
-          <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+          <div className={`${thumbnailClasses(size)} bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center flex-shrink-0 overflow-hidden relative`}>
             {imageUrl ? (
               <Image src={imageUrl} alt={program.title} fill className="object-cover" />
             ) : (
@@ -176,9 +220,14 @@ function ProgramItem({ program, index }: { program: SanityProgram; index: number
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-gray-900 text-sm line-clamp-1 group-hover:text-teal-600 transition-colors">
+            <h4 className={`font-semibold text-gray-900 text-sm ${titleClamp(size)} group-hover:text-teal-600 transition-colors`}>
               {program.title}
             </h4>
+            {size !== "compact" && program.shortDescription && (
+              <p className={`text-xs text-gray-500 ${descClamp(size)} mt-0.5`}>
+                {program.shortDescription}
+              </p>
+            )}
             <div className="flex flex-wrap items-center gap-x-2.5 mt-0.5 text-xs text-gray-500">
               {program.recurringDay && (
                 <span className="flex items-center gap-1">
@@ -192,6 +241,12 @@ function ProgramItem({ program, index }: { program: SanityProgram; index: number
                   {program.time}
                 </span>
               )}
+              {size !== "compact" && program.location && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-teal-500" />
+                  {program.location}
+                </span>
+              )}
             </div>
           </div>
           <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-teal-500 transition-all flex-shrink-0 mt-1 hidden sm:block" />
@@ -201,8 +256,9 @@ function ProgramItem({ program, index }: { program: SanityProgram; index: number
   );
 }
 
-function ServiceItem({ service, index }: { service: SanityService; index: number }) {
-  const imageUrl = service.image ? getImageUrl(service.image, 200, 200) : null;
+function ServiceItem({ service, index, size = "compact" }: { service: SanityService; index: number; size?: CardSize }) {
+  const imgDim = size === "expanded" ? 300 : size === "medium" ? 240 : 200;
+  const imageUrl = service.image ? getImageUrl(service.image, imgDim, imgDim) : null;
   const Icon = iconMap[service.icon] || Sparkles;
 
   return (
@@ -213,7 +269,7 @@ function ServiceItem({ service, index }: { service: SanityService; index: number
     >
       <Link href={`/services/${service.slug}`} className="block group">
         <div className="flex gap-3 p-2.5 sm:p-3 rounded-xl bg-white border border-gray-100 hover:border-green-200 hover:shadow-md transition-all duration-200">
-          <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-lg overflow-hidden flex-shrink-0">
+          <div className={`relative ${thumbnailClasses(size)} overflow-hidden flex-shrink-0`}>
             {imageUrl ? (
               <Image src={imageUrl} alt={service.title} fill className="object-cover" />
             ) : (
@@ -223,11 +279,11 @@ function ServiceItem({ service, index }: { service: SanityService; index: number
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-gray-900 text-sm line-clamp-1 group-hover:text-green-600 transition-colors">
+            <h4 className={`font-semibold text-gray-900 text-sm ${titleClamp(size)} group-hover:text-green-600 transition-colors`}>
               {service.title}
             </h4>
             {service.shortDescription && (
-              <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+              <p className={`text-xs text-gray-500 ${descClamp(size)} mt-0.5`}>
                 {service.shortDescription}
               </p>
             )}
@@ -236,22 +292,6 @@ function ServiceItem({ service, index }: { service: SanityService; index: number
         </div>
       </Link>
     </motion.div>
-  );
-}
-
-// ─── Empty Column Message ─────────────────────────────────────────
-
-function EmptyColumnMessage({ label, href }: { label: string; href: string }) {
-  return (
-    <div className="text-center py-8 px-4 bg-white rounded-xl border border-gray-100">
-      <p className="text-gray-400 text-sm mb-2">No {label} right now</p>
-      <Link
-        href={href}
-        className="inline-flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium"
-      >
-        View {label} page <ArrowRight className="w-3 h-3" />
-      </Link>
-    </div>
   );
 }
 
@@ -294,28 +334,65 @@ function ColumnHeader({ icon, iconBg, title, href, linkColor }: { icon: React.Re
   );
 }
 
+// ─── Grid class based on active column count ─────────────────────
+
+function gridColsClass(count: number): string {
+  switch (count) {
+    case 1:
+      return "md:grid-cols-1 max-w-2xl mx-auto";
+    case 2:
+      return "md:grid-cols-2";
+    default:
+      return "md:grid-cols-3";
+  }
+}
+
 // ─── Main Section ──────────────────────────────────────────────────
 
 export function WhatsOnSection({ services = [], events = [], programs = [] }: WhatsOnSectionProps) {
-  // Filter out prayer-related content — Sanity data only
-  const filteredPrograms = useMemo(() => programs.filter((p) => !isPrayerRelated(p.title)).slice(0, 3), [programs]);
-  const filteredServices = useMemo(() => services.filter((s) => !isPrayerRelated(s.title)).slice(0, 3), [services]);
+  // Filter out prayer-related content — keep unsliced for active detection
+  const allFilteredPrograms = useMemo(() => programs.filter((p) => !isPrayerRelated(p.title)), [programs]);
+  const allFilteredServices = useMemo(() => services.filter((s) => !isPrayerRelated(s.title)), [services]);
 
   // Deduplicate: exclude events that already appear in Programs
-  const programIds = useMemo(() => new Set(filteredPrograms.map((p) => p._id)), [filteredPrograms]);
-  const filteredEvents = useMemo(
-    () => events.filter((e) => !isPrayerRelated(e.title) && !programIds.has(e._id)).slice(0, 3),
+  const programIds = useMemo(() => new Set(allFilteredPrograms.map((p) => p._id)), [allFilteredPrograms]);
+  const allFilteredEvents = useMemo(
+    () => events.filter((e) => !isPrayerRelated(e.title) && !programIds.has(e._id)),
     [events, programIds],
   );
 
-  // Always show all 3 tabs — individual columns show empty message when needed
-  const [activeTab, setActiveTab] = useState<TabId>("events");
+  // Build active categories — only those with items
+  const activeTabs = useMemo(
+    () =>
+      allTabs.filter((tab) => {
+        if (tab.id === "events") return allFilteredEvents.length > 0;
+        if (tab.id === "programs") return allFilteredPrograms.length > 0;
+        if (tab.id === "services") return allFilteredServices.length > 0;
+        return false;
+      }),
+    [allFilteredEvents.length, allFilteredPrograms.length, allFilteredServices.length],
+  );
 
-  const activeTabHref = allTabs.find((t) => t.id === activeTab)?.href || "/";
+  // Card size derived from active category count
+  const cardSize: CardSize = activeTabs.length === 1 ? "expanded" : activeTabs.length === 2 ? "medium" : "compact";
+  const itemLimit = maxItems(cardSize);
+
+  // Slice for render
+  const filteredEvents = useMemo(() => allFilteredEvents.slice(0, itemLimit), [allFilteredEvents, itemLimit]);
+  const filteredPrograms = useMemo(() => allFilteredPrograms.slice(0, itemLimit), [allFilteredPrograms, itemLimit]);
+  const filteredServices = useMemo(() => allFilteredServices.slice(0, itemLimit), [allFilteredServices, itemLimit]);
+
+  // Default active tab — first available active category
+  const defaultTab = activeTabs[0]?.id ?? "events";
+  const [activeTab, setActiveTab] = useState<TabId>(defaultTab);
+
+  // Ensure activeTab stays valid if data changes
+  const safeActiveTab = activeTabs.some((t) => t.id === activeTab) ? activeTab : defaultTab;
+
+  const activeTabHref = allTabs.find((t) => t.id === safeActiveTab)?.href || "/";
 
   // Hide entire section when there's no content at all
-  if (filteredEvents.length === 0 && filteredPrograms.length === 0 && filteredServices.length === 0) return null;
-
+  if (activeTabs.length === 0) return null;
 
   return (
     <section className="py-10 md:py-16 bg-gray-50 relative overflow-hidden">
@@ -343,44 +420,40 @@ export function WhatsOnSection({ services = [], events = [], programs = [] }: Wh
 
         {/* ── Mobile: Tabbed Interface ── */}
         <div className="md:hidden">
-          {/* Tab Bar — always show all 3 tabs */}
-          <div className="flex border-b border-gray-200 mb-4">
-            {allTabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab.id ? tab.activeColor : "border-transparent " + tab.color
-                }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          {/* Tab Bar — only show when 2+ active categories */}
+          {activeTabs.length > 1 && (
+            <div className="flex border-b border-gray-200 mb-4">
+              {activeTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                    safeActiveTab === tab.id ? tab.activeColor : "border-transparent " + tab.color
+                  }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Tab Content */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={activeTab}
+              key={safeActiveTab}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
               className="space-y-2"
             >
-              {activeTab === "events" && (filteredEvents.length > 0
-                ? filteredEvents.map((item, i) => <EventItem key={item._id} event={item} index={i} />)
-                : <EmptyColumnMessage label="events" href="/events" />
-              )}
-              {activeTab === "programs" && (filteredPrograms.length > 0
-                ? filteredPrograms.map((item, i) => <ProgramItem key={item._id} program={item} index={i} />)
-                : <EmptyColumnMessage label="programs" href="/events" />
-              )}
-              {activeTab === "services" && (filteredServices.length > 0
-                ? filteredServices.map((item, i) => <ServiceItem key={item._id} service={item} index={i} />)
-                : <EmptyColumnMessage label="services" href="/services" />
-              )}
+              {safeActiveTab === "events" &&
+                filteredEvents.map((item, i) => <EventItem key={item._id} event={item} index={i} size={cardSize} />)}
+              {safeActiveTab === "programs" &&
+                filteredPrograms.map((item, i) => <ProgramItem key={item._id} program={item} index={i} size={cardSize} />)}
+              {safeActiveTab === "services" &&
+                filteredServices.map((item, i) => <ServiceItem key={item._id} service={item} index={i} size={cardSize} />)}
             </motion.div>
           </AnimatePresence>
 
@@ -390,14 +463,14 @@ export function WhatsOnSection({ services = [], events = [], programs = [] }: Wh
               href={activeTabHref}
               className="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 font-medium"
             >
-              View all {activeTab} <ArrowRight className="w-3.5 h-3.5" />
+              View all {safeActiveTab} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
 
-        {/* ── Desktop: Always 3-Column Grid ── */}
-        <div className="hidden md:grid md:grid-cols-3 gap-5">
-          {allTabs.map((tab, tabIndex) => (
+        {/* ── Desktop: Dynamic Grid ── */}
+        <div className={`hidden md:grid ${gridColsClass(activeTabs.length)} gap-5`}>
+          {activeTabs.map((tab, tabIndex) => (
             <FadeIn key={tab.id} delay={tabIndex * 0.1}>
               <div>
                 <ColumnHeader
@@ -413,18 +486,12 @@ export function WhatsOnSection({ services = [], events = [], programs = [] }: Wh
                   linkColor={tab.linkColor}
                 />
                 <div className="space-y-2">
-                  {tab.id === "events" && (filteredEvents.length > 0
-                    ? filteredEvents.map((event, i) => <EventItem key={event._id} event={event} index={i} />)
-                    : <EmptyColumnMessage label="events" href="/events" />
-                  )}
-                  {tab.id === "programs" && (filteredPrograms.length > 0
-                    ? filteredPrograms.map((program, i) => <ProgramItem key={program._id} program={program} index={i} />)
-                    : <EmptyColumnMessage label="programs" href="/events" />
-                  )}
-                  {tab.id === "services" && (filteredServices.length > 0
-                    ? filteredServices.map((service, i) => <ServiceItem key={service._id} service={service} index={i} />)
-                    : <EmptyColumnMessage label="services" href="/services" />
-                  )}
+                  {tab.id === "events" &&
+                    filteredEvents.map((event, i) => <EventItem key={event._id} event={event} index={i} size={cardSize} />)}
+                  {tab.id === "programs" &&
+                    filteredPrograms.map((program, i) => <ProgramItem key={program._id} program={program} index={i} size={cardSize} />)}
+                  {tab.id === "services" &&
+                    filteredServices.map((service, i) => <ServiceItem key={service._id} service={service} index={i} size={cardSize} />)}
                 </div>
               </div>
             </FadeIn>

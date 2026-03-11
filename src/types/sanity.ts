@@ -323,6 +323,8 @@ export interface SanitySiteSettings {
     };
     active?: boolean;
   }>;
+  heroMode?: "carousel" | "video";
+  heroVideoUrl?: string;
   welcomeSection?: {
     title?: string;
     subtitle?: string;

@@ -1,18 +1,20 @@
 /**
- * Header Variant B -- Hamburger + Accordion Mobile Nav
+ * Header Variant B -- Hamburger + Responsive Nav Menu
  *
  * Minimal header bar at every breakpoint: logo (left), hamburger + donate CTA +
- * search (right). No inline nav links. Clicking the hamburger opens a full-screen
- * accordion menu with:
+ * search (right). No inline nav links. Clicking the hamburger opens:
  *
- * - Subtle Islamic geometric pattern overlay on dark gradient background
- * - Staggered entrance animation for each group title
+ * **Mobile / Tablet (< md):** Full-screen accordion menu
  * - Accordion expand/collapse with height + opacity animation
  * - Plus icon rotates 45° to form × when expanded
  * - Single-open: only one group expanded at a time
  * - Contact as a standalone link (no accordion)
- * - Standalone Donate feature card
- * - Contact info strip at the bottom
+ * - Full-width layout
+ *
+ * **Desktop (md+):** Drop-down panel
+ * - 5-column grid with group headings, icons, descriptions
+ * - Link hover micro-interactions (left accent bar + translateX)
+ * - Backdrop blur overlay behind panel
  *
  * Uses the shared `headerNavGroups` data from `src/data/navigation.ts`.
  *
@@ -39,6 +41,11 @@ import {
   MapPin,
   Phone,
   Mail,
+  Users,
+  Calendar,
+  Landmark,
+  Play,
+  MessageCircle,
   ArrowRight,
   Plus,
 } from "lucide-react";
@@ -47,10 +54,6 @@ import {
 /*  Scroll hook                                                        */
 /* ------------------------------------------------------------------ */
 
-/**
- * Returns `true` once `window.scrollY` exceeds the given pixel threshold.
- * Uses `useSyncExternalStore` for SSR-safe hydration.
- */
 function useIsScrolled(threshold = 50) {
   const subscribe = useCallback(
     (callback: () => void) => {
@@ -67,9 +70,51 @@ function useIsScrolled(threshold = 50) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Nav group metadata (icons + descriptions) — desktop only           */
+/* ------------------------------------------------------------------ */
+
+const groupMeta: Record<string, { icon: typeof Users; description: string }> = {
+  About: { icon: Users, description: "Learn about our centre" },
+  "What's On": { icon: Calendar, description: "Events, services & programs" },
+  "Our Mosque": { icon: Landmark, description: "Prayer, worship & visiting" },
+  "Media & Resources": { icon: Play, description: "Gallery & downloads" },
+  "Get In Touch": { icon: MessageCircle, description: "Connect with us" },
+};
+
+/* ------------------------------------------------------------------ */
 /*  Framer Motion variants                                             */
 /* ------------------------------------------------------------------ */
 
+// Desktop panel
+const panelVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+};
+
+const groupContainerVariants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
+  },
+};
+
+const groupItemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" as const } },
+};
+
+const donateCardVariants = {
+  hidden: { opacity: 0, scale: 0.95, y: 12 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: "easeOut" as const, delay: 0.4 },
+  },
+};
+
+// Mobile accordion
 const overlayVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
@@ -116,10 +161,6 @@ const accordionContentVariants = {
 /*  Focus-trap hook                                                    */
 /* ------------------------------------------------------------------ */
 
-/**
- * Traps keyboard focus inside the given container while active.
- * Pressing Tab / Shift+Tab cycles through focusable elements.
- */
 function useFocusTrap(containerRef: React.RefObject<HTMLDivElement | null>, active: boolean) {
   useEffect(() => {
     if (!active || !containerRef.current) return;
@@ -153,7 +194,6 @@ function useFocusTrap(containerRef: React.RefObject<HTMLDivElement | null>, acti
       }
     };
 
-    // Focus the first focusable element on mount
     const focusable = getFocusable();
     if (focusable.length > 0) {
       focusable[0].focus();
@@ -162,6 +202,78 @@ function useFocusTrap(containerRef: React.RefObject<HTMLDivElement | null>, acti
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [active, containerRef]);
+}
+
+/* ------------------------------------------------------------------ */
+/*  NavLink with hover micro-interaction — desktop only                */
+/* ------------------------------------------------------------------ */
+
+function NavLinkItem({
+  href,
+  name,
+  active,
+  external,
+  onClick,
+}: {
+  href: string;
+  name: string;
+  active: boolean;
+  external?: boolean;
+  onClick?: () => void;
+}) {
+  const baseClasses =
+    "group/link relative flex items-center py-0.5 text-sm transition-all duration-200";
+
+  const content = (
+    <>
+      <span
+        className={cn(
+          "absolute left-0 top-1/2 -translate-y-1/2 w-0.5 rounded-full transition-all duration-200",
+          active
+            ? "h-full bg-lime-400"
+            : "h-0 bg-white/40 group-hover/link:h-full group-hover/link:bg-lime-400/70",
+        )}
+      />
+      <span
+        className={cn(
+          "pl-[26px] transition-transform duration-200 group-hover/link:translate-x-1",
+          active ? "translate-x-1" : "",
+        )}
+      >
+        {name}
+      </span>
+    </>
+  );
+
+  if (external) {
+    return (
+      <li>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(baseClasses, "text-white/70 hover:text-white")}
+        >
+          {content}
+        </a>
+      </li>
+    );
+  }
+
+  return (
+    <li>
+      <Link
+        href={href}
+        onClick={onClick}
+        className={cn(
+          baseClasses,
+          active ? "text-lime-400" : "text-white/70 hover:text-white",
+        )}
+      >
+        {content}
+      </Link>
+    </li>
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -193,7 +305,6 @@ export function HeaderB() {
 
   /* ---------- Side effects ---------- */
 
-  // Lock body scroll when overlay is open
   useEffect(() => {
     if (overlayOpen) {
       document.body.style.overflow = "hidden";
@@ -205,7 +316,6 @@ export function HeaderB() {
     };
   }, [overlayOpen]);
 
-  // Close overlay on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && overlayOpen) {
@@ -217,7 +327,6 @@ export function HeaderB() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [overlayOpen, closeOverlay]);
 
-  // Return focus to hamburger button after overlay closes
   const prevOverlayOpen = useRef(overlayOpen);
   useEffect(() => {
     if (prevOverlayOpen.current && !overlayOpen) {
@@ -314,7 +423,6 @@ export function HeaderB() {
                 onClick={handleLogoClick}
                 className="flex items-center group relative h-14 flex-shrink-0"
               >
-                {/* Dark-background logo (visible when NOT scrolled) */}
                 <Image
                   src="/images/aic logo.png"
                   alt="Australian Islamic Centre"
@@ -325,7 +433,6 @@ export function HeaderB() {
                     isScrolled ? "opacity-0" : "opacity-100",
                   )}
                 />
-                {/* Light-background logo (visible when scrolled) */}
                 <Image
                   src="/images/aic website logo.svg"
                   alt="Australian Islamic Centre"
@@ -340,7 +447,6 @@ export function HeaderB() {
 
               {/* ----- Actions: Search + Donate + Hamburger ----- */}
               <div className="flex items-center h-16">
-                {/* Search button */}
                 <button
                   onClick={() => setSearchOpen(true)}
                   className={cn(
@@ -354,7 +460,6 @@ export function HeaderB() {
                   <Search className="w-5 h-5" />
                 </button>
 
-                {/* Donate CTA */}
                 <Link
                   href="/donate"
                   className="flex items-center gap-2 h-16 px-4 sm:px-6 bg-lime-500 hover:bg-lime-600 text-neutral-900 font-semibold transition-all duration-200 text-sm sm:text-base"
@@ -363,7 +468,6 @@ export function HeaderB() {
                   <span>Donate</span>
                 </Link>
 
-                {/* Hamburger button */}
                 <button
                   ref={hamburgerRef}
                   onClick={() => setOverlayOpen(true)}
@@ -384,150 +488,320 @@ export function HeaderB() {
         </div>
       </header>
 
-      {/* ===== Full-screen accordion overlay ===== */}
+      {/* ===== Navigation overlay ===== */}
       <AnimatePresence>
         {overlayOpen && (
-          <motion.div
-            ref={overlayRef}
-            variants={overlayVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-b from-neutral-900 via-neutral-900 to-neutral-950"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Navigation menu"
-          >
-            {/* Geometric pattern overlay */}
-            <div
-              className="absolute inset-0 opacity-[0.03] pointer-events-none"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='white' stroke-width='0.5'/%3E%3C/svg%3E")`,
-                backgroundSize: "60px 60px",
-              }}
+          <>
+            {/* ── Mobile / Tablet: Full-screen accordion ── */}
+            <motion.div
+              ref={overlayRef}
+              variants={overlayVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={{ duration: 0.25 }}
+              className="md:hidden fixed inset-0 z-50 overflow-y-auto bg-gradient-to-b from-neutral-900 via-neutral-900 to-neutral-950"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation menu"
+            >
+              {/* Geometric pattern overlay */}
+              <div
+                className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='white' stroke-width='0.5'/%3E%3C/svg%3E")`,
+                  backgroundSize: "60px 60px",
+                }}
+              />
+
+              {/* Header with logo + close */}
+              <div className="relative flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <Image
+                  src="/images/aic logo.png"
+                  alt="Australian Islamic Centre"
+                  width={150}
+                  height={60}
+                  className="h-14 w-auto object-contain"
+                />
+                <button
+                  onClick={closeOverlay}
+                  className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 hover:rotate-90"
+                  aria-label="Close menu"
+                >
+                  <X className="w-6 h-6 text-white" />
+                </button>
+              </div>
+
+              {/* Accordion nav — full width */}
+              <div className="relative px-6 py-8">
+                <motion.div
+                  variants={menuContainerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                >
+                  {headerNavGroups.map((group) => {
+                    const isExpanded = expandedGroup === group.label;
+
+                    return (
+                      <motion.div
+                        key={group.label}
+                        variants={menuItemVariants}
+                        className="border-b border-white/10"
+                      >
+                        {/* Accordion trigger */}
+                        <button
+                          onClick={() => toggleGroup(group.label)}
+                          className="w-full flex items-center justify-between py-4 group/accordion"
+                          aria-expanded={isExpanded}
+                        >
+                          <span className="text-2xl font-bold text-white">
+                            {group.label}
+                          </span>
+                          <motion.span
+                            animate={{ rotate: isExpanded ? 45 : 0 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                          >
+                            <Plus className="w-6 h-6 text-white/50 group-hover/accordion:text-white transition-colors" />
+                          </motion.span>
+                        </button>
+
+                        {/* Accordion content */}
+                        <AnimatePresence initial={false}>
+                          {isExpanded && (
+                            <motion.div
+                              variants={accordionContentVariants}
+                              initial="collapsed"
+                              animate="expanded"
+                              exit="exit"
+                              className="overflow-hidden"
+                            >
+                              <ul className="pb-4 pl-1 space-y-1">
+                                {group.links.map((link) => (
+                                  <li key={link.href}>
+                                    {link.external ? (
+                                      <a
+                                        href={link.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block py-1.5 text-base text-white/60 hover:text-white transition-colors"
+                                      >
+                                        {link.name}
+                                      </a>
+                                    ) : (
+                                      <Link
+                                        href={link.href}
+                                        onClick={() => handleOverlayNavClick(link.href)}
+                                        className={cn(
+                                          "block py-1.5 text-base transition-colors",
+                                          isActive(link.href)
+                                            ? "text-lime-400"
+                                            : "text-white/60 hover:text-white",
+                                        )}
+                                      >
+                                        {link.name}
+                                      </Link>
+                                    )}
+                                  </li>
+                                ))}
+                              </ul>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    );
+                  })}
+
+                  {/* Contact — standalone link */}
+                  <motion.div variants={menuItemVariants} className="border-b border-white/10">
+                    <Link
+                      href="/contact"
+                      onClick={() => handleOverlayNavClick("/contact")}
+                      className={cn(
+                        "block py-4 text-2xl font-bold transition-colors",
+                        isActive("/contact")
+                          ? "text-lime-400"
+                          : "text-white hover:text-white/80",
+                      )}
+                    >
+                      Contact Us
+                    </Link>
+                  </motion.div>
+
+                  {/* Donate feature card */}
+                  <motion.div variants={menuItemVariants} className="mt-8">
+                    <Link
+                      href="/donate"
+                      onClick={() => handleOverlayNavClick("/donate")}
+                      className="group/donate flex items-center justify-between gap-4 px-6 py-4 rounded-xl bg-gradient-to-r from-lime-500/15 to-green-500/10 border border-lime-500/20 hover:border-lime-400/40 transition-all duration-300"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-lime-500/20">
+                          <Heart className="w-5 h-5 text-lime-400" />
+                        </div>
+                        <div>
+                          <span className="block text-base font-semibold text-white">
+                            Support Our Community
+                          </span>
+                          <span className="block text-sm text-white/40">
+                            Your generosity helps us serve the community
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-lime-400 font-semibold text-sm">
+                        <span className="hidden sm:inline">Donate</span>
+                        <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover/donate:translate-x-1" />
+                      </div>
+                    </Link>
+                  </motion.div>
+                </motion.div>
+              </div>
+
+              {/* Contact info strip */}
+              <div className="relative border-t border-white/10 px-6 py-4 mt-auto">
+                <div className="flex flex-col gap-3 text-sm text-white/40">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+                    <span>
+                      {info.address.street}, {info.address.suburb} {info.address.state}{" "}
+                      {info.address.postcode}
+                    </span>
+                  </div>
+                  <a
+                    href={`tel:${info.phone}`}
+                    className="flex items-center gap-2 hover:text-white/70 transition-colors"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+                    <span>{info.phone}</span>
+                  </a>
+                  <a
+                    href={`mailto:${info.email}`}
+                    className="flex items-center gap-2 hover:text-white/70 transition-colors"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+                    <span>{info.email}</span>
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* ── Desktop: Drop-down panel + backdrop ── */}
+
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="hidden md:block fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+              onClick={closeOverlay}
             />
 
-            {/* Panel header with logo + close */}
-            <div className="relative flex items-center justify-between px-6 py-4 border-b border-white/10">
-              <Image
-                src="/images/aic logo.png"
-                alt="Australian Islamic Centre"
-                width={150}
-                height={60}
-                className="h-14 w-auto object-contain"
+            {/* Panel */}
+            <motion.div
+              ref={overlayRef}
+              variants={panelVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={{ duration: 0.25 }}
+              className="hidden md:block fixed top-0 left-0 right-0 z-50 overflow-y-auto max-h-[85vh] shadow-2xl bg-gradient-to-b from-neutral-900 via-neutral-900 to-neutral-950"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation menu"
+            >
+              {/* Geometric pattern overlay */}
+              <div
+                className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='white' stroke-width='0.5'/%3E%3C/svg%3E")`,
+                  backgroundSize: "60px 60px",
+                }}
               />
-              <button
-                onClick={closeOverlay}
-                className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 hover:rotate-90"
-                aria-label="Close menu"
-              >
-                <X className="w-6 h-6 text-white" />
-              </button>
-            </div>
 
-            {/* Accordion nav */}
-            <div className="relative px-8 py-8">
-              <motion.div
-                variants={menuContainerVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                className="max-w-lg"
-              >
-                {headerNavGroups.map((group) => {
-                  const isExpanded = expandedGroup === group.label;
+              {/* Panel header with logo + close */}
+              <div className="relative flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <Image
+                  src="/images/aic logo.png"
+                  alt="Australian Islamic Centre"
+                  width={150}
+                  height={60}
+                  className="h-14 w-auto object-contain"
+                />
+                <button
+                  onClick={closeOverlay}
+                  className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 hover:rotate-90"
+                  aria-label="Close menu"
+                >
+                  <X className="w-6 h-6 text-white" />
+                </button>
+              </div>
 
-                  return (
-                    <motion.div
-                      key={group.label}
-                      variants={menuItemVariants}
-                      className="border-b border-white/10"
-                    >
-                      {/* Accordion trigger */}
-                      <button
-                        onClick={() => toggleGroup(group.label)}
-                        className="w-full flex items-center justify-between py-4 group/accordion"
-                        aria-expanded={isExpanded}
-                      >
-                        <span className="text-2xl font-bold text-white">
-                          {group.label}
-                        </span>
-                        <motion.span
-                          animate={{ rotate: isExpanded ? 45 : 0 }}
-                          transition={{ duration: 0.2, ease: "easeOut" }}
-                        >
-                          <Plus className="w-6 h-6 text-white/50 group-hover/accordion:text-white transition-colors" />
-                        </motion.span>
-                      </button>
+              {/* Nav grid — staggered entrance */}
+              <div className="relative px-12 lg:px-20 py-8">
+                <motion.div
+                  variants={groupContainerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="max-w-6xl mx-auto grid grid-cols-3 lg:grid-cols-5 gap-6"
+                >
+                  {headerNavGroups.map((group) => {
+                    const meta = groupMeta[group.label];
+                    const Icon = meta?.icon;
 
-                      {/* Accordion content */}
-                      <AnimatePresence initial={false}>
-                        {isExpanded && (
-                          <motion.div
-                            variants={accordionContentVariants}
-                            initial="collapsed"
-                            animate="expanded"
-                            exit="exit"
-                            className="overflow-hidden"
-                          >
-                            <ul className="pb-4 pl-1 space-y-1">
-                              {group.links.map((link) => (
-                                <li key={link.href}>
-                                  {link.external ? (
-                                    <a
-                                      href={link.href}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className={cn(
-                                        "block py-1.5 text-base transition-colors",
-                                        "text-white/60 hover:text-white",
-                                      )}
-                                    >
-                                      {link.name}
-                                    </a>
-                                  ) : (
-                                    <Link
-                                      href={link.href}
-                                      onClick={() => handleOverlayNavClick(link.href)}
-                                      className={cn(
-                                        "block py-1.5 text-base transition-colors",
-                                        isActive(link.href)
-                                          ? "text-lime-400"
-                                          : "text-white/60 hover:text-white",
-                                      )}
-                                    >
-                                      {link.name}
-                                    </Link>
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  );
-                })}
+                    return (
+                      <motion.div key={group.label} variants={groupItemVariants}>
+                        <div className="flex items-center gap-2.5 mb-3">
+                          {Icon && (
+                            <Icon className="w-4 h-4 text-lime-400/70" />
+                          )}
+                          <h2 className="text-sm font-semibold tracking-wider uppercase text-white/50">
+                            {group.label}
+                          </h2>
+                        </div>
 
-                {/* Contact — standalone link, no accordion */}
-                <motion.div variants={menuItemVariants} className="border-b border-white/10">
-                  <Link
-                    href="/contact"
-                    onClick={() => handleOverlayNavClick("/contact")}
-                    className={cn(
-                      "block py-4 text-base transition-colors",
-                      isActive("/contact")
-                        ? "text-lime-400"
-                        : "text-white/60 hover:text-white",
-                    )}
-                  >
-                    Contact Us
-                  </Link>
+                        <ul className="space-y-0.5">
+                          {group.links.map((link) => (
+                            <NavLinkItem
+                              key={link.href}
+                              href={link.href}
+                              name={link.name}
+                              active={isActive(link.href)}
+                              external={link.external}
+                              onClick={() => handleOverlayNavClick(link.href)}
+                            />
+                          ))}
+                        </ul>
+                      </motion.div>
+                    );
+                  })}
+
+                  {/* Get In Touch group */}
+                  <motion.div variants={groupItemVariants}>
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <MessageCircle className="w-4 h-4 text-lime-400/70" />
+                      <h2 className="text-sm font-semibold tracking-wider uppercase text-white/50">
+                        Get In Touch
+                      </h2>
+                    </div>
+                    <ul className="space-y-0.5">
+                      <NavLinkItem
+                        href="/contact"
+                        name="Contact Us"
+                        active={isActive("/contact")}
+                        onClick={() => handleOverlayNavClick("/contact")}
+                      />
+                    </ul>
+                  </motion.div>
                 </motion.div>
 
                 {/* Donate feature card */}
-                <motion.div variants={menuItemVariants} className="mt-8">
+                <motion.div
+                  variants={donateCardVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="max-w-6xl mx-auto mt-10"
+                >
                   <Link
                     href="/donate"
                     onClick={() => handleOverlayNavClick("/donate")}
@@ -547,41 +821,41 @@ export function HeaderB() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 text-lime-400 font-semibold text-sm">
-                      <span className="hidden sm:inline">Donate</span>
+                      <span>Donate</span>
                       <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover/donate:translate-x-1" />
                     </div>
                   </Link>
                 </motion.div>
-              </motion.div>
-            </div>
-
-            {/* Contact info strip */}
-            <div className="relative border-t border-white/10 px-8 py-4 mt-auto">
-              <div className="flex flex-col gap-3 text-sm text-white/40">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
-                  <span>
-                    {info.address.street}, {info.address.suburb} {info.address.state}{" "}
-                    {info.address.postcode}
-                  </span>
-                </div>
-                <a
-                  href={`tel:${info.phone}`}
-                  className="flex items-center gap-2 hover:text-white/70 transition-colors"
-                >
-                  <Phone className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
-                  <span>{info.phone}</span>
-                </a>
-                <a
-                  href={`mailto:${info.email}`}
-                  className="flex items-center gap-2 hover:text-white/70 transition-colors"
-                >
-                  <Mail className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
-                  <span>{info.email}</span>
-                </a>
               </div>
-            </div>
-          </motion.div>
+
+              {/* Contact info strip */}
+              <div className="relative border-t border-white/10 px-12 lg:px-20 py-4">
+                <div className="max-w-6xl mx-auto flex flex-row items-center gap-8 text-sm text-white/40">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+                    <span>
+                      {info.address.street}, {info.address.suburb} {info.address.state}{" "}
+                      {info.address.postcode}
+                    </span>
+                  </div>
+                  <a
+                    href={`tel:${info.phone}`}
+                    className="flex items-center gap-2 hover:text-white/70 transition-colors"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+                    <span>{info.phone}</span>
+                  </a>
+                  <a
+                    href={`mailto:${info.email}`}
+                    className="flex items-center gap-2 hover:text-white/70 transition-colors"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+                    <span>{info.email}</span>
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

@@ -160,6 +160,35 @@ export default defineType({
       description: "Hero slides for the homepage carousel",
     }),
     defineField({
+      name: "heroMode",
+      title: "Hero Display Mode",
+      type: "string",
+      options: {
+        list: [
+          { title: "Image Carousel", value: "carousel" },
+          { title: "Video Background", value: "video" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "carousel",
+      description: "Choose between the rotating image carousel or a looping background video for the homepage hero",
+    }),
+    defineField({
+      name: "heroVideoUrl",
+      title: "Hero Video URL",
+      type: "url",
+      description: "URL to a video file (MP4 recommended) that will loop as the hero background",
+      hidden: ({ parent }) => parent?.heroMode !== "video",
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const parent = context.parent as { heroMode?: string };
+          if (parent?.heroMode === "video" && !value) {
+            return "A video URL is required when video mode is selected";
+          }
+          return true;
+        }),
+    }),
+    defineField({
       name: "welcomeSection",
       title: "Welcome Section",
       type: "object",

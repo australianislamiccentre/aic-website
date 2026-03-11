@@ -546,6 +546,8 @@ export const siteSettingsQuery = groq`
     operatingHours,
     socialMedia,
     heroSlides,
+    heroMode,
+    heroVideoUrl,
     welcomeSection,
     ctaBanner,
     externalLinks,
