@@ -127,12 +127,13 @@ describe("HeaderB", () => {
 
     await user.click(screen.getByLabelText("Open menu"));
 
-    // The overlay renders group labels as h2 headings
+    // Group labels are rendered as accordion trigger text
     expect(screen.getByText("About")).toBeInTheDocument();
     expect(screen.getByText("What's On")).toBeInTheDocument();
     expect(screen.getByText("Our Mosque")).toBeInTheDocument();
     expect(screen.getByText("Media & Resources")).toBeInTheDocument();
-    expect(screen.getByText("Get In Touch")).toBeInTheDocument();
+    // Contact is a standalone link, not a group heading
+    expect(screen.getByText("Contact Us")).toBeInTheDocument();
   });
 
   it("close button closes overlay", async () => {
@@ -168,7 +169,7 @@ describe("HeaderB", () => {
     expect(screen.getByText("Welcome to AIC")).toBeInTheDocument();
   });
 
-  it("does not show group descriptions in overlay", async () => {
+  it("does not show group descriptions or icons in overlay", async () => {
     const user = userEvent.setup();
     render(<HeaderB />);
 
@@ -213,5 +214,76 @@ describe("HeaderB", () => {
     expect(
       screen.getByText(/23-27 Blenheim Rd, Newport VIC 3015/),
     ).toBeInTheDocument();
+  });
+
+  /* ---------- Accordion-specific tests ---------- */
+
+  it("sub-links are hidden until accordion group is expanded", async () => {
+    const user = userEvent.setup();
+    render(<HeaderB />);
+
+    await user.click(screen.getByLabelText("Open menu"));
+
+    // Sub-links should not be visible before expanding
+    expect(screen.queryByText("Our Story")).not.toBeInTheDocument();
+    expect(screen.queryByText("Events")).not.toBeInTheDocument();
+  });
+
+  it("clicking accordion group reveals its sub-links", async () => {
+    const user = userEvent.setup();
+    render(<HeaderB />);
+
+    await user.click(screen.getByLabelText("Open menu"));
+    await user.click(screen.getByText("About"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Our Story")).toBeInTheDocument();
+      expect(screen.getByText("Our Imams")).toBeInTheDocument();
+      expect(screen.getByText("Affiliated Partners")).toBeInTheDocument();
+    });
+  });
+
+  it("only one accordion group can be open at a time", async () => {
+    const user = userEvent.setup();
+    render(<HeaderB />);
+
+    await user.click(screen.getByLabelText("Open menu"));
+
+    // Open About
+    await user.click(screen.getByText("About"));
+    await waitFor(() => {
+      expect(screen.getByText("Our Story")).toBeInTheDocument();
+    });
+
+    // Open What's On — About should close
+    await user.click(screen.getByText("What's On"));
+    await waitFor(() => {
+      expect(screen.getByText("Events")).toBeInTheDocument();
+      expect(screen.queryByText("Our Story")).not.toBeInTheDocument();
+    });
+  });
+
+  it("accordion trigger has aria-expanded attribute", async () => {
+    const user = userEvent.setup();
+    render(<HeaderB />);
+
+    await user.click(screen.getByLabelText("Open menu"));
+
+    const aboutButton = screen.getByText("About").closest("button");
+    expect(aboutButton).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(screen.getByText("About"));
+    expect(aboutButton).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("Contact Us is a standalone link, not an accordion group", async () => {
+    const user = userEvent.setup();
+    render(<HeaderB />);
+
+    await user.click(screen.getByLabelText("Open menu"));
+
+    const contactLink = screen.getByText("Contact Us");
+    expect(contactLink.tagName).toBe("A");
+    expect(contactLink).toHaveAttribute("href", "/contact");
   });
 });
