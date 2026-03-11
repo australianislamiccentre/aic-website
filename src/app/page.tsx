@@ -25,6 +25,7 @@ import {
   getPrograms,
   getTeamMembersByCategory,
   getFeaturedGalleryImages,
+  getSiteSettings,
 } from "@/sanity/lib/fetch";
 import type { LatestUpdateItem } from "@/sanity/lib/fetch";
 import {
@@ -35,6 +36,7 @@ import {
   SanityProgram,
   SanityTeamMember,
   SanityGalleryImage,
+  SanitySiteSettings,
 } from "@/types/sanity";
 
 export default async function HomePage() {
@@ -47,6 +49,7 @@ export default async function HomePage() {
     getPrograms(),
     getTeamMembersByCategory("imam"),
     getFeaturedGalleryImages(),
+    getSiteSettings(),
   ]);
 
   const allEvents = results[0].status === "fulfilled" ? (results[0].value as SanityEvent[]) : [];
@@ -57,12 +60,17 @@ export default async function HomePage() {
   const programs = results[5].status === "fulfilled" ? (results[5].value as SanityProgram[]) : [];
   const imams = results[6].status === "fulfilled" ? (results[6].value as SanityTeamMember[]) : [];
   const galleryImages = results[7].status === "fulfilled" ? (results[7].value as SanityGalleryImage[]) : [];
+  const siteSettings = results[8].status === "fulfilled" ? (results[8].value as SanitySiteSettings | null) : null;
 
   const urgentAnnouncement = urgentAnnouncements.length > 0 ? urgentAnnouncements[0] : null;
 
   return (
     <>
-      <HeroSection prayerSettings={prayerSettings} />
+      <HeroSection
+        prayerSettings={prayerSettings}
+        heroMode={siteSettings?.heroMode}
+        heroVideoUrl={siteSettings?.heroVideoUrl}
+      />
 
       <QuickAccessSection />
 

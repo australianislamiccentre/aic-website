@@ -1,37 +1,37 @@
 /**
  * MediaHighlightSection
  *
- * Featured media content section on the homepage highlighting a YouTube video
- * tour of the centre alongside social media channel links. Pulls social URLs
- * from SiteSettings context for Instagram, Facebook, and YouTube.
+ * Featured media content section on the homepage with an embedded YouTube video
+ * using a click-to-play facade pattern (thumbnail first, iframe on play).
+ * Social media channel links are displayed below the video.
  *
  * @module components/sections/MediaHighlightSection
  */
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { FadeIn } from "@/components/animations/FadeIn";
-import { Button } from "@/components/ui/Button";
 import { aicImages } from "@/data/content";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
-import { Play, ExternalLink, Youtube, Instagram, Facebook } from "lucide-react";
+import { Play, Youtube, Instagram, Facebook } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+const YOUTUBE_VIDEO_ID = "BckNzo1ufDw";
+
 export function MediaHighlightSection() {
   const info = useSiteSettings();
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  // Featured video data
   const featuredVideo = {
     title: "Experience the Australian Islamic Centre",
     description:
       "Take a virtual tour of our award-winning architectural masterpiece and discover the heart of our community.",
     thumbnail: aicImages.exterior.aerial,
-    youtubeUrl: info.socialMedia.youtube,
     duration: "3:42",
   };
 
-  // Social media links
   const socialLinks = [
     {
       platform: "YouTube",
@@ -44,7 +44,8 @@ export function MediaHighlightSection() {
       platform: "Instagram",
       icon: Instagram,
       url: info.socialMedia.instagram,
-      color: "bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 hover:opacity-90",
+      color:
+        "bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 hover:opacity-90",
       label: "Follow",
     },
     {
@@ -55,6 +56,7 @@ export function MediaHighlightSection() {
       label: "Like",
     },
   ];
+
   return (
     <section className="py-10 md:py-20 bg-neutral-950 relative overflow-hidden">
       {/* Background accent */}
@@ -79,64 +81,76 @@ export function MediaHighlightSection() {
           </div>
         </FadeIn>
 
-        {/* Featured Video */}
+        {/* Featured Video — click-to-play facade */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="mb-8"
         >
-          <Link
-            href={featuredVideo.youtubeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block group"
-          >
-            <div className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800">
-              {/* Thumbnail */}
-              <Image
-                src={featuredVideo.thumbnail}
-                alt={featuredVideo.title}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700"
+          <div className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            {isPlaying ? (
+              /* YouTube iframe — loaded only after user clicks play */
+              <iframe
+                src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&rel=0`}
+                title={featuredVideo.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
               />
+            ) : (
+              /* Thumbnail facade — no iframe loaded until play is clicked */
+              <button
+                type="button"
+                onClick={() => setIsPlaying(true)}
+                className="block w-full h-full group cursor-pointer"
+                aria-label={`Play video: ${featuredVideo.title}`}
+              >
+                {/* Thumbnail */}
+                <Image
+                  src={featuredVideo.thumbnail}
+                  alt={featuredVideo.title}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
 
-              {/* Overlay gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                {/* Overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-              {/* Play button */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-red-600 flex items-center justify-center shadow-2xl shadow-red-500/30 group-hover:bg-red-500 transition-colors"
-                >
-                  <Play className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white fill-white ml-0.5" />
-                </motion.div>
-              </div>
+                {/* Play button */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-red-600 flex items-center justify-center shadow-2xl shadow-red-500/30 group-hover:bg-red-500 transition-colors"
+                  >
+                    <Play className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white fill-white ml-0.5" />
+                  </motion.div>
+                </div>
 
-              {/* Duration badge */}
-              <div className="absolute top-4 right-4 px-2 py-1 rounded bg-black/70 text-white text-xs font-medium">
-                {featuredVideo.duration}
-              </div>
+                {/* Duration badge */}
+                <div className="absolute top-4 right-4 px-2 py-1 rounded bg-black/70 text-white text-xs font-medium">
+                  {featuredVideo.duration}
+                </div>
 
-              {/* Video info */}
-              <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-6">
-                <h3 className="text-sm sm:text-lg md:text-xl font-bold text-white mb-0.5 sm:mb-1 group-hover:text-red-300 transition-colors">
-                  {featuredVideo.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-neutral-300 line-clamp-1 sm:line-clamp-2 max-w-2xl">
-                  {featuredVideo.description}
-                </p>
-              </div>
+                {/* Video info */}
+                <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-6 text-left">
+                  <h3 className="text-sm sm:text-lg md:text-xl font-bold text-white mb-0.5 sm:mb-1 group-hover:text-red-300 transition-colors">
+                    {featuredVideo.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-neutral-300 line-clamp-1 sm:line-clamp-2 max-w-2xl">
+                    {featuredVideo.description}
+                  </p>
+                </div>
 
-              {/* YouTube badge */}
-              <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 text-white text-xs font-medium">
-                <Youtube className="w-4 h-4 text-red-500" />
-                Watch on YouTube
-              </div>
-            </div>
-          </Link>
+                {/* YouTube badge */}
+                <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 text-white text-xs font-medium">
+                  <Youtube className="w-4 h-4 text-red-500" />
+                  Watch on YouTube
+                </div>
+              </button>
+            )}
+          </div>
         </motion.div>
 
         {/* Social Links */}
@@ -156,7 +170,8 @@ export function MediaHighlightSection() {
               className={`inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-white text-xs sm:text-sm font-medium transition-all ${social.color}`}
             >
               <social.icon className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">{social.label} on</span> {social.platform}
+              <span className="hidden sm:inline">{social.label} on</span>{" "}
+              {social.platform}
             </Link>
           ))}
         </motion.div>
