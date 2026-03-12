@@ -545,14 +545,41 @@ export const siteSettingsQuery = groq`
     googleMapsUrl,
     operatingHours,
     socialMedia,
-    heroSlides,
-    heroMode,
-    heroVideoUrl,
-    welcomeSection,
-    ctaBanner,
     externalLinks,
     quickLinks,
     "allowedEmbedDomains": allowedEmbedDomains[].domain
+  }
+`;
+
+// ============================================
+// Homepage Settings (singleton)
+// ============================================
+export const homepageSettingsQuery = groq`
+  *[_id == "homepageSettings"][0] {
+    _id,
+    heroMode,
+    heroVideoUrl,
+    heroSlides,
+    heroVideoOverlays,
+    quickLinksSection {
+      enabled,
+      quickLinkCards[] {
+        title,
+        subtitle,
+        accentColor,
+        links[] {
+          label,
+          linkType,
+          internalPage,
+          url
+        },
+        active
+      },
+      bottomCtaText
+    },
+    featuredYoutubeUrl,
+    welcomeSection,
+    ctaBanner
   }
 `;
 

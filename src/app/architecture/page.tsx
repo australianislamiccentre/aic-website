@@ -249,16 +249,20 @@ export default function ArchitecturePage() {
             </h2>
           </FadeIn>
 
-          {/* Desktop: single row; Mobile: horizontal scroll */}
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-5 lg:overflow-visible">
-            {features.map((feature) => (
-              <div key={feature.title} className="flex-shrink-0 w-[200px] lg:w-auto bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center flex-shrink-0">
-                    <feature.icon className="w-4 h-4 text-white" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-sm">{feature.title}</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {features.map((feature, index) => (
+              <div
+                key={feature.title}
+                className={`bg-white rounded-xl p-4 shadow-sm border border-gray-100 ${
+                  index === features.length - 1 && features.length % 2 !== 0
+                    ? "col-span-2 sm:col-span-1"
+                    : ""
+                }`}
+              >
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center mb-3">
+                  <feature.icon className="w-4.5 h-4.5 text-white" />
                 </div>
+                <h3 className="font-bold text-gray-900 text-sm mb-1">{feature.title}</h3>
                 <p className="text-gray-500 text-xs leading-relaxed">{feature.description}</p>
               </div>
             ))}

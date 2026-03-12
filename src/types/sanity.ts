@@ -275,7 +275,7 @@ export interface SanityPartner {
   order?: number;
 }
 
-/** Global site settings singleton — organisation details, hero slides, social links, etc. */
+/** Global site settings singleton — organisation details, social links, etc. */
 export interface SanitySiteSettings {
   _id: string;
   organizationName: string;
@@ -308,23 +308,77 @@ export interface SanitySiteSettings {
     whatsapp?: string;
     telegram?: string;
   };
+  externalLinks?: {
+    college?: string;
+    bookstore?: string;
+    sportsClub?: string;
+  };
+  quickLinks?: Array<{
+    label: string;
+    url: string;
+  }>;
+  allowedEmbedDomains?: string[];
+}
+
+/** Homepage settings singleton — hero, quick links, video, welcome section, CTA banner. */
+export interface SanityHomepageSettings {
+  _id: string;
+  heroMode?: "carousel" | "video";
+  heroVideoUrl?: string;
   heroSlides?: Array<{
     title: string;
+    highlight: string;
     subtitle?: string;
-    image: SanityImage;
-    overlay?: number;
     primaryButton?: {
       label?: string;
+      linkType?: "internal" | "external";
+      internalPage?: string;
       url?: string;
     };
     secondaryButton?: {
       label?: string;
+      linkType?: "internal" | "external";
+      internalPage?: string;
+      url?: string;
+    };
+    image?: SanityImage;
+    active?: boolean;
+  }>;
+  heroVideoOverlays?: Array<{
+    title: string;
+    highlight: string;
+    subtitle?: string;
+    primaryButton?: {
+      label?: string;
+      linkType?: "internal" | "external";
+      internalPage?: string;
+      url?: string;
+    };
+    secondaryButton?: {
+      label?: string;
+      linkType?: "internal" | "external";
+      internalPage?: string;
       url?: string;
     };
     active?: boolean;
   }>;
-  heroMode?: "carousel" | "video";
-  heroVideoUrl?: string;
+  quickLinksSection?: {
+    enabled?: boolean;
+    quickLinkCards?: Array<{
+      title: string;
+      subtitle?: string;
+      accentColor?: string;
+      links?: Array<{
+        label: string;
+        linkType?: "internal" | "external";
+        internalPage?: string;
+        url?: string;
+      }>;
+      active?: boolean;
+    }>;
+    bottomCtaText?: string;
+  };
+  featuredYoutubeUrl?: string;
   welcomeSection?: {
     title?: string;
     subtitle?: string;
@@ -343,16 +397,6 @@ export interface SanitySiteSettings {
     buttonUrl?: string;
     backgroundImage?: SanityImage;
   };
-  externalLinks?: {
-    college?: string;
-    bookstore?: string;
-    sportsClub?: string;
-  };
-  quickLinks?: Array<{
-    label: string;
-    url: string;
-  }>;
-  allowedEmbedDomains?: string[];
 }
 
 /**

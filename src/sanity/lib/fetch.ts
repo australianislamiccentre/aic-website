@@ -45,6 +45,7 @@ import {
   featuredFaqsQuery,
   etiquetteQuery,
   siteSettingsQuery,
+  homepageSettingsQuery,
   prayerSettingsQuery,
   // Team Members
   teamMembersQuery,
@@ -78,6 +79,7 @@ import {
   SanityFaq,
   SanityEtiquette,
   SanitySiteSettings,
+  SanityHomepageSettings,
   SanityPrayerSettings,
   SanityTeamMember,
   SanityPageContent,
@@ -522,6 +524,16 @@ export async function getSiteSettings(): Promise<SanitySiteSettings | null> {
     return await sanityFetch<SanitySiteSettings | null>(siteSettingsQuery, {}, ["siteSettings"], { skipCdn: true });
   } catch (error) {
     console.error("Failed to fetch site settings from Sanity:", error);
+    return null;
+  }
+}
+
+// Homepage Settings (singleton)
+export async function getHomepageSettings(): Promise<SanityHomepageSettings | null> {
+  try {
+    return await sanityFetch<SanityHomepageSettings | null>(homepageSettingsQuery, {}, ["homepageSettings"], { skipCdn: true });
+  } catch (error) {
+    console.error("Failed to fetch homepage settings from Sanity:", error);
     return null;
   }
 }

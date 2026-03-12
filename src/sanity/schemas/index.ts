@@ -21,6 +21,7 @@ import etiquette from "./etiquette";
 import formSettings from "./formSettings";
 import mediaGallery from "./mediaGallery";
 import siteSettings from "./siteSettings";
+import homepageSettings from "./homepageSettings";
 import prayerSettings from "./prayerSettings";
 import teamMember from "./teamMember";
 import pageContent from "./pageContent";
@@ -30,6 +31,7 @@ import partner from "./partner";
 export const schemaTypes = [
   // Singletons
   siteSettings,
+  homepageSettings,
   prayerSettings,
   donationSettings,
   donatePageSettings,

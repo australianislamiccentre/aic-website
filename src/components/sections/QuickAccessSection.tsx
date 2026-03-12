@@ -5,11 +5,14 @@
  * actions -- prayer times, event calendar, programs, directions, and more.
  * Uses expandable category groups with animated reveal and icon-driven links.
  *
+ * Supports CMS-managed cards from Sanity (homepageSettings.quickLinksSection)
+ * with fallback to hardcoded defaults when no Sanity data is available.
+ *
  * @module components/sections/QuickAccessSection
  */
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
@@ -25,8 +28,14 @@ import {
   Mic,
   ExternalLink,
   ChevronDown,
+  Bookmark,
+  Flame,
+  Star,
+  Shield,
+  Sparkles,
 } from "lucide-react";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import type { SanityHomepageSettings } from "@/types/sanity";
 
 interface QuickLink {
   name: string;
@@ -44,6 +53,72 @@ interface AccessCardData {
   accentBg: string;
   links: QuickLink[];
 }
+
+// ── Accent colour presets ──
+
+interface ColorPreset {
+  text: string;
+  bg: string;
+  icon: React.ReactNode;
+}
+
+const COLOR_PRESETS: Record<string, ColorPreset> = {
+  green: {
+    text: "text-green-400",
+    bg: "bg-green-500/20 border-green-500/30",
+    icon: <Clock className="w-5 h-5" />,
+  },
+  sky: {
+    text: "text-sky-400",
+    bg: "bg-sky-500/20 border-sky-500/30",
+    icon: <Compass className="w-5 h-5" />,
+  },
+  lime: {
+    text: "text-lime-400",
+    bg: "bg-lime-500/20 border-lime-500/30",
+    icon: <Users className="w-5 h-5" />,
+  },
+  amber: {
+    text: "text-amber-400",
+    bg: "bg-amber-500/20 border-amber-500/30",
+    icon: <Flame className="w-5 h-5" />,
+  },
+  rose: {
+    text: "text-rose-400",
+    bg: "bg-rose-500/20 border-rose-500/30",
+    icon: <Heart className="w-5 h-5" />,
+  },
+  purple: {
+    text: "text-purple-400",
+    bg: "bg-purple-500/20 border-purple-500/30",
+    icon: <Star className="w-5 h-5" />,
+  },
+  teal: {
+    text: "text-teal-400",
+    bg: "bg-teal-500/20 border-teal-500/30",
+    icon: <Shield className="w-5 h-5" />,
+  },
+};
+
+const DEFAULT_PRESET = COLOR_PRESETS.green;
+
+function getColorPreset(accentColor?: string): ColorPreset {
+  if (!accentColor) return DEFAULT_PRESET;
+  return COLOR_PRESETS[accentColor] ?? DEFAULT_PRESET;
+}
+
+// ── Resolve link URL from Sanity button data ──
+
+function resolveQuickLinkUrl(link: {
+  linkType?: "internal" | "external";
+  internalPage?: string;
+  url?: string;
+}): string {
+  if (link.linkType === "external") return link.url || "#";
+  return link.internalPage || link.url || "#";
+}
+
+// ── Hardcoded fallback cards ──
 
 function buildAccessCards(collegeLink: string): AccessCardData[] {
   return [
@@ -89,6 +164,8 @@ function buildAccessCards(collegeLink: string): AccessCardData[] {
   ];
 }
 
+// ── Sub-components ──
+
 function QuickLinkItem({ link }: { link: QuickLink }) {
   const className =
     "flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/15 transition-all duration-200 group/link";
@@ -122,20 +199,83 @@ function QuickLinkItem({ link }: { link: QuickLink }) {
   );
 }
 
-export function QuickAccessSection() {
+// ── Grid class helper ──
+
+function getGridClasses(count: number): string {
+  if (count === 1) return "sm:grid-cols-1 max-w-md mx-auto";
+  if (count === 2) return "sm:grid-cols-2 max-w-3xl mx-auto";
+  return "sm:grid-cols-3";
+}
+
+// ── Props ──
+
+interface QuickAccessSectionProps {
+  quickLinksSection?: SanityHomepageSettings["quickLinksSection"];
+}
+
+// ── Main Component ──
+
+export function QuickAccessSection({ quickLinksSection }: QuickAccessSectionProps) {
   const info = useSiteSettings();
-  const accessCards = buildAccessCards(info.externalLinks.college);
   const [mobileExpandedCard, setMobileExpandedCard] = useState<string | null>(null);
+
+  // Resolve cards: Sanity data (active only) → hardcoded fallback
+  const accessCards: AccessCardData[] = useMemo(() => {
+    if (!quickLinksSection?.quickLinkCards?.length) {
+      return buildAccessCards(info.externalLinks.college);
+    }
+
+    const activeCards = quickLinksSection.quickLinkCards.filter(
+      (card) => card.active !== false,
+    );
+
+    if (activeCards.length === 0) {
+      return buildAccessCards(info.externalLinks.college);
+    }
+
+    return activeCards.map((card, index) => {
+      const preset = getColorPreset(card.accentColor);
+      const links: QuickLink[] = (card.links || []).map((link) => {
+        const isExternal = link.linkType === "external";
+        return {
+          name: link.label,
+          href: resolveQuickLinkUrl(link),
+          icon: isExternal
+            ? <Sparkles className="w-4 h-4" />
+            : <Bookmark className="w-4 h-4" />,
+          external: isExternal,
+        };
+      });
+
+      return {
+        id: `card-${index}`,
+        title: card.title,
+        subtitle: card.subtitle || "",
+        icon: preset.icon,
+        accentColor: preset.text,
+        accentBg: preset.bg,
+        links,
+      };
+    });
+  }, [quickLinksSection, info.externalLinks.college]);
+
+  // If explicitly disabled, hide the entire section
+  if (quickLinksSection?.enabled === false) return null;
 
   const toggleMobileCard = (id: string) => {
     setMobileExpandedCard(mobileExpandedCard === id ? null : id);
   };
 
+  const bottomCtaText =
+    quickLinksSection?.bottomCtaText || "Can\u2019t find what you\u2019re looking for?";
+
+  const gridClasses = getGridClasses(accessCards.length);
+
   return (
     <section className="relative py-8 md:py-10 bg-neutral-900">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
-        {/* Desktop & Tablet: 3-column grid, always visible */}
-        <div className="hidden sm:grid sm:grid-cols-3 gap-4">
+        {/* Desktop & Tablet: dynamic grid, always visible */}
+        <div className={`hidden sm:grid gap-4 ${gridClasses}`}>
           {accessCards.map((card, index) => (
             <motion.div
               key={card.id}
@@ -229,7 +369,7 @@ export function QuickAccessSection() {
             href="/contact"
             className="inline-flex items-center gap-2 text-white/40 hover:text-white/70 text-sm transition-colors group"
           >
-            Can&apos;t find what you&apos;re looking for?
+            {bottomCtaText}
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>

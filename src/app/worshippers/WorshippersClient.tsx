@@ -436,13 +436,11 @@ export default function WorshippersClient({
                 </Link>
               </div>
             </FadeIn>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {youtubeVideos.map((video) => (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {youtubeVideos.slice(0, 4).map((video) => (
                 <FadeIn key={video.id}>
-                  <a
-                    href={video.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Link
+                    href={`/media?v=${video.id}`}
                     className="group block rounded-xl overflow-hidden bg-white border border-gray-100 hover:shadow-md transition-shadow"
                   >
                     <div className="relative aspect-video">
@@ -463,7 +461,7 @@ export default function WorshippersClient({
                         {video.title}
                       </h3>
                     </div>
-                  </a>
+                  </Link>
                 </FadeIn>
               ))}
             </div>

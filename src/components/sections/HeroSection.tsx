@@ -9,7 +9,7 @@
  */
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
@@ -18,30 +18,51 @@ import { aicImages, jumuahTimes } from "@/data/content";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
 import { TARAWEEH_CONFIG, EID_CONFIG } from "@/lib/prayer-config";
 import type { PrayerName } from "@/lib/prayer-times";
-import type { SanityPrayerSettings } from "@/types/sanity";
+import type { SanityPrayerSettings, SanityHomepageSettings } from "@/types/sanity";
+import { urlFor } from "@/sanity/lib/image";
 
-// Hero slides - reduced to 3 for cleaner experience
-const heroSlides = [
+/** A resolved hero slide with text, buttons, and a ready-to-use image URL. */
+interface HeroButton {
+  label?: string;
+  linkType?: "internal" | "external";
+  internalPage?: string;
+  url?: string;
+}
+
+interface ResolvedSlide {
+  title: string;
+  highlight: string;
+  subtitle?: string;
+  primaryButton?: HeroButton;
+  secondaryButton?: HeroButton;
+  image: string;
+}
+
+/** Resolve a hero button's href — internal page path or custom URL. */
+function resolveButtonUrl(btn?: HeroButton): string | undefined {
+  if (!btn) return undefined;
+  return btn.linkType === "external" ? btn.url : (btn.internalPage || btn.url);
+}
+
+// Fallback hero slides — used when Sanity data is not available
+const fallbackSlides: ResolvedSlide[] = [
   {
-    id: 1,
-    image: aicImages.interior.prayerHallBright,
     title: "Welcome to the",
     highlight: "Australian Islamic Centre",
     subtitle: "A place of worship, learning, and community",
+    image: aicImages.interior.prayerHallBright,
   },
   {
-    id: 2,
-    image: aicImages.exterior.front,
     title: "Award-Winning",
     highlight: "Architecture",
     subtitle: "Experience our globally recognized Islamic architecture",
+    image: aicImages.exterior.front,
   },
   {
-    id: 3,
-    image: aicImages.interior.prayerHallNight,
     title: "Join Us in",
     highlight: "Prayer",
     subtitle: "Five daily prayers in our beautiful prayer hall",
+    image: aicImages.interior.prayerHallNight,
   },
 ];
 
@@ -59,9 +80,11 @@ interface HeroSectionProps {
   prayerSettings?: SanityPrayerSettings | null;
   heroMode?: "carousel" | "video";
   heroVideoUrl?: string;
+  heroSlides?: SanityHomepageSettings["heroSlides"];
+  heroVideoOverlays?: SanityHomepageSettings["heroVideoOverlays"];
 }
 
-export function HeroSection({ prayerSettings, heroMode, heroVideoUrl }: HeroSectionProps) {
+export function HeroSection({ prayerSettings, heroMode, heroVideoUrl, heroSlides, heroVideoOverlays }: HeroSectionProps) {
   // Use Sanity data with fallback to hardcoded config
   const taraweehActive = prayerSettings?.taraweehEnabled ?? TARAWEEH_CONFIG.enabled;
   const taraweehTime = prayerSettings?.taraweehTime ?? TARAWEEH_CONFIG.time;
@@ -74,6 +97,54 @@ export function HeroSection({ prayerSettings, heroMode, heroVideoUrl }: HeroSect
   const [direction, setDirection] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [videoError, setVideoError] = useState(false);
+
+  // Merge Sanity hero data with fallbacks — resolve correct array based on mode
+  const slides: ResolvedSlide[] = useMemo(() => {
+    const isVideo = heroMode === "video";
+
+    // Video mode: prefer heroVideoOverlays, fall back to heroSlides text, then defaults
+    if (isVideo) {
+      const activeOverlays = heroVideoOverlays?.filter((item) => item.active !== false) ?? [];
+      if (activeOverlays.length > 0) {
+        return activeOverlays.map((overlay, i) => ({
+          title: overlay.title,
+          highlight: overlay.highlight,
+          subtitle: overlay.subtitle,
+          primaryButton: overlay.primaryButton,
+          secondaryButton: overlay.secondaryButton,
+          // Video provides the background; use fallback image for reduced-motion poster
+          image: fallbackSlides[i % fallbackSlides.length].image,
+        }));
+      }
+      // Fall through: try heroSlides text content (ignore their images)
+      const activeSlides = heroSlides?.filter((item) => item.active !== false) ?? [];
+      if (activeSlides.length > 0) {
+        return activeSlides.map((slide, i) => ({
+          title: slide.title,
+          highlight: slide.highlight,
+          subtitle: slide.subtitle,
+          primaryButton: slide.primaryButton,
+          secondaryButton: slide.secondaryButton,
+          image: fallbackSlides[i % fallbackSlides.length].image,
+        }));
+      }
+      return fallbackSlides;
+    }
+
+    // Carousel mode: use heroSlides with their images
+    const active = heroSlides?.filter((item) => item.active !== false) ?? [];
+    if (active.length === 0) return fallbackSlides;
+    return active.map((slide, i) => ({
+      title: slide.title,
+      highlight: slide.highlight,
+      subtitle: slide.subtitle,
+      primaryButton: slide.primaryButton,
+      secondaryButton: slide.secondaryButton,
+      image: slide.image
+        ? urlFor(slide.image).width(1920).height(1080).url()
+        : fallbackSlides[i % fallbackSlides.length].image,
+    }));
+  }, [heroMode, heroSlides, heroVideoOverlays]);
 
   // Determine effective display mode — fall back to carousel if video URL missing or errored
   const isVideoMode = heroMode === "video" && !!heroVideoUrl && !videoError;
@@ -109,11 +180,11 @@ export function HeroSection({ prayerSettings, heroMode, heroVideoUrl }: HeroSect
 
     const timer = setInterval(() => {
       setDirection(1);
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 6000);
 
     return () => clearInterval(timer);
-  }, [isAutoPlaying]);
+  }, [isAutoPlaying, slides.length]);
 
   const goToSlide = (index: number) => {
     setDirection(index > currentSlide ? 1 : -1);
@@ -125,14 +196,14 @@ export function HeroSection({ prayerSettings, heroMode, heroVideoUrl }: HeroSect
 
   const nextSlide = () => {
     setDirection(1);
-    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
     setIsAutoPlaying(false);
     setTimeout(() => setIsAutoPlaying(true), 10000);
   };
 
   const prevSlide = () => {
     setDirection(-1);
-    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
     setIsAutoPlaying(false);
     setTimeout(() => setIsAutoPlaying(true), 10000);
   };
@@ -160,7 +231,7 @@ export function HeroSection({ prayerSettings, heroMode, heroVideoUrl }: HeroSect
     scale: 1,
   };
 
-  const currentSlideData = heroSlides[currentSlide];
+  const currentSlideData = slides[currentSlide];
 
   return (
     <>
@@ -213,8 +284,8 @@ export function HeroSection({ prayerSettings, heroMode, heroVideoUrl }: HeroSect
         {isVideoMode && (
           <div className="absolute inset-0 motion-safe:hidden motion-reduce:block">
             <Image
-              src={heroSlides[0].image}
-              alt={heroSlides[0].highlight}
+              src={slides[0].image}
+              alt={slides[0].highlight}
               fill
               priority
               className="object-cover object-center"
@@ -267,13 +338,15 @@ export function HeroSection({ prayerSettings, heroMode, heroVideoUrl }: HeroSect
                   </span>
                 </motion.h1>
 
-                <motion.p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/80 mb-6 md:mb-8 leading-relaxed max-w-2xl">
-                  {currentSlideData.subtitle}
-                </motion.p>
+                {currentSlideData.subtitle && (
+                  <motion.p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/80 mb-6 md:mb-8 leading-relaxed max-w-2xl">
+                    {currentSlideData.subtitle}
+                  </motion.p>
+                )}
               </motion.div>
             </AnimatePresence>
 
-            {/* CTA Buttons */}
+            {/* CTA Buttons — data-driven from heroSlides with hardcoded fallback */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -282,23 +355,23 @@ export function HeroSection({ prayerSettings, heroMode, heroVideoUrl }: HeroSect
             >
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button
-                  href="/about"
+                  href={resolveButtonUrl(currentSlideData.primaryButton) || "/about"}
                   variant="white"
                   size="lg"
                   icon={<ArrowRight className="w-5 h-5" />}
                 >
-                  Explore Our Centre
+                  {currentSlideData.primaryButton?.label || "Explore Our Centre"}
                 </Button>
               </motion.div>
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button
-                  href="/visit"
+                  href={resolveButtonUrl(currentSlideData.secondaryButton) || "/visit"}
                   variant="outline"
                   size="lg"
                   className="border-white/30 text-white hover:bg-white/10 hover:border-lime-400/50"
                   icon={<Play className="w-5 h-5" />}
                 >
-                  Book a Visit
+                  {currentSlideData.secondaryButton?.label || "Book a Visit"}
                 </Button>
               </motion.div>
             </motion.div>
@@ -311,7 +384,7 @@ export function HeroSection({ prayerSettings, heroMode, heroVideoUrl }: HeroSect
                 transition={{ delay: 1.2 }}
                 className="flex items-center gap-3"
               >
-                {heroSlides.map((_, index) => (
+                {slides.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => goToSlide(index)}

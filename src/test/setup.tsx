@@ -74,8 +74,25 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getPartnerBySlug: vi.fn().mockResolvedValue(null),
 }));
 
-// Mock YouTube API functions
+// Mock YouTube API functions (server-only network calls)
 vi.mock("@/lib/youtube", () => ({
+  extractYoutubeVideoId: vi.fn((url: string) => {
+    if (!url || typeof url !== "string") return null;
+    try {
+      if (url.includes("youtu.be/")) {
+        const id = url.split("youtu.be/")[1]?.split(/[?&#]/)[0];
+        return id && id.length === 11 ? id : null;
+      }
+      if (url.includes("youtube.com")) {
+        const embedMatch = url.match(/\/embed\/([a-zA-Z0-9_-]{11})/);
+        if (embedMatch) return embedMatch[1];
+        const urlObj = new URL(url);
+        const v = urlObj.searchParams.get("v");
+        return v && v.length === 11 ? v : null;
+      }
+      return null;
+    } catch { return null; }
+  }),
   getYouTubeVideos: vi.fn().mockResolvedValue([]),
   getYouTubeLiveStream: vi.fn().mockResolvedValue({ isLive: false }),
   getYouTubePlaylists: vi.fn().mockResolvedValue([]),

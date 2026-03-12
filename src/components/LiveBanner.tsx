@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import type { YouTubeLiveStream } from "@/lib/youtube";
@@ -8,6 +8,9 @@ import type { YouTubeLiveStream } from "@/lib/youtube";
 /** Polls every 60s during Friday Khutbah window, 5 min otherwise. */
 const FRIDAY_POLL_MS = 60_000;
 const DEFAULT_POLL_MS = 300_000;
+
+/** Minimum gap between visibility-triggered polls (prevents bursts on tab switch). */
+const VISIBILITY_THROTTLE_MS = 60_000;
 
 /** Check if it's Friday 12pm–3pm in Melbourne (peak live stream window). */
 function isFridayPrayerWindow(): boolean {
@@ -29,6 +32,7 @@ interface LiveBannerProps {
 
 export function LiveBanner({ liveStream: initialLiveStream }: LiveBannerProps) {
   const [liveStream, setLiveStream] = useState(initialLiveStream);
+  const lastPollTimeRef = useRef(0);
 
   const poll = useCallback(async () => {
     if (document.hidden) return;
@@ -41,29 +45,40 @@ export function LiveBanner({ liveStream: initialLiveStream }: LiveBannerProps) {
     } catch {
       // Silently fail — keep last known state
     }
+    lastPollTimeRef.current = Date.now();
   }, []);
 
   useEffect(() => {
     // Use setTimeout chain so the interval adapts when Friday prayer window starts/ends
     let timeoutId: ReturnType<typeof setTimeout>;
+    let cancelled = false;
 
     const schedulePoll = () => {
       const delay = isFridayPrayerWindow() ? FRIDAY_POLL_MS : DEFAULT_POLL_MS;
       timeoutId = setTimeout(async () => {
         await poll();
-        schedulePoll();
+        if (!cancelled) schedulePoll();
       }, delay);
     };
 
     schedulePoll();
 
-    // Also poll immediately when tab becomes visible after being hidden
+    // Throttled visibility handler — only poll on tab-focus if enough time has
+    // elapsed since the last poll. This prevents request bursts when the user
+    // switches between terminal and browser during development (every open tab
+    // fires visibilitychange simultaneously).
     const handleVisibilityChange = () => {
-      if (!document.hidden) poll();
+      if (
+        !document.hidden &&
+        Date.now() - lastPollTimeRef.current > VISIBILITY_THROTTLE_MS
+      ) {
+        poll();
+      }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
+      cancelled = true;
       clearTimeout(timeoutId);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
