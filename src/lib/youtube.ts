@@ -8,6 +8,45 @@
  * @module lib/youtube
  */
 
+/**
+ * Extract the video ID from a YouTube URL.
+ *
+ * Supported formats:
+ * - https://www.youtube.com/watch?v=VIDEO_ID
+ * - https://youtu.be/VIDEO_ID
+ * - https://www.youtube.com/embed/VIDEO_ID
+ * - https://youtube.com/watch?v=VIDEO_ID&list=...
+ *
+ * @returns The 11-character video ID, or null if the URL cannot be parsed.
+ */
+export function extractYoutubeVideoId(url: string): string | null {
+  if (!url || typeof url !== "string") return null;
+
+  try {
+    // Handle youtu.be short links
+    if (url.includes("youtu.be/")) {
+      const id = url.split("youtu.be/")[1]?.split(/[?&#]/)[0];
+      return id && id.length === 11 ? id : null;
+    }
+
+    // Handle youtube.com URLs (watch, embed)
+    if (url.includes("youtube.com")) {
+      // Embed format: /embed/VIDEO_ID
+      const embedMatch = url.match(/\/embed\/([a-zA-Z0-9_-]{11})/);
+      if (embedMatch) return embedMatch[1];
+
+      // Watch format: ?v=VIDEO_ID
+      const urlObj = new URL(url);
+      const v = urlObj.searchParams.get("v");
+      return v && v.length === 11 ? v : null;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 /** A YouTube video with metadata for display on the /media page. */
 export interface YouTubeVideo {
   id: string;

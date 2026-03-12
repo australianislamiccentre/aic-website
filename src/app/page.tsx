@@ -25,7 +25,7 @@ import {
   getPrograms,
   getTeamMembersByCategory,
   getFeaturedGalleryImages,
-  getSiteSettings,
+  getHomepageSettings,
 } from "@/sanity/lib/fetch";
 import type { LatestUpdateItem } from "@/sanity/lib/fetch";
 import {
@@ -36,7 +36,7 @@ import {
   SanityProgram,
   SanityTeamMember,
   SanityGalleryImage,
-  SanitySiteSettings,
+  SanityHomepageSettings,
 } from "@/types/sanity";
 
 export default async function HomePage() {
@@ -49,7 +49,7 @@ export default async function HomePage() {
     getPrograms(),
     getTeamMembersByCategory("imam"),
     getFeaturedGalleryImages(),
-    getSiteSettings(),
+    getHomepageSettings(),
   ]);
 
   const allEvents = results[0].status === "fulfilled" ? (results[0].value as SanityEvent[]) : [];
@@ -60,7 +60,7 @@ export default async function HomePage() {
   const programs = results[5].status === "fulfilled" ? (results[5].value as SanityProgram[]) : [];
   const imams = results[6].status === "fulfilled" ? (results[6].value as SanityTeamMember[]) : [];
   const galleryImages = results[7].status === "fulfilled" ? (results[7].value as SanityGalleryImage[]) : [];
-  const siteSettings = results[8].status === "fulfilled" ? (results[8].value as SanitySiteSettings | null) : null;
+  const homepageSettings = results[8].status === "fulfilled" ? (results[8].value as SanityHomepageSettings | null) : null;
 
   const urgentAnnouncement = urgentAnnouncements.length > 0 ? urgentAnnouncements[0] : null;
 
@@ -68,11 +68,15 @@ export default async function HomePage() {
     <>
       <HeroSection
         prayerSettings={prayerSettings}
-        heroMode={siteSettings?.heroMode}
-        heroVideoUrl={siteSettings?.heroVideoUrl}
+        heroMode={homepageSettings?.heroMode}
+        heroVideoUrl={homepageSettings?.heroVideoUrl}
+        heroSlides={homepageSettings?.heroSlides}
+        heroVideoOverlays={homepageSettings?.heroVideoOverlays}
       />
 
-      <QuickAccessSection />
+      <QuickAccessSection
+        quickLinksSection={homepageSettings?.quickLinksSection}
+      />
 
       <LatestUpdatesSection
         announcements={announcements}
@@ -91,7 +95,9 @@ export default async function HomePage() {
 
       <GalleryStripSection images={galleryImages} />
 
-      <MediaHighlightSection />
+      <MediaHighlightSection
+        featuredYoutubeUrl={homepageSettings?.featuredYoutubeUrl}
+      />
     </>
   );
 }

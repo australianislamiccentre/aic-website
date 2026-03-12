@@ -9,6 +9,7 @@
  * @module sanity/schemas/announcement
  */
 import { defineField, defineType } from "sanity";
+import { internalPageOptions } from "./shared/internalPages";
 
 export default defineType({
   name: "announcement",
@@ -157,20 +158,7 @@ export default defineType({
           name: "internalPage",
           title: "Internal Page",
           type: "string",
-          options: {
-            list: [
-              { title: "Contact", value: "/contact" },
-              { title: "Donate", value: "/donate" },
-              { title: "Events & Programs", value: "/events" },
-              { title: "Services", value: "/services" },
-              { title: "Worshippers", value: "/worshippers" },
-              { title: "Visit", value: "/visit" },
-              { title: "About", value: "/about" },
-              { title: "Media", value: "/media" },
-              { title: "Architecture", value: "/architecture" },
-              { title: "Announcements", value: "/announcements" },
-            ],
-          },
+          options: { list: internalPageOptions },
           hidden: ({ parent }) => parent?.linkType !== "internal",
         }),
         defineField({

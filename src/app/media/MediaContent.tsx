@@ -10,7 +10,8 @@
  */
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { FadeIn } from "@/components/animations/FadeIn";
@@ -210,8 +211,21 @@ export default function MediaContent({
   const playlistRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const { socialMedia } = useSiteSettings();
 
+  const searchParams = useSearchParams();
+
   // Derive live status from polled state
   const isLive = !!(liveStreamState?.isLive && liveStreamState.videoId);
+
+  // ── Handle ?v=VIDEO_ID query param (deep link from other pages) ──
+  const initialVideoId = useMemo(() => searchParams.get("v"), [searchParams]);
+  useEffect(() => {
+    if (!initialVideoId) return;
+    const video = youtubeVideos.find((v) => v.id === initialVideoId);
+    if (video) {
+      setCurrentVideo(video);
+      setAutoplay(true);
+    }
+  }, [initialVideoId, youtubeVideos]);
 
   // Convert Sanity images — show ALL, no category filtering
   const allImages = mediaGalleryImages

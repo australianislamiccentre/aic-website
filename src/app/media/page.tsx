@@ -8,6 +8,7 @@
  * @route /media
  * @module app/media/page
  */
+import { Suspense } from "react";
 import { getMediaGallery } from "@/sanity/lib/fetch";
 import { getYouTubeVideos, getYouTubeLiveStream, getYouTubePlaylists } from "@/lib/youtube";
 import MediaContent from "./MediaContent";
@@ -26,11 +27,13 @@ export default async function MediaPage() {
   ]);
 
   return (
-    <MediaContent
-      mediaGalleryImages={mediaGalleryImages}
-      youtubeVideos={youtubeVideos}
-      liveStream={liveStream}
-      playlists={playlists}
-    />
+    <Suspense>
+      <MediaContent
+        mediaGalleryImages={mediaGalleryImages}
+        youtubeVideos={youtubeVideos}
+        liveStream={liveStream}
+        playlists={playlists}
+      />
+    </Suspense>
   );
 }

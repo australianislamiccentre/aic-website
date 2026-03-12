@@ -115,6 +115,55 @@ describe("MediaHighlightSection", () => {
     expect(screen.getByText("Facebook")).toBeInTheDocument();
   });
 
+  describe("Custom YouTube URL", () => {
+    it("uses custom YouTube URL when provided", async () => {
+      const user = userEvent.setup();
+      render(
+        <MediaHighlightSection featuredYoutubeUrl="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />,
+      );
+
+      await user.click(screen.getByRole("button", { name: /Play video/i }));
+
+      const iframe = screen.getByTitle(
+        "Experience the Australian Islamic Centre",
+      );
+      expect(iframe).toHaveAttribute(
+        "src",
+        expect.stringContaining("youtube.com/embed/dQw4w9WgXcQ"),
+      );
+    });
+
+    it("falls back to default video when URL is empty", async () => {
+      const user = userEvent.setup();
+      render(<MediaHighlightSection featuredYoutubeUrl="" />);
+
+      await user.click(screen.getByRole("button", { name: /Play video/i }));
+
+      const iframe = screen.getByTitle(
+        "Experience the Australian Islamic Centre",
+      );
+      expect(iframe).toHaveAttribute(
+        "src",
+        expect.stringContaining("youtube.com/embed/BckNzo1ufDw"),
+      );
+    });
+
+    it("falls back to default video when no URL provided", async () => {
+      const user = userEvent.setup();
+      render(<MediaHighlightSection />);
+
+      await user.click(screen.getByRole("button", { name: /Play video/i }));
+
+      const iframe = screen.getByTitle(
+        "Experience the Australian Islamic Centre",
+      );
+      expect(iframe).toHaveAttribute(
+        "src",
+        expect.stringContaining("youtube.com/embed/BckNzo1ufDw"),
+      );
+    });
+  });
+
   it("social links point to correct URLs", () => {
     render(<MediaHighlightSection />);
 

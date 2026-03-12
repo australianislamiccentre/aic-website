@@ -114,124 +114,7 @@ export default defineType({
       ],
     }),
 
-    // ── 4. Homepage Content ──
-    defineField({
-      name: "heroSlides",
-      title: "Hero Slides",
-      type: "array",
-      of: [
-        {
-          type: "object",
-          name: "heroSlide",
-          title: "Hero Slide",
-          fields: [
-            defineField({ name: "title", title: "Title", type: "string", validation: (Rule) => Rule.required() }),
-            defineField({ name: "subtitle", title: "Subtitle", type: "text", rows: 2 }),
-            defineField({ name: "image", title: "Background Image", type: "image", options: { hotspot: true }, validation: (Rule) => Rule.required() }),
-            defineField({ name: "overlay", title: "Overlay Darkness", type: "number", description: "0 = no overlay, 100 = fully dark", initialValue: 50, validation: (Rule) => Rule.min(0).max(100) }),
-            defineField({
-              name: "primaryButton",
-              title: "Primary Button",
-              type: "object",
-              fields: [
-                { name: "label", type: "string", title: "Label" },
-                { name: "url", type: "url", title: "URL", validation: (Rule) => Rule.uri({ allowRelative: true, scheme: ["http", "https", "mailto", "tel"] }) },
-              ],
-            }),
-            defineField({
-              name: "secondaryButton",
-              title: "Secondary Button",
-              type: "object",
-              fields: [
-                { name: "label", type: "string", title: "Label" },
-                { name: "url", type: "url", title: "URL", validation: (Rule) => Rule.uri({ allowRelative: true, scheme: ["http", "https", "mailto", "tel"] }) },
-              ],
-            }),
-            defineField({ name: "active", title: "Active", type: "boolean", initialValue: true }),
-          ],
-          preview: {
-            select: { title: "title", active: "active", media: "image" },
-            prepare({ title, active, media }) {
-              return { title: `${active === false ? "(Inactive) " : ""}${title}`, media };
-            },
-          },
-        },
-      ],
-      description: "Hero slides for the homepage carousel",
-    }),
-    defineField({
-      name: "heroMode",
-      title: "Hero Display Mode",
-      type: "string",
-      options: {
-        list: [
-          { title: "Image Carousel", value: "carousel" },
-          { title: "Video Background", value: "video" },
-        ],
-        layout: "radio",
-      },
-      initialValue: "carousel",
-      description: "Choose between the rotating image carousel or a looping background video for the homepage hero",
-    }),
-    defineField({
-      name: "heroVideoUrl",
-      title: "Hero Video URL",
-      type: "url",
-      description: "URL to a video file (MP4 recommended) that will loop as the hero background",
-      hidden: ({ parent }) => parent?.heroMode !== "video",
-      validation: (Rule) =>
-        Rule.custom((value, context) => {
-          const parent = context.parent as { heroMode?: string };
-          if (parent?.heroMode === "video" && !value) {
-            return "A video URL is required when video mode is selected";
-          }
-          return true;
-        }),
-    }),
-    defineField({
-      name: "welcomeSection",
-      title: "Welcome Section",
-      type: "object",
-      fields: [
-        defineField({ name: "title", title: "Title", type: "string" }),
-        defineField({ name: "subtitle", title: "Subtitle", type: "string" }),
-        defineField({ name: "content", title: "Content", type: "array", of: [{ type: "block" }] }),
-        defineField({ name: "image", title: "Image", type: "image", options: { hotspot: true } }),
-        defineField({
-          name: "stats",
-          title: "Statistics",
-          type: "array",
-          of: [
-            {
-              type: "object",
-              fields: [
-                { name: "value", type: "string", title: "Value" },
-                { name: "label", type: "string", title: "Label" },
-              ],
-              preview: { select: { title: "value", subtitle: "label" } },
-            },
-          ],
-          description: "e.g., '5000+' 'Community Members'",
-        }),
-      ],
-      description: "Welcome/About section on homepage",
-    }),
-    defineField({
-      name: "ctaBanner",
-      title: "Call-to-Action Banner",
-      type: "object",
-      fields: [
-        defineField({ name: "enabled", title: "Enabled", type: "boolean", initialValue: true }),
-        defineField({ name: "title", title: "Title", type: "string" }),
-        defineField({ name: "subtitle", title: "Subtitle", type: "string" }),
-        defineField({ name: "buttonLabel", title: "Button Label", type: "string" }),
-        defineField({ name: "buttonUrl", title: "Button URL", type: "url", validation: (Rule) => Rule.uri({ allowRelative: true, scheme: ["http", "https", "mailto", "tel"] }) }),
-        defineField({ name: "backgroundImage", title: "Background Image", type: "image", options: { hotspot: true } }),
-      ],
-      description: "Promotional banner section on homepage",
-    }),
-
-    // ── 5. Embed Security ──
+    // ── 4. Embed Security ──
     defineField({
       name: "allowedEmbedDomains",
       title: "Allowed Embed Domains",
@@ -272,7 +155,7 @@ export default defineType({
         "Domains that are allowed to be embedded as iframes on event pages. Only HTTPS URLs from these domains will be permitted. Add form providers like JotForm, Google Forms, Typeform, etc.",
     }),
 
-    // ── 6. External Links ──
+    // ── 5. External Links ──
     defineField({
       name: "externalLinks",
       title: "External Links",

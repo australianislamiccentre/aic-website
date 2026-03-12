@@ -17,12 +17,21 @@ import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { Play, Youtube, Instagram, Facebook } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { extractYoutubeVideoId } from "@/lib/youtube";
 
-const YOUTUBE_VIDEO_ID = "BckNzo1ufDw";
+const DEFAULT_YOUTUBE_VIDEO_ID = "BckNzo1ufDw";
 
-export function MediaHighlightSection() {
+interface MediaHighlightSectionProps {
+  featuredYoutubeUrl?: string;
+}
+
+export function MediaHighlightSection({ featuredYoutubeUrl }: MediaHighlightSectionProps) {
   const info = useSiteSettings();
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const videoId = (featuredYoutubeUrl
+    ? extractYoutubeVideoId(featuredYoutubeUrl)
+    : null) || DEFAULT_YOUTUBE_VIDEO_ID;
 
   const featuredVideo = {
     title: "Experience the Australian Islamic Centre",
@@ -92,7 +101,7 @@ export function MediaHighlightSection() {
             {isPlaying ? (
               /* YouTube iframe — loaded only after user clicks play */
               <iframe
-                src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&rel=0`}
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
                 title={featuredVideo.title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

@@ -79,6 +79,13 @@ const structure = (S: StructureBuilder) =>
             ])
         ),
       S.listItem()
+        .title("Homepage Settings")
+        .child(
+          S.document()
+            .schemaType("homepageSettings")
+            .documentId("homepageSettings")
+        ),
+      S.listItem()
         .title("Site Settings")
         .child(
           S.document()
@@ -173,7 +180,7 @@ const structure = (S: StructureBuilder) =>
 
       // Rest of the document types (exclude the ones we customized and singletons)
       ...S.documentTypeListItems().filter(
-        (item) => !["event", "announcement", "siteSettings", "prayerSettings", "donationSettings", "donatePageSettings", "donationCampaign", "formSettings", "mediaGallery"].includes(item.getId() || "")
+        (item) => !["event", "announcement", "siteSettings", "homepageSettings", "prayerSettings", "donationSettings", "donatePageSettings", "donationCampaign", "formSettings", "mediaGallery"].includes(item.getId() || "")
       ),
     ]);
 
@@ -195,6 +202,7 @@ const previewPaths: Record<string, (slug?: string) => string> = {
   faq: () => "/resources",
   etiquette: () => "/visit",
   mediaGallery: () => "/media",
+  homepageSettings: () => "/",
   siteSettings: () => "/",
   prayerSettings: () => "/worshippers",
   teamMember: (slug) => `/imams${slug ? `/${slug}` : ""}`,
@@ -250,6 +258,7 @@ export default defineConfig({
     actions: (prev, context) => {
       const singletonTypes = [
         "siteSettings",
+        "homepageSettings",
         "prayerSettings",
         "donationSettings",
         "donatePageSettings",
