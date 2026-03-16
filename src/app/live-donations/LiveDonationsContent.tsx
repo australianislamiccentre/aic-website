@@ -318,26 +318,26 @@ export default function LiveDonationsContent() {
           </div>
 
           {/* QR Code — Donate CTA (center focus) */}
-          <div className="lg:w-[300px] shrink-0 rounded-lg bg-white/[0.07] border border-white/[0.08] p-4 flex flex-col items-center text-center order-1 lg:order-2">
-            <div className="bg-white rounded-lg p-3 mb-3">
+          <div className="lg:w-[380px] shrink-0 rounded-lg bg-white/[0.07] border border-white/[0.08] p-6 flex flex-col items-center text-center order-1 lg:order-2">
+            <div className="bg-white rounded-xl p-4 mb-4">
               <Image
                 src="/images/donate-qr.png"
                 alt="QR code linking to australianislamiccentre.org/donate"
-                width={200}
-                height={200}
-                className="w-40 h-40 sm:w-48 sm:h-48"
+                width={280}
+                height={280}
+                className="w-52 h-52 sm:w-64 sm:h-64"
               />
             </div>
-            <p className="text-white text-2xl font-bold mb-1">Donate Now</p>
-            <p className="text-yellow-200/70 text-base mb-3 max-w-sm">
+            <p className="text-white text-3xl font-bold mb-2">Donate Now</p>
+            <p className="text-yellow-200/70 text-lg mb-4 max-w-sm">
               Every good deed on Laylatul Qadr is multiplied beyond measure
             </p>
-            <p className="text-white/50 text-xs mb-3">Scan to donate</p>
+            <p className="text-white/50 text-sm mb-4">Scan to donate</p>
             <a
               href="https://australianislamiccentre.org/donate"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center px-6 py-3 rounded-lg bg-[#00ad4c] hover:bg-[#009a43] text-white text-sm font-bold transition-colors"
+              className="inline-flex items-center px-8 py-3.5 rounded-lg bg-[#00ad4c] hover:bg-[#009a43] text-white text-base font-bold transition-colors"
             >
               australianislamiccentre.org/donate
             </a>
