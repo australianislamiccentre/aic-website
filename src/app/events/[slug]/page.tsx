@@ -124,8 +124,41 @@ export default async function EventPage({ params }: EventPageProps) {
     ? urlFor(event.image).width(1200).height(500).url()
     : null;
 
+  const eventJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: event.title,
+    description: event.shortDescription || event.description,
+    ...(event.date && { startDate: event.date }),
+    ...(event.endDate && { endDate: event.endDate }),
+    ...(event.time && { doorTime: event.time }),
+    location: {
+      "@type": "Place",
+      name: event.locationDetails || "Australian Islamic Centre",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: event.location || "23-27 Blenheim Road",
+        addressLocality: "Newport",
+        addressRegion: "VIC",
+        postalCode: "3015",
+        addressCountry: "AU",
+      },
+    },
+    organizer: {
+      "@type": "Organization",
+      name: "Australian Islamic Centre",
+      url: "https://australianislamiccentre.org",
+    },
+    ...(heroImageUrl && { image: heroImageUrl }),
+    ...(isRecurring && { eventSchedule: { "@type": "Schedule", repeatFrequency: "P1W", byDay: event.recurringDay } }),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }}
+      />
       {/* Hero Image Banner */}
       {heroImageUrl && (
         <section className="relative h-64 md:h-80 lg:h-96 bg-gray-900">

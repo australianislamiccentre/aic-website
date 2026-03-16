@@ -54,7 +54,7 @@ function refreshCacheInBackground(): void {
     });
 }
 
-export function middleware(request: NextRequest) {
+export function middleware(_request: NextRequest) {
   const response = NextResponse.next();
 
   // ── Security Headers ──
@@ -87,9 +87,9 @@ export function middleware(request: NextRequest) {
 
     // Scripts: self + inline (Next.js needs it) + eval (FundraiseUp widget) + trusted CDNs
     [
+      // 'unsafe-eval' is required by FundraiseUp's widget SDK
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       'https://cdn.fundraiseup.com',
-      'https://js.stripe.com',
       'https://*.sanity.io',
       'https://www.googletagmanager.com',
       'https://www.google-analytics.com',
@@ -107,7 +107,6 @@ export function middleware(request: NextRequest) {
       'https://*.google.com',
       'https://*.googleapis.com',
       'https://*.gstatic.com',
-      'https://*.stripe.com',
       'https://*.facebook.com',
       'https://*.instagram.com',
     ].join(' '),
@@ -120,7 +119,6 @@ export function middleware(request: NextRequest) {
       "connect-src 'self'",
       'https://*.sanity.io',
       'https://api.resend.com',
-      'https://*.stripe.com',
       'https://*.google.com',
       'https://*.googleapis.com',
       'https://cdn.fundraiseup.com',
@@ -133,9 +131,6 @@ export function middleware(request: NextRequest) {
     [
       "frame-src 'self'",
       'https://*.sanity.io',
-      'https://js.stripe.com',
-      'https://*.stripe.com',
-      'https://*.stripe.network',
       'https://*.google.com',
       'https://*.googleapis.com',
       'https://maps.app.goo.gl',

@@ -450,7 +450,7 @@ export function HeaderB() {
                 <button
                   onClick={() => setSearchOpen(true)}
                   className={cn(
-                    "p-2.5 rounded-lg transition-all duration-200 mx-2",
+                    "p-2.5 rounded-lg transition-all duration-200 mx-2 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2",
                     isScrolled
                       ? "text-gray-600 hover:text-neutral-900 hover:bg-neutral-100"
                       : "text-white/90 hover:text-white hover:bg-white/10",
@@ -472,7 +472,7 @@ export function HeaderB() {
                   ref={hamburgerRef}
                   onClick={() => setOverlayOpen(true)}
                   className={cn(
-                    "p-2.5 rounded-lg transition-all duration-200 ml-2",
+                    "p-2.5 rounded-lg transition-all duration-200 ml-2 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2",
                     isScrolled
                       ? "text-gray-600 hover:text-neutral-900 hover:bg-neutral-100"
                       : "text-white/90 hover:text-white hover:bg-white/10",
@@ -525,7 +525,7 @@ export function HeaderB() {
                 />
                 <button
                   onClick={closeOverlay}
-                  className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 hover:rotate-90"
+                  className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 hover:rotate-90 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
                   aria-label="Close menu"
                 >
                   <X className="w-6 h-6 text-white" />
@@ -730,7 +730,7 @@ export function HeaderB() {
                 />
                 <button
                   onClick={closeOverlay}
-                  className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 hover:rotate-90"
+                  className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 hover:rotate-90 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
                   aria-label="Close menu"
                 >
                   <X className="w-6 h-6 text-white" />

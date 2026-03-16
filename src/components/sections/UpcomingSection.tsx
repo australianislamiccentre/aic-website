@@ -19,7 +19,6 @@ import {
   Calendar,
   CalendarDays,
   Clock,
-  MapPin,
   BookOpen,
   Users,
   GraduationCap,

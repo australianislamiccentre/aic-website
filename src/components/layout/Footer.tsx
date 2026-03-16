@@ -106,7 +106,7 @@ export function Footer() {
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 {forms.newsletterHeading}
               </h2>
-              <p className="text-white/70 text-lg">
+              <p className="text-white/80 text-lg">
                 {forms.newsletterDescription}
               </p>
             </div>
@@ -127,31 +127,43 @@ export function Footer() {
                   aria-hidden="true"
                 />
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    placeholder="Full name"
-                    required
-                    value={subName}
-                    onChange={(e) => setSubName(e.target.value)}
-                    className="px-5 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Phone number (optional)"
-                    value={subPhone}
-                    onChange={(e) => setSubPhone(e.target.value)}
-                    className="px-5 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                  />
+                  <div>
+                    <label htmlFor="newsletter-name" className="sr-only">Full name</label>
+                    <input
+                      type="text"
+                      id="newsletter-name"
+                      placeholder="Full name"
+                      required
+                      value={subName}
+                      onChange={(e) => setSubName(e.target.value)}
+                      className="w-full px-5 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="newsletter-phone" className="sr-only">Phone number</label>
+                    <input
+                      type="tel"
+                      id="newsletter-phone"
+                      placeholder="Phone number (optional)"
+                      value={subPhone}
+                      onChange={(e) => setSubPhone(e.target.value)}
+                      className="w-full px-5 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                    />
+                  </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="email"
-                    placeholder="Email address"
-                    required
-                    value={subEmail}
-                    onChange={(e) => setSubEmail(e.target.value)}
-                    className="flex-1 px-5 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                  />
+                  <div className="flex-1">
+                    <label htmlFor="newsletter-email" className="sr-only">Email address</label>
+                    <input
+                      type="email"
+                      id="newsletter-email"
+                      placeholder="Email address"
+                      required
+                      value={subEmail}
+                      onChange={(e) => setSubEmail(e.target.value)}
+                      className="w-full px-5 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                    />
+                  </div>
                   <Button
                     type="submit"
                     variant="gold"
@@ -186,7 +198,7 @@ export function Footer() {
               />
             </Link>
 
-            <p className="text-white/70 mb-6 leading-relaxed">
+            <p className="text-white/80 mb-6 leading-relaxed">
               {info.tagline}. A centre for prayer, education, and community building, welcoming all who seek knowledge and spiritual growth.
             </p>
 
@@ -339,7 +351,7 @@ export function Footer() {
               <p className="text-white/70 text-sm font-arabic text-center leading-relaxed">
                 &ldquo;مَثَلُ الَّذِينَ يُنْفِقُونَ أَمْوَالَهُمْ فِي سَبِيلِ اللَّهِ كَمَثَلِ حَبَّةٍ أَنْبَتَتْ سَبْعَ سَنَابِلَ&rdquo;
               </p>
-              <p className="text-white/50 text-xs text-center mt-2">Qur&apos;an 2:261</p>
+              <p className="text-white/60 text-xs text-center mt-2">Qur&apos;an 2:261</p>
             </div>
           </div>
         </div>

@@ -182,7 +182,7 @@ export default function MediaContent({
     youtubeVideos[0] || null,
   );
   const [autoplay, setAutoplay] = useState(false);
-  const [liveStreamState, setLiveStreamState] = useState(liveStream);
+  const [liveStreamState] = useState(liveStream);
   const [activeTab, setActiveTab] = useState<
     "latest" | "playlists" | "khutbas"
   >("latest");

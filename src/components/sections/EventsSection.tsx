@@ -13,7 +13,6 @@ import { motion } from "framer-motion";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, Calendar, Clock, MapPin, Repeat } from "lucide-react";
-import { formatDate } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { SanityEvent, SanityImage } from "@/types/sanity";

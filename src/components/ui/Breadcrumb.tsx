@@ -26,14 +26,17 @@ interface BreadcrumbItem {
 /** Maps URL path segments to human-readable labels for auto-generated breadcrumbs. */
 const pathLabels: Record<string, string> = {
   about: "About Us",
+  accessibility: "Accessibility",
   architecture: "Architecture",
   contact: "Contact",
   donate: "Donate",
   events: "Events",
   media: "Media",
+  privacy: "Privacy Policy",
   programs: "Programs",
   resources: "Resources",
   services: "Services",
+  terms: "Terms of Use",
   visit: "Visit",
   worshippers: "Worshippers",
 };

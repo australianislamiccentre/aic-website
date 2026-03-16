@@ -45,6 +45,7 @@ const amiri = Amiri({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://australianislamiccentre.org"),
   title: {
     default: "Australian Islamic Centre | A Place of Worship, Learning & Community",
     template: "%s | Australian Islamic Centre",
@@ -68,26 +69,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_AU",
-    url: "https://aic.org.au",
+    url: "https://australianislamiccentre.org",
     siteName: "Australian Islamic Centre",
     title: "Australian Islamic Centre | A Place of Worship, Learning & Community",
     description:
       "Serving the Muslim community of Melbourne for over 40 years with worship services, educational programs, and community support.",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Australian Islamic Centre",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Australian Islamic Centre",
     description:
       "A Place of Worship, Learning & Community - Serving Melbourne for over 40 years.",
-    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,
@@ -100,10 +92,6 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  // TODO: Replace with actual Google Search Console verification code
-  // verification: {
-  //   google: "REPLACE_WITH_REAL_CODE",
-  // },
 };
 
 export default async function RootLayout({
@@ -124,6 +112,46 @@ export default async function RootLayout({
       <body
         className={`${inter.variable} ${playfair.variable} ${amiri.variable} antialiased bg-neutral-50 text-gray-900 overflow-x-hidden`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-white focus:text-teal-700 focus:rounded-lg focus:shadow-lg focus:font-semibold"
+        >
+          Skip to main content
+        </a>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Mosque",
+              name: "Australian Islamic Centre",
+              url: "https://australianislamiccentre.org",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "23-27 Blenheim Road",
+                addressLocality: "Newport",
+                addressRegion: "VIC",
+                postalCode: "3015",
+                addressCountry: "AU",
+              },
+              telephone: "+61 3 9391 5724",
+              openingHoursSpecification: {
+                "@type": "OpeningHoursSpecification",
+                dayOfWeek: [
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                  "Sunday",
+                ],
+                opens: "04:30",
+                closes: "22:30",
+              },
+            }),
+          }}
+        />
         <SiteSettingsProvider siteSettings={siteSettings}>
           <FormSettingsProvider formSettings={formSettingsRaw as SanityFormSettings | null}>
             <FundraiseUpScript settings={donationSettings} />
@@ -131,7 +159,7 @@ export default async function RootLayout({
             <ScrollProgress />
             <LiveBanner liveStream={liveStream} />
             <HeaderB />
-            <main className="overflow-x-hidden">{children}</main>
+            <main id="main-content" className="overflow-x-hidden">{children}</main>
             <Footer />
           </FormSettingsProvider>
         </SiteSettingsProvider>
