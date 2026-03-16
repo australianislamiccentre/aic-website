@@ -38,6 +38,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
       // Mock server-only package for tests
       "server-only": path.resolve(__dirname, "./src/test/mocks/server-only.ts"),
+      // Mock sanity to avoid styled-components CJS/ESM incompatibility on Node 18
+      "sanity": path.resolve(__dirname, "./src/test/mocks/sanity.ts"),
     },
   },
 });

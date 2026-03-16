@@ -10,6 +10,7 @@
  */
 "use client";
 
+import DOMPurify from "isomorphic-dompurify";
 import { Heart } from "lucide-react";
 import type { DonatePageSettings, DonatePageImpactStat } from "@/sanity/lib/fetch";
 
@@ -24,16 +25,14 @@ const cleanElementCode = (code: string) => {
 
 /**
  * Sanitise FundraiseUp element code from Sanity.
- * Strips <script>, <iframe>, event handlers, and javascript: URLs.
+ * Uses DOMPurify to strip <script>, <iframe>, event handlers, and
+ * javascript: URLs while preserving data-* attributes that FundraiseUp needs.
  */
 const sanitizeFundraiseUpElement = (code: string): string => {
-  let cleaned = cleanElementCode(code);
-  cleaned = cleaned.replace(/<script[\s\S]*?<\/script>/gi, "");
-  cleaned = cleaned.replace(/<iframe[\s\S]*?<\/iframe>/gi, "");
-  cleaned = cleaned.replace(/<iframe[^>]*\/?>/gi, "");
-  cleaned = cleaned.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, "");
-  cleaned = cleaned.replace(/href\s*=\s*["']?\s*javascript:/gi, 'href="');
-  return cleaned;
+  const cleaned = cleanElementCode(code);
+  return DOMPurify.sanitize(cleaned, {
+    ALLOW_DATA_ATTR: true,
+  });
 };
 
 /** Renders a sanitised Fundraise Up HTML snippet. */

@@ -8,7 +8,6 @@ vi.mock("@/sanity/lib/client", () => ({
 }));
 
 // Import after mocking
-import { getFormRecipientEmail, isFormEnabled } from "./form-settings";
 import { noCdnClient } from "@/sanity/lib/client";
 
 const mockFetch = noCdnClient.fetch as ReturnType<typeof vi.fn>;

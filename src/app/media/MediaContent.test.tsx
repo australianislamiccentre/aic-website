@@ -48,7 +48,6 @@ vi.mock("next/image", () => ({
 }));
 
 // Mock Sanity image URL builder
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockUrlFor = vi.fn((_source?: unknown) => ({
   width: () => ({
     url: () => "https://example.com/image-600.jpg",

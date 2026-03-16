@@ -10,7 +10,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
+import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { SanityService, SanityImage } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
