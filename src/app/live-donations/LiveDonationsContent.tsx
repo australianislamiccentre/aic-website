@@ -28,6 +28,7 @@ interface DonationData {
   recentDonations: RecentDonation[];
   topSupporters: TopSupporter[];
   totalRaised: number;
+  offlineAmount: number;
   donorCount: number;
 }
 
@@ -148,16 +149,19 @@ export default function LiveDonationsContent() {
           setTimeout(() => setNewIds(new Set()), 2000);
         }
 
-        // Check milestone crossings
+        // Check milestone crossings — show the highest one crossed
         const prevTotal = prevTotalRef.current;
         const newTotal = incoming.totalRaised;
         if (prevTotal > 0 && newTotal > prevTotal) {
+          let highestCrossed: number | null = null;
           for (const m of MILESTONES) {
             if (prevTotal < m && newTotal >= m) {
-              setMilestone(formatCompact(m));
-              setTimeout(() => setMilestone(null), 4000);
-              break;
+              highestCrossed = m;
             }
+          }
+          if (highestCrossed) {
+            setMilestone(formatCompact(highestCrossed));
+            setTimeout(() => setMilestone(null), 4000);
           }
         }
         prevTotalRef.current = newTotal;
@@ -200,11 +204,18 @@ export default function LiveDonationsContent() {
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#01476b] via-[#01354f] to-[#011e30]">
       {/* Milestone celebration overlay */}
       {milestone && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-          <div className="animate-milestone-pop text-center">
-            <div className="text-6xl sm:text-8xl mb-2">&#127881;</div>
-            <p className="text-white text-3xl sm:text-5xl font-bold font-serif drop-shadow-lg">
-              {milestone} reached!
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none animate-milestone-overlay">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+          <div className="relative animate-milestone-pop text-center px-8 py-12 sm:px-16 sm:py-16 rounded-2xl bg-gradient-to-br from-yellow-400/20 via-[#00ad4c]/20 to-yellow-400/20 border border-yellow-400/30 shadow-2xl shadow-yellow-400/10">
+            <div className="text-7xl sm:text-9xl mb-4">&#127881;</div>
+            <p className="text-yellow-200 text-lg sm:text-xl font-medium uppercase tracking-widest mb-2">
+              Milestone
+            </p>
+            <p className="text-white text-5xl sm:text-7xl font-bold font-serif drop-shadow-lg mb-3">
+              {milestone}
+            </p>
+            <p className="text-yellow-200/80 text-xl sm:text-2xl font-medium">
+              Alhamdulillah!
             </p>
           </div>
         </div>
@@ -236,9 +247,16 @@ export default function LiveDonationsContent() {
         {/* Donation Goal / Progress */}
         <div className="rounded-lg bg-white/[0.07] border border-white/[0.08] px-4 py-4 mb-3">
           <div className="flex items-baseline justify-between mb-3">
-            <p className="text-white font-bold text-2xl sm:text-3xl">
-              {data ? <AnimatedNumber value={data.totalRaised} /> : "$--"}
-            </p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-white font-bold text-2xl sm:text-3xl">
+                {data ? <AnimatedNumber value={data.totalRaised} /> : "$--"}
+              </p>
+              {data && data.offlineAmount > 0 && (
+                <p className="text-white/30 text-xs">
+                  (incl. {formatCurrency(data.offlineAmount)} offline)
+                </p>
+              )}
+            </div>
             <p className="text-white/50 text-sm">
               Goal: {formatCurrency(CAMPAIGN_GOAL)}
             </p>
@@ -409,12 +427,21 @@ export default function LiveDonationsContent() {
         .animate-shimmer {
           animation: shimmer 2s ease-in-out infinite;
         }
+        @keyframes milestone-overlay {
+          0% { opacity: 0; }
+          10% { opacity: 1; }
+          80% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        .animate-milestone-overlay {
+          animation: milestone-overlay 4s ease-out forwards;
+        }
         @keyframes milestone-pop {
           0% { opacity: 0; transform: scale(0.5); }
-          20% { opacity: 1; transform: scale(1.1); }
-          40% { transform: scale(1); }
+          15% { opacity: 1; transform: scale(1.08); }
+          30% { transform: scale(1); }
           80% { opacity: 1; transform: scale(1); }
-          100% { opacity: 0; transform: scale(0.9); }
+          100% { opacity: 0; transform: scale(0.95); }
         }
         .animate-milestone-pop {
           animation: milestone-pop 4s ease-out forwards;
