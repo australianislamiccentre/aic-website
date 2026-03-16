@@ -74,6 +74,14 @@ const structure = (S: StructureBuilder) =>
                             .title("Inactive Campaigns")
                             .filter('_type == "donationCampaign" && active == false')
                         ),
+                      S.divider(),
+                      S.listItem()
+                        .title("Offline Donations")
+                        .child(
+                          S.document()
+                            .schemaType("offlineDonations")
+                            .documentId("offlineDonations")
+                        ),
                     ])
                 ),
             ])
@@ -180,7 +188,7 @@ const structure = (S: StructureBuilder) =>
 
       // Rest of the document types (exclude the ones we customized and singletons)
       ...S.documentTypeListItems().filter(
-        (item) => !["event", "announcement", "siteSettings", "homepageSettings", "prayerSettings", "donationSettings", "donatePageSettings", "donationCampaign", "formSettings", "mediaGallery"].includes(item.getId() || "")
+        (item) => !["event", "announcement", "siteSettings", "homepageSettings", "prayerSettings", "donationSettings", "donatePageSettings", "donationCampaign", "offlineDonations", "formSettings", "mediaGallery"].includes(item.getId() || "")
       ),
     ]);
 

@@ -24,11 +24,12 @@ interface CachedData {
   recentDonations: { id: string; name: string; amount: number; city: string; time: string; anonymous: boolean }[];
   topSupporters: { name: string; total: number; city: string; donationCount: number }[];
   totalRaised: number;
+  offlineAmount: number;
   donorCount: number;
   timestamp: number;
 }
 
-function processData(donations: FundraiseUpDonation[]): CachedData {
+function processData(donations: FundraiseUpDonation[], offlineAmount: number = 0): CachedData {
   const supporterMap = new Map<string, { name: string; total: number; city: string; count: number; anonymous: boolean }>();
   let totalRaised = 0;
   const recentDonations: CachedData["recentDonations"] = [];
@@ -68,7 +69,8 @@ function processData(donations: FundraiseUpDonation[]): CachedData {
   return {
     recentDonations: recentDonations.slice(0, 10),
     topSupporters,
-    totalRaised: Math.round(totalRaised * 100) / 100,
+    totalRaised: Math.round((totalRaised + offlineAmount) * 100) / 100,
+    offlineAmount: Math.round(offlineAmount * 100) / 100,
     donorCount: donations.length,
     timestamp: Date.now(),
   };
@@ -228,5 +230,64 @@ describe("processData", () => {
     expect(result.topSupporters).toEqual([]);
     expect(result.totalRaised).toBe(0);
     expect(result.donorCount).toBe(0);
+  });
+
+  it("adds offline amount to totalRaised", () => {
+    const donations = [
+      makeDonation({ id: "d1", amount: "100.00" }),
+    ];
+    const result = processData(donations, 48000);
+    expect(result.totalRaised).toBe(48100);
+  });
+
+  it("includes offlineAmount in response", () => {
+    const donations = [makeDonation({ id: "d1", amount: "100.00" })];
+    const result = processData(donations, 48000);
+    expect(result.offlineAmount).toBe(48000);
+  });
+
+  it("offlineAmount is 0 when no offline amount provided", () => {
+    const donations = [makeDonation({ id: "d1", amount: "100.00" })];
+    const result = processData(donations);
+    expect(result.offlineAmount).toBe(0);
+  });
+
+  it("does not add offline amount to donorCount", () => {
+    const donations = [
+      makeDonation({ id: "d1", amount: "100.00" }),
+    ];
+    const result = processData(donations, 48000);
+    expect(result.donorCount).toBe(1);
+  });
+
+  it("does not add offline amount to recent donations list", () => {
+    const donations = [
+      makeDonation({ id: "d1", amount: "100.00" }),
+    ];
+    const result = processData(donations, 48000);
+    expect(result.recentDonations).toHaveLength(1);
+    expect(result.recentDonations[0].amount).toBe(100);
+  });
+
+  it("does not add offline amount to top supporters list", () => {
+    const donations = [
+      makeDonation({ id: "d1", amount: "100.00" }),
+    ];
+    const result = processData(donations, 48000);
+    expect(result.topSupporters).toHaveLength(1);
+    expect(result.topSupporters[0].total).toBe(100);
+  });
+
+  it("handles zero offline amount same as no offline amount", () => {
+    const donations = [makeDonation({ id: "d1", amount: "250.00" })];
+    const withZero = processData(donations, 0);
+    const withDefault = processData(donations);
+    expect(withZero.totalRaised).toBe(withDefault.totalRaised);
+  });
+
+  it("rounds totalRaised with offline amount correctly", () => {
+    const donations = [makeDonation({ id: "d1", amount: "33.33" })];
+    const result = processData(donations, 66.67);
+    expect(result.totalRaised).toBe(100);
   });
 });
