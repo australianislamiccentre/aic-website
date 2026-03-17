@@ -57,7 +57,7 @@ describe("POST /api/subscribe", () => {
 
   it("returns 200 on valid subscription", async () => {
     const res = await POST(
-      makeRequest({ email: "sub@example.com", name: "Ahmed" })
+      makeRequest({ email: "sub@example.com", name: "Ahmed", phone: "0412345678" })
     );
     const json = await res.json();
 
@@ -122,7 +122,7 @@ describe("POST /api/subscribe", () => {
   });
 
   it("checks the newsletter form type", async () => {
-    await POST(makeRequest({ email: "sub@example.com" }));
+    await POST(makeRequest({ email: "sub@example.com", phone: "0412345678" }));
     expect(mockIsFormEnabled).toHaveBeenCalledWith("newsletter");
     expect(mockGetFormRecipientEmail).toHaveBeenCalledWith("newsletter");
   });
@@ -130,15 +130,31 @@ describe("POST /api/subscribe", () => {
   it("returns 500 when email sending fails", async () => {
     mockSend.mockRejectedValueOnce(new Error("API error"));
 
-    const res = await POST(makeRequest({ email: "sub@example.com" }));
+    const res = await POST(makeRequest({ email: "sub@example.com", phone: "0412345678" }));
     const json = await res.json();
 
     expect(res.status).toBe(500);
     expect(json.error).toMatch(/failed/i);
   });
 
-  it("handles name and phone as optional", async () => {
+  it("returns 400 when phone is missing", async () => {
     const res = await POST(makeRequest({ email: "sub@example.com" }));
+    const json = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(json.error).toMatch(/phone/i);
+  });
+
+  it("handles name as optional", async () => {
+    const res = await POST(makeRequest({ email: "sub@example.com", phone: "0412345678" }));
     expect(res.status).toBe(200);
+  });
+
+  it("includes whatsapp preference in notification email", async () => {
+    await POST(makeRequest({ email: "sub@example.com", phone: "0412345678", whatsapp: true }));
+    expect(mockSend).toHaveBeenCalledTimes(1);
+    const call = mockSend.mock.calls[0][0];
+    expect(call.html).toContain("WhatsApp Group");
+    expect(call.html).toContain("Yes");
   });
 });

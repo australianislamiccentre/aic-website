@@ -1,7 +1,7 @@
 /**
  * AICC Partner Page
  *
- * Client component showcasing the Australian Islamic College of Commerce
+ * Client component showcasing the Australian Islamic Centre College
  * (AICC) partnership. Displays academic highlights, Islamic values focus,
  * community involvement, and links to the college website.
  *
@@ -69,7 +69,7 @@ export default function AICCPage() {
               </h1>
 
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                The Australian Islamic College of Commerce (AICC) is an educational institution
+                The Australian Islamic Centre College (AICC) is an educational institution
                 affiliated with the Australian Islamic Centre. AICC provides quality education
                 that combines academic excellence with Islamic values, preparing students for
                 success in both this world and the hereafter.

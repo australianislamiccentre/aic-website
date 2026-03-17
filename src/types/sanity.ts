@@ -256,7 +256,7 @@ export interface SanityResource {
   order?: number;
 }
 
-/** An affiliated partner organisation (e.g. Newport Storm FC, AICC). */
+/** An affiliated partner organisation (e.g. Newport Storm FC, AIC College). */
 export interface SanityPartner {
   _id: string;
   name: string;

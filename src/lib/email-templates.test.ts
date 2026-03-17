@@ -278,4 +278,22 @@ describe("subscribeNotificationEmail", () => {
     // Should not have a Name label row
     expect(result.html).not.toContain(">Name<");
   });
+
+  it("includes WhatsApp preference when true", () => {
+    const result = subscribeNotificationEmail({
+      email: "sub@example.com",
+      whatsapp: true,
+    });
+    expect(result.html).toContain("WhatsApp Group");
+    expect(result.html).toContain("Yes");
+  });
+
+  it("shows No for WhatsApp when not opted in", () => {
+    const result = subscribeNotificationEmail({
+      email: "sub@example.com",
+      whatsapp: false,
+    });
+    expect(result.html).toContain("WhatsApp Group");
+    expect(result.html).toContain("No");
+  });
 });
