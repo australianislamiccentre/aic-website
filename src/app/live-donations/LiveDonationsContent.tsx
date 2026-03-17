@@ -124,6 +124,7 @@ export default function LiveDonationsContent() {
   const [secondsSinceUpdate, setSecondsSinceUpdate] = useState(0);
   const prevIdsRef = useRef<Set<string>>(new Set());
   const prevTotalRef = useRef(0);
+  const fetchCountRef = useRef(0);
   const lastFetchRef = useRef(0);
 
   const fetchData = useCallback(async () => {
@@ -150,9 +151,11 @@ export default function LiveDonationsContent() {
         }
 
         // Check milestone crossings — show the highest one crossed
+        // Skip first 2 fetches (initialisation) so page load never triggers milestones
+        fetchCountRef.current += 1;
         const prevTotal = prevTotalRef.current;
         const newTotal = incoming.totalRaised;
-        if (prevTotal > 0 && newTotal > prevTotal) {
+        if (fetchCountRef.current > 2 && prevTotal > 0 && newTotal > prevTotal) {
           let highestCrossed: number | null = null;
           for (const m of MILESTONES) {
             if (prevTotal < m && newTotal >= m) {
@@ -237,7 +240,7 @@ export default function LiveDonationsContent() {
         <div className="text-center mb-3 sm:mb-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400/15 text-yellow-200 text-xs font-medium mb-1">
             <Moon className="w-3.5 h-3.5" />
-            Laylatul Qadr Campaign
+            Ramadan Campaign
           </div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white font-serif tracking-tight">
             Live Donations
@@ -253,7 +256,7 @@ export default function LiveDonationsContent() {
               </p>
               {data && data.offlineAmount > 0 && (
                 <p className="text-white/30 text-xs">
-                  (incl. {formatCurrency(data.offlineAmount)} offline)
+                  (incl. {formatCurrency(data.offlineAmount)} from offline donations/pledges)
                 </p>
               )}
             </div>
@@ -348,7 +351,7 @@ export default function LiveDonationsContent() {
             </div>
             <p className="text-white text-3xl font-bold mb-2">Donate Now</p>
             <p className="text-yellow-200/70 text-lg mb-4 max-w-sm">
-              Every good deed on Laylatul Qadr is multiplied beyond measure
+              Every good deed in Ramadan is multiplied beyond measure
             </p>
             <p className="text-white/50 text-sm mb-4">Scan to donate</p>
             <a
