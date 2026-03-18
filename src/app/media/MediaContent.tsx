@@ -414,7 +414,7 @@ export default function MediaContent({
                 <div ref={playerRef} className="sm:max-w-[900px] sm:mx-auto">
                   <div className="relative aspect-video rounded-xl overflow-hidden bg-black shadow-lg">
                     <iframe
-                      src={`https://www.youtube.com/embed/${currentVideo.id}${autoplay ? "?autoplay=1" : ""}`}
+                      src={`https://www.youtube.com/embed/${currentVideo.id}?rel=0${autoplay ? "&autoplay=1" : ""}`}
                       title={currentVideo.title}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen

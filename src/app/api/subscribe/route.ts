@@ -72,28 +72,51 @@ export async function POST(request: NextRequest) {
     const email = typeof body.email === "string" ? body.email.trim() : "";
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const phone = typeof body.phone === "string" ? body.phone.trim() : "";
+    const whatsapp = body.whatsapp === true;
 
     if (!email || !EMAIL_RE.test(email)) {
       return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
     }
 
+    if (!phone) {
+      return NextResponse.json({ error: "Please enter your phone number." }, { status: 400 });
+    }
+
     const resend = getResendClient();
 
     // Add to Resend Audience if configured (enables broadcast campaigns from Resend dashboard)
+    // Uses create-then-update pattern: create first, if contact already exists, update instead.
     if (AUDIENCE_ID) {
       const [firstName, ...rest] = name.split(" ");
-      await resend.contacts.create({
-        audienceId: AUDIENCE_ID,
-        email,
+      const contactData = {
         firstName: firstName || undefined,
         lastName: rest.join(" ") || undefined,
         unsubscribed: false,
+        properties: {
+          phone: phone || "",
+          whatsapp: whatsapp ? "yes" : "no",
+        },
+      };
+
+      const { error: createError } = await resend.contacts.create({
+        audienceId: AUDIENCE_ID,
+        email,
+        ...contactData,
       });
+
+      // If create fails (e.g. contact was previously deleted or already exists), update instead
+      if (createError) {
+        await resend.contacts.update({
+          audienceId: AUDIENCE_ID,
+          email,
+          ...contactData,
+        });
+      }
     }
 
     // Notify admin with branded template
     const toEmail = await getFormRecipientEmail("newsletter");
-    const notification = subscribeNotificationEmail({ email, name: name || undefined, phone: phone || undefined });
+    const notification = subscribeNotificationEmail({ email, name: name || undefined, phone: phone || undefined, whatsapp });
 
     await resend.emails.send({
       from: `AIC Website <${FROM_EMAIL}>`,

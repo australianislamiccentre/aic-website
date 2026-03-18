@@ -58,7 +58,7 @@ const fallbackPartners: SanityPartner[] = [
     name: "AIC College (AICC)",
     slug: "aicc",
     shortDescription:
-      "The Australian Islamic College of Commerce provides quality education rooted in Islamic values, offering comprehensive academic programs for students.",
+      "The Australian Islamic Centre College provides quality education rooted in Islamic values, offering comprehensive academic programs for students.",
     icon: "graduation-cap",
     color: "from-teal-500 to-teal-600",
   },

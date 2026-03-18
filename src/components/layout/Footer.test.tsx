@@ -133,7 +133,13 @@ describe("Footer", () => {
       screen.getByPlaceholderText("Full name")
     ).toBeInTheDocument();
     expect(
+      screen.getByPlaceholderText("Phone number")
+    ).toBeInTheDocument();
+    expect(
       screen.getByPlaceholderText("Email address")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Add me to the AIC WhatsApp group")
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /Subscribe/i })
@@ -149,10 +155,12 @@ describe("Footer", () => {
     render(<Footer />);
 
     const nameInput = screen.getByPlaceholderText("Full name");
+    const phoneInput = screen.getByPlaceholderText("Phone number");
     const emailInput = screen.getByPlaceholderText("Email address");
     const submitButton = screen.getByRole("button", { name: /Subscribe/i });
 
     await user.type(nameInput, "John Doe");
+    await user.type(phoneInput, "0412345678");
     await user.type(emailInput, "test@example.com");
     await user.click(submitButton);
 

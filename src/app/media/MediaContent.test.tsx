@@ -382,7 +382,8 @@ describe("MediaContent", () => {
 
       await user.click(screen.getByLabelText("Play Second"));
       const iframe = document.querySelector("iframe");
-      expect(iframe?.src).toContain("?autoplay=1");
+      expect(iframe?.src).toContain("rel=0");
+      expect(iframe?.src).toContain("autoplay=1");
     });
 
     it("clicking a video scrolls player into view", async () => {
