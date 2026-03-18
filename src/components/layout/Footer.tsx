@@ -57,7 +57,7 @@ export function Footer() {
   const [subName, setSubName] = useState("");
   const [subEmail, setSubEmail] = useState("");
   const [subPhone, setSubPhone] = useState("");
-  const [subWhatsApp, setSubWhatsApp] = useState(false);
+  const [subWhatsApp, setSubWhatsApp] = useState(true);
   const [subStatus, setSubStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [subError, setSubError] = useState("");
 
@@ -178,15 +178,15 @@ export function Footer() {
                     {subStatus === "loading" ? "Subscribing..." : forms.newsletterButtonText}
                   </Button>
                 </div>
-                <label htmlFor="newsletter-whatsapp" className="flex items-center gap-3 cursor-pointer group">
+                <label htmlFor="newsletter-whatsapp" className="flex items-center gap-2.5 cursor-pointer group px-1">
                   <input
                     type="checkbox"
                     id="newsletter-whatsapp"
                     checked={subWhatsApp}
                     onChange={(e) => setSubWhatsApp(e.target.checked)}
-                    className="w-5 h-5 rounded border-white/30 bg-white/10 text-teal-500 focus:ring-2 focus:ring-gold-500 focus:ring-offset-0 accent-teal-500"
+                    className="w-4 h-4 rounded border-white/30 bg-white/10 text-teal-500 focus:ring-2 focus:ring-gold-500 focus:ring-offset-0 accent-teal-500"
                   />
-                  <span className="text-white/70 text-sm group-hover:text-white/90 transition-colors">
+                  <span className="text-white/50 text-xs group-hover:text-white/70 transition-colors">
                     Add me to the AIC WhatsApp group
                   </span>
                 </label>

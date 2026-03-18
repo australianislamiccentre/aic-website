@@ -85,15 +85,33 @@ export async function POST(request: NextRequest) {
     const resend = getResendClient();
 
     // Add to Resend Audience if configured (enables broadcast campaigns from Resend dashboard)
+    // Uses create-then-update pattern: create first, if contact already exists, update instead.
     if (AUDIENCE_ID) {
       const [firstName, ...rest] = name.split(" ");
-      await resend.contacts.create({
-        audienceId: AUDIENCE_ID,
-        email,
+      const contactData = {
         firstName: firstName || undefined,
         lastName: rest.join(" ") || undefined,
         unsubscribed: false,
+        properties: {
+          phone: phone || "",
+          whatsapp: whatsapp ? "yes" : "no",
+        },
+      };
+
+      const { error: createError } = await resend.contacts.create({
+        audienceId: AUDIENCE_ID,
+        email,
+        ...contactData,
       });
+
+      // If create fails (e.g. contact was previously deleted or already exists), update instead
+      if (createError) {
+        await resend.contacts.update({
+          audienceId: AUDIENCE_ID,
+          email,
+          ...contactData,
+        });
+      }
     }
 
     // Notify admin with branded template
