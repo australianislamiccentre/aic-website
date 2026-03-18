@@ -399,6 +399,40 @@ GitHub Actions (`.github/workflows/ci.yml`): checkout -> Node 20 -> `npm ci` -> 
 
 Branch naming: `feature/<name>`, `fix/<name>`, `update/<name>`, `refactor/<name>`.
 
+### Branch Workflow — MANDATORY
+
+Every new branch must start from the latest remote `main`. Every push must be validated. Never skip these steps.
+
+**Creating a new branch:**
+```bash
+git fetch origin main
+git checkout main
+git pull origin main        # Always pull latest remote into local main
+git checkout -b <branch>    # Branch from up-to-date main
+```
+
+**Before committing:**
+```bash
+npm run validate             # type-check -> lint -> test:run -> build
+```
+
+**Before pushing:**
+```bash
+git fetch origin main
+git rebase origin/main       # Ensure branch has latest production changes
+npm run validate             # Re-validate after rebase
+git push
+```
+
+**Resuming work on an existing branch:**
+```bash
+git fetch origin main
+git rebase origin/main       # Pull latest production changes into branch
+npm run validate             # Confirm build is good after rebase
+```
+
+Never push without running `npm run validate` first. Never create a branch from a stale local `main` — always `git pull origin main` first. Never push commits that were made after a PR was already merged — they will be orphaned on the remote branch and never reach production.
+
 ---
 
 ## When Making Any Change in This Project
@@ -420,3 +454,5 @@ Branch naming: `feature/<name>`, `fix/<name>`, `update/<name>`, `refactor/<name>
 ## Corrections Log
 
 <!-- When Claude makes a mistake, ask "what rule in CLAUDE.md caused this or failed to prevent it?" then add the correction here so it never happens again -->
+
+1. **Stale local main caused orphaned commits (2026-03-18):** Created `fix/site-updates` from local `main` without pulling latest remote first. This meant the branch was missing commits that had been merged via PR on GitHub. Additionally, commits pushed to `feature/live-donations-api` after its PR was already merged never reached `main`. **Fix:** Added mandatory branch workflow in CI/CD section — always `git pull origin main` before branching, always rebase onto `origin/main` before pushing.
