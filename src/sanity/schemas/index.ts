@@ -27,6 +27,7 @@ import teamMember from "./teamMember";
 import pageContent from "./pageContent";
 import resource from "./resource";
 import partner from "./partner";
+import offlineDonations from "./offlineDonations";
 
 export const schemaTypes = [
   // Singletons
@@ -48,5 +49,6 @@ export const schemaTypes = [
   faq,
   etiquette,
   donationCampaign,
+  offlineDonations,
   partner,
 ];

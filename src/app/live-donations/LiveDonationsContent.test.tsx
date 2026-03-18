@@ -36,6 +36,7 @@ const mockDonationData = {
       { name: "Anonymous", total: 10000, city: "", donationCount: 1 },
     ],
     totalRaised: 12000,
+    offlineAmount: 0,
     donorCount: 350,
   },
 };
@@ -59,7 +60,7 @@ describe("LiveDonationsContent", () => {
     });
     render(<LiveDonationsContent />);
     expect(screen.getByText("Live Donations")).toBeInTheDocument();
-    expect(screen.getByText("Laylatul Qadr Campaign")).toBeInTheDocument();
+    expect(screen.getByText("Ramadan Campaign")).toBeInTheDocument();
   });
 
   it("renders loading state before data arrives", () => {
@@ -173,5 +174,163 @@ describe("LiveDonationsContent", () => {
     // After another 5s
     await vi.advanceTimersByTimeAsync(5000);
     expect(global.fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it("shows milestone celebration when a threshold is crossed", async () => {
+    // Milestones only trigger after the first 2 fetches (initialisation window)
+    const stableData = {
+      data: { ...mockDonationData.data, totalRaised: 4000 },
+    };
+    const crossedData = {
+      data: { ...mockDonationData.data, totalRaised: 6000 },
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(stableData) })   // fetch 1
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(stableData) })   // fetch 2 (still init)
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(crossedData) }); // fetch 3 — milestone!
+
+    render(<LiveDonationsContent />);
+
+    await vi.advanceTimersByTimeAsync(100);   // fetch 1
+    await vi.advanceTimersByTimeAsync(5000);  // fetch 2
+    await vi.advanceTimersByTimeAsync(5000);  // fetch 3 crosses $5k
+
+    await waitFor(() => {
+      expect(screen.getByText("Milestone")).toBeInTheDocument();
+      expect(screen.getByText("$5k")).toBeInTheDocument();
+      expect(screen.getByText("Alhamdulillah!")).toBeInTheDocument();
+    });
+  });
+
+  it("shows highest milestone when multiple are crossed at once", async () => {
+    // Jump from 4k to 26k — crosses $5k, $10k, $15k, $20k, $25k
+    const stableData = {
+      data: { ...mockDonationData.data, totalRaised: 4000 },
+    };
+    const crossedData = {
+      data: { ...mockDonationData.data, totalRaised: 26000 },
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(stableData) })
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(stableData) })
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(crossedData) });
+
+    render(<LiveDonationsContent />);
+
+    await vi.advanceTimersByTimeAsync(100);
+    await vi.advanceTimersByTimeAsync(5000);
+    await vi.advanceTimersByTimeAsync(5000);
+
+    await waitFor(() => {
+      expect(screen.getByText("$25k")).toBeInTheDocument();
+    });
+    // Should NOT show $5k — only the highest crossed
+    expect(screen.queryByText("$5k")).not.toBeInTheDocument();
+  });
+
+  it("milestone overlay disappears after 4 seconds", async () => {
+    const stableData = {
+      data: { ...mockDonationData.data, totalRaised: 4000 },
+    };
+    const crossedData = {
+      data: { ...mockDonationData.data, totalRaised: 6000 },
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(stableData) })
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(stableData) })
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(crossedData) })
+      .mockResolvedValue({ ok: true, json: () => Promise.resolve(crossedData) });
+
+    render(<LiveDonationsContent />);
+
+    await vi.advanceTimersByTimeAsync(100);
+    await vi.advanceTimersByTimeAsync(5000);
+    await vi.advanceTimersByTimeAsync(5000);
+
+    await waitFor(() => {
+      expect(screen.getByText("Milestone")).toBeInTheDocument();
+    });
+
+    // After 4s the milestone should disappear
+    await vi.advanceTimersByTimeAsync(4000);
+
+    await waitFor(() => {
+      expect(screen.queryByText("Milestone")).not.toBeInTheDocument();
+    });
+  });
+
+  it("does not show milestone on first fetch (no previous total)", async () => {
+    // First fetch at 6000 — above $5k but no previous total to compare
+    const data = {
+      data: { ...mockDonationData.data, totalRaised: 6000 },
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(data),
+    });
+
+    render(<LiveDonationsContent />);
+    await vi.advanceTimersByTimeAsync(100);
+
+    // Should not show milestone since prevTotal was 0
+    expect(screen.queryByText("Milestone")).not.toBeInTheDocument();
+  });
+
+  it("does not trigger milestone during initialisation window (first 2 fetches)", async () => {
+    // Even if total jumps between fetch 1 and 2, no milestone should fire
+    const lowData = {
+      data: { ...mockDonationData.data, totalRaised: 4000 },
+    };
+    const highData = {
+      data: { ...mockDonationData.data, totalRaised: 6000 },
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(lowData) })
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(highData) })
+      .mockResolvedValue({ ok: true, json: () => Promise.resolve(highData) });
+
+    render(<LiveDonationsContent />);
+
+    await vi.advanceTimersByTimeAsync(100);   // fetch 1: 4000
+    await vi.advanceTimersByTimeAsync(5000);  // fetch 2: 6000 (crosses $5k but still in init)
+
+    // Should NOT show milestone during init window
+    expect(screen.queryByText("Milestone")).not.toBeInTheDocument();
+  });
+
+  it("shows offline amount text when offlineAmount > 0", async () => {
+    const dataWithOffline = {
+      data: { ...mockDonationData.data, totalRaised: 60000, offlineAmount: 48000 },
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(dataWithOffline),
+    });
+
+    render(<LiveDonationsContent />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/from offline donations\/pledges/)).toBeInTheDocument();
+      expect(screen.getByText(/\$48,000\.00/)).toBeInTheDocument();
+    });
+  });
+
+  it("hides offline amount text when offlineAmount is 0", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockDonationData),
+    });
+
+    render(<LiveDonationsContent />);
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(screen.queryByText(/from offline donations\/pledges/)).not.toBeInTheDocument();
   });
 });

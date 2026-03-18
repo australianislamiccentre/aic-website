@@ -1,9 +1,34 @@
 import { NextResponse } from "next/server";
+import { client } from "@/sanity/lib/client";
 
 const API_KEY = process.env.FUNDRAISEUP_API_KEY;
 const BASE_URL = "https://api.fundraiseup.com/v1/donations";
 const CAMPAIGN_ID = "FUNCMFPBUQF"; // Ramadan 30 days
 const CACHE_TTL = 5_000; // 5 seconds
+
+// Cache for offline amount from Sanity (refresh every 60s)
+let offlineAmountCache = 0;
+let offlineCacheTimestamp = 0;
+const OFFLINE_CACHE_TTL = 60_000;
+
+async function getOfflineAmount(): Promise<number> {
+  if (Date.now() - offlineCacheTimestamp < OFFLINE_CACHE_TTL) {
+    return offlineAmountCache;
+  }
+  try {
+    const result = await client.fetch<{ donations?: { amount: number }[] } | null>(
+      `*[_id == "offlineDonations"][0]{ donations[]{ amount } }`
+    );
+    offlineAmountCache = (result?.donations ?? []).reduce(
+      (sum, d) => sum + (d.amount ?? 0),
+      0
+    );
+    offlineCacheTimestamp = Date.now();
+  } catch {
+    // Keep stale cache on error
+  }
+  return offlineAmountCache;
+}
 
 interface FundraiseUpDonation {
   id: string;
@@ -30,6 +55,7 @@ interface CachedData {
   recentDonations: RecentDonation[];
   topSupporters: TopSupporter[];
   totalRaised: number;
+  offlineAmount: number;
   donorCount: number;
   timestamp: number;
 }
@@ -105,7 +131,7 @@ function parseAmount(amount: string): number {
   return parseFloat(amount.replace(/,/g, ""));
 }
 
-function processData(donations: FundraiseUpDonation[]): CachedData {
+function processData(donations: FundraiseUpDonation[], offlineAmount: number = 0): CachedData {
   const supporterMap = new Map<
     string,
     { name: string; total: number; city: string; count: number; anonymous: boolean }
@@ -160,7 +186,8 @@ function processData(donations: FundraiseUpDonation[]): CachedData {
   return {
     recentDonations: recentDonations.slice(0, 10),
     topSupporters,
-    totalRaised: Math.round(totalRaised * 100) / 100,
+    totalRaised: Math.round((totalRaised + offlineAmount) * 100) / 100,
+    offlineAmount: Math.round(offlineAmount * 100) / 100,
     donorCount: donations.length,
     timestamp: Date.now(),
   };
@@ -180,8 +207,11 @@ export async function GET() {
   }
 
   try {
-    const donations = await fetchAllDonations();
-    cache = processData(donations);
+    const [donations, offlineAmount] = await Promise.all([
+      fetchAllDonations(),
+      getOfflineAmount(),
+    ]);
+    cache = processData(donations, offlineAmount);
     return NextResponse.json({ data: cache });
   } catch (error) {
     console.error("[FundraiseUp API] Fetch error:", error);
