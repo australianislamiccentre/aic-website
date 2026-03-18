@@ -1,13 +1,13 @@
 import { generateOgImage, ogSize, ogContentType } from "@/lib/og-image";
 
 export const runtime = "edge";
-export const alt = "Australian Islamic Centre";
+export const alt = "Visit Us — Australian Islamic Centre";
 export const size = ogSize;
 export const contentType = ogContentType;
 
 export default async function Image() {
   return generateOgImage({
-    title: "A Place of Worship, Learning & Community",
-    subtitle: "Serving Melbourne for over 40 years",
+    title: "Visit Us",
+    subtitle: "Plan your visit to the Australian Islamic Centre in Newport",
   });
 }
