@@ -61,7 +61,7 @@ const documentTypeToPath: Record<string, string[]> = {
   prayerSettings: ["/", "/worshippers"],
   formSettings: ["/contact", "/services"],
   teamMember: ["/about", "/imams"],
-  pageContent: ["/"],
+  pageContent: ["/"],  // individual slug path added dynamically below
   resource: ["/resources"],
   partner: ["/partners"],
 };
@@ -126,6 +126,7 @@ export async function POST(request: NextRequest) {
         resource: "/resources",
         teamMember: "/about",
         partner: "/partners",
+        pageContent: "",
       };
       const prefix = detailPathPrefix[documentType];
       if (prefix) {
