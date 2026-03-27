@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
         pageContent: "",
       };
       const prefix = detailPathPrefix[documentType];
-      if (prefix) {
+      if (prefix !== undefined) {
         pathsToRevalidate.push(`${prefix}/${slug}`);
       }
     }

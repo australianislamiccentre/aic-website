@@ -18,9 +18,37 @@ import { SanityPageContent } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { Button } from "@/components/ui/Button";
-import { PortableText } from "@portabletext/react";
+import { PortableText, PortableTextComponents } from "@portabletext/react";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
+
+/** Custom PortableText components for rendering inline images and blocks. */
+const portableTextComponents: PortableTextComponents = {
+  types: {
+    image: ({ value }) => {
+      if (!value?.asset) return null;
+      const imageUrl = urlFor(value).width(1200).height(800).url();
+      return (
+        <figure className="my-8">
+          <div className="relative w-full overflow-hidden rounded-xl">
+            <Image
+              src={imageUrl}
+              alt={value.alt || ""}
+              width={1200}
+              height={800}
+              className="w-full h-auto"
+            />
+          </div>
+          {value.caption && (
+            <figcaption className="text-sm text-gray-500 mt-2 text-center">
+              {value.caption}
+            </figcaption>
+          )}
+        </figure>
+      );
+    },
+  },
+};
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -122,7 +150,7 @@ export default async function DynamicPage({ params }: PageProps) {
           {/* Rich Text Content */}
           {page.content && page.content.length > 0 && (
             <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-teal-600 prose-a:no-underline hover:prose-a:underline mb-10">
-              <PortableText value={page.content} />
+              <PortableText value={page.content} components={portableTextComponents} />
             </div>
           )}
 
@@ -168,7 +196,7 @@ export default async function DynamicPage({ params }: PageProps) {
                       )}
                       {section.content && section.content.length > 0 && (
                         <div className="prose prose-gray max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-teal-600 prose-a:no-underline hover:prose-a:underline">
-                          <PortableText value={section.content} />
+                          <PortableText value={section.content} components={portableTextComponents} />
                         </div>
                       )}
                     </div>
