@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, Sparkles, Check, Shield, Award, HandHeart } from "lucide-react";
+import Link from "next/link";
 
 const donationOptions = [
   { amount: 25, label: "Feed a Family", description: "Provide meals for a family in need" },
@@ -183,9 +184,9 @@ export function DonationCTASection() {
                     {/* Custom amount link */}
                     <p className="text-center mt-4 text-white/50 text-sm">
                       Want to give a different amount?{" "}
-                      <a href="/donate" className="text-lime-400 hover:text-lime-300 underline underline-offset-2">
+                      <Link href="/donate" className="text-lime-400 hover:text-lime-300 underline underline-offset-2">
                         Enter custom amount
-                      </a>
+                      </Link>
                     </p>
                   </div>
                 </FadeIn>

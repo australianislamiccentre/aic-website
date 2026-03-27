@@ -29,7 +29,7 @@ const previewUrlMap: Record<string, (slug?: string) => string> = {
   siteSettings: () => "/",
   prayerSettings: () => "/worshippers",
   teamMember: () => "/about",
-  pageContent: () => "/",
+  pageContent: (slug) => `/${slug || ""}`,
   resource: () => "/resources",
   partner: (slug) => `/partners${slug ? `/${slug}` : ""}`,
 };
