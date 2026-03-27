@@ -61,7 +61,7 @@ const documentTypeToPath: Record<string, string[]> = {
   prayerSettings: ["/", "/worshippers"],
   formSettings: ["/contact", "/services"],
   teamMember: ["/about", "/imams"],
-  pageContent: ["/"],  // individual slug path added dynamically below
+  pageContent: ["/", "/privacy", "/terms", "/accessibility"],  // individual slug path added dynamically below
   resource: ["/resources"],
   partner: ["/partners"],
 };
