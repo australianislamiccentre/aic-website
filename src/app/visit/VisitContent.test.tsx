@@ -73,7 +73,6 @@ vi.mock("@/contexts/SiteSettingsContext", () => ({
     name: "Australian Islamic Centre",
     shortName: "AIC",
     tagline: "Welcome to AIC",
-    parentOrganization: "ISWM",
     address: {
       street: "15 Blenheim Road",
       suburb: "Newport",

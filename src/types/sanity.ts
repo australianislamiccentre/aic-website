@@ -281,9 +281,7 @@ export interface SanitySiteSettings {
   organizationName: string;
   shortName?: string;
   tagline?: string;
-  parentOrganization?: string;
   logo?: SanityImage;
-  logoAlt?: SanityImage;
   address: {
     street: string;
     suburb: string;
@@ -313,10 +311,6 @@ export interface SanitySiteSettings {
     bookstore?: string;
     sportsClub?: string;
   };
-  quickLinks?: Array<{
-    label: string;
-    url: string;
-  }>;
   allowedEmbedDomains?: string[];
 }
 
@@ -388,14 +382,6 @@ export interface SanityHomepageSettings {
       value: string;
       label: string;
     }>;
-  };
-  ctaBanner?: {
-    enabled?: boolean;
-    title?: string;
-    subtitle?: string;
-    buttonLabel?: string;
-    buttonUrl?: string;
-    backgroundImage?: SanityImage;
   };
 }
 

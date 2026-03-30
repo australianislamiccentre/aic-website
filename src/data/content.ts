@@ -56,7 +56,6 @@ export const aicInfo = {
   name: "Australian Islamic Centre",
   shortName: "AIC",
   tagline: "A unique Islamic environment that integrates Australian values with the beauty of Islam",
-  parentOrganization: "Newport Islamic Society",
   address: {
     street: "23-27 Blenheim Rd",
     suburb: "Newport",

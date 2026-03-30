@@ -38,25 +38,12 @@ export default defineType({
       description: "Main tagline displayed on the homepage",
     }),
     defineField({
-      name: "parentOrganization",
-      title: "Parent Organization",
-      type: "string",
-    }),
-    defineField({
       name: "logo",
       title: "Logo",
       type: "image",
       options: { hotspot: true },
       description: "Main organization logo",
     }),
-    defineField({
-      name: "logoAlt",
-      title: "Logo (Light Version)",
-      type: "image",
-      options: { hotspot: true },
-      description: "Light version for dark backgrounds",
-    }),
-
     // ── 2. Contact & Location ──
     defineField({
       name: "address",
@@ -166,22 +153,6 @@ export default defineType({
         defineField({ name: "bookstore", title: "Bookstore Website", type: "url" }),
         defineField({ name: "sportsClub", title: "Sports Club Website", type: "url" }),
       ],
-    }),
-    defineField({
-      name: "quickLinks",
-      title: "Footer Quick Links",
-      type: "array",
-      of: [
-        {
-          type: "object",
-          fields: [
-            { name: "label", type: "string", title: "Label" },
-            { name: "url", type: "url", title: "URL", validation: (Rule) => Rule.uri({ allowRelative: true, scheme: ["http", "https", "mailto", "tel"] }) },
-          ],
-          preview: { select: { title: "label", subtitle: "url" } },
-        },
-      ],
-      description: "Custom links for the footer",
     }),
   ],
   preview: {

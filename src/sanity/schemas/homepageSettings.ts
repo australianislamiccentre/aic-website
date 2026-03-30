@@ -565,48 +565,6 @@ export default defineType({
       description: "Welcome/About section on homepage",
     }),
 
-    // ── 7. Call-to-Action Banner ──
-    defineField({
-      name: "ctaBanner",
-      title: "Call-to-Action Banner",
-      type: "object",
-      fields: [
-        defineField({
-          name: "enabled",
-          title: "Enabled",
-          type: "boolean",
-          initialValue: true,
-        }),
-        defineField({ name: "title", title: "Title", type: "string" }),
-        defineField({
-          name: "subtitle",
-          title: "Subtitle",
-          type: "string",
-        }),
-        defineField({
-          name: "buttonLabel",
-          title: "Button Label",
-          type: "string",
-        }),
-        defineField({
-          name: "buttonUrl",
-          title: "Button URL",
-          type: "url",
-          validation: (Rule) =>
-            Rule.uri({
-              allowRelative: true,
-              scheme: ["http", "https", "mailto", "tel"],
-            }),
-        }),
-        defineField({
-          name: "backgroundImage",
-          title: "Background Image",
-          type: "image",
-          options: { hotspot: true },
-        }),
-      ],
-      description: "Promotional banner section on homepage",
-    }),
   ],
   preview: {
     prepare() {

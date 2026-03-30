@@ -536,9 +536,7 @@ export const siteSettingsQuery = groq`
     organizationName,
     shortName,
     tagline,
-    parentOrganization,
     logo,
-    logoAlt,
     address,
     phone,
     email,
@@ -546,7 +544,6 @@ export const siteSettingsQuery = groq`
     operatingHours,
     socialMedia,
     externalLinks,
-    quickLinks,
     "allowedEmbedDomains": allowedEmbedDomains[].domain
   }
 `;
@@ -578,8 +575,7 @@ export const homepageSettingsQuery = groq`
       bottomCtaText
     },
     featuredYoutubeUrl,
-    welcomeSection,
-    ctaBanner
+    welcomeSection
   }
 `;
 
@@ -632,9 +628,6 @@ export const formSettingsQuery = groq`
     serviceInquiryFormDescription,
     serviceInquirySuccessHeading,
     serviceInquirySuccessMessage,
-    // Event Inquiry
-    eventInquiryRecipientEmail,
-    eventInquiryEnabled,
     // Newsletter
     newsletterRecipientEmail,
     newsletterEnabled,

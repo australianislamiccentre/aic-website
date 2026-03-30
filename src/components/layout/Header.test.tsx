@@ -8,7 +8,6 @@ vi.mock("@/contexts/SiteSettingsContext", () => ({
     name: "Australian Islamic Centre",
     shortName: "AIC",
     tagline: "A unique Islamic environment",
-    parentOrganization: "Newport Islamic Society",
     phone: "(03) 9391 9303",
     email: "contact@aic.org.au",
     address: {

@@ -32,6 +32,9 @@ import {
   Facebook,
   Instagram,
   Youtube,
+  Twitter,
+  MessageCircle,
+  Send as SendIcon,
   Heart,
   ArrowRight,
   ExternalLink,
@@ -52,6 +55,10 @@ export function Footer() {
     { name: "Facebook", icon: Facebook, href: info.socialMedia.facebook },
     { name: "Instagram", icon: Instagram, href: info.socialMedia.instagram },
     { name: "Youtube", icon: Youtube, href: info.socialMedia.youtube },
+    ...(info.socialMedia.twitter ? [{ name: "Twitter", icon: Twitter, href: info.socialMedia.twitter }] : []),
+    ...(info.socialMedia.tiktok ? [{ name: "TikTok", icon: MessageCircle, href: info.socialMedia.tiktok }] : []),
+    ...(info.socialMedia.whatsapp ? [{ name: "WhatsApp", icon: MessageCircle, href: info.socialMedia.whatsapp }] : []),
+    ...(info.socialMedia.telegram ? [{ name: "Telegram", icon: SendIcon, href: info.socialMedia.telegram }] : []),
   ];
   const currentYear = new Date().getFullYear();
   const [subName, setSubName] = useState("");
@@ -242,8 +249,8 @@ export function Footer() {
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
                 <p className="text-white/80">
-                  Open Daily<br />
-                  From Fajr to Isha
+                  {info.operatingHours?.notes || "Open Daily"}<br />
+                  {info.operatingHours?.weekdays || "From Fajr to Isha"}
                 </p>
               </div>
             </div>

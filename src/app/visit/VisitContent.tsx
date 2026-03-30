@@ -48,7 +48,7 @@ const facilities = [
   { name: "Library", capacity: "30", icon: Building },
 ];
 
-const openingHours = [
+const defaultOpeningHours = [
   { day: "Daily", hours: "4:30 AM – 10:30 PM" },
 ];
 
@@ -204,7 +204,13 @@ export default function VisitContent({ etiquette, faqs }: VisitContentProps) {
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-2">Opening Hours</h3>
                       <div className="space-y-1">
-                        {openingHours.map((item) => (
+                        {(info.operatingHours?.weekdays
+                          ? [
+                              { day: "Weekdays", hours: info.operatingHours.weekdays },
+                              ...(info.operatingHours.weekends ? [{ day: "Weekends", hours: info.operatingHours.weekends }] : []),
+                            ]
+                          : defaultOpeningHours
+                        ).map((item) => (
                           <div key={item.day} className="flex justify-between text-sm">
                             <span className="text-gray-600">{item.day}</span>
                             <span className="text-gray-900 font-medium">{item.hours}</span>

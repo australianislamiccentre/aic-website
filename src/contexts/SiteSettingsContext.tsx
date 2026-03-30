@@ -26,7 +26,6 @@ export interface SiteInfo {
   name: string;
   shortName: string;
   tagline: string;
-  parentOrganization: string;
   address: {
     street: string;
     suburb: string;
@@ -43,6 +42,10 @@ export interface SiteInfo {
     facebook: string;
     instagram: string;
     youtube: string;
+    twitter?: string;
+    tiktok?: string;
+    whatsapp?: string;
+    telegram?: string;
   };
   externalLinks: {
     college: string;
@@ -67,7 +70,6 @@ export function buildSiteInfo(settings: SanitySiteSettings | null): SiteInfo {
     name: settings?.organizationName ?? aicInfo.name,
     shortName: settings?.shortName ?? aicInfo.shortName,
     tagline: settings?.tagline ?? aicInfo.tagline,
-    parentOrganization: settings?.parentOrganization ?? aicInfo.parentOrganization,
     address: {
       street,
       suburb,
@@ -84,6 +86,10 @@ export function buildSiteInfo(settings: SanitySiteSettings | null): SiteInfo {
       facebook: settings?.socialMedia?.facebook ?? aicInfo.socialMedia.facebook,
       instagram: settings?.socialMedia?.instagram ?? aicInfo.socialMedia.instagram,
       youtube: settings?.socialMedia?.youtube ?? aicInfo.socialMedia.youtube,
+      twitter: settings?.socialMedia?.twitter,
+      tiktok: settings?.socialMedia?.tiktok,
+      whatsapp: settings?.socialMedia?.whatsapp,
+      telegram: settings?.socialMedia?.telegram,
     },
     externalLinks: {
       college: settings?.externalLinks?.college ?? aicInfo.externalLinks.college,

@@ -52,7 +52,6 @@ vi.mock("@/contexts/SiteSettingsContext", () => ({
     name: "Australian Islamic Centre",
     shortName: "AIC",
     tagline: "Test tagline",
-    parentOrganization: "ICV",
     address: { street: "", suburb: "", state: "", postcode: "", country: "", full: "" },
     socialMedia: { facebook: "", instagram: "", youtube: "" },
     externalLinks: { college: "", bookstore: "", newportStorm: "" },

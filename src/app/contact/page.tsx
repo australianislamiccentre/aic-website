@@ -59,7 +59,7 @@ export default function ContactPage() {
     {
       icon: Clock,
       title: "Hours",
-      content: "4:30 AM \u2013 10:30 PM Daily",
+      content: info.operatingHours?.weekdays || info.operatingHours?.notes || "4:30 AM \u2013 10:30 PM Daily",
     },
   ];
 
@@ -263,7 +263,7 @@ export default function ContactPage() {
               <div className="p-4">
                 <p className="text-sm text-gray-600 mb-2">{info.address.full}</p>
                 <a
-                  href="https://maps.app.goo.gl/sjUbtLMo1q6AXHi86"
+                  href={info.googleMapsUrl || "https://maps.app.goo.gl/sjUbtLMo1q6AXHi86"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-teal-600 hover:text-teal-700"
