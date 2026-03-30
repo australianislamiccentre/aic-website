@@ -89,7 +89,7 @@ export default async function HomePage() {
         services={services}
       />
 
-      <AboutPreviewSection />
+      <AboutPreviewSection welcomeSection={homepageSettings?.welcomeSection} />
 
       <MeetImamsSection imams={imams} />
 

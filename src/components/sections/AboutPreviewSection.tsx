@@ -15,8 +15,14 @@ import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, Globe, Users, BookOpen, Landmark } from "lucide-react";
 import Image from "next/image";
+import { SanityHomepageSettings } from "@/types/sanity";
+import { urlFor } from "@/sanity/lib/image";
 
-export function AboutPreviewSection() {
+interface AboutPreviewSectionProps {
+  welcomeSection?: SanityHomepageSettings["welcomeSection"];
+}
+
+export function AboutPreviewSection({ welcomeSection }: AboutPreviewSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -42,7 +48,7 @@ export function AboutPreviewSection() {
                 className="relative rounded-2xl overflow-hidden shadow-2xl"
               >
                 <Image
-                  src="/images/aic 9.jpeg"
+                  src={welcomeSection?.image ? urlFor(welcomeSection.image).width(600).height(800).url() : "/images/aic 9.jpeg"}
                   alt="Australian Islamic Centre aerial view with crescent moon"
                   width={600}
                   height={800}
@@ -58,12 +64,21 @@ export function AboutPreviewSection() {
 
             {/* ── Stats row — detached under the image ── */}
             <div className="grid grid-cols-4 gap-0 mt-3 md:mt-4">
-              {[
-                { value: "5", label: "Daily Prayers", icon: BookOpen, color: "from-teal-500 to-teal-600", delay: 0.3 },
-                { value: "40+", label: "Years Serving", icon: Users, color: "from-green-500 to-green-600", delay: 0.38 },
-                { value: "Global", label: "Recognition", icon: Globe, color: "from-amber-500 to-amber-600", delay: 0.46 },
-                { value: "20+", label: "Weekly Programs", icon: Landmark, color: "from-teal-600 to-teal-700", delay: 0.54 },
-              ].map((stat) => (
+              {(welcomeSection?.stats && welcomeSection.stats.length > 0
+                ? welcomeSection.stats.slice(0, 4).map((s, i) => ({
+                    value: s.value,
+                    label: s.label,
+                    icon: [BookOpen, Users, Globe, Landmark][i] || BookOpen,
+                    color: ["from-teal-500 to-teal-600", "from-green-500 to-green-600", "from-amber-500 to-amber-600", "from-teal-600 to-teal-700"][i],
+                    delay: 0.3 + i * 0.08,
+                  }))
+                : [
+                    { value: "5", label: "Daily Prayers", icon: BookOpen, color: "from-teal-500 to-teal-600", delay: 0.3 },
+                    { value: "40+", label: "Years Serving", icon: Users, color: "from-green-500 to-green-600", delay: 0.38 },
+                    { value: "Global", label: "Recognition", icon: Globe, color: "from-amber-500 to-amber-600", delay: 0.46 },
+                    { value: "20+", label: "Weekly Programs", icon: Landmark, color: "from-teal-600 to-teal-700", delay: 0.54 },
+                  ]
+              ).map((stat) => (
                 <motion.div
                   key={stat.label}
                   initial={{ opacity: 0, y: 10 }}
@@ -90,8 +105,8 @@ export function AboutPreviewSection() {
               </div>
 
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
-                A Beacon of Faith,{" "}
-                <span className="text-gradient">Knowledge & Unity</span>
+                {welcomeSection?.title || "A Beacon of Faith,"}{" "}
+                <span className="text-gradient">{welcomeSection?.subtitle || "Knowledge & Unity"}</span>
               </h2>
 
               <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-4 md:mb-6 leading-relaxed">
