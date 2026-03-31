@@ -35,9 +35,12 @@ import partnersPageSettings from "./pages/partnersPageSettings";
 import privacyPageSettings from "./pages/privacyPageSettings";
 import termsPageSettings from "./pages/termsPageSettings";
 
-// ── Form singletons (to be created in Task 5) ──
-// import contactFormSettings from "./forms/contactFormSettings";
-// ... (commented out until Task 5 creates these files)
+// ── Form singletons ──
+import contactFormSettings from "./forms/contactFormSettings";
+import serviceInquiryFormSettings from "./forms/serviceInquiryFormSettings";
+import eventInquiryFormSettings from "./forms/eventInquiryFormSettings";
+import newsletterSettings from "./forms/newsletterSettings";
+import allowedFormDomains from "./forms/allowedFormDomains";
 
 // ── Content documents ──
 import event from "./documents/event";
@@ -77,6 +80,12 @@ export const schemaTypes = [
   partnersPageSettings,
   privacyPageSettings,
   termsPageSettings,
+  // Form singletons
+  contactFormSettings,
+  serviceInquiryFormSettings,
+  eventInquiryFormSettings,
+  newsletterSettings,
+  allowedFormDomains,
   // Content documents
   event,
   announcement,
