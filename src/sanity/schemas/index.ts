@@ -1,54 +1,65 @@
 /**
  * Sanity Schema Registry
  *
- * Registers all Sanity document schemas with the Studio. Schemas are grouped:
- * - **Singletons** — One-per-site documents (siteSettings, prayerSettings, etc.)
- * - **Content types** — User-created documents (events, services, team members, etc.)
- * - **Form submissions** — Documents created by visitor interactions
- *
- * @module sanity/schemas
- * @see sanity.config.ts for the Studio configuration that consumes this registry
+ * Organised by folder:
+ * - singletons/   — global config docs (one per site)
+ * - pages/        — per-page config singletons
+ * - forms/        — form config singletons
+ * - documents/    — user-created content docs
+ * - shared/       — reusable field definitions
  */
-import event from "./event";
-import announcement from "./announcement";
-import service from "./service";
-import donationSettings from "./donationSettings";
-import donationCampaign from "./donationCampaign";
-import donatePageSettings from "./donatePageSettings";
-import galleryImage from "./gallery";
-import faq from "./faq";
-import etiquette from "./etiquette";
-import formSettings from "./formSettings";
-import mediaGallery from "./mediaGallery";
-import siteSettings from "./siteSettings";
-import homepageSettings from "./homepageSettings";
-import prayerSettings from "./prayerSettings";
-import teamMember from "./teamMember";
-import pageContent from "./pageContent";
-import resource from "./resource";
-import partner from "./partner";
-import offlineDonations from "./offlineDonations";
+
+// ── Global singletons ──
+import siteSettings from "./singletons/siteSettings";
+import homepageSettings from "./singletons/homepageSettings";
+import prayerSettings from "./singletons/prayerSettings";
+import donationSettings from "./singletons/donationSettings";
+import donatePageSettings from "./singletons/donatePageSettings";
+import offlineDonations from "./singletons/offlineDonations";
+import mediaGallery from "./singletons/mediaGallery";
+import formSettings from "./singletons/formSettings"; // deprecated — hidden from desk
+
+// ── Page singletons (to be created in Task 4) ──
+// import aboutPageSettings from "./pages/aboutPageSettings";
+// ... (commented out until Task 4 creates these files)
+
+// ── Form singletons (to be created in Task 5) ──
+// import contactFormSettings from "./forms/contactFormSettings";
+// ... (commented out until Task 5 creates these files)
+
+// ── Content documents ──
+import event from "./documents/event";
+import announcement from "./documents/announcement";
+import service from "./documents/service";
+import teamMember from "./documents/teamMember";
+import galleryImage from "./documents/galleryImage";
+import resource from "./documents/resource";
+import partner from "./documents/partner";
+import donationCampaign from "./documents/donationCampaign";
+import pageContent from "./documents/pageContent";
+import faq from "./documents/faq";
+import etiquette from "./documents/etiquette"; // deprecated — hidden from desk
 
 export const schemaTypes = [
-  // Singletons
+  // Global singletons
   siteSettings,
   homepageSettings,
   prayerSettings,
   donationSettings,
   donatePageSettings,
-  formSettings,
+  offlineDonations,
   mediaGallery,
-  // Content types
+  formSettings,
+  // Content documents
   event,
   announcement,
   service,
   teamMember,
-  pageContent,
-  resource,
   galleryImage,
+  resource,
+  partner,
+  donationCampaign,
+  pageContent,
   faq,
   etiquette,
-  donationCampaign,
-  offlineDonations,
-  partner,
 ];

@@ -20,7 +20,7 @@
  * @module sanity/schemas/homepageSettings
  */
 import { defineField, defineType } from "sanity";
-import { internalPageOptions } from "./shared/internalPages";
+import { internalPageOptions } from "../shared/internalPages";
 
 export default defineType({
   name: "homepageSettings",
