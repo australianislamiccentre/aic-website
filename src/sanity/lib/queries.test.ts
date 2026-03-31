@@ -136,8 +136,8 @@ describe("GROQ Queries", () => {
       expect(servicesQuery).toContain("active != false");
     });
 
-    it("orders by display order", () => {
-      expect(servicesQuery).toContain("order(order asc)");
+    it("orders by orderRank", () => {
+      expect(servicesQuery).toContain("order(orderRank asc)");
     });
 
     it("includes new highlights field", () => {

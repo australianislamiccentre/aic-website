@@ -188,7 +188,7 @@ export const programsQuery = groq`
 
 // Services - active only, ordered by display order
 export const servicesQuery = groq`
-  *[_type == "service" && active != false] | order(order asc) {
+  *[_type == "service" && active != false] | order(orderRank asc) {
     _id,
     title,
     "slug": slug.current,
@@ -236,7 +236,7 @@ export const serviceBySlugQuery = groq`
 
 // Featured services for homepage
 export const featuredServicesQuery = groq`
-  *[_type == "service" && active != false && featured == true] | order(order asc) [0...6] {
+  *[_type == "service" && active != false && featured == true] | order(orderRank asc) [0...6] {
     _id,
     title,
     "slug": slug.current,
@@ -281,7 +281,7 @@ export const donatePageSettingsQuery = groq`
 
 // Gallery
 export const galleryQuery = groq`
-  *[_type == "galleryImage"] | order(order asc) {
+  *[_type == "galleryImage"] | order(orderRank asc) {
     _id,
     image,
     alt,
@@ -292,7 +292,7 @@ export const galleryQuery = groq`
 `;
 
 export const featuredGalleryQuery = groq`
-  *[_type == "galleryImage" && featured == true] | order(order asc) {
+  *[_type == "galleryImage" && featured == true] | order(orderRank asc) {
     _id,
     image,
     alt,
@@ -359,7 +359,7 @@ export const etiquetteQuery = groq`
 // Team Members
 // ============================================
 export const teamMembersQuery = groq`
-  *[_type == "teamMember" && active != false] | order(category asc, order asc) {
+  *[_type == "teamMember" && active != false] | order(orderRank asc) {
     _id,
     name,
     "slug": slug.current,
@@ -401,7 +401,7 @@ export const teamMemberBySlugQuery = groq`
 `;
 
 export const teamMembersByCategoryQuery = groq`
-  *[_type == "teamMember" && active != false && category == $category] | order(order asc) {
+  *[_type == "teamMember" && active != false && category == $category] | order(orderRank asc) {
     _id,
     name,
     "slug": slug.current,
@@ -413,7 +413,7 @@ export const teamMembersByCategoryQuery = groq`
 `;
 
 export const featuredTeamMembersQuery = groq`
-  *[_type == "teamMember" && active != false && featured == true] | order(category asc, order asc) [0...6] {
+  *[_type == "teamMember" && active != false && featured == true] | order(orderRank asc) [0...6] {
     _id,
     name,
     "slug": slug.current,
@@ -471,7 +471,7 @@ export const navigationPagesQuery = groq`
 // NEW: Resources
 // ============================================
 export const resourcesQuery = groq`
-  *[_type == "resource" && active != false] | order(date desc, order asc) {
+  *[_type == "resource" && active != false] | order(orderRank asc) {
     _id,
     title,
     "slug": slug.current,
@@ -667,7 +667,7 @@ export const latestAnnouncementsQuery = groq`
 // Partners
 // ============================================
 export const partnersQuery = groq`
-  *[_type == "partner" && active != false] | order(order asc) {
+  *[_type == "partner" && active != false] | order(orderRank asc) {
     _id,
     name,
     "slug": slug.current,

@@ -105,7 +105,7 @@ export interface SanityService {
   formRecipientEmail?: string;
   featured?: boolean;
   active?: boolean;
-  order?: number;
+  orderRank?: string;
 }
 
 /** A photo in the site gallery (/media page). */
@@ -196,7 +196,7 @@ export interface SanityTeamMember {
   featured?: boolean;
   showContactInfo?: boolean;
   active?: boolean;
-  order?: number;
+  orderRank?: string;
 }
 
 /** A CMS-managed content page (about, history, privacy policy, etc.). */
@@ -253,7 +253,7 @@ export interface SanityResource {
   featured?: boolean;
   downloadCount?: number;
   active?: boolean;
-  order?: number;
+  orderRank?: string;
 }
 
 /** An affiliated partner organisation (e.g. Newport Storm FC, AIC College). */
@@ -272,7 +272,7 @@ export interface SanityPartner {
   phone?: string;
   featured?: boolean;
   active?: boolean;
-  order?: number;
+  orderRank?: string;
 }
 
 /** Global site settings singleton — organisation details, social links, etc. */
