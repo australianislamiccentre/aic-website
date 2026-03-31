@@ -173,7 +173,7 @@ export default function ArchitectureContent({ settings }: ArchitectureContentPro
     settings?.galleryImages && settings.galleryImages.length > 0
       ? settings.galleryImages.map((item, idx) => ({
           id: String(idx + 1),
-          src: urlFor(item.image).width(400).height(300).url(),
+          src: item.image ? urlFor(item.image).width(400).height(300).url() : "/images/aic start.jpg",
           alt: item.alt ?? `Architecture photo ${idx + 1}`,
           caption: item.caption ?? "",
         }))
@@ -358,7 +358,7 @@ export default function ArchitectureContent({ settings }: ArchitectureContentPro
                     initial={{ opacity: 0, scale: 0 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    transition={{ type: "spring", delay: 0.3 }}
+                    transition={{ ease: "easeOut", duration: 0.4, delay: 0.3 }}
                     className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-2xl p-4 shadow-xl flex items-center gap-3"
                   >
                     <div className="w-12 h-12 rounded-xl bg-teal-500 flex items-center justify-center">
@@ -397,7 +397,7 @@ export default function ArchitectureContent({ settings }: ArchitectureContentPro
                   }`}
                 >
                   <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center mb-3">
-                    <feature.Icon className="w-4.5 h-4.5 text-white" />
+                    <feature.Icon className="w-4 h-4 text-white" />
                   </div>
                   <h3 className="font-bold text-gray-900 text-sm mb-1">{feature.title}</h3>
                   <p className="text-gray-500 text-xs leading-relaxed">{feature.description}</p>
@@ -444,7 +444,7 @@ export default function ArchitectureContent({ settings }: ArchitectureContentPro
 
       {/* Awards Section */}
       {awardsVisible && (
-        <section className="py-12 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800">
+        <section className="py-12 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-800">
           <div className="max-w-4xl mx-auto px-6">
             <FadeIn>
               <div className="text-center mb-8">

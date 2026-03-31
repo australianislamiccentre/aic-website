@@ -64,7 +64,7 @@ describe("ArchitectureContent", () => {
     );
     const heading = screen.getByRole("heading", { level: 1 });
     expect(heading).toBeInTheDocument();
-    expect(heading).toHaveTextContent("Architecture");
+    expect(heading).toHaveTextContent("Islamic Architecture");
   });
 
   it("hides philosophy section when philosophyVisible is false", () => {
