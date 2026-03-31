@@ -1,11 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { buildFormSettings } from "./FormSettingsContext";
-import type { SanityFormSettings } from "./FormSettingsContext";
+import type {
+  SanityContactFormSettings,
+  SanityServiceInquiryFormSettings,
+  SanityNewsletterSettings,
+} from "@/types/sanity";
 
 describe("FormSettingsContext", () => {
   describe("buildFormSettings", () => {
     describe("with null input (no Sanity data)", () => {
-      const settings = buildFormSettings(null);
+      const settings = buildFormSettings(null, null, null);
 
       it("returns default contact heading", () => {
         expect(settings.contactHeading).toBe("Get in");
@@ -81,7 +85,7 @@ describe("FormSettingsContext", () => {
     });
 
     describe("with full Sanity data", () => {
-      const raw: SanityFormSettings = {
+      const contactRaw: SanityContactFormSettings = {
         contactEnabled: false,
         contactHeading: "Reach",
         contactHeadingAccent: "Out",
@@ -91,11 +95,17 @@ describe("FormSettingsContext", () => {
         contactInquiryTypes: ["Type A", "Type B"],
         contactSuccessHeading: "Done!",
         contactSuccessMessage: "Custom success message",
+      };
+
+      const serviceRaw: SanityServiceInquiryFormSettings = {
         serviceInquiryEnabled: false,
         serviceInquiryFormHeading: "Custom Service Heading",
         serviceInquiryFormDescription: "Custom service desc",
         serviceInquirySuccessHeading: "Service Sent!",
         serviceInquirySuccessMessage: "Custom service success",
+      };
+
+      const newsletterRaw: SanityNewsletterSettings = {
         newsletterEnabled: false,
         newsletterHeading: "Custom Newsletter",
         newsletterDescription: "Custom newsletter desc",
@@ -103,7 +113,7 @@ describe("FormSettingsContext", () => {
         newsletterSuccessMessage: "Custom subscribe success",
       };
 
-      const settings = buildFormSettings(raw);
+      const settings = buildFormSettings(contactRaw, serviceRaw, newsletterRaw);
 
       it("uses Sanity contact heading", () => {
         expect(settings.contactHeading).toBe("Reach");
@@ -148,12 +158,14 @@ describe("FormSettingsContext", () => {
     });
 
     describe("with partial Sanity data", () => {
-      it("merges partial data with defaults", () => {
-        const raw: SanityFormSettings = {
+      it("merges partial contact data with defaults", () => {
+        const contactRaw: SanityContactFormSettings = {
           contactHeading: "Custom Heading",
+        };
+        const newsletterRaw: SanityNewsletterSettings = {
           newsletterButtonText: "Sign Up",
         };
-        const settings = buildFormSettings(raw);
+        const settings = buildFormSettings(contactRaw, null, newsletterRaw);
 
         expect(settings.contactHeading).toBe("Custom Heading");
         expect(settings.contactHeadingAccent).toBe("Touch"); // default
@@ -164,19 +176,19 @@ describe("FormSettingsContext", () => {
       });
 
       it("falls back to default inquiry types when empty array", () => {
-        const raw: SanityFormSettings = {
+        const contactRaw: SanityContactFormSettings = {
           contactInquiryTypes: [],
         };
-        const settings = buildFormSettings(raw);
+        const settings = buildFormSettings(contactRaw, null, null);
 
         expect(settings.contactInquiryTypes).toHaveLength(11);
       });
 
       it("uses Sanity inquiry types when non-empty", () => {
-        const raw: SanityFormSettings = {
+        const contactRaw: SanityContactFormSettings = {
           contactInquiryTypes: ["Custom Type"],
         };
-        const settings = buildFormSettings(raw);
+        const settings = buildFormSettings(contactRaw, null, null);
 
         expect(settings.contactInquiryTypes).toEqual([
           { value: "Custom Type", label: "Custom Type" },
@@ -186,17 +198,17 @@ describe("FormSettingsContext", () => {
 
     describe("enabled fields default behavior", () => {
       it("treats undefined contactEnabled as true", () => {
-        const settings = buildFormSettings({});
+        const settings = buildFormSettings({}, null, null);
         expect(settings.contactEnabled).toBe(true);
       });
 
       it("treats explicit false contactEnabled as false", () => {
-        const settings = buildFormSettings({ contactEnabled: false });
+        const settings = buildFormSettings({ contactEnabled: false }, null, null);
         expect(settings.contactEnabled).toBe(false);
       });
 
       it("treats explicit true contactEnabled as true", () => {
-        const settings = buildFormSettings({ contactEnabled: true });
+        const settings = buildFormSettings({ contactEnabled: true }, null, null);
         expect(settings.contactEnabled).toBe(true);
       });
     });

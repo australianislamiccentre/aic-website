@@ -3,47 +3,86 @@
  *
  * Provides two functions consumed by all form API routes:
  * - `getFormRecipientEmail(form)` — Resolves the recipient email using a
- *   3-tier fallback: Sanity formSettings → environment variable → hardcoded default.
+ *   3-tier fallback: Sanity singleton → environment variable → hardcoded default.
  * - `isFormEnabled(form)` — Checks whether a form is enabled in Sanity CMS
  *   (defaults to enabled if not explicitly set to false).
  *
  * Settings are cached in-memory for 60 seconds to avoid per-request Sanity fetches.
  *
  * @module lib/form-settings
- * @see src/sanity/schemas/formSettings.ts for the Sanity schema
- * @see src/sanity/lib/queries.ts#formSettingsQuery for the GROQ query
+ * @see src/sanity/schemas/contactFormSettings.ts          for the contact form schema
+ * @see src/sanity/schemas/serviceInquiryFormSettings.ts   for the service inquiry schema
+ * @see src/sanity/schemas/eventInquiryFormSettings.ts     for the event inquiry schema
+ * @see src/sanity/schemas/newsletterSettings.ts           for the newsletter schema
  */
 import { noCdnClient } from "@/sanity/lib/client";
-import { formSettingsQuery } from "@/sanity/lib/queries";
+import {
+  contactFormSettingsQuery,
+  serviceInquiryFormSettingsQuery,
+  eventInquiryFormSettingsQuery,
+  newsletterSettingsQuery,
+} from "@/sanity/lib/queries";
 
-interface FormSettings {
+interface ContactSettings {
   contactRecipientEmail?: string;
   contactEnabled?: boolean;
+}
+
+interface ServiceInquirySettings {
   serviceInquiryRecipientEmail?: string;
   serviceInquiryEnabled?: boolean;
+}
+
+interface EventInquirySettings {
   eventInquiryRecipientEmail?: string;
   eventInquiryEnabled?: boolean;
+}
+
+interface NewsletterSettings {
   newsletterRecipientEmail?: string;
   newsletterEnabled?: boolean;
 }
 
+interface FormSettingsCache {
+  contact: ContactSettings;
+  serviceInquiry: ServiceInquirySettings;
+  eventInquiry: EventInquirySettings;
+  newsletter: NewsletterSettings;
+  ts: number;
+}
+
 const FALLBACK_EMAIL = "contact@australianislamiccentre.org";
 
-let cached: { settings: FormSettings; ts: number } | null = null;
+let cached: FormSettingsCache | null = null;
 const CACHE_TTL = 60_000; // 1 minute
 
-async function getSettings(): Promise<FormSettings> {
+async function getSettings(): Promise<Omit<FormSettingsCache, "ts">> {
   if (cached && Date.now() - cached.ts < CACHE_TTL) {
-    return cached.settings;
+    const { ts: _ts, ...rest } = cached;
+    return rest;
   }
   try {
-    const settings = await noCdnClient.fetch<FormSettings | null>(formSettingsQuery);
-    const result = settings ?? {};
-    cached = { settings: result, ts: Date.now() };
+    const [contact, serviceInquiry, eventInquiry, newsletter] = await Promise.all([
+      noCdnClient.fetch<ContactSettings | null>(contactFormSettingsQuery),
+      noCdnClient.fetch<ServiceInquirySettings | null>(serviceInquiryFormSettingsQuery),
+      noCdnClient.fetch<EventInquirySettings | null>(eventInquiryFormSettingsQuery),
+      noCdnClient.fetch<NewsletterSettings | null>(newsletterSettingsQuery),
+    ]);
+    const result = {
+      contact: contact ?? {},
+      serviceInquiry: serviceInquiry ?? {},
+      eventInquiry: eventInquiry ?? {},
+      newsletter: newsletter ?? {},
+    };
+    cached = { ...result, ts: Date.now() };
     return result;
   } catch (error) {
     console.error("Failed to fetch form settings from Sanity:", error);
-    return cached?.settings ?? {};
+    if (cached) {
+      const { ts: _ts, ...rest } = cached;
+      return rest;
+    }
+    return { contact: {}, serviceInquiry: {}, eventInquiry: {}, newsletter: {} };
   }
 }
 
@@ -62,10 +101,10 @@ export async function getFormRecipientEmail(
   };
 
   const sanityEmails: Record<string, string | undefined> = {
-    contact: settings.contactRecipientEmail,
-    serviceInquiry: settings.serviceInquiryRecipientEmail,
-    eventInquiry: settings.eventInquiryRecipientEmail,
-    newsletter: settings.newsletterRecipientEmail,
+    contact: settings.contact.contactRecipientEmail,
+    serviceInquiry: settings.serviceInquiry.serviceInquiryRecipientEmail,
+    eventInquiry: settings.eventInquiry.eventInquiryRecipientEmail,
+    newsletter: settings.newsletter.newsletterRecipientEmail,
   };
 
   // Sanity takes priority, then env vars, then hardcoded fallback
@@ -78,10 +117,10 @@ export async function isFormEnabled(
   const settings = await getSettings();
 
   const enabledMap: Record<string, boolean | undefined> = {
-    contact: settings.contactEnabled,
-    serviceInquiry: settings.serviceInquiryEnabled,
-    eventInquiry: settings.eventInquiryEnabled,
-    newsletter: settings.newsletterEnabled,
+    contact: settings.contact.contactEnabled,
+    serviceInquiry: settings.serviceInquiry.serviceInquiryEnabled,
+    eventInquiry: settings.eventInquiry.eventInquiryEnabled,
+    newsletter: settings.newsletter.newsletterEnabled,
   };
 
   // Default to enabled if not set

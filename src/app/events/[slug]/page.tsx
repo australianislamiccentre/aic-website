@@ -10,7 +10,7 @@
  */
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { getEventBySlug, getEventsForStaticGeneration, getAllowedEmbedDomains } from "@/sanity/lib/fetch";
+import { getEventBySlug, getEventsForStaticGeneration, getAllowedFormDomains } from "@/sanity/lib/fetch";
 import { SanityEvent } from "@/types/sanity";
 import { formatDate } from "@/lib/utils";
 import { urlFor } from "@/sanity/lib/image";
@@ -81,9 +81,10 @@ export default async function EventPage({ params }: EventPageProps) {
   }
 
   // Fetch allowed embed domains in parallel (only needed if event has an embed form)
-  const allowedDomains = event.formType === "embed" && event.embedFormUrl
-    ? await getAllowedEmbedDomains()
-    : [];
+  const allowedFormDomainsData = event.formType === "embed" && event.embedFormUrl
+    ? await getAllowedFormDomains()
+    : null;
+  const allowedDomains = allowedFormDomainsData?.allowedDomains?.map((d) => d.domain) ?? [];
 
   const isRecurring = event.eventType === "recurring";
 
