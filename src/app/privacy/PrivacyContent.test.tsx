@@ -33,7 +33,7 @@ describe("PrivacyContent", () => {
 
   it("shows lastUpdated date from settings when provided", () => {
     const settings: SanityLegalPageSettings = {
-      lastUpdated: "2025-06-01",
+      lastUpdated: "2025-06-15",
     };
     render(<PrivacyContent settings={settings} />);
     expect(screen.getByText(/Last updated:/)).toBeInTheDocument();
