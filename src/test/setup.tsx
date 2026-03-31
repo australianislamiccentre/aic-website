@@ -74,6 +74,18 @@ vi.mock("@/sanity/lib/fetch", () => ({
   getPartnerBySlug: vi.fn().mockResolvedValue(null),
 }));
 
+// Mock Sanity image URL builder (avoids loading env.ts which requires SANITY env vars)
+vi.mock("@/sanity/lib/image", () => ({
+  urlFor: () => ({
+    width: () => ({
+      height: () => ({
+        url: () => "https://cdn.sanity.io/images/test/production/test.jpg",
+      }),
+    }),
+    url: () => "https://cdn.sanity.io/images/test/production/test.jpg",
+  }),
+}));
+
 // Mock YouTube API functions (server-only network calls)
 vi.mock("@/lib/youtube", () => ({
   extractYoutubeVideoId: vi.fn((url: string) => {
