@@ -651,6 +651,25 @@ export async function getPartnerBySlug(slug: string): Promise<SanityPartner | nu
   }
 }
 
+// For static generation (no draft mode check - used in generateStaticParams)
+export async function getPartnersForStaticGeneration(): Promise<{ _id: string; slug: string }[]> {
+  try {
+    const result = await client.fetch<{ _id: string; slug: string }[]>(
+      `*[_type == "partner" && active != false && defined(slug.current)] { _id, "slug": slug.current }`,
+      {},
+      {
+        next: {
+          revalidate: REVALIDATE_TIME,
+          tags: ["sanity", "partners"],
+        },
+      }
+    );
+    return result ?? [];
+  } catch {
+    return [];
+  }
+}
+
 // Embed Security
 export async function getAllowedEmbedDomains(): Promise<string[]> {
   try {
