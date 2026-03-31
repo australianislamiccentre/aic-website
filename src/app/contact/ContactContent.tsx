@@ -44,7 +44,7 @@ export default function ContactContent({ settings }: ContactContentProps) {
 
   const heading = settings?.heroHeading ?? forms.contactHeading ?? "Get in Touch";
   const accentText = settings?.heroHeadingAccent ?? forms.contactHeadingAccent ?? "";
-  const description = settings?.heroDescription ?? forms.contactDescription ?? "";
+  const description = settings?.heroDescription ?? forms.contactDescription ?? "We'd love to hear from you. Send us a message and we'll get back to you as soon as possible.";
   const showSidebar = settings?.sidebarVisible !== false;
   const operatingHours = settings?.operatingHours ?? "4:30 AM \u2013 10:30 PM Daily";
 
@@ -302,7 +302,7 @@ export default function ContactContent({ settings }: ContactContentProps) {
                   {contactInfo.map((item) => (
                     <div key={item.title} className="flex items-start gap-3">
                       <div className="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
-                        <item.icon className="w-4.5 h-4.5 text-teal-600" />
+                        <item.icon className="w-5 h-5 text-teal-600" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">{item.title}</p>
@@ -335,7 +335,7 @@ export default function ContactContent({ settings }: ContactContentProps) {
                         className={`w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 hover:text-white transition-all ${social.color}`}
                         aria-label={social.name}
                       >
-                        <social.icon className="w-4.5 h-4.5" />
+                        <social.icon className="w-5 h-5" />
                       </a>
                     ))}
                   </div>
