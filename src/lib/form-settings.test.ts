@@ -61,9 +61,11 @@ describe("form-settings", () => {
     });
 
     it("returns serviceInquiry email from Sanity", async () => {
-      mockFetch.mockResolvedValueOnce({
-        serviceInquiryRecipientEmail: "services@example.com",
-      });
+      // 4 parallel fetches: contact, serviceInquiry, eventInquiry, newsletter
+      mockFetch.mockResolvedValueOnce({});
+      mockFetch.mockResolvedValueOnce({ serviceInquiryRecipientEmail: "services@example.com" });
+      mockFetch.mockResolvedValueOnce({});
+      mockFetch.mockResolvedValueOnce({});
 
       const mod = await import("./form-settings");
       const email = await mod.getFormRecipientEmail("serviceInquiry");
@@ -71,9 +73,11 @@ describe("form-settings", () => {
     });
 
     it("returns newsletter email from Sanity", async () => {
-      mockFetch.mockResolvedValueOnce({
-        newsletterRecipientEmail: "newsletter@example.com",
-      });
+      // 4 parallel fetches: contact, serviceInquiry, eventInquiry, newsletter
+      mockFetch.mockResolvedValueOnce({});
+      mockFetch.mockResolvedValueOnce({});
+      mockFetch.mockResolvedValueOnce({});
+      mockFetch.mockResolvedValueOnce({ newsletterRecipientEmail: "newsletter@example.com" });
 
       const mod = await import("./form-settings");
       const email = await mod.getFormRecipientEmail("newsletter");
@@ -121,9 +125,11 @@ describe("form-settings", () => {
     });
 
     it("checks serviceInquiry enabled state", async () => {
-      mockFetch.mockResolvedValueOnce({
-        serviceInquiryEnabled: false,
-      });
+      // 4 parallel fetches: contact, serviceInquiry, eventInquiry, newsletter
+      mockFetch.mockResolvedValueOnce({});
+      mockFetch.mockResolvedValueOnce({ serviceInquiryEnabled: false });
+      mockFetch.mockResolvedValueOnce({});
+      mockFetch.mockResolvedValueOnce({});
 
       const mod = await import("./form-settings");
       const enabled = await mod.isFormEnabled("serviceInquiry");
@@ -131,9 +137,11 @@ describe("form-settings", () => {
     });
 
     it("checks newsletter enabled state", async () => {
-      mockFetch.mockResolvedValueOnce({
-        newsletterEnabled: false,
-      });
+      // 4 parallel fetches: contact, serviceInquiry, eventInquiry, newsletter
+      mockFetch.mockResolvedValueOnce({});
+      mockFetch.mockResolvedValueOnce({});
+      mockFetch.mockResolvedValueOnce({});
+      mockFetch.mockResolvedValueOnce({ newsletterEnabled: false });
 
       const mod = await import("./form-settings");
       const enabled = await mod.isFormEnabled("newsletter");
