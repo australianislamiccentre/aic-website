@@ -27,12 +27,7 @@ export const seoFields = [
         description:
           "Shown in Google search results. Recommended: 120–160 characters.",
         validation: (Rule) =>
-          Rule.max(160)
-            .warning("Over 160 characters may be truncated in search results.")
-            .custom((val) => {
-              if (!val) return "Recommended for search engine visibility — add a description.";
-              return true;
-            }),
+          Rule.max(160).warning("Over 160 characters may be truncated in search results."),
       }),
       defineField({
         name: "image",
