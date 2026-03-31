@@ -22,6 +22,12 @@ vi.mock("@/sanity/lib/image", () => ({
   urlFor: () => ({ width: () => ({ height: () => ({ url: () => "https://cdn.sanity.io/test.jpg" }) }) }),
 }));
 
+vi.mock("@portabletext/react", () => ({
+  PortableText: ({ value }: { value: unknown[] }) => (
+    <div data-testid="portable-text">{JSON.stringify(value)}</div>
+  ),
+}));
+
 vi.mock("@/components/ui/Breadcrumb", () => ({
   BreadcrumbLight: () => <nav aria-label="Breadcrumb">Breadcrumb</nav>,
 }));
@@ -52,12 +58,16 @@ const defaultSettings: SanityAboutPageSettings = {
 describe("AboutContent", () => {
   it("renders hero heading from Sanity settings", () => {
     render(<AboutContent settings={defaultSettings} />);
-    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+    const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading).toBeInTheDocument();
+    expect(heading).toHaveTextContent("About the Australian Islamic Centre");
   });
 
   it("renders hardcoded fallback heading when settings is null", () => {
     render(<AboutContent settings={null} />);
-    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+    const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading).toBeInTheDocument();
+    expect(heading).toHaveTextContent("About the Australian Islamic Centre");
   });
 
   it("renders hero stats when provided", () => {

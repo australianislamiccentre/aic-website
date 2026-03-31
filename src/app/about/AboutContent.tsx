@@ -8,8 +8,10 @@
  */
 "use client";
 
+import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { PortableText } from "@portabletext/react";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
@@ -278,13 +280,13 @@ export default function AboutContent({ settings }: AboutContentProps) {
 
                 <div className="flex flex-wrap gap-6 mb-8">
                   {heroStats.map((stat, i) => (
-                    <>
-                      {i > 0 && <div key={`divider-${i}`} className="w-px bg-gray-200" />}
-                      <div key={stat.value} className="text-center">
+                    <React.Fragment key={stat.value}>
+                      {i > 0 && <div className="w-px bg-gray-200" />}
+                      <div className="text-center">
                         <p className="text-3xl font-bold text-teal-600">{stat.value}</p>
                         <p className="text-sm text-gray-500">{stat.label}</p>
                       </div>
-                    </>
+                    </React.Fragment>
                   ))}
                 </div>
               </div>
@@ -368,16 +370,24 @@ export default function AboutContent({ settings }: AboutContentProps) {
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
                     {missionHeading}
                   </h2>
-                  <p className="text-gray-600 mb-4 leading-relaxed">
-                    The Australian Islamic Centre serves as a beacon of Islamic faith and practice in
-                    Melbourne. We bridge Australian and Islamic values, contributing to broader society
-                    through education, interfaith dialogue, and community service.
-                  </p>
-                  <p className="text-gray-600 mb-6 leading-relaxed">
-                    Our holistic approach combines traditional Islamic scholarship with contemporary
-                    understanding — providing comprehensive religious services, education, and programs for
-                    Muslims and the broader public.
-                  </p>
+                  {settings?.missionContent ? (
+                    <div className="prose prose-lg max-w-none text-gray-600 mb-6">
+                      <PortableText value={settings.missionContent} />
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-gray-600 mb-4 leading-relaxed">
+                        The Australian Islamic Centre serves as a beacon of Islamic faith and practice in
+                        Melbourne. We bridge Australian and Islamic values, contributing to broader society
+                        through education, interfaith dialogue, and community service.
+                      </p>
+                      <p className="text-gray-600 mb-6 leading-relaxed">
+                        Our holistic approach combines traditional Islamic scholarship with contemporary
+                        understanding — providing comprehensive religious services, education, and programs for
+                        Muslims and the broader public.
+                      </p>
+                    </>
+                  )}
                   <Button
                     href={missionButtonUrl}
                     variant="primary"
