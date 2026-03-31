@@ -19,9 +19,21 @@ import offlineDonations from "./singletons/offlineDonations";
 import mediaGallery from "./singletons/mediaGallery";
 import formSettings from "./singletons/formSettings"; // deprecated — hidden from desk
 
-// ── Page singletons (to be created in Task 4) ──
-// import aboutPageSettings from "./pages/aboutPageSettings";
-// ... (commented out until Task 4 creates these files)
+// ── Page singletons ──
+import aboutPageSettings from "./pages/aboutPageSettings";
+import architecturePageSettings from "./pages/architecturePageSettings";
+import visitPageSettings from "./pages/visitPageSettings";
+import worshippersPageSettings from "./pages/worshippersPageSettings";
+import contactPageSettings from "./pages/contactPageSettings";
+import eventsPageSettings from "./pages/eventsPageSettings";
+import announcementsPageSettings from "./pages/announcementsPageSettings";
+import servicesPageSettings from "./pages/servicesPageSettings";
+import imamsPageSettings from "./pages/imamsPageSettings";
+import resourcesPageSettings from "./pages/resourcesPageSettings";
+import mediaPageSettings from "./pages/mediaPageSettings";
+import partnersPageSettings from "./pages/partnersPageSettings";
+import privacyPageSettings from "./pages/privacyPageSettings";
+import termsPageSettings from "./pages/termsPageSettings";
 
 // ── Form singletons (to be created in Task 5) ──
 // import contactFormSettings from "./forms/contactFormSettings";
@@ -50,6 +62,21 @@ export const schemaTypes = [
   offlineDonations,
   mediaGallery,
   formSettings,
+  // Page singletons
+  aboutPageSettings,
+  architecturePageSettings,
+  visitPageSettings,
+  worshippersPageSettings,
+  contactPageSettings,
+  eventsPageSettings,
+  announcementsPageSettings,
+  servicesPageSettings,
+  imamsPageSettings,
+  resourcesPageSettings,
+  mediaPageSettings,
+  partnersPageSettings,
+  privacyPageSettings,
+  termsPageSettings,
   // Content documents
   event,
   announcement,
