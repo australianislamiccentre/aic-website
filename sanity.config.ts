@@ -99,9 +99,9 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                             .title("Live Events")
                             .filter(
                               `_type == "event" && active == true && (
-                                (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= now())) ||
-                                date >= now() ||
-                                endDate >= now()
+                                (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
+                                date >= string::split(string(now()), "T")[0] ||
+                                endDate >= string::split(string(now()), "T")[0]
                               )`
                             )
                         ),
@@ -112,9 +112,9 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                             .title("Expired Events")
                             .filter(
                               `_type == "event" && active == true && !(
-                                (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= now())) ||
-                                date >= now() ||
-                                endDate >= now()
+                                (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
+                                date >= string::split(string(now()), "T")[0] ||
+                                endDate >= string::split(string(now()), "T")[0]
                               )`
                             )
                         ),
@@ -368,6 +368,7 @@ const previewPaths: Record<string, (slug?: string) => string> = {
   serviceInquiryFormSettings: () => "/services",
   eventInquiryFormSettings: () => "/events",
   newsletterSettings: () => "/",
+  allowedFormDomains: () => "/events",
 };
 
 function resolvePreviewUrl(docType: string, slug?: string): string | undefined {
