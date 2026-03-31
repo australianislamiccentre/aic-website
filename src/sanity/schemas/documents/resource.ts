@@ -8,6 +8,7 @@
  *
  * @module sanity/schemas/resource
  */
+import { orderRankField, orderRankOrdering } from "@sanity/orderable-document-list";
 import { defineField, defineType } from "sanity";
 
 export default defineType({
@@ -15,6 +16,8 @@ export default defineType({
   title: "Resource",
   type: "document",
   fields: [
+    orderRankField({ type: "resource" }),
+
     // ── 1. Status ──
     defineField({
       name: "active",
@@ -30,13 +33,6 @@ export default defineType({
       description: "Show in featured resources section",
       initialValue: false,
     }),
-    defineField({
-      name: "order",
-      title: "Display Order",
-      type: "number",
-      description: "Lower numbers appear first",
-    }),
-
     // ── 2. Title & Description ──
     defineField({
       name: "title",
@@ -219,6 +215,7 @@ export default defineType({
     },
   },
   orderings: [
+    orderRankOrdering,
     {
       title: "Date, Newest",
       name: "dateDesc",
@@ -227,10 +224,7 @@ export default defineType({
     {
       title: "Category",
       name: "categoryAsc",
-      by: [
-        { field: "category", direction: "asc" },
-        { field: "order", direction: "asc" },
-      ],
+      by: [{ field: "category", direction: "asc" }],
     },
     {
       title: "Title A-Z",

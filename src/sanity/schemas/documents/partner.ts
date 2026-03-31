@@ -6,6 +6,7 @@
  *
  * @module sanity/schemas/partner
  */
+import { orderRankField, orderRankOrdering } from "@sanity/orderable-document-list";
 import { defineField, defineType } from "sanity";
 
 export default defineType({
@@ -13,18 +14,13 @@ export default defineType({
   title: "Partner",
   type: "document",
   fields: [
+    orderRankField({ type: "partner" }),
     defineField({
       name: "active",
       title: "Active",
       type: "boolean",
       description: "Show this partner on the website",
       initialValue: true,
-    }),
-    defineField({
-      name: "order",
-      title: "Display Order",
-      type: "number",
-      description: "Lower numbers appear first",
     }),
     defineField({
       name: "name",
@@ -127,4 +123,12 @@ export default defineType({
       media: "logo",
     },
   },
+  orderings: [
+    orderRankOrdering,
+    {
+      title: "Name A-Z",
+      name: "nameAsc",
+      by: [{ field: "name", direction: "asc" }],
+    },
+  ],
 });
