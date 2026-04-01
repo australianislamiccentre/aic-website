@@ -14,7 +14,7 @@ import Link from "next/link";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
-import { SanityService } from "@/types/sanity";
+import { SanityService, SanityServicesPageSettings } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
 import {
   ArrowRight,
@@ -85,9 +85,10 @@ function transformSanityService(service: SanityService): ServiceDisplay {
 
 interface ServicesContentProps {
   services: SanityService[];
+  pageSettings?: SanityServicesPageSettings | null;
 }
 
-export default function ServicesContent({ services }: ServicesContentProps) {
+export default function ServicesContent({ services, pageSettings }: ServicesContentProps) {
   const info = useSiteSettings();
 
   // Sanity is the single source of truth — no hardcoded fallback
@@ -109,27 +110,42 @@ export default function ServicesContent({ services }: ServicesContentProps) {
             <div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-6">
                 <HandHeart className="w-4 h-4" />
-                Community Support
+                {pageSettings?.heroBadge ?? "Community Support"}
               </div>
 
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Our <span className="text-teal-600">Services</span>
+                {pageSettings?.heroHeading ?? "Our"}{" "}
+                {pageSettings?.heroHeadingAccent !== undefined ? (
+                  <span className="text-teal-600">{pageSettings.heroHeadingAccent}</span>
+                ) : (
+                  <span className="text-teal-600">Services</span>
+                )}
               </h1>
 
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                From spiritual guidance to practical support, we offer comprehensive services to meet the diverse needs of our community.
+                {pageSettings?.heroDescription ?? "From spiritual guidance to practical support, we offer comprehensive services to meet the diverse needs of our community."}
               </p>
 
               <div className="flex flex-wrap gap-3">
-                <span className="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-full text-sm font-medium">
-                  Religious Services
-                </span>
-                <span className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
-                  Counselling
-                </span>
-                <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                  Family Support
-                </span>
+                {pageSettings?.heroCategoryTags && pageSettings.heroCategoryTags.length > 0 ? (
+                  pageSettings.heroCategoryTags.map((tag) => (
+                    <span key={tag} className="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-full text-sm font-medium">
+                      {tag}
+                    </span>
+                  ))
+                ) : (
+                  <>
+                    <span className="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-full text-sm font-medium">
+                      Religious Services
+                    </span>
+                    <span className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                      Counselling
+                    </span>
+                    <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                      Family Support
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 

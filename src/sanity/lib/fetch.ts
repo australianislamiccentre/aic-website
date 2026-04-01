@@ -68,6 +68,27 @@ import {
   // Partners
   partnersQuery,
   partnerBySlugQuery,
+  // Page singleton queries
+  aboutPageSettingsQuery,
+  architecturePageSettingsQuery,
+  visitPageSettingsQuery,
+  worshippersPageSettingsQuery,
+  contactPageSettingsQuery,
+  eventsPageSettingsQuery,
+  announcementsPageSettingsQuery,
+  servicesPageSettingsQuery,
+  imamsPageSettingsQuery,
+  resourcesPageSettingsQuery,
+  mediaPageSettingsQuery,
+  partnersPageSettingsQuery,
+  privacyPageSettingsQuery,
+  termsPageSettingsQuery,
+  // Form singleton queries
+  contactFormSettingsQuery,
+  serviceInquiryFormSettingsQuery,
+  eventInquiryFormSettingsQuery,
+  newsletterSettingsQuery,
+  allowedFormDomainsQuery,
 } from "./queries";
 import {
   SanityEvent,
@@ -85,6 +106,22 @@ import {
   SanityPageContent,
   SanityResource,
   SanityPartner,
+  SanityAboutPageSettings,
+  SanityArchitecturePageSettings,
+  SanityVisitPageSettings,
+  SanityWorshippersPageSettings,
+  SanityContactPageSettings,
+  SanitySimplePageSettings,
+  SanityServicesPageSettings,
+  SanityImamsPageSettings,
+  SanityMediaPageSettings,
+  SanityPartnersPageSettings,
+  SanityLegalPageSettings,
+  SanityContactFormSettings,
+  SanityServiceInquiryFormSettings,
+  SanityEventInquiryFormSettings,
+  SanityNewsletterSettings,
+  SanityAllowedFormDomains,
 } from "@/types/sanity";
 
 // Donation Settings type (Fundraise Up config)
@@ -614,6 +651,25 @@ export async function getPartnerBySlug(slug: string): Promise<SanityPartner | nu
   }
 }
 
+// For static generation (no draft mode check - used in generateStaticParams)
+export async function getPartnersForStaticGeneration(): Promise<{ _id: string; slug: string }[]> {
+  try {
+    const result = await client.fetch<{ _id: string; slug: string }[]>(
+      `*[_type == "partner" && active != false && defined(slug.current)] { _id, "slug": slug.current }`,
+      {},
+      {
+        next: {
+          revalidate: REVALIDATE_TIME,
+          tags: ["sanity", "partners"],
+        },
+      }
+    );
+    return result ?? [];
+  } catch {
+    return [];
+  }
+}
+
 // Embed Security
 export async function getAllowedEmbedDomains(): Promise<string[]> {
   try {
@@ -625,3 +681,158 @@ export async function getAllowedEmbedDomains(): Promise<string[]> {
   }
 }
 
+// ── Page settings fetch functions ──
+
+export async function getAboutPageSettings(): Promise<SanityAboutPageSettings | null> {
+  try {
+    return await sanityFetch<SanityAboutPageSettings>(aboutPageSettingsQuery, {}, ["aboutPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getArchitecturePageSettings(): Promise<SanityArchitecturePageSettings | null> {
+  try {
+    return await sanityFetch<SanityArchitecturePageSettings>(architecturePageSettingsQuery, {}, ["architecturePageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getVisitPageSettings(): Promise<SanityVisitPageSettings | null> {
+  try {
+    return await sanityFetch<SanityVisitPageSettings>(visitPageSettingsQuery, {}, ["visitPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getWorshippersPageSettings(): Promise<SanityWorshippersPageSettings | null> {
+  try {
+    return await sanityFetch<SanityWorshippersPageSettings>(worshippersPageSettingsQuery, {}, ["worshippersPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getContactPageSettings(): Promise<SanityContactPageSettings | null> {
+  try {
+    return await sanityFetch<SanityContactPageSettings>(contactPageSettingsQuery, {}, ["contactPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getEventsPageSettings(): Promise<SanitySimplePageSettings | null> {
+  try {
+    return await sanityFetch<SanitySimplePageSettings>(eventsPageSettingsQuery, {}, ["eventsPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getAnnouncementsPageSettings(): Promise<SanitySimplePageSettings | null> {
+  try {
+    return await sanityFetch<SanitySimplePageSettings>(announcementsPageSettingsQuery, {}, ["announcementsPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getServicesPageSettings(): Promise<SanityServicesPageSettings | null> {
+  try {
+    return await sanityFetch<SanityServicesPageSettings>(servicesPageSettingsQuery, {}, ["servicesPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getImamsPageSettings(): Promise<SanityImamsPageSettings | null> {
+  try {
+    return await sanityFetch<SanityImamsPageSettings>(imamsPageSettingsQuery, {}, ["imamsPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getResourcesPageSettings(): Promise<SanitySimplePageSettings | null> {
+  try {
+    return await sanityFetch<SanitySimplePageSettings>(resourcesPageSettingsQuery, {}, ["resourcesPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getMediaPageSettings(): Promise<SanityMediaPageSettings | null> {
+  try {
+    return await sanityFetch<SanityMediaPageSettings>(mediaPageSettingsQuery, {}, ["mediaPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getPartnersPageSettings(): Promise<SanityPartnersPageSettings | null> {
+  try {
+    return await sanityFetch<SanityPartnersPageSettings>(partnersPageSettingsQuery, {}, ["partnersPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getPrivacyPageSettings(): Promise<SanityLegalPageSettings | null> {
+  try {
+    return await sanityFetch<SanityLegalPageSettings>(privacyPageSettingsQuery, {}, ["privacyPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getTermsPageSettings(): Promise<SanityLegalPageSettings | null> {
+  try {
+    return await sanityFetch<SanityLegalPageSettings>(termsPageSettingsQuery, {}, ["termsPageSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+// ── Form settings fetch functions ──
+
+export async function getContactFormSettings(): Promise<SanityContactFormSettings | null> {
+  try {
+    return await sanityFetch<SanityContactFormSettings>(contactFormSettingsQuery, {}, ["contactFormSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getServiceInquiryFormSettings(): Promise<SanityServiceInquiryFormSettings | null> {
+  try {
+    return await sanityFetch<SanityServiceInquiryFormSettings>(serviceInquiryFormSettingsQuery, {}, ["serviceInquiryFormSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getEventInquiryFormSettings(): Promise<SanityEventInquiryFormSettings | null> {
+  try {
+    return await sanityFetch<SanityEventInquiryFormSettings>(eventInquiryFormSettingsQuery, {}, ["eventInquiryFormSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getNewsletterSettings(): Promise<SanityNewsletterSettings | null> {
+  try {
+    return await sanityFetch<SanityNewsletterSettings>(newsletterSettingsQuery, {}, ["newsletterSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getAllowedFormDomains(): Promise<SanityAllowedFormDomains | null> {
+  try {
+    return await sanityFetch<SanityAllowedFormDomains>(allowedFormDomainsQuery, {}, ["allowedFormDomains"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}

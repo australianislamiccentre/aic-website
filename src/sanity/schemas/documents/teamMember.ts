@@ -8,6 +8,7 @@
  *
  * @module sanity/schemas/teamMember
  */
+import { orderRankField, orderRankOrdering } from "@sanity/orderable-document-list";
 import { defineField, defineType } from "sanity";
 
 export default defineType({
@@ -15,6 +16,8 @@ export default defineType({
   title: "Team Member",
   type: "document",
   fields: [
+    orderRankField({ type: "teamMember" }),
+
     // ── 1. Status ──
     defineField({
       name: "active",
@@ -30,13 +33,6 @@ export default defineType({
       description: "Show on homepage team section",
       initialValue: false,
     }),
-    defineField({
-      name: "order",
-      title: "Display Order",
-      type: "number",
-      description: "Lower numbers appear first within category",
-    }),
-
     // ── 2. Identity ──
     defineField({
       name: "name",
@@ -195,12 +191,13 @@ export default defineType({
     },
   },
   orderings: [
+    orderRankOrdering,
     {
-      title: "Category then Order",
+      title: "Category then Name",
       name: "categoryOrder",
       by: [
         { field: "category", direction: "asc" },
-        { field: "order", direction: "asc" },
+        { field: "name", direction: "asc" },
       ],
     },
     {

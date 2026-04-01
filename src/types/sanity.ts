@@ -105,7 +105,7 @@ export interface SanityService {
   formRecipientEmail?: string;
   featured?: boolean;
   active?: boolean;
-  order?: number;
+  orderRank?: string;
 }
 
 /** A photo in the site gallery (/media page). */
@@ -196,7 +196,7 @@ export interface SanityTeamMember {
   featured?: boolean;
   showContactInfo?: boolean;
   active?: boolean;
-  order?: number;
+  orderRank?: string;
 }
 
 /** A CMS-managed content page (about, history, privacy policy, etc.). */
@@ -253,7 +253,7 @@ export interface SanityResource {
   featured?: boolean;
   downloadCount?: number;
   active?: boolean;
-  order?: number;
+  orderRank?: string;
 }
 
 /** An affiliated partner organisation (e.g. Newport Storm FC, AIC College). */
@@ -272,7 +272,7 @@ export interface SanityPartner {
   phone?: string;
   featured?: boolean;
   active?: boolean;
-  order?: number;
+  orderRank?: string;
 }
 
 /** Global site settings singleton — organisation details, social links, etc. */
@@ -380,7 +380,9 @@ export interface SanityHomepageSettings {
   };
   featuredYoutubeUrl?: string;
   welcomeSection?: {
+    badge?: string;
     title?: string;
+    titleAccent?: string;
     subtitle?: string;
     content?: PortableTextBlock[];
     image?: SanityImage;
@@ -397,6 +399,309 @@ export interface SanityHomepageSettings {
     buttonUrl?: string;
     backgroundImage?: SanityImage;
   };
+}
+
+/** Reusable SEO fields shared across page singletons. */
+export interface SanitySeoFields {
+  title?: string;
+  description?: string;
+  image?: SanityImage;
+}
+
+/** A button reference used in page settings CTAs. */
+export interface SanityPageButton {
+  label: string;
+  url: string;
+  variant?: "primary" | "outline" | "ghost";
+}
+
+/** A stat card used in page heroes. */
+export interface SanityStatCard {
+  value: string;
+  label: string;
+}
+
+/** An icon card used in features, values, services offered. */
+export interface SanityIconCard {
+  title: string;
+  description?: string;
+  icon?: string;
+}
+
+/** A timeline item used on the About page. */
+export interface SanityTimelineItem {
+  year: string;
+  title: string;
+  description?: string;
+  icon?: string;
+}
+
+/** An award entry used on the Architecture page. */
+export interface SanityAwardCard {
+  year: string;
+  title: string;
+  organization?: string;
+  category?: string;
+}
+
+/** A gallery image with alt text used on the Architecture page gallery. */
+export interface SanityGalleryImageWithAlt {
+  image: SanityImage;
+  alt?: string;
+  caption?: string;
+}
+
+/** An etiquette item inlined into visitPageSettings or worshippersPageSettings. */
+export interface SanityEtiquetteItem {
+  title: string;
+  description?: string;
+  icon?: string;
+}
+
+/** An FAQ item inlined into visitPageSettings. */
+export interface SanityFaqItem {
+  question: string;
+  answer?: PortableTextBlock[];
+}
+
+/** About page singleton settings. */
+export interface SanityAboutPageSettings {
+  heroBadge?: string;
+  heroHeading?: string;
+  heroHeadingAccent?: string;
+  heroDescription?: string;
+  heroStats?: SanityStatCard[];
+  heroImage?: SanityImage;
+  heroImageCaption?: string;
+  missionVisible?: boolean;
+  missionImage?: SanityImage;
+  missionBadge?: string;
+  missionHeading?: string;
+  missionContent?: PortableTextBlock[];
+  missionButtonLabel?: string;
+  missionButtonUrl?: string;
+  timelineVisible?: boolean;
+  timelineHeading?: string;
+  timelineItems?: SanityTimelineItem[];
+  architecturePreviewVisible?: boolean;
+  architectureHeading?: string;
+  architectureDescription?: string;
+  architectureImages?: SanityImage[];
+  architectureFeatures?: SanityIconCard[];
+  architectureButtonLabel?: string;
+  architectureButtonUrl?: string;
+  valuesVisible?: boolean;
+  valuesHeading?: string;
+  valuesDescription?: string;
+  valuesCards?: SanityIconCard[];
+  valuesButtons?: SanityPageButton[];
+  seo?: SanitySeoFields;
+}
+
+/** Architecture page singleton settings. */
+export interface SanityArchitecturePageSettings {
+  heroBadge?: string;
+  heroHeading?: string;
+  heroHeadingAccent?: string;
+  heroContent?: PortableTextBlock[];
+  heroImage?: SanityImage;
+  heroImageBadge?: string;
+  philosophyVisible?: boolean;
+  philosophyBadge?: string;
+  philosophyContent?: PortableTextBlock[];
+  philosophyImages?: SanityImage[];
+  featuresVisible?: boolean;
+  featuresHeading?: string;
+  featuresCards?: SanityIconCard[];
+  galleryVisible?: boolean;
+  galleryHeading?: string;
+  galleryDescription?: string;
+  galleryImages?: SanityGalleryImageWithAlt[];
+  awardsVisible?: boolean;
+  awardsBadge?: string;
+  awardsHeading?: string;
+  awardsCards?: SanityAwardCard[];
+  quoteVisible?: boolean;
+  quoteText?: string;
+  quoteAttribution?: string;
+  ctaVisible?: boolean;
+  ctaHeading?: string;
+  ctaDescription?: string;
+  ctaButtonLabel?: string;
+  ctaButtonUrl?: string;
+  seo?: SanitySeoFields;
+}
+
+/** Visit page singleton settings. */
+export interface SanityVisitPageSettings {
+  heroHeading?: string;
+  heroHeadingAccent?: string;
+  heroDescription?: string;
+  visitingInfoVisible?: boolean;
+  visitingInfoImage?: SanityImage;
+  visitingInfoHeading?: string;
+  visitingHours?: string;
+  facilitiesVisible?: boolean;
+  facilitiesHeading?: string;
+  facilitiesDescription?: string;
+  facilitiesCards?: Array<{ name: string; capacity?: string; description?: string; icon?: string }>;
+  facilitiesImage?: SanityImage;
+  mannersVisible?: boolean;
+  mannersBadge?: string;
+  mannersHeading?: string;
+  mannersDescription?: string;
+  etiquetteItems?: SanityEtiquetteItem[];
+  faqVisible?: boolean;
+  faqBadge?: string;
+  faqHeading?: string;
+  faqItems?: SanityFaqItem[];
+  ctaVisible?: boolean;
+  ctaHeading?: string;
+  ctaDescription?: string;
+  ctaButtons?: SanityPageButton[];
+  seo?: SanitySeoFields;
+}
+
+/** Worshippers page singleton settings. */
+export interface SanityWorshippersPageSettings {
+  heroBadge?: string;
+  heroHeading?: string;
+  heroHeadingAccent?: string;
+  heroDescription?: string;
+  etiquetteVisible?: boolean;
+  etiquetteHeading?: string;
+  etiquetteDescription?: string;
+  etiquetteItems?: SanityEtiquetteItem[];
+  khutbahVisible?: boolean;
+  khutbahHeading?: string;
+  ctaVisible?: boolean;
+  ctaHeading?: string;
+  ctaDescription?: string;
+  ctaButtonLabel?: string;
+  ctaButtonUrl?: string;
+  seo?: SanitySeoFields;
+}
+
+/** Contact page singleton settings. */
+export interface SanityContactPageSettings {
+  heroHeading?: string;
+  heroHeadingAccent?: string;
+  heroDescription?: string;
+  sidebarVisible?: boolean;
+  operatingHours?: string;
+  seo?: SanitySeoFields;
+}
+
+/** Simple page header settings shared by events, announcements, resources, media. */
+export interface SanitySimplePageSettings {
+  heroBadge?: string;
+  heroHeading?: string;
+  heroHeadingAccent?: string;
+  heroDescription?: string;
+  seo?: SanitySeoFields;
+}
+
+/** Services page singleton settings. */
+export interface SanityServicesPageSettings extends SanitySimplePageSettings {
+  heroCategoryTags?: string[];
+  heroImage?: SanityImage;
+  ctaVisible?: boolean;
+  ctaHeading?: string;
+  ctaDescription?: string;
+  ctaButtonLabel?: string;
+  ctaButtonUrl?: string;
+}
+
+/** Imams page singleton settings. */
+export interface SanityImamsPageSettings {
+  heroHeading?: string;
+  heroHeadingAccent?: string;
+  heroDescription?: string;
+  imamsSectionHeading?: string;
+  imamsSectionDescription?: string;
+  servicesOfferedVisible?: boolean;
+  servicesOfferedHeading?: string;
+  servicesOfferedCards?: SanityIconCard[];
+  ctaVisible?: boolean;
+  ctaHeading?: string;
+  ctaDescription?: string;
+  ctaButtons?: SanityPageButton[];
+  seo?: SanitySeoFields;
+}
+
+/** Media page singleton settings. */
+export interface SanityMediaPageSettings extends SanitySimplePageSettings {
+  youtubeVisible?: boolean;
+  galleryVisible?: boolean;
+  socialVisible?: boolean;
+}
+
+/** Partners page singleton settings. */
+export interface SanityPartnersPageSettings {
+  heroBadge?: string;
+  heroHeading?: string;
+  heroHeadingAccent?: string;
+  heroDescription?: string;
+  ctaVisible?: boolean;
+  ctaHeading?: string;
+  ctaHeadingAccent?: string;
+  ctaDescription?: string;
+  ctaButtonLabel?: string;
+  ctaButtonUrl?: string;
+  seo?: SanitySeoFields;
+}
+
+/** Privacy/Terms page singleton settings. */
+export interface SanityLegalPageSettings {
+  heading?: string;
+  lastUpdated?: string;
+  content?: PortableTextBlock[];
+  seo?: SanitySeoFields;
+}
+
+/** Contact form singleton settings. */
+export interface SanityContactFormSettings {
+  contactEnabled?: boolean;
+  contactRecipientEmail?: string;
+  contactHeading?: string;
+  contactHeadingAccent?: string;
+  contactDescription?: string;
+  contactFormHeading?: string;
+  contactFormDescription?: string;
+  contactInquiryTypes?: string[];
+  contactSuccessHeading?: string;
+  contactSuccessMessage?: string;
+}
+
+/** Service inquiry form singleton settings. */
+export interface SanityServiceInquiryFormSettings {
+  serviceInquiryEnabled?: boolean;
+  serviceInquiryRecipientEmail?: string;
+  serviceInquiryFormHeading?: string;
+  serviceInquiryFormDescription?: string;
+  serviceInquirySuccessHeading?: string;
+  serviceInquirySuccessMessage?: string;
+}
+
+/** Event inquiry form singleton settings. */
+export interface SanityEventInquiryFormSettings {
+  eventInquiryEnabled?: boolean;
+  eventInquiryRecipientEmail?: string;
+}
+
+/** Newsletter singleton settings. */
+export interface SanityNewsletterSettings {
+  newsletterEnabled?: boolean;
+  newsletterRecipientEmail?: string;
+  newsletterHeading?: string;
+  newsletterDescription?: string;
+  newsletterButtonText?: string;
+  newsletterSuccessMessage?: string;
+}
+
+/** Allowed embed domains singleton settings. */
+export interface SanityAllowedFormDomains {
+  allowedDomains?: Array<{ domain: string; label?: string }>;
 }
 
 /**

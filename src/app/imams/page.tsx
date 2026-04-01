@@ -8,24 +8,30 @@
  * @route /imams
  * @module app/imams/page
  */
-import { Metadata } from "next";
-import { getTeamMembersByCategory } from "@/sanity/lib/fetch";
+import type { Metadata } from "next";
+import { getTeamMembersByCategory, getImamsPageSettings } from "@/sanity/lib/fetch";
 import ImamsContent from "./ImamsContent";
 
-export const metadata: Metadata = {
-  title: "Our Imams | Australian Islamic Centre",
-  description:
-    "Meet the Imams and religious leaders of the Australian Islamic Centre who guide our community in faith, education, and spiritual growth.",
-  openGraph: {
-    title: "Our Imams | Australian Islamic Centre",
-    description:
-      "Meet the Imams and religious leaders of the Australian Islamic Centre who guide our community in faith, education, and spiritual growth.",
-    type: "website",
-  },
-};
+export const revalidate = 120;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getImamsPageSettings();
+  return {
+    title: settings?.seo?.title ?? "Our Imams | Australian Islamic Centre",
+    description: settings?.seo?.description ?? "Meet the dedicated imams and scholars of the Australian Islamic Centre.",
+    openGraph: {
+      title: settings?.seo?.title ?? "Our Imams | Australian Islamic Centre",
+      description: settings?.seo?.description ?? "Meet the dedicated imams and scholars of the Australian Islamic Centre.",
+      type: "website",
+    },
+  };
+}
 
 export default async function ImamsPage() {
-  const imams = await getTeamMembersByCategory("imam");
+  const [imams, settings] = await Promise.all([
+    getTeamMembersByCategory("imam"),
+    getImamsPageSettings(),
+  ]);
 
-  return <ImamsContent imams={imams} />;
+  return <ImamsContent imams={imams} pageSettings={settings} />;
 }

@@ -23,7 +23,7 @@ import {
   Building,
 } from "lucide-react";
 import { urlFor } from "@/sanity/lib/image";
-import type { SanityPartner } from "@/types/sanity";
+import type { SanityPartner, SanityPartnersPageSettings } from "@/types/sanity";
 import type { LucideIcon } from "lucide-react";
 
 /** Map Sanity icon string values to lucide-react icon components. */
@@ -72,9 +72,10 @@ const fallbackImages: Record<string, string> = {
 
 interface PartnersContentProps {
   partners: SanityPartner[];
+  pageSettings?: SanityPartnersPageSettings | null;
 }
 
-export default function PartnersContent({ partners }: PartnersContentProps) {
+export default function PartnersContent({ partners, pageSettings }: PartnersContentProps) {
   const displayPartners = partners.length > 0 ? partners : fallbackPartners;
 
   return (
@@ -86,15 +87,18 @@ export default function PartnersContent({ partners }: PartnersContentProps) {
           <div className="mt-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-4">
               <Handshake className="w-4 h-4" />
-              Our Network
+              {pageSettings?.heroBadge ?? "Our Network"}
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Affiliated <span className="text-teal-600">Partners</span>
+              {pageSettings?.heroHeading ?? "Affiliated"}{" "}
+              {pageSettings?.heroHeadingAccent !== undefined ? (
+                <span className="text-teal-600">{pageSettings.heroHeadingAccent}</span>
+              ) : (
+                <span className="text-teal-600">Partners</span>
+              )}
             </h1>
             <p className="text-gray-600 max-w-2xl">
-              The Australian Islamic Centre works alongside these affiliated
-              organisations to serve our community through education, sports, and
-              social development.
+              {pageSettings?.heroDescription ?? "The Australian Islamic Centre works alongside these affiliated organisations to serve our community through education, sports, and social development."}
             </p>
           </div>
         </div>

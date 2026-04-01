@@ -9,6 +9,7 @@
  *
  * @module sanity/schemas/service
  */
+import { orderRankField, orderRankOrdering } from "@sanity/orderable-document-list";
 import { defineField, defineType } from "sanity";
 
 export default defineType({
@@ -16,6 +17,8 @@ export default defineType({
   title: "Service",
   type: "document",
   fields: [
+    orderRankField({ type: "service" }),
+
     // ── Status ──
     defineField({
       name: "active",
@@ -39,13 +42,6 @@ export default defineType({
           return true;
         }),
     }),
-    defineField({
-      name: "order",
-      title: "Display Order",
-      type: "number",
-      description: "Controls display order on both the /services page and homepage. Lower numbers appear first.",
-    }),
-
     // ── 1. Hero Image (banner at the top of the page) ──
     defineField({
       name: "image",
@@ -237,11 +233,7 @@ export default defineType({
     },
   },
   orderings: [
-    {
-      title: "Display Order",
-      name: "orderAsc",
-      by: [{ field: "order", direction: "asc" }],
-    },
+    orderRankOrdering,
     {
       title: "Title A-Z",
       name: "titleAsc",

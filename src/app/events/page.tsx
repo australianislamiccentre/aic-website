@@ -8,17 +8,26 @@
  * @route /events
  * @module app/events/page
  */
-import { getEvents } from "@/sanity/lib/fetch";
+import type { Metadata } from "next";
+import { getEvents, getEventsPageSettings } from "@/sanity/lib/fetch";
 import { SanityEvent } from "@/types/sanity";
 import EventsContent from "./EventsContent";
 
-export const metadata = {
-  title: "Events | Australian Islamic Centre",
-  description: "Join us for spiritual gatherings, educational workshops, and community celebrations at the Australian Islamic Centre.",
-};
+export const revalidate = 120;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getEventsPageSettings();
+  return {
+    title: settings?.seo?.title ?? "Events | Australian Islamic Centre",
+    description: settings?.seo?.description ?? "Join us for spiritual gatherings, educational workshops, and community celebrations at the Australian Islamic Centre.",
+  };
+}
 
 export default async function EventsPage() {
-  const events = (await getEvents()) as SanityEvent[];
+  const [events, settings] = await Promise.all([
+    getEvents() as Promise<SanityEvent[]>,
+    getEventsPageSettings(),
+  ]);
 
-  return <EventsContent events={events} />;
+  return <EventsContent events={events} pageSettings={settings} />;
 }

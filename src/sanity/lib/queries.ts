@@ -188,7 +188,7 @@ export const programsQuery = groq`
 
 // Services - active only, ordered by display order
 export const servicesQuery = groq`
-  *[_type == "service" && active != false] | order(order asc) {
+  *[_type == "service" && active != false] | order(orderRank asc) {
     _id,
     title,
     "slug": slug.current,
@@ -236,7 +236,7 @@ export const serviceBySlugQuery = groq`
 
 // Featured services for homepage
 export const featuredServicesQuery = groq`
-  *[_type == "service" && active != false && featured == true] | order(order asc) [0...6] {
+  *[_type == "service" && active != false && featured == true] | order(orderRank asc) [0...6] {
     _id,
     title,
     "slug": slug.current,
@@ -281,7 +281,7 @@ export const donatePageSettingsQuery = groq`
 
 // Gallery
 export const galleryQuery = groq`
-  *[_type == "galleryImage"] | order(order asc) {
+  *[_type == "galleryImage"] | order(orderRank asc) {
     _id,
     image,
     alt,
@@ -292,7 +292,7 @@ export const galleryQuery = groq`
 `;
 
 export const featuredGalleryQuery = groq`
-  *[_type == "galleryImage" && featured == true] | order(order asc) {
+  *[_type == "galleryImage" && featured == true] | order(orderRank asc) {
     _id,
     image,
     alt,
@@ -359,7 +359,7 @@ export const etiquetteQuery = groq`
 // Team Members
 // ============================================
 export const teamMembersQuery = groq`
-  *[_type == "teamMember" && active != false] | order(category asc, order asc) {
+  *[_type == "teamMember" && active != false] | order(orderRank asc) {
     _id,
     name,
     "slug": slug.current,
@@ -401,7 +401,7 @@ export const teamMemberBySlugQuery = groq`
 `;
 
 export const teamMembersByCategoryQuery = groq`
-  *[_type == "teamMember" && active != false && category == $category] | order(order asc) {
+  *[_type == "teamMember" && active != false && category == $category] | order(orderRank asc) {
     _id,
     name,
     "slug": slug.current,
@@ -413,7 +413,7 @@ export const teamMembersByCategoryQuery = groq`
 `;
 
 export const featuredTeamMembersQuery = groq`
-  *[_type == "teamMember" && active != false && featured == true] | order(category asc, order asc) [0...6] {
+  *[_type == "teamMember" && active != false && featured == true] | order(orderRank asc) [0...6] {
     _id,
     name,
     "slug": slug.current,
@@ -471,7 +471,7 @@ export const navigationPagesQuery = groq`
 // NEW: Resources
 // ============================================
 export const resourcesQuery = groq`
-  *[_type == "resource" && active != false] | order(date desc, order asc) {
+  *[_type == "resource" && active != false] | order(orderRank asc) {
     _id,
     title,
     "slug": slug.current,
@@ -667,7 +667,7 @@ export const latestAnnouncementsQuery = groq`
 // Partners
 // ============================================
 export const partnersQuery = groq`
-  *[_type == "partner" && active != false] | order(order asc) {
+  *[_type == "partner" && active != false] | order(orderRank asc) {
     _id,
     name,
     "slug": slug.current,
@@ -697,5 +697,166 @@ export const partnerBySlugQuery = groq`
     phone,
     featured,
     active
+  }
+`;
+
+// ── Page singleton queries ──
+
+export const aboutPageSettingsQuery = groq`
+  *[_id == "aboutPageSettings"][0] {
+    heroBadge, heroHeading, heroHeadingAccent, heroDescription,
+    heroStats, heroImage, heroImageCaption,
+    missionVisible, missionImage, missionBadge, missionHeading, missionContent, missionButtonLabel, missionButtonUrl,
+    timelineVisible, timelineHeading, timelineItems,
+    architecturePreviewVisible, architectureHeading, architectureDescription, architectureImages, architectureFeatures, architectureButtonLabel, architectureButtonUrl,
+    valuesVisible, valuesHeading, valuesDescription, valuesCards, valuesButtons,
+    seo
+  }
+`;
+
+export const architecturePageSettingsQuery = groq`
+  *[_id == "architecturePageSettings"][0] {
+    heroBadge, heroHeading, heroHeadingAccent, heroContent, heroImage, heroImageBadge,
+    philosophyVisible, philosophyBadge, philosophyContent, philosophyImages,
+    featuresVisible, featuresHeading, featuresCards,
+    galleryVisible, galleryHeading, galleryDescription, galleryImages,
+    awardsVisible, awardsBadge, awardsHeading, awardsCards,
+    quoteVisible, quoteText, quoteAttribution,
+    ctaVisible, ctaHeading, ctaDescription, ctaButtonLabel, ctaButtonUrl,
+    seo
+  }
+`;
+
+export const visitPageSettingsQuery = groq`
+  *[_id == "visitPageSettings"][0] {
+    heroHeading, heroHeadingAccent, heroDescription,
+    visitingInfoVisible, visitingInfoImage, visitingInfoHeading, visitingHours,
+    facilitiesVisible, facilitiesHeading, facilitiesDescription, facilitiesCards, facilitiesImage,
+    mannersVisible, mannersBadge, mannersHeading, mannersDescription, etiquetteItems,
+    faqVisible, faqBadge, faqHeading, faqItems,
+    ctaVisible, ctaHeading, ctaDescription, ctaButtons,
+    seo
+  }
+`;
+
+export const worshippersPageSettingsQuery = groq`
+  *[_id == "worshippersPageSettings"][0] {
+    heroBadge, heroHeading, heroHeadingAccent, heroDescription,
+    etiquetteVisible, etiquetteHeading, etiquetteDescription, etiquetteItems,
+    khutbahVisible, khutbahHeading,
+    ctaVisible, ctaHeading, ctaDescription, ctaButtonLabel, ctaButtonUrl,
+    seo
+  }
+`;
+
+export const contactPageSettingsQuery = groq`
+  *[_id == "contactPageSettings"][0] {
+    heroHeading, heroHeadingAccent, heroDescription,
+    sidebarVisible, operatingHours,
+    seo
+  }
+`;
+
+export const eventsPageSettingsQuery = groq`
+  *[_id == "eventsPageSettings"][0] {
+    heroBadge, heroHeading, heroHeadingAccent, heroDescription, seo
+  }
+`;
+
+export const announcementsPageSettingsQuery = groq`
+  *[_id == "announcementsPageSettings"][0] {
+    heroBadge, heroHeading, heroHeadingAccent, heroDescription, seo
+  }
+`;
+
+export const servicesPageSettingsQuery = groq`
+  *[_id == "servicesPageSettings"][0] {
+    heroBadge, heroHeading, heroHeadingAccent, heroDescription, heroCategoryTags, heroImage,
+    ctaVisible, ctaHeading, ctaDescription, ctaButtonLabel, ctaButtonUrl,
+    seo
+  }
+`;
+
+export const imamsPageSettingsQuery = groq`
+  *[_id == "imamsPageSettings"][0] {
+    heroHeading, heroHeadingAccent, heroDescription,
+    imamsSectionHeading, imamsSectionDescription,
+    servicesOfferedVisible, servicesOfferedHeading, servicesOfferedCards,
+    ctaVisible, ctaHeading, ctaDescription, ctaButtons,
+    seo
+  }
+`;
+
+export const resourcesPageSettingsQuery = groq`
+  *[_id == "resourcesPageSettings"][0] {
+    heroBadge, heroHeading, heroHeadingAccent, heroDescription, seo
+  }
+`;
+
+export const mediaPageSettingsQuery = groq`
+  *[_id == "mediaPageSettings"][0] {
+    heroBadge, heroHeading, heroHeadingAccent, heroDescription,
+    youtubeVisible, galleryVisible, socialVisible,
+    seo
+  }
+`;
+
+export const partnersPageSettingsQuery = groq`
+  *[_id == "partnersPageSettings"][0] {
+    heroBadge, heroHeading, heroHeadingAccent, heroDescription,
+    ctaVisible, ctaHeading, ctaHeadingAccent, ctaDescription, ctaButtonLabel, ctaButtonUrl,
+    seo
+  }
+`;
+
+export const privacyPageSettingsQuery = groq`
+  *[_id == "privacyPageSettings"][0] {
+    heading, lastUpdated, content, seo
+  }
+`;
+
+export const termsPageSettingsQuery = groq`
+  *[_id == "termsPageSettings"][0] {
+    heading, lastUpdated, content, seo
+  }
+`;
+
+// ── Form singleton queries ──
+
+export const contactFormSettingsQuery = groq`
+  *[_id == "contactFormSettings"][0] {
+    contactEnabled, contactRecipientEmail,
+    contactHeading, contactHeadingAccent, contactDescription,
+    contactFormHeading, contactFormDescription,
+    contactInquiryTypes,
+    contactSuccessHeading, contactSuccessMessage
+  }
+`;
+
+export const serviceInquiryFormSettingsQuery = groq`
+  *[_id == "serviceInquiryFormSettings"][0] {
+    serviceInquiryEnabled, serviceInquiryRecipientEmail,
+    serviceInquiryFormHeading, serviceInquiryFormDescription,
+    serviceInquirySuccessHeading, serviceInquirySuccessMessage
+  }
+`;
+
+export const eventInquiryFormSettingsQuery = groq`
+  *[_id == "eventInquiryFormSettings"][0] {
+    eventInquiryEnabled, eventInquiryRecipientEmail
+  }
+`;
+
+export const newsletterSettingsQuery = groq`
+  *[_id == "newsletterSettings"][0] {
+    newsletterEnabled, newsletterRecipientEmail,
+    newsletterHeading, newsletterDescription,
+    newsletterButtonText, newsletterSuccessMessage
+  }
+`;
+
+export const allowedFormDomainsQuery = groq`
+  *[_id == "allowedFormDomains"][0] {
+    allowedDomains
   }
 `;

@@ -1,13 +1,14 @@
 /**
  * Sanity Studio Configuration
  *
- * Configures the embedded Sanity Studio at `/studio`. Defines:
- * - **Custom desk structure** — organises singletons (Prayer Times,
- *   Donations, Site Settings, Form Settings) at the top level, then
- *   groups content types (Events, Services, etc.) with filtered views
- *   (e.g. Live / Expired / Inactive for events).
- * - **Plugins** — Structure tool, Vision (GROQ playground), Presentation
- *   tool (live preview with draft mode).
+ * Page-centric sidebar: all site pages grouped under "Site Pages", each
+ * with its page settings singleton at the top followed by the content
+ * documents for that page. Forms grouped under "Forms". Global singletons
+ * (Prayer Times, Donation Settings, Site Settings) at the root level.
+ *
+ * Plugins: structureTool (custom desk), media (asset library),
+ * presentationTool (live preview), visionTool (GROQ playground),
+ * scheduled publishing.
  *
  * @module sanity.config
  * @see src/sanity/schemas/index.ts — schema registry
@@ -15,214 +16,362 @@
 "use client";
 
 import { defineConfig } from "sanity";
-import { structureTool, type StructureBuilder } from "sanity/structure";
+import { structureTool, type StructureBuilder, type StructureResolverContext } from "sanity/structure";
 import { visionTool } from "@sanity/vision";
 import { presentationTool } from "sanity/presentation";
+import { media } from "sanity-plugin-media";
+import { orderableDocumentListDeskItem } from "@sanity/orderable-document-list";
 import { schemaTypes } from "./src/sanity/schemas";
 
-/** Custom desk structure — organises singletons at top, content types below. */
-const structure = (S: StructureBuilder) =>
+/** All singleton document IDs — delete/duplicate actions are blocked for these. */
+const singletonIds = [
+  "siteSettings",
+  "homepageSettings",
+  "prayerSettings",
+  "donationSettings",
+  "donatePageSettings",
+  "formSettings",
+  "mediaGallery",
+  "offlineDonations",
+  // Page singletons
+  "aboutPageSettings",
+  "architecturePageSettings",
+  "visitPageSettings",
+  "worshippersPageSettings",
+  "contactPageSettings",
+  "eventsPageSettings",
+  "announcementsPageSettings",
+  "servicesPageSettings",
+  "imamsPageSettings",
+  "resourcesPageSettings",
+  "mediaPageSettings",
+  "partnersPageSettings",
+  "privacyPageSettings",
+  "termsPageSettings",
+  // Form singletons
+  "contactFormSettings",
+  "serviceInquiryFormSettings",
+  "eventInquiryFormSettings",
+  "newsletterSettings",
+  "allowedFormDomains",
+];
+
+/** Helper: creates a singleton list item that pins to a single document. */
+const singleton = (S: StructureBuilder, schemaType: string, title: string) =>
+  S.listItem()
+    .title(title)
+    .child(S.document().schemaType(schemaType).documentId(schemaType));
+
+/** Custom desk structure — page-centric sidebar. */
+const structure = (S: StructureBuilder, context: StructureResolverContext) =>
   S.list()
     .title("Content")
     .items([
-      // Top-level singletons for easy access
+      // ── Site Pages ──
       S.listItem()
-        .title("Prayer Times")
-        .child(
-          S.document()
-            .schemaType("prayerSettings")
-            .documentId("prayerSettings")
-        ),
-      S.listItem()
-        .title("Donations")
+        .title("Site Pages")
         .child(
           S.list()
-            .title("Donations")
+            .title("Site Pages")
             .items([
-              S.listItem()
-                .title("Fundraise Up Settings")
-                .child(
-                  S.document()
-                    .schemaType("donationSettings")
-                    .documentId("donationSettings")
-                ),
-              S.listItem()
-                .title("Donate Page")
-                .child(
-                  S.document()
-                    .schemaType("donatePageSettings")
-                    .documentId("donatePageSettings")
-                ),
+              singleton(S, "homepageSettings", "Homepage"),
+              singleton(S, "aboutPageSettings", "About"),
+              singleton(S, "architecturePageSettings", "Architecture"),
+              singleton(S, "visitPageSettings", "Visit"),
+              singleton(S, "worshippersPageSettings", "Worshippers"),
+              singleton(S, "contactPageSettings", "Contact"),
+
               S.divider(),
+
+              // Events folder
               S.listItem()
-                .title("Campaigns")
+                .title("Events")
                 .child(
                   S.list()
-                    .title("Campaigns")
+                    .title("Events")
                     .items([
+                      singleton(S, "eventsPageSettings", "Page Settings"),
+                      S.divider(),
+                      S.listItem()
+                        .title("Live on Website")
+                        .child(
+                          S.documentList()
+                            .title("Live Events")
+                            .filter(
+                              `_type == "event" && active == true && (
+                                (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
+                                date >= string::split(string(now()), "T")[0] ||
+                                endDate >= string::split(string(now()), "T")[0]
+                              )`
+                            )
+                        ),
+                      S.listItem()
+                        .title("Expired")
+                        .child(
+                          S.documentList()
+                            .title("Expired Events")
+                            .filter(
+                              `_type == "event" && active == true && !(
+                                (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
+                                date >= string::split(string(now()), "T")[0] ||
+                                endDate >= string::split(string(now()), "T")[0]
+                              )`
+                            )
+                        ),
+                      S.listItem()
+                        .title("Inactive")
+                        .child(
+                          S.documentList()
+                            .title("Inactive Events")
+                            .filter('_type == "event" && active == false')
+                        ),
+                    ])
+                ),
+
+              // Announcements folder
+              S.listItem()
+                .title("Announcements")
+                .child(
+                  S.list()
+                    .title("Announcements")
+                    .items([
+                      singleton(S, "announcementsPageSettings", "Page Settings"),
+                      S.divider(),
                       S.listItem()
                         .title("Active")
+                        .child(
+                          S.documentList()
+                            .title("Active Announcements")
+                            .filter('_type == "announcement" && active == true')
+                        ),
+                      S.listItem()
+                        .title("Inactive")
+                        .child(
+                          S.documentList()
+                            .title("Inactive Announcements")
+                            .filter('_type == "announcement" && active == false')
+                        ),
+                    ])
+                ),
+
+              // Services folder
+              S.listItem()
+                .title("Services")
+                .child(
+                  S.list()
+                    .title("Services")
+                    .items([
+                      singleton(S, "servicesPageSettings", "Page Settings"),
+                      S.divider(),
+                      orderableDocumentListDeskItem({
+                        type: "service",
+                        title: "Active Services",
+                        filter: '_type == "service" && active == true',
+                        S,
+                        context,
+                      }),
+                      S.listItem()
+                        .title("Inactive")
+                        .child(
+                          S.documentList()
+                            .title("Inactive Services")
+                            .filter('_type == "service" && active == false')
+                        ),
+                    ])
+                ),
+
+              // Donate folder
+              S.listItem()
+                .title("Donate")
+                .child(
+                  S.list()
+                    .title("Donate")
+                    .items([
+                      singleton(S, "donatePageSettings", "Page Settings"),
+                      S.divider(),
+                      S.listItem()
+                        .title("Active Campaigns")
                         .child(
                           S.documentList()
                             .title("Active Campaigns")
                             .filter('_type == "donationCampaign" && active == true')
                         ),
                       S.listItem()
-                        .title("Inactive")
+                        .title("Inactive Campaigns")
                         .child(
                           S.documentList()
                             .title("Inactive Campaigns")
                             .filter('_type == "donationCampaign" && active == false')
                         ),
                       S.divider(),
-                      S.listItem()
-                        .title("Offline Donations")
-                        .child(
-                          S.document()
-                            .schemaType("offlineDonations")
-                            .documentId("offlineDonations")
-                        ),
+                      singleton(S, "offlineDonations", "Offline Donations"),
                     ])
+                ),
+
+              // Imams / Team folder
+              S.listItem()
+                .title("Imams / Team")
+                .child(
+                  S.list()
+                    .title("Imams / Team")
+                    .items([
+                      singleton(S, "imamsPageSettings", "Page Settings"),
+                      S.divider(),
+                      orderableDocumentListDeskItem({
+                        type: "teamMember",
+                        title: "Team Members",
+                        S,
+                        context,
+                      }),
+                    ])
+                ),
+
+              // Resources folder
+              S.listItem()
+                .title("Resources")
+                .child(
+                  S.list()
+                    .title("Resources")
+                    .items([
+                      singleton(S, "resourcesPageSettings", "Page Settings"),
+                      S.divider(),
+                      orderableDocumentListDeskItem({
+                        type: "resource",
+                        title: "All Resources",
+                        S,
+                        context,
+                      }),
+                    ])
+                ),
+
+              // Media folder
+              S.listItem()
+                .title("Media")
+                .child(
+                  S.list()
+                    .title("Media")
+                    .items([
+                      singleton(S, "mediaPageSettings", "Page Settings"),
+                      S.divider(),
+                      orderableDocumentListDeskItem({
+                        type: "galleryImage",
+                        title: "Gallery Images",
+                        S,
+                        context,
+                      }),
+                      singleton(S, "mediaGallery", "Media Page Gallery"),
+                    ])
+                ),
+
+              // Partners folder
+              S.listItem()
+                .title("Partners")
+                .child(
+                  S.list()
+                    .title("Partners")
+                    .items([
+                      singleton(S, "partnersPageSettings", "Page Settings"),
+                      S.divider(),
+                      orderableDocumentListDeskItem({
+                        type: "partner",
+                        title: "All Partners",
+                        S,
+                        context,
+                      }),
+                    ])
+                ),
+
+              S.divider(),
+              singleton(S, "privacyPageSettings", "Privacy Policy"),
+              singleton(S, "termsPageSettings", "Terms of Use"),
+              S.divider(),
+
+              // Custom CMS pages (dynamic pageContent documents)
+              S.listItem()
+                .title("Custom Pages")
+                .child(
+                  S.documentList()
+                    .title("Custom Pages")
+                    .filter('_type == "pageContent"')
                 ),
             ])
         ),
-      S.listItem()
-        .title("Homepage Settings")
-        .child(
-          S.document()
-            .schemaType("homepageSettings")
-            .documentId("homepageSettings")
-        ),
-      S.listItem()
-        .title("Site Settings")
-        .child(
-          S.document()
-            .schemaType("siteSettings")
-            .documentId("siteSettings")
-        ),
+
+      S.divider(),
+
+      // ── Prayer Times ──
+      singleton(S, "prayerSettings", "Prayer Times"),
+
+      // ── Forms ──
       S.listItem()
         .title("Forms")
         .child(
-          S.document()
-            .schemaType("formSettings")
-            .documentId("formSettings")
-        ),
-      S.listItem()
-        .title("Media Page Gallery")
-        .child(
-          S.document()
-            .schemaType("mediaGallery")
-            .documentId("mediaGallery")
-        ),
-
-      S.divider(),
-
-      // Events — Live / Expired / Inactive views
-      S.listItem()
-        .title("Events")
-        .child(
           S.list()
-            .title("Events")
+            .title("Forms")
             .items([
-              S.listItem()
-                .title("Live on Website")
-                .child(
-                  S.documentList()
-                    .title("Live Events")
-                    .filter(
-                      `_type == "event" && active == true && (
-                        (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= now())) ||
-                        date >= now() ||
-                        endDate >= now()
-                      )`
-                    )
-                ),
-              S.listItem()
-                .title("Expired")
-                .child(
-                  S.documentList()
-                    .title("Expired Events")
-                    .filter(
-                      `_type == "event" && active == true && !(
-                        (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= now())) ||
-                        date >= now() ||
-                        endDate >= now()
-                      )`
-                    )
-                ),
-              S.listItem()
-                .title("Inactive")
-                .child(
-                  S.documentList()
-                    .title("Inactive Events")
-                    .filter('_type == "event" && active == false')
-                ),
+              singleton(S, "contactFormSettings", "Contact Form"),
+              singleton(S, "serviceInquiryFormSettings", "Service Inquiry Form"),
+              singleton(S, "eventInquiryFormSettings", "Event Inquiry Form"),
+              singleton(S, "newsletterSettings", "Newsletter"),
+              S.divider(),
+              singleton(S, "allowedFormDomains", "Allowed Form Domains"),
             ])
         ),
 
-      // Announcements — Active/Inactive views
-      S.listItem()
-        .title("Announcements")
-        .child(
-          S.list()
-            .title("Announcements")
-            .items([
-              S.listItem()
-                .title("Active")
-                .child(
-                  S.documentList()
-                    .title("Active Announcements")
-                    .filter('_type == "announcement" && active == true')
-                ),
-              S.listItem()
-                .title("Inactive")
-                .child(
-                  S.documentList()
-                    .title("Inactive Announcements")
-                    .filter('_type == "announcement" && active == false')
-                ),
-            ])
-        ),
+      // ── Donation Settings ──
+      singleton(S, "donationSettings", "Donation Settings"),
 
-      S.divider(),
-
-      // Rest of the document types (exclude the ones we customized and singletons)
-      ...S.documentTypeListItems().filter(
-        (item) => !["event", "announcement", "siteSettings", "homepageSettings", "prayerSettings", "donationSettings", "donatePageSettings", "donationCampaign", "offlineDonations", "formSettings", "mediaGallery"].includes(item.getId() || "")
-      ),
+      // ── Site Settings ──
+      singleton(S, "siteSettings", "Site Settings"),
     ]);
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET!;
-
-// Base URL for the site (safe to expose)
 const baseUrl =
   process.env.NEXT_PUBLIC_BASE_URL || "https://aic-website.vercel.app";
 
-// Map document types to their preview paths
+/** Maps each Sanity document type to the Next.js preview path. */
 const previewPaths: Record<string, (slug?: string) => string> = {
   event: (slug) => `/events${slug ? `/${slug}` : ""}`,
   announcement: (slug) => `/announcements${slug ? `/${slug}` : ""}`,
   service: () => "/services",
-  program: () => "/events",
   donationSettings: () => "/donate",
+  donatePageSettings: () => "/donate",
+  offlineDonations: () => "/donate",
+  donationCampaign: () => "/donate",
   galleryImage: () => "/media",
+  mediaGallery: () => "/media",
+  mediaPageSettings: () => "/media",
   faq: () => "/resources",
   etiquette: () => "/visit",
-  mediaGallery: () => "/media",
   homepageSettings: () => "/",
   siteSettings: () => "/",
   prayerSettings: () => "/worshippers",
   teamMember: (slug) => `/imams${slug ? `/${slug}` : ""}`,
-  pageContent: () => "/",
+  pageContent: (slug) => (slug ? `/${slug}` : "/"),
   resource: () => "/resources",
+  partner: (slug) => `/partners${slug ? `/${slug}` : ""}`,
+  aboutPageSettings: () => "/about",
+  architecturePageSettings: () => "/architecture",
+  visitPageSettings: () => "/visit",
+  worshippersPageSettings: () => "/worshippers",
+  contactPageSettings: () => "/contact",
+  eventsPageSettings: () => "/events",
+  announcementsPageSettings: () => "/announcements",
+  servicesPageSettings: () => "/services",
+  imamsPageSettings: () => "/imams",
+  resourcesPageSettings: () => "/resources",
+  partnersPageSettings: () => "/partners",
+  privacyPageSettings: () => "/privacy",
+  termsPageSettings: () => "/terms",
+  contactFormSettings: () => "/contact",
+  serviceInquiryFormSettings: () => "/services",
+  eventInquiryFormSettings: () => "/events",
+  newsletterSettings: () => "/",
+  allowedFormDomains: () => "/events",
 };
 
-// Helper to resolve preview URL for a document
-function resolvePreviewUrl(
-  docType: string,
-  slug?: string
-): string | undefined {
+function resolvePreviewUrl(docType: string, slug?: string): string | undefined {
   const pathFn = previewPaths[docType];
   if (!pathFn) return undefined;
   return `${baseUrl}${pathFn(slug)}`;
@@ -231,21 +380,17 @@ function resolvePreviewUrl(
 export default defineConfig({
   name: "australian-islamic-centre",
   title: "Australian Islamic Centre",
-
   projectId,
   dataset,
-
   basePath: "/studio",
 
   plugins: [
     structureTool({ structure }),
+    media(),
     presentationTool({
       previewUrl: {
         initial: baseUrl,
-        previewMode: {
-          enable: "/api/draft-mode/enable",
-        },
-        // Resolve URLs for different document types
+        previewMode: { enable: "/api/draft-mode/enable" },
         resolve: (doc: { _type?: string; slug?: { current?: string } } | null) => {
           const docType = doc?._type;
           const slug = doc?.slug?.current;
@@ -257,36 +402,28 @@ export default defineConfig({
     visionTool({ defaultApiVersion: "2024-01-01" }),
   ],
 
-  schema: {
-    types: schemaTypes,
+  scheduledPublishing: {
+    enabled: true,
+    inputDateTimeFormat: "dd/MM/yyyy h:mm a",
   },
 
+  schema: { types: schemaTypes },
+
   document: {
-    // Prevent deletion of singleton documents — these are essential and should never be removed
+    // Prevent deletion/duplication of all singleton documents
     actions: (prev, context) => {
-      const singletonTypes = [
-        "siteSettings",
-        "homepageSettings",
-        "prayerSettings",
-        "donationSettings",
-        "donatePageSettings",
-        "formSettings",
-        "mediaGallery",
-      ];
-      if (singletonTypes.includes(context.schemaType)) {
+      if (singletonIds.includes(context.schemaType)) {
         return prev.filter(
           (action) => action.action !== "delete" && action.action !== "duplicate"
         );
       }
       return prev;
     },
-    // productionUrl adds "Open preview" link in document header
+    // "Open preview" link in document header
     productionUrl: async (prev, context) => {
       const { document } = context;
       const docType = document._type;
       const slug = (document.slug as { current?: string })?.current;
-
-      // Return the preview URL directly (no API call needed)
       const url = resolvePreviewUrl(docType, slug);
       return url || prev;
     },

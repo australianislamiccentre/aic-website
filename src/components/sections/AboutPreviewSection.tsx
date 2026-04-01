@@ -15,8 +15,31 @@ import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, Globe, Users, BookOpen, Landmark } from "lucide-react";
 import Image from "next/image";
+import { urlFor } from "@/sanity/lib/image";
+import { PortableText } from "@portabletext/react";
+import type { SanityHomepageSettings } from "@/types/sanity";
 
-export function AboutPreviewSection() {
+interface AboutPreviewSectionProps {
+  welcomeSection?: SanityHomepageSettings["welcomeSection"];
+}
+
+const defaultStats = [
+  { value: "5", label: "Daily Prayers", icon: BookOpen, color: "from-teal-500 to-teal-600", delay: 0.3 },
+  { value: "40+", label: "Years Serving", icon: Users, color: "from-green-500 to-green-600", delay: 0.38 },
+  { value: "Global", label: "Recognition", icon: Globe, color: "from-amber-500 to-amber-600", delay: 0.46 },
+  { value: "20+", label: "Weekly Programs", icon: Landmark, color: "from-teal-600 to-teal-700", delay: 0.54 },
+];
+
+const statIcons = [BookOpen, Users, Globe, Landmark];
+const statColors = [
+  "from-teal-500 to-teal-600",
+  "from-green-500 to-green-600",
+  "from-amber-500 to-amber-600",
+  "from-teal-600 to-teal-700",
+];
+const statDelays = [0.3, 0.38, 0.46, 0.54];
+
+export function AboutPreviewSection({ welcomeSection }: AboutPreviewSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -24,6 +47,21 @@ export function AboutPreviewSection() {
   });
 
   const imageY = useTransform(scrollYProgress, [0, 1], ["5%", "-5%"]);
+
+  const imageSrc = welcomeSection?.image
+    ? urlFor(welcomeSection.image).width(800).url()
+    : "/images/aic 9.jpeg";
+
+  const hasStats = welcomeSection?.stats && welcomeSection.stats.length > 0;
+  const statsToRender = hasStats
+    ? welcomeSection!.stats!.map((stat, index) => ({
+        value: stat.value,
+        label: stat.label,
+        icon: statIcons[index % statIcons.length],
+        color: statColors[index % statColors.length],
+        delay: statDelays[index % statDelays.length],
+      }))
+    : defaultStats;
 
   return (
     <section ref={containerRef} className="py-12 md:py-16 bg-white relative overflow-hidden">
@@ -42,7 +80,7 @@ export function AboutPreviewSection() {
                 className="relative rounded-2xl overflow-hidden shadow-2xl"
               >
                 <Image
-                  src="/images/aic 9.jpeg"
+                  src={imageSrc}
                   alt="Australian Islamic Centre aerial view with crescent moon"
                   width={600}
                   height={800}
@@ -58,18 +96,13 @@ export function AboutPreviewSection() {
 
             {/* ── Stats row — detached under the image ── */}
             <div className="grid grid-cols-4 gap-0 mt-3 md:mt-4">
-              {[
-                { value: "5", label: "Daily Prayers", icon: BookOpen, color: "from-teal-500 to-teal-600", delay: 0.3 },
-                { value: "40+", label: "Years Serving", icon: Users, color: "from-green-500 to-green-600", delay: 0.38 },
-                { value: "Global", label: "Recognition", icon: Globe, color: "from-amber-500 to-amber-600", delay: 0.46 },
-                { value: "20+", label: "Weekly Programs", icon: Landmark, color: "from-teal-600 to-teal-700", delay: 0.54 },
-              ].map((stat) => (
+              {statsToRender.map((stat) => (
                 <motion.div
                   key={stat.label}
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: stat.delay, type: "spring", stiffness: 200 }}
+                  transition={{ delay: stat.delay, duration: 0.4, ease: "easeOut" }}
                   className="text-center py-3 md:py-4 border border-gray-100 bg-white"
                 >
                   <div className={`w-6 h-6 md:w-8 md:h-8 mx-auto mb-1.5 rounded-none bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
@@ -86,25 +119,33 @@ export function AboutPreviewSection() {
           <FadeIn direction="right">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-neutral-100 text-neutral-700 text-xs sm:text-sm font-medium mb-4 md:mb-6">
-                About Our Centre
+                {welcomeSection?.badge ?? welcomeSection?.subtitle ?? "About Our Centre"}
               </div>
 
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
-                A Beacon of Faith,{" "}
-                <span className="text-gradient">Knowledge & Unity</span>
+                {welcomeSection?.title ?? "A Beacon of Faith,"}{" "}
+                <span className="text-gradient">{welcomeSection?.titleAccent ?? "Knowledge & Unity"}</span>
               </h2>
 
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-4 md:mb-6 leading-relaxed">
-                The Australian Islamic Centre stands as one of Melbourne&apos;s most significant
-                Islamic institutions. Our award-winning architecture houses a vibrant
-                community dedicated to worship, education, and service.
-              </p>
+              {welcomeSection?.content && welcomeSection.content.length > 0 ? (
+                <div className="text-sm sm:text-base md:text-lg text-gray-600 mb-6 md:mb-8 leading-relaxed [&>p]:mb-4 [&>p:last-child]:mb-0">
+                  <PortableText value={welcomeSection.content} />
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-4 md:mb-6 leading-relaxed">
+                    The Australian Islamic Centre stands as one of Melbourne&apos;s most significant
+                    Islamic institutions. Our award-winning architecture houses a vibrant
+                    community dedicated to worship, education, and service.
+                  </p>
 
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-6 md:mb-8 leading-relaxed hidden sm:block">
-                From daily prayers to comprehensive educational programs, from community
-                events to social services, we serve as a complete Islamic centre for
-                Muslims of all ages and backgrounds.
-              </p>
+                  <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-6 md:mb-8 leading-relaxed hidden sm:block">
+                    From daily prayers to comprehensive educational programs, from community
+                    events to social services, we serve as a complete Islamic centre for
+                    Muslims of all ages and backgrounds.
+                  </p>
+                </>
+              )}
 
               {/* Features */}
               <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-6 md:mb-8">

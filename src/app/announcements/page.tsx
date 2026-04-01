@@ -8,17 +8,26 @@
  * @route /announcements
  * @module app/announcements/page
  */
-import { getAnnouncements } from "@/sanity/lib/fetch";
+import type { Metadata } from "next";
+import { getAnnouncements, getAnnouncementsPageSettings } from "@/sanity/lib/fetch";
 import { SanityAnnouncement } from "@/types/sanity";
 import AnnouncementsContent from "./AnnouncementsContent";
 
-export const metadata = {
-  title: "Announcements | Australian Islamic Centre",
-  description: "Stay informed about important updates, community news, and upcoming activities at the Australian Islamic Centre.",
-};
+export const revalidate = 120;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getAnnouncementsPageSettings();
+  return {
+    title: settings?.seo?.title ?? "Announcements | Australian Islamic Centre",
+    description: settings?.seo?.description ?? "Stay informed about important updates, community news, and upcoming activities at the Australian Islamic Centre.",
+  };
+}
 
 export default async function AnnouncementsPage() {
-  const announcements = (await getAnnouncements()) as SanityAnnouncement[];
+  const [announcements, settings] = await Promise.all([
+    getAnnouncements() as Promise<SanityAnnouncement[]>,
+    getAnnouncementsPageSettings(),
+  ]);
 
-  return <AnnouncementsContent announcements={announcements} />;
+  return <AnnouncementsContent announcements={announcements} pageSettings={settings} />;
 }

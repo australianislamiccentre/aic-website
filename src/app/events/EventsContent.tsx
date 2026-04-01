@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { formatDate } from "@/lib/utils";
 import { urlFor } from "@/sanity/lib/image";
-import { SanityEvent, SanityImage } from "@/types/sanity";
+import { SanityEvent, SanityImage, SanitySimplePageSettings } from "@/types/sanity";
 import {
   Calendar,
   Clock,
@@ -379,9 +379,10 @@ const categories = [
 
 interface EventsContentProps {
   events: SanityEvent[];
+  pageSettings?: SanitySimplePageSettings | null;
 }
 
-export default function EventsContent({ events }: EventsContentProps) {
+export default function EventsContent({ events, pageSettings }: EventsContentProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -416,15 +417,20 @@ export default function EventsContent({ events }: EventsContentProps) {
             <div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 text-sm font-medium mb-6">
                 <Calendar className="w-4 h-4" />
-                Community Gatherings
+                {pageSettings?.heroBadge ?? "Community Gatherings"}
               </div>
 
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Events & <span className="text-green-600">Programs</span>
+                {pageSettings?.heroHeading ?? "Events &"}{" "}
+                {pageSettings?.heroHeadingAccent !== undefined ? (
+                  <span className="text-green-600">{pageSettings.heroHeadingAccent}</span>
+                ) : (
+                  <span className="text-green-600">Programs</span>
+                )}
               </h1>
 
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                Discover upcoming events, weekly programs, and community gatherings at the Australian Islamic Centre. From spiritual enrichment to sports and education.
+                {pageSettings?.heroDescription ?? "Discover upcoming events, weekly programs, and community gatherings at the Australian Islamic Centre. From spiritual enrichment to sports and education."}
               </p>
 
               <div className="flex flex-wrap gap-3">

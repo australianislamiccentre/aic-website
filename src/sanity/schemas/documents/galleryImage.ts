@@ -9,6 +9,7 @@
  *
  * @module sanity/schemas/gallery
  */
+import { orderRankField, orderRankOrdering } from "@sanity/orderable-document-list";
 import { defineField, defineType } from "sanity";
 
 export default defineType({
@@ -18,6 +19,7 @@ export default defineType({
   description:
     "Images used across the website (homepage gallery strip, etc.). For media page photos, use the Media Page Gallery instead.",
   fields: [
+    orderRankField({ type: "galleryImage" }),
     defineField({
       name: "image",
       title: "Image",
@@ -63,11 +65,6 @@ export default defineType({
       description: "Show on homepage gallery",
       initialValue: false,
     }),
-    defineField({
-      name: "order",
-      title: "Display Order",
-      type: "number",
-    }),
   ],
   preview: {
     select: {
@@ -83,4 +80,5 @@ export default defineType({
       };
     },
   },
+  orderings: [orderRankOrdering],
 });

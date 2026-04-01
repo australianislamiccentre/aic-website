@@ -16,7 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
-import type { MediaGalleryImage } from "@/types/sanity";
+import type { MediaGalleryImage, SanityMediaPageSettings } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
 import {
   Camera,
@@ -169,6 +169,7 @@ interface MediaContentProps {
   youtubeVideos?: YouTubeVideo[];
   liveStream?: YouTubeLiveStream;
   playlists?: YouTubePlaylist[];
+  pageSettings?: SanityMediaPageSettings | null;
 }
 
 export default function MediaContent({
@@ -176,6 +177,7 @@ export default function MediaContent({
   youtubeVideos = [],
   liveStream,
   playlists = [],
+  pageSettings,
 }: MediaContentProps) {
   // Video state
   const [currentVideo, setCurrentVideo] = useState<YouTubeVideo | null>(
@@ -394,18 +396,22 @@ export default function MediaContent({
           <BreadcrumbLight />
           <div className="mt-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Media <span className="text-teal-600">Gallery</span>
+              {pageSettings?.heroHeading ?? "Media"}{" "}
+              {pageSettings?.heroHeadingAccent !== undefined ? (
+                <span className="text-teal-600">{pageSettings.heroHeadingAccent}</span>
+              ) : (
+                <span className="text-teal-600">Gallery</span>
+              )}
             </h1>
             <p className="text-gray-600 max-w-2xl">
-              Explore photos and videos from the Australian Islamic Centre
-              community.
+              {pageSettings?.heroDescription ?? "Explore photos and videos from the Australian Islamic Centre community."}
             </p>
           </div>
         </div>
       </section>
 
       {/* ── Video Section ── */}
-      {(youtubeVideos.length > 0 || isLive) && (
+      {pageSettings?.youtubeVisible !== false && (youtubeVideos.length > 0 || isLive) && (
         <section className="py-12 bg-[#0a0a0a]">
           <div className="max-w-7xl mx-auto px-6">
             {/* Featured Player */}
@@ -679,6 +685,7 @@ export default function MediaContent({
       )}
 
       {/* ── Photo Gallery — Album Preview ── */}
+      {pageSettings?.galleryVisible !== false && (
       <section className="py-12 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
@@ -768,8 +775,10 @@ export default function MediaContent({
           )}
         </div>
       </section>
+      )}
 
       {/* ── Social Links ── */}
+      {pageSettings?.socialVisible !== false && (
       <section className="py-8 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-4">
           <span className="text-sm font-medium text-gray-600">Follow Us</span>
@@ -810,6 +819,7 @@ export default function MediaContent({
           </div>
         </div>
       </section>
+      )}
 
       {/* ── Lightbox ── */}
       <AnimatePresence>

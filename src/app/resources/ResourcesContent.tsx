@@ -14,7 +14,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
-import { SanityResource } from "@/types/sanity";
+import { SanityResource, SanitySimplePageSettings } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
 import { cn } from "@/lib/utils";
 import {
@@ -124,9 +124,10 @@ function formatResourceDate(dateStr: string): string {
 
 interface ResourcesContentProps {
   resources: SanityResource[];
+  pageSettings?: SanitySimplePageSettings | null;
 }
 
-export default function ResourcesContent({ resources }: ResourcesContentProps) {
+export default function ResourcesContent({ resources, pageSettings }: ResourcesContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
@@ -198,15 +199,20 @@ export default function ResourcesContent({ resources }: ResourcesContentProps) {
           <div className="mt-8 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-6">
               <Library className="w-4 h-4" />
-              Resource Library
+              {pageSettings?.heroBadge ?? "Resource Library"}
             </div>
 
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 font-heading">
-              Community <span className="text-teal-600">Resources</span>
+              {pageSettings?.heroHeading ?? "Community"}{" "}
+              {pageSettings?.heroHeadingAccent !== undefined ? (
+                <span className="text-teal-600">{pageSettings.heroHeadingAccent}</span>
+              ) : (
+                <span className="text-teal-600">Resources</span>
+              )}
             </h1>
 
             <p className="text-lg text-gray-600 leading-relaxed">
-              Browse our collection of Islamic literature, audio lectures, video content, and educational materials. Download or access resources to support your learning journey.
+              {pageSettings?.heroDescription ?? "Browse our collection of Islamic literature, audio lectures, video content, and educational materials. Download or access resources to support your learning journey."}
             </p>
           </div>
         </div>

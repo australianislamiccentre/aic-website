@@ -180,7 +180,9 @@ describe.skip("Home Page", () => {
   });
 });
 
-describe("About Page", () => {
+// Skipped: AboutPage is now an async server component that fetches from Sanity.
+// Test AboutContent component instead via src/app/about/AboutContent.test.tsx
+describe.skip("About Page", () => {
   it("renders the page title", () => {
     render(<AboutPage />);
     expect(screen.getByText(/About the/i)).toBeInTheDocument();
@@ -225,7 +227,9 @@ describe.skip("Services Page", () => {
   it("has contact CTA", () => {});
 });
 
-describe("Contact Page", () => {
+// Skipped: ContactPage is now an async server component that fetches from Sanity.
+// Test ContactContent component instead via src/app/contact/ContactContent.test.tsx
+describe.skip("Contact Page", () => {
   it("renders the page title", () => {
     render(<ContactPage />);
     expect(screen.getByText(/Get in/i)).toBeInTheDocument();
@@ -290,7 +294,9 @@ describe.skip("Events Page", () => {
 
 // Programs page removed — consolidated into /events
 
-describe("Architecture Page", () => {
+// Skipped: ArchitecturePage is now an async server component that fetches from Sanity.
+// Test ArchitectureContent component instead via src/app/architecture/ArchitectureContent.test.tsx
+describe.skip("Architecture Page", () => {
   it("renders the page title", () => {
     render(<ArchitecturePage />);
     // Multiple elements may contain "Our" and "Architecture", so use getAllByText

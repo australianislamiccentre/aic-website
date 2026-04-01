@@ -17,13 +17,12 @@ import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { PreviewBanner } from "@/components/PreviewBanner";
-import { getSiteSettings, getDonationSettings, getFormSettings } from "@/sanity/lib/fetch";
+import { getSiteSettings, getDonationSettings, getContactFormSettings, getServiceInquiryFormSettings, getNewsletterSettings } from "@/sanity/lib/fetch";
 import { FundraiseUpScript } from "@/components/FundraiseUpScript";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import { getYouTubeLiveStream } from "@/lib/youtube";
 import { LiveBanner } from "@/components/LiveBanner";
 import { FormSettingsProvider } from "@/contexts/FormSettingsContext";
-import type { SanityFormSettings } from "@/contexts/FormSettingsContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -99,11 +98,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, formSettingsRaw, liveStream] = await Promise.all([
+  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, contactFormSettingsRaw, serviceInquiryFormSettingsRaw, newsletterSettingsRaw, liveStream] = await Promise.all([
     draftMode(),
     getSiteSettings(),
     getDonationSettings(),
-    getFormSettings(),
+    getContactFormSettings(),
+    getServiceInquiryFormSettings(),
+    getNewsletterSettings(),
     getYouTubeLiveStream(),
   ]);
 
@@ -153,7 +154,11 @@ export default async function RootLayout({
           }}
         />
         <SiteSettingsProvider siteSettings={siteSettings}>
-          <FormSettingsProvider formSettings={formSettingsRaw as SanityFormSettings | null}>
+          <FormSettingsProvider
+            contactFormSettings={contactFormSettingsRaw}
+            serviceInquiryFormSettings={serviceInquiryFormSettingsRaw}
+            newsletterSettings={newsletterSettingsRaw}
+          >
             <FundraiseUpScript settings={donationSettings} />
             <ScrollToTop />
             <ScrollProgress />

@@ -7,17 +7,25 @@
  * @route /partners
  * @module app/partners/page
  */
-import { getPartners } from "@/sanity/lib/fetch";
+import type { Metadata } from "next";
+import { getPartners, getPartnersPageSettings } from "@/sanity/lib/fetch";
 import PartnersContent from "./PartnersContent";
 
-export const metadata = {
-  title: "Partners | Australian Islamic Centre",
-  description:
-    "Discover the Australian Islamic Centre's affiliated partner organisations working together in education, sports, and community development.",
-};
+export const revalidate = 120;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getPartnersPageSettings();
+  return {
+    title: settings?.seo?.title ?? "Partners | Australian Islamic Centre",
+    description: settings?.seo?.description ?? "Discover the Australian Islamic Centre's affiliated partner organisations working together in education, sports, and community development.",
+  };
+}
 
 export default async function PartnersPage() {
-  const partners = await getPartners();
+  const [partners, settings] = await Promise.all([
+    getPartners(),
+    getPartnersPageSettings(),
+  ]);
 
-  return <PartnersContent partners={partners} />;
+  return <PartnersContent partners={partners} pageSettings={settings} />;
 }

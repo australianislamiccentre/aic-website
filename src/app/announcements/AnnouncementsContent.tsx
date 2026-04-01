@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { formatDate } from "@/lib/utils";
 import { urlFor } from "@/sanity/lib/image";
-import { SanityAnnouncement, SanityImage } from "@/types/sanity";
+import { SanityAnnouncement, SanityImage, SanitySimplePageSettings } from "@/types/sanity";
 import {
   Bell,
   Calendar,
@@ -165,9 +165,10 @@ const categories = [
 
 interface AnnouncementsContentProps {
   announcements: SanityAnnouncement[];
+  pageSettings?: SanitySimplePageSettings | null;
 }
 
-export default function AnnouncementsContent({ announcements }: AnnouncementsContentProps) {
+export default function AnnouncementsContent({ announcements, pageSettings }: AnnouncementsContentProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -200,15 +201,20 @@ export default function AnnouncementsContent({ announcements }: AnnouncementsCon
             <div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-700 text-sm font-medium mb-6">
                 <Bell className="w-4 h-4" />
-                Stay Informed
+                {pageSettings?.heroBadge ?? "Stay Informed"}
               </div>
 
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                News & <span className="text-amber-600">Announcements</span>
+                {pageSettings?.heroHeading ?? "News &"}{" "}
+                {pageSettings?.heroHeadingAccent !== undefined ? (
+                  <span className="text-amber-600">{pageSettings.heroHeadingAccent}</span>
+                ) : (
+                  <span className="text-amber-600">Announcements</span>
+                )}
               </h1>
 
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                Stay informed with the latest news, updates, and important notices from the Australian Islamic Centre. From community updates to prayer time changes.
+                {pageSettings?.heroDescription ?? "Stay informed with the latest news, updates, and important notices from the Australian Islamic Centre. From community updates to prayer time changes."}
               </p>
 
               <div className="flex flex-wrap gap-3">

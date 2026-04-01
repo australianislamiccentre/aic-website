@@ -23,7 +23,7 @@ import { getPrayerTimesForDate } from "@/lib/prayer-times";
 import { useNextPrayer } from "@/hooks/usePrayerTimes";
 import { TARAWEEH_CONFIG, EID_CONFIG } from "@/lib/prayer-config";
 import type { PrayerName } from "@/lib/prayer-times";
-import type { SanityPrayerSettings, SanityEtiquette } from "@/types/sanity";
+import type { SanityPrayerSettings, SanityEtiquette, SanityWorshippersPageSettings } from "@/types/sanity";
 import type { YouTubeVideo } from "@/lib/youtube";
 import {
   Clock,
@@ -88,12 +88,14 @@ interface WorshippersClientProps {
   prayerSettings?: SanityPrayerSettings | null;
   etiquette?: SanityEtiquette[];
   youtubeVideos?: YouTubeVideo[];
+  pageSettings?: SanityWorshippersPageSettings | null;
 }
 
 export default function WorshippersClient({
   prayerSettings,
   etiquette = [],
   youtubeVideos = [],
+  pageSettings,
 }: WorshippersClientProps) {
   const info = useSiteSettings();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -199,15 +201,20 @@ export default function WorshippersClient({
             <div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-6">
                 <Clock className="w-4 h-4" />
-                Prayer Times &amp; Guidance
+                {pageSettings?.heroBadge ?? "Prayer Times & Guidance"}
               </div>
 
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                For <span className="text-teal-600">Worshippers</span>
+                {pageSettings?.heroHeading ?? "For"}{" "}
+                {pageSettings?.heroHeadingAccent !== undefined ? (
+                  <span className="text-teal-600">{pageSettings.heroHeadingAccent}</span>
+                ) : (
+                  <span className="text-teal-600">Worshippers</span>
+                )}
               </h1>
 
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                Join our congregation for daily prayers, Friday Jumu&apos;ah, and spiritual programs at the Australian Islamic Centre.
+                {pageSettings?.heroDescription ?? "Join our congregation for daily prayers, Friday Jumu\u2019ah, and spiritual programs at the Australian Islamic Centre."}
               </p>
 
               <div className="flex flex-wrap gap-3">

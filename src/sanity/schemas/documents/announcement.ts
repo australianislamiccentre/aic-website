@@ -9,7 +9,7 @@
  * @module sanity/schemas/announcement
  */
 import { defineField, defineType } from "sanity";
-import { internalPageOptions } from "./shared/internalPages";
+import { internalPageOptions } from "../shared/internalPages";
 
 export default defineType({
   name: "announcement",

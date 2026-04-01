@@ -15,7 +15,7 @@ import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
-import { SanityEtiquette, SanityFaq } from "@/types/sanity";
+import { SanityEtiquette, SanityFaq, SanityVisitPageSettings } from "@/types/sanity";
 import { PortableText } from "@portabletext/react";
 import {
   MapPin,
@@ -102,9 +102,10 @@ const etiquetteIcons: Record<string, React.ComponentType<{ className?: string }>
 interface VisitContentProps {
   etiquette: SanityEtiquette[];
   faqs: SanityFaq[];
+  pageSettings?: SanityVisitPageSettings | null;
 }
 
-export default function VisitContent({ etiquette, faqs }: VisitContentProps) {
+export default function VisitContent({ etiquette, faqs, pageSettings }: VisitContentProps) {
   const info = useSiteSettings();
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
@@ -116,10 +117,15 @@ export default function VisitContent({ etiquette, faqs }: VisitContentProps) {
           <BreadcrumbLight />
           <div className="mt-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Visit <span className="text-teal-600">Us</span>
+              {pageSettings?.heroHeading ?? "Visit"}{" "}
+              {pageSettings?.heroHeadingAccent !== undefined ? (
+                <span className="text-teal-600">{pageSettings.heroHeadingAccent}</span>
+              ) : (
+                <span className="text-teal-600">Us</span>
+              )}
             </h1>
             <p className="text-gray-600 max-w-2xl">
-              Plan your visit to the Australian Islamic Centre. We welcome visitors of all faiths to experience our beautiful award-winning architecture.
+              {pageSettings?.heroDescription ?? "Plan your visit to the Australian Islamic Centre. We welcome visitors of all faiths to experience our beautiful award-winning architecture."}
             </p>
           </div>
         </div>

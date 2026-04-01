@@ -8,17 +8,26 @@
  * @route /resources
  * @module app/resources/page
  */
-import { getResources } from "@/sanity/lib/fetch";
+import type { Metadata } from "next";
+import { getResources, getResourcesPageSettings } from "@/sanity/lib/fetch";
 import { SanityResource } from "@/types/sanity";
 import ResourcesContent from "./ResourcesContent";
 
-export const metadata = {
-  title: "Resources | Australian Islamic Centre",
-  description: "Browse and download community resources including Islamic literature, audio lectures, video content, and educational materials from the Australian Islamic Centre.",
-};
+export const revalidate = 120;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getResourcesPageSettings();
+  return {
+    title: settings?.seo?.title ?? "Resources | Australian Islamic Centre",
+    description: settings?.seo?.description ?? "Browse and download community resources including Islamic literature, audio lectures, video content, and educational materials from the Australian Islamic Centre.",
+  };
+}
 
 export default async function ResourcesPage() {
-  const resources = await getResources() as SanityResource[];
+  const [resources, settings] = await Promise.all([
+    getResources() as Promise<SanityResource[]>,
+    getResourcesPageSettings(),
+  ]);
 
-  return <ResourcesContent resources={resources} />;
+  return <ResourcesContent resources={resources} pageSettings={settings} />;
 }
