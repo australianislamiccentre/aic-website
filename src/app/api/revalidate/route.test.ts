@@ -7,10 +7,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
-// Mock next/cache revalidatePath
+// Mock next/cache revalidatePath and revalidateTag
 const mockRevalidatePath = vi.fn();
+const mockRevalidateTag = vi.fn();
 vi.mock("next/cache", () => ({
   revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
+  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 function makePostRequest(

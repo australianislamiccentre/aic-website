@@ -13,7 +13,7 @@
  * @module api/revalidate
  * @see src/sanity/lib/fetch.ts — ISR caching with 120s revalidate fallback
  */
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 /** Shared secret between Sanity webhook and this endpoint. */
@@ -174,7 +174,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Revalidate each path
+    // Bust the Sanity data cache (fetch tags) so fresh data is fetched
+    revalidateTag("sanity", "default");
+    revalidateTag(documentType, "default");
+
+    // Revalidate each path (busts the rendered page cache)
     for (const path of pathsToRevalidate) {
       revalidatePath(path);
     }
@@ -182,6 +186,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       revalidated: true,
       paths: pathsToRevalidate,
+      tags: ["sanity", documentType],
       documentType,
     });
   } catch {
