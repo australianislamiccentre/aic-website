@@ -380,7 +380,9 @@ export interface SanityHomepageSettings {
   };
   featuredYoutubeUrl?: string;
   welcomeSection?: {
+    badge?: string;
     title?: string;
+    titleAccent?: string;
     subtitle?: string;
     content?: PortableTextBlock[];
     image?: SanityImage;

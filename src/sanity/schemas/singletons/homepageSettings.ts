@@ -527,11 +527,30 @@ export default defineType({
       title: "Welcome Section",
       type: "object",
       fields: [
-        defineField({ name: "title", title: "Title", type: "string" }),
+        defineField({
+          name: "badge",
+          title: "Badge Text",
+          type: "string",
+          description: "Tag shown above the heading (e.g. 'About Our Centre')",
+        }),
+        defineField({
+          name: "title",
+          title: "Title",
+          type: "string",
+          description: "First part of the heading (e.g. 'A Beacon of Faith,')",
+        }),
+        defineField({
+          name: "titleAccent",
+          title: "Title Accent",
+          type: "string",
+          description: "Second part of the heading shown in teal/green (e.g. 'Knowledge & Unity')",
+        }),
         defineField({
           name: "subtitle",
-          title: "Subtitle",
+          title: "Subtitle (Legacy)",
           type: "string",
+          hidden: true,
+          description: "Deprecated — use Badge Text instead",
         }),
         defineField({
           name: "content",
