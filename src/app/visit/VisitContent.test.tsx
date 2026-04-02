@@ -226,4 +226,221 @@ describe("VisitContent", () => {
     render(<VisitContent etiquette={[]} faqs={[]} />);
     expect(screen.getByText("Get Directions")).toBeInTheDocument();
   });
+
+  describe("pageSettings wiring", () => {
+    it("renders fallback hero heading when pageSettings is null", () => {
+      render(<VisitContent etiquette={[]} faqs={[]} pageSettings={null} />);
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Visit Us");
+    });
+
+    it("renders Sanity heroHeading and heroHeadingAccent", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{ heroHeading: "Come", heroHeadingAccent: "Visit" }}
+        />
+      );
+      const h1 = screen.getByRole("heading", { level: 1 });
+      expect(h1).toHaveTextContent("Come");
+      expect(h1).toHaveTextContent("Visit");
+    });
+
+    it("renders Sanity hero description", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{ heroDescription: "We welcome all visitors." }}
+        />
+      );
+      expect(screen.getByText("We welcome all visitors.")).toBeInTheDocument();
+    });
+
+    it("hides visiting info section when visitingInfoVisible is false", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{ visitingInfoVisible: false }}
+        />
+      );
+      expect(screen.queryByText("Visiting Information")).not.toBeInTheDocument();
+    });
+
+    it("renders Sanity visitingInfoHeading", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{ visitingInfoHeading: "How to Find Us" }}
+        />
+      );
+      expect(screen.getByText("How to Find Us")).toBeInTheDocument();
+    });
+
+    it("renders Sanity visitingHours", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{ visitingHours: "5:00 AM – 11:00 PM" }}
+        />
+      );
+      expect(screen.getByText("5:00 AM – 11:00 PM")).toBeInTheDocument();
+    });
+
+    it("hides facilities section when facilitiesVisible is false", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{ facilitiesVisible: false }}
+        />
+      );
+      expect(screen.queryByText("Our Facilities")).not.toBeInTheDocument();
+    });
+
+    it("renders Sanity facilitiesHeading", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{ facilitiesHeading: "Centre Amenities" }}
+        />
+      );
+      expect(screen.getByText("Centre Amenities")).toBeInTheDocument();
+    });
+
+    it("renders Sanity facilitiesCards instead of defaults", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{
+            facilitiesCards: [
+              { name: "Grand Hall", capacity: "2,000+" },
+            ],
+          }}
+        />
+      );
+      expect(screen.getByText("Grand Hall")).toBeInTheDocument();
+      expect(screen.getByText("Capacity: 2,000+")).toBeInTheDocument();
+      // Default facilities should not appear
+      expect(screen.queryByText("Main Prayer Hall")).not.toBeInTheDocument();
+    });
+
+    it("hides mosque manners section when mannersVisible is false", () => {
+      render(
+        <VisitContent
+          etiquette={[makeEtiquette()]}
+          faqs={[]}
+          pageSettings={{ mannersVisible: false }}
+        />
+      );
+      expect(screen.queryByText("Mosque Manners")).not.toBeInTheDocument();
+    });
+
+    it("renders Sanity mannersBadge and mannersHeading", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{ mannersBadge: "Etiquette", mannersHeading: "House Rules" }}
+        />
+      );
+      expect(screen.getByText("Etiquette")).toBeInTheDocument();
+      expect(screen.getByText("House Rules")).toBeInTheDocument();
+    });
+
+    it("uses pageSettings.etiquetteItems over the etiquette prop", () => {
+      render(
+        <VisitContent
+          etiquette={[makeEtiquette({ _id: "e-prop", title: "From Prop" })]}
+          faqs={[]}
+          pageSettings={{
+            etiquetteItems: [{ title: "From Settings", description: "Settings etiquette" }],
+          }}
+        />
+      );
+      expect(screen.getByText("From Settings")).toBeInTheDocument();
+      expect(screen.queryByText("From Prop")).not.toBeInTheDocument();
+    });
+
+    it("hides FAQ section when faqVisible is false", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[makeFaq()]}
+          pageSettings={{ faqVisible: false }}
+        />
+      );
+      expect(screen.queryByText("Frequently Asked Questions")).not.toBeInTheDocument();
+    });
+
+    it("renders Sanity faqBadge and faqHeading", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{ faqBadge: "Questions", faqHeading: "Common Queries" }}
+        />
+      );
+      expect(screen.getByText("Questions")).toBeInTheDocument();
+      expect(screen.getByText("Common Queries")).toBeInTheDocument();
+    });
+
+    it("uses pageSettings.faqItems over the faqs prop", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[makeFaq({ _id: "f-prop", question: "From Prop Question?" })]}
+          pageSettings={{
+            faqItems: [{ question: "From Settings Question?", answer: [{ _type: "block", _key: "b1", children: [{ _type: "span", _key: "s1", text: "Answer from settings." }] }] }],
+          }}
+        />
+      );
+      expect(screen.getByText("From Settings Question?")).toBeInTheDocument();
+      expect(screen.queryByText("From Prop Question?")).not.toBeInTheDocument();
+    });
+
+    it("hides CTA section when ctaVisible is false", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{ ctaVisible: false }}
+        />
+      );
+      expect(screen.queryByText("We Look Forward to Welcoming You")).not.toBeInTheDocument();
+    });
+
+    it("renders Sanity CTA heading", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{ ctaHeading: "Hope to See You Soon" }}
+        />
+      );
+      expect(screen.getByText("Hope to See You Soon")).toBeInTheDocument();
+    });
+
+    it("renders Sanity CTA buttons when provided", () => {
+      render(
+        <VisitContent
+          etiquette={[]}
+          faqs={[]}
+          pageSettings={{
+            ctaButtons: [
+              { label: "Plan a Visit", url: "/plan", variant: "primary" },
+              { label: "Get Directions", url: "/directions", variant: "outline" },
+            ],
+          }}
+        />
+      );
+      expect(screen.getByText("Plan a Visit")).toBeInTheDocument();
+      expect(screen.getAllByText("Get Directions").length).toBeGreaterThanOrEqual(1);
+    });
+  });
 });

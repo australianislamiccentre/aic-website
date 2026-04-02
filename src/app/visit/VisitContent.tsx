@@ -17,6 +17,7 @@ import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { SanityEtiquette, SanityFaq, SanityVisitPageSettings } from "@/types/sanity";
 import { PortableText } from "@portabletext/react";
+import { urlFor } from "@/sanity/lib/image";
 import {
   MapPin,
   Clock,
@@ -46,10 +47,6 @@ const facilities = [
   { name: "Community Hall", capacity: "300", icon: Users },
   { name: "Youth Centre", capacity: "100", icon: Users },
   { name: "Library", capacity: "30", icon: Building },
-];
-
-const openingHours = [
-  { day: "Daily", hours: "4:30 AM – 10:30 PM" },
 ];
 
 const fallbackFaqs = [
@@ -90,6 +87,12 @@ const fallbackFaqs = [
   },
 ];
 
+const facilityIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  users: Users,
+  graduation: GraduationCap,
+  building: Building,
+};
+
 const etiquetteIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   footprints: Footprints,
   shirt: Shirt,
@@ -108,6 +111,60 @@ interface VisitContentProps {
 export default function VisitContent({ etiquette, faqs, pageSettings }: VisitContentProps) {
   const info = useSiteSettings();
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+
+  const visitingInfoImageSrc = pageSettings?.visitingInfoImage
+    ? urlFor(pageSettings.visitingInfoImage).width(800).height(600).url()
+    : "/images/aic end.jpg";
+
+  const facilitiesImageSrc = pageSettings?.facilitiesImage
+    ? urlFor(pageSettings.facilitiesImage).width(600).height(400).url()
+    : "/images/aic end.jpg";
+
+  // Etiquette: pageSettings items take highest priority, then prop, then nothing
+  const displayEtiquette =
+    pageSettings?.etiquetteItems && pageSettings.etiquetteItems.length > 0
+      ? pageSettings.etiquetteItems.map((item, i) => ({
+          _id: `settings-etiquette-${i}`,
+          title: item.title,
+          description: item.description ?? "",
+          icon: item.icon ?? "",
+        }))
+      : etiquette;
+
+  // FAQ: pageSettings items take highest priority, then prop, then fallback
+  const hasSanityFaqItems =
+    pageSettings?.faqItems && pageSettings.faqItems.length > 0;
+  const hasSanityFaqs = faqs.length > 0;
+
+  const displayFaqs: Array<{
+    _id: string;
+    question: string;
+    answer: unknown;
+    isPortableText: boolean;
+  }> = hasSanityFaqItems
+    ? pageSettings!.faqItems!.map((item, i) => ({
+        _id: `settings-faq-${i}`,
+        question: item.question,
+        answer: item.answer,
+        isPortableText: Array.isArray(item.answer),
+      }))
+    : hasSanityFaqs
+    ? faqs.map((faq) => ({
+        _id: faq._id,
+        question: faq.question,
+        answer: faq.answer,
+        isPortableText: true,
+      }))
+    : fallbackFaqs.map((faq) => ({
+        _id: faq._id,
+        question: faq.question,
+        answer: faq.answer,
+        isPortableText: false,
+      }));
+
+  // Facilities cards: use Sanity cards if available
+  const hasSanityFacilityCards =
+    pageSettings?.facilitiesCards && pageSettings.facilitiesCards.length > 0;
 
   return (
     <>
@@ -132,285 +189,331 @@ export default function VisitContent({ etiquette, faqs, pageSettings }: VisitCon
       </section>
 
       {/* Visiting Hours */}
-      <section id="hours" className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-12">
-            <FadeIn direction="left">
-              <div className="relative h-[300px] lg:h-full min-h-[300px] rounded-2xl overflow-hidden shadow-xl">
-                <Image
-                  src="/images/aic end.jpg"
-                  alt="Australian Islamic Centre"
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-neutral-900/80 flex items-center justify-center">
-                  <div className="text-center text-white p-6">
-                    <MapPin className="w-12 h-12 mx-auto mb-4 text-teal-400" />
-                    <h3 className="text-xl font-bold mb-2">{info.name}</h3>
-                    <p className="text-white/80 mb-4">{info.address.full}</p>
-                    <Button
-                      href={`https://maps.google.com/?q=${encodeURIComponent(info.address.full)}`}
-                      variant="gold"
-                      icon={<Navigation className="w-4 h-4" />}
-                    >
-                      Get Directions
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
-
-            <FadeIn direction="right">
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Visiting Information</h2>
-
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-6 h-6 text-teal-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">Address</h3>
-                      <p className="text-gray-600">
-                        {info.address.street}<br />
-                        {info.address.suburb}, {info.address.state} {info.address.postcode}<br />
-                        {info.address.country}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-6 h-6 text-teal-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
-                      <a href={`tel:${info.phone}`} className="text-gray-600 hover:text-neutral-700">
-                        {info.phone}
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-6 h-6 text-teal-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
-                      <a href={`mailto:${info.email}?subject=${encodeURIComponent('Visit Enquiry - Australian Islamic Centre')}`} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-neutral-700">
-                        {info.email}
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                      <Clock className="w-6 h-6 text-teal-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-2">Opening Hours</h3>
-                      <div className="space-y-1">
-                        {openingHours.map((item) => (
-                          <div key={item.day} className="flex justify-between text-sm">
-                            <span className="text-gray-600">{item.day}</span>
-                            <span className="text-gray-900 font-medium">{item.hours}</span>
-                          </div>
-                        ))}
-                      </div>
+      {pageSettings?.visitingInfoVisible !== false && (
+        <section id="hours" className="py-12 bg-white">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid lg:grid-cols-2 gap-12">
+              <FadeIn direction="left">
+                <div className="relative h-[300px] lg:h-full min-h-[300px] rounded-2xl overflow-hidden shadow-xl">
+                  <Image
+                    src={visitingInfoImageSrc}
+                    alt="Australian Islamic Centre"
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-neutral-900/80 flex items-center justify-center">
+                    <div className="text-center text-white p-6">
+                      <MapPin className="w-12 h-12 mx-auto mb-4 text-teal-400" />
+                      <h3 className="text-xl font-bold mb-2">{info.name}</h3>
+                      <p className="text-white/80 mb-4">{info.address.full}</p>
+                      <Button
+                        href={`https://maps.google.com/?q=${encodeURIComponent(info.address.full)}`}
+                        variant="gold"
+                        icon={<Navigation className="w-4 h-4" />}
+                      >
+                        Get Directions
+                      </Button>
                     </div>
                   </div>
                 </div>
-              </div>
-            </FadeIn>
-          </div>
-        </div>
-      </section>
+              </FadeIn>
 
-      {/* Facilities */}
-      <section className="py-12 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <FadeIn direction="left">
-              <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Our Facilities</h2>
-                <p className="text-gray-600 mb-8">
-                  Our centre features modern facilities designed to serve the diverse needs of our
-                  community and visitors.
-                </p>
+              <FadeIn direction="right">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                    {pageSettings?.visitingInfoHeading ?? "Visiting Information"}
+                  </h2>
 
-                <div className="grid grid-cols-2 gap-4">
-                  {facilities.map((facility) => (
-                    <div
-                      key={facility.name}
-                      className="bg-white rounded-xl p-4 flex items-center gap-3"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
-                        <facility.icon className="w-5 h-5 text-teal-600" />
+                  <div className="space-y-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                        <MapPin className="w-6 h-6 text-teal-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 text-sm">{facility.name}</p>
-                        <p className="text-xs text-gray-500">Capacity: {facility.capacity}</p>
+                        <h3 className="font-semibold text-gray-900 mb-1">Address</h3>
+                        <p className="text-gray-600">
+                          {info.address.street}<br />
+                          {info.address.suburb}, {info.address.state} {info.address.postcode}<br />
+                          {info.address.country}
+                        </p>
                       </div>
                     </div>
-                  ))}
+
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                        <Phone className="w-6 h-6 text-teal-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
+                        <a href={`tel:${info.phone}`} className="text-gray-600 hover:text-neutral-700">
+                          {info.phone}
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                        <Mail className="w-6 h-6 text-teal-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
+                        <a href={`mailto:${info.email}?subject=${encodeURIComponent('Visit Enquiry - Australian Islamic Centre')}`} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-neutral-700">
+                          {info.email}
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                        <Clock className="w-6 h-6 text-teal-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-2">Opening Hours</h3>
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Daily</span>
+                            <span className="text-gray-900 font-medium">
+                              {pageSettings?.visitingHours ?? "4:30 AM – 10:30 PM"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </FadeIn>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Facilities */}
+      {pageSettings?.facilitiesVisible !== false && (
+        <section className="py-12 bg-neutral-50">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <FadeIn direction="left">
+                <div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                    {pageSettings?.facilitiesHeading ?? "Our Facilities"}
+                  </h2>
+                  <p className="text-gray-600 mb-8">
+                    {pageSettings?.facilitiesDescription ?? "Our centre features modern facilities designed to serve the diverse needs of our community and visitors."}
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {hasSanityFacilityCards
+                      ? pageSettings!.facilitiesCards!.map((card) => {
+                          const Icon =
+                            (card.icon ? facilityIconMap[card.icon] : undefined) ?? Users;
+                          return (
+                            <div
+                              key={card.name}
+                              className="bg-white rounded-xl p-4 flex items-center gap-3"
+                            >
+                              <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
+                                <Icon className="w-5 h-5 text-teal-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900 text-sm">{card.name}</p>
+                                {card.capacity && (
+                                  <p className="text-xs text-gray-500">Capacity: {card.capacity}</p>
+                                )}
+                                {card.description && !card.capacity && (
+                                  <p className="text-xs text-gray-500">{card.description}</p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      : facilities.map((facility) => (
+                          <div
+                            key={facility.name}
+                            className="bg-white rounded-xl p-4 flex items-center gap-3"
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
+                              <facility.icon className="w-5 h-5 text-teal-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900 text-sm">{facility.name}</p>
+                              <p className="text-xs text-gray-500">Capacity: {facility.capacity}</p>
+                            </div>
+                          </div>
+                        ))}
+                  </div>
+                </div>
+              </FadeIn>
+
+              <FadeIn direction="right">
+                <div className="relative">
+                  <Image
+                    src={facilitiesImageSrc}
+                    alt="Centre facilities"
+                    width={600}
+                    height={400}
+                    className="rounded-2xl shadow-2xl"
+                  />
+                </div>
+              </FadeIn>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Mosque Manners */}
+      {pageSettings?.mannersVisible !== false && (
+        <section id="manners" className="py-12 bg-white">
+          <div className="max-w-7xl mx-auto px-6">
+            <FadeIn>
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
+                  <Info className="w-4 h-4" />
+                  {pageSettings?.mannersBadge ?? "Visitor Guidelines"}
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  {pageSettings?.mannersHeading ?? "Mosque Manners"}
+                </h2>
+                <p className="text-gray-600 max-w-2xl mx-auto">
+                  {pageSettings?.mannersDescription ?? "We welcome visitors of all faiths. Please observe these guidelines during your visit."}
+                </p>
               </div>
             </FadeIn>
 
-            <FadeIn direction="right">
-              <div className="relative">
-                <Image
-                  src="/images/aic end.jpg"
-                  alt="Centre facilities"
-                  width={600}
-                  height={400}
-                  className="rounded-2xl shadow-2xl"
-                />
+            {displayEtiquette.length > 0 ? (
+              <div className="grid md:grid-cols-2 gap-3 max-w-3xl mx-auto">
+                {displayEtiquette.map((item) => {
+                  const Icon = etiquetteIcons[item.icon] || CheckCircle2;
+                  return (
+                    <div key={item._id} className="flex items-start gap-3 p-3 rounded-lg bg-neutral-50">
+                      <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Icon className="w-4 h-4 text-teal-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 text-sm">{item.title}</h3>
+                        <p className="text-gray-500 text-xs">{item.description}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">
+                  Please contact us for visitor guidelines before your visit.
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* FAQs */}
+      {pageSettings?.faqVisible !== false && (
+        <section id="faq" className="py-12 bg-neutral-50">
+          <div className="max-w-3xl mx-auto px-6">
+            <FadeIn>
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
+                  <HelpCircle className="w-4 h-4" />
+                  {pageSettings?.faqBadge ?? "FAQs"}
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  {pageSettings?.faqHeading ?? "Frequently Asked Questions"}
+                </h2>
+                <p className="text-gray-600">
+                  Find answers to common questions about visiting the Australian Islamic Centre.
+                </p>
+              </div>
+            </FadeIn>
+
+            <div className="space-y-3">
+              {displayFaqs.map((faq, index) => (
+                <FadeIn key={faq._id} delay={index * 0.05}>
+                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <button
+                      onClick={() => setOpenFAQ(openFAQ === index ? null : index)}
+                      className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="font-semibold text-gray-900">{faq.question}</span>
+                      <ChevronDown
+                        className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 ml-2 ${
+                          openFAQ === index ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {openFAQ === index && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="px-6 pb-4"
+                      >
+                        <div className="text-gray-600 prose prose-sm max-w-none">
+                          {faq.isPortableText ? (
+                            <PortableText value={faq.answer as Parameters<typeof PortableText>[0]["value"]} />
+                          ) : (
+                            <p>{faq.answer as string}</p>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+                </FadeIn>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* CTA Section */}
+      {pageSettings?.ctaVisible !== false && (
+        <section className="py-16 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800">
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <FadeIn>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+                {pageSettings?.ctaHeading ?? "We Look Forward to Welcoming You"}
+              </h2>
+              <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
+                {pageSettings?.ctaDescription ?? "Whether you're joining us for prayer, exploring our architecture, or simply curious about Islam, you're always welcome at the Australian Islamic Centre."}
+              </p>
+              <div className="flex flex-wrap justify-center gap-4">
+                {pageSettings?.ctaButtons && pageSettings.ctaButtons.length > 0 ? (
+                  pageSettings.ctaButtons.map((btn, i) => (
+                    <Button
+                      key={i}
+                      href={btn.url}
+                      variant={btn.variant === "primary" ? "gold" : btn.variant === "outline" ? "outline" : "ghost"}
+                      size="lg"
+                      className={btn.variant === "outline" ? "border-white/30 text-white hover:bg-white/10" : undefined}
+                    >
+                      {btn.label}
+                    </Button>
+                  ))
+                ) : (
+                  <>
+                    <Button
+                      href="/contact"
+                      variant="gold"
+                      size="lg"
+                      icon={<Calendar className="w-5 h-5" />}
+                    >
+                      Book a Visit
+                    </Button>
+                    <Button
+                      href="/worshippers"
+                      variant="outline"
+                      size="lg"
+                      className="border-white/30 text-white hover:bg-white/10"
+                    >
+                      Prayer Times
+                    </Button>
+                  </>
+                )}
               </div>
             </FadeIn>
           </div>
-        </div>
-      </section>
-
-      {/* Mosque Manners */}
-      <section id="manners" className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
-                <Info className="w-4 h-4" />
-                Visitor Guidelines
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Mosque Manners
-              </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                We welcome visitors of all faiths. Please observe these guidelines during your visit.
-              </p>
-            </div>
-          </FadeIn>
-
-          {etiquette.length > 0 ? (
-            <div className="grid md:grid-cols-2 gap-3 max-w-3xl mx-auto">
-              {etiquette.map((item) => {
-                const Icon = etiquetteIcons[item.icon] || CheckCircle2;
-                return (
-                  <div key={item._id} className="flex items-start gap-3 p-3 rounded-lg bg-neutral-50">
-                    <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Icon className="w-4 h-4 text-teal-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">{item.title}</h3>
-                      <p className="text-gray-500 text-xs">{item.description}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500">
-                Please contact us for visitor guidelines before your visit.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* FAQs */}
-      <section id="faq" className="py-12 bg-neutral-50">
-        <div className="max-w-3xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 text-neutral-700 text-sm font-medium mb-4">
-                <HelpCircle className="w-4 h-4" />
-                FAQs
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Frequently Asked Questions
-              </h2>
-              <p className="text-gray-600">
-                Find answers to common questions about visiting the Australian Islamic Centre.
-              </p>
-            </div>
-          </FadeIn>
-
-          {(() => {
-            const displayFaqs = faqs.length > 0 ? faqs : fallbackFaqs;
-            const isSanity = faqs.length > 0;
-            return (
-              <div className="space-y-3">
-                {displayFaqs.map((faq, index) => (
-                  <FadeIn key={faq._id} delay={index * 0.05}>
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                      <button
-                        onClick={() => setOpenFAQ(openFAQ === index ? null : index)}
-                        className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
-                      >
-                        <span className="font-semibold text-gray-900">{faq.question}</span>
-                        <ChevronDown
-                          className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 ml-2 ${
-                            openFAQ === index ? "rotate-180" : ""
-                          }`}
-                        />
-                      </button>
-                      {openFAQ === index && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="px-6 pb-4"
-                        >
-                          <div className="text-gray-600 prose prose-sm max-w-none">
-                            {isSanity ? (
-                              <PortableText value={(faq as SanityFaq).answer} />
-                            ) : (
-                              <p>{(faq as typeof fallbackFaqs[number]).answer}</p>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </div>
-                  </FadeIn>
-                ))}
-              </div>
-            );
-          })()}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-br from-neutral-900 via-neutral-800 to-sage-800">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <FadeIn>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              We Look Forward to Welcoming You
-            </h2>
-            <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-              Whether you&apos;re joining us for prayer, exploring our architecture, or simply curious
-              about Islam, you&apos;re always welcome at the Australian Islamic Centre.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button
-                href="/contact"
-                variant="gold"
-                size="lg"
-                icon={<Calendar className="w-5 h-5" />}
-              >
-                Book a Visit
-              </Button>
-              <Button
-                href="/worshippers"
-                variant="outline"
-                size="lg"
-                className="border-white/30 text-white hover:bg-white/10"
-              >
-                Prayer Times
-              </Button>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
+        </section>
+      )}
     </>
   );
 }

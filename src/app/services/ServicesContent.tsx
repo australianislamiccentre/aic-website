@@ -16,6 +16,7 @@ import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { SanityService, SanityServicesPageSettings } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
+import { Button } from "@/components/ui/Button";
 import {
   ArrowRight,
   Clock,
@@ -153,7 +154,7 @@ export default function ServicesContent({ services, pageSettings }: ServicesCont
             <div className="relative hidden lg:block">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <Image
-                  src="/images/aic end.jpg"
+                  src={pageSettings?.heroImage ? urlFor(pageSettings.heroImage).width(1200).height(800).url() : "/images/aic end.jpg"}
                   alt="Australian Islamic Centre services"
                   width={600}
                   height={400}
@@ -277,6 +278,30 @@ export default function ServicesContent({ services, pageSettings }: ServicesCont
           )}
         </div>
       </section>
+
+      {/* CTA Section */}
+      {pageSettings?.ctaVisible !== false && (
+        <FadeIn>
+          <section className="py-16 md:py-20 bg-gradient-to-br from-[#01476b] to-[#012d44] text-white">
+            <div className="max-w-4xl mx-auto px-4 md:px-6 text-center">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
+                {pageSettings?.ctaHeading ?? "Need Help Finding the Right Service?"}
+              </h2>
+              <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
+                {pageSettings?.ctaDescription ?? "Our team is here to help you find the support and services you need. Reach out to us and we'll guide you."}
+              </p>
+              <Button
+                href={pageSettings?.ctaButtonUrl ?? "/contact"}
+                variant="gold"
+                size="lg"
+                icon={<ArrowRight className="w-5 h-5" />}
+              >
+                {pageSettings?.ctaButtonLabel ?? "Contact Us"}
+              </Button>
+            </div>
+          </section>
+        </FadeIn>
+      )}
     </>
   );
 }

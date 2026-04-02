@@ -205,4 +205,114 @@ describe("ImamsContent", () => {
     render(<ImamsContent imams={imams} />);
     expect(screen.getByTestId("portable-text")).toBeInTheDocument();
   });
+
+  describe("pageSettings wiring", () => {
+    it("renders fallback hero heading when pageSettings is null", () => {
+      render(<ImamsContent imams={[]} pageSettings={null} />);
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Our Imams");
+    });
+
+    it("renders Sanity hero heading when pageSettings provides heroHeading", () => {
+      render(
+        <ImamsContent
+          imams={[]}
+          pageSettings={{ heroHeading: "Meet Our", heroHeadingAccent: "Scholars" }}
+        />
+      );
+      const h1 = screen.getByRole("heading", { level: 1 });
+      expect(h1).toHaveTextContent("Meet Our");
+      expect(h1).toHaveTextContent("Scholars");
+    });
+
+    it("renders Sanity hero description when provided", () => {
+      render(
+        <ImamsContent
+          imams={[]}
+          pageSettings={{ heroDescription: "Our dedicated scholars serve the community." }}
+        />
+      );
+      expect(screen.getByText("Our dedicated scholars serve the community.")).toBeInTheDocument();
+    });
+
+    it("renders Sanity imams section heading and description", () => {
+      render(
+        <ImamsContent
+          imams={[]}
+          pageSettings={{
+            imamsSectionHeading: "Our Distinguished Imams",
+            imamsSectionDescription: "Dedicated to the community.",
+          }}
+        />
+      );
+      expect(screen.getByText("Our Distinguished Imams")).toBeInTheDocument();
+      expect(screen.getByText("Dedicated to the community.")).toBeInTheDocument();
+    });
+
+    it("renders Sanity servicesOfferedCards instead of fallback", () => {
+      render(
+        <ImamsContent
+          imams={[]}
+          pageSettings={{
+            servicesOfferedCards: [
+              { title: "Custom Service", description: "A custom service description" },
+            ],
+          }}
+        />
+      );
+      expect(screen.getByText("Custom Service")).toBeInTheDocument();
+      expect(screen.getByText("A custom service description")).toBeInTheDocument();
+      // Fallback services should not appear
+      expect(screen.queryByText("Religious Counselling")).not.toBeInTheDocument();
+    });
+
+    it("hides services section when servicesOfferedVisible is false", () => {
+      render(
+        <ImamsContent
+          imams={[]}
+          pageSettings={{ servicesOfferedVisible: false }}
+        />
+      );
+      expect(screen.queryByText("Services Offered by Our Imams")).not.toBeInTheDocument();
+    });
+
+    it("hides CTA section when ctaVisible is false", () => {
+      render(
+        <ImamsContent
+          imams={[]}
+          pageSettings={{ ctaVisible: false }}
+        />
+      );
+      expect(screen.queryByText("Need Spiritual Guidance?")).not.toBeInTheDocument();
+    });
+
+    it("renders Sanity CTA heading and description", () => {
+      render(
+        <ImamsContent
+          imams={[]}
+          pageSettings={{
+            ctaHeading: "Connect With Us",
+            ctaDescription: "Reach out for guidance.",
+          }}
+        />
+      );
+      expect(screen.getByText("Connect With Us")).toBeInTheDocument();
+      expect(screen.getByText("Reach out for guidance.")).toBeInTheDocument();
+    });
+
+    it("renders Sanity CTA buttons when provided", () => {
+      render(
+        <ImamsContent
+          imams={[]}
+          pageSettings={{
+            ctaButtons: [
+              { label: "Book Appointment", url: "/book", variant: "primary" },
+              { label: "View Services", url: "/services", variant: "outline" },
+            ],
+          }}
+        />
+      );
+      expect(screen.getByText("Book Appointment")).toBeInTheDocument();
+      expect(screen.getByText("View Services")).toBeInTheDocument();
+    });
+  });
 });

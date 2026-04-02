@@ -190,4 +190,90 @@ describe("ServicesContent", () => {
       expect(heading).toHaveTextContent("Our Services");
     });
   });
+
+  describe("pageSettings wiring", () => {
+    it("renders fallback hero content when pageSettings is null", () => {
+      render(<ServicesContent services={[]} pageSettings={null} />);
+      const h1 = screen.getByRole("heading", { level: 1 });
+      expect(h1).toHaveTextContent("Our Services");
+    });
+
+    it("renders Sanity hero badge when provided", () => {
+      render(
+        <ServicesContent
+          services={[]}
+          pageSettings={{ heroBadge: "Islamic Services" }}
+        />
+      );
+      expect(screen.getByText("Islamic Services")).toBeInTheDocument();
+    });
+
+    it("renders Sanity heroHeading and heroHeadingAccent", () => {
+      render(
+        <ServicesContent
+          services={[]}
+          pageSettings={{ heroHeading: "Community", heroHeadingAccent: "Support" }}
+        />
+      );
+      const h1 = screen.getByRole("heading", { level: 1 });
+      expect(h1).toHaveTextContent("Community");
+      expect(h1).toHaveTextContent("Support");
+    });
+
+    it("renders Sanity hero description", () => {
+      render(
+        <ServicesContent
+          services={[]}
+          pageSettings={{ heroDescription: "We provide a wide range of services." }}
+        />
+      );
+      expect(screen.getByText("We provide a wide range of services.")).toBeInTheDocument();
+    });
+
+    it("renders Sanity heroCategoryTags when provided", () => {
+      render(
+        <ServicesContent
+          services={[makeService()]}
+          pageSettings={{ heroCategoryTags: ["Nikah", "Funeral", "Education"] }}
+        />
+      );
+      expect(screen.getByText("Nikah")).toBeInTheDocument();
+      expect(screen.getByText("Funeral")).toBeInTheDocument();
+      expect(screen.getByText("Education")).toBeInTheDocument();
+    });
+
+    it("hides CTA section when ctaVisible is false", () => {
+      render(
+        <ServicesContent
+          services={[makeService()]}
+          pageSettings={{ ctaVisible: false }}
+        />
+      );
+      expect(screen.queryByText("Need Help Finding the Right Service?")).not.toBeInTheDocument();
+    });
+
+    it("renders Sanity CTA heading and description", () => {
+      render(
+        <ServicesContent
+          services={[makeService()]}
+          pageSettings={{
+            ctaHeading: "Find the Right Support",
+            ctaDescription: "Our team is ready to help.",
+          }}
+        />
+      );
+      expect(screen.getByText("Find the Right Support")).toBeInTheDocument();
+      expect(screen.getByText("Our team is ready to help.")).toBeInTheDocument();
+    });
+
+    it("renders Sanity CTA button label", () => {
+      render(
+        <ServicesContent
+          services={[makeService()]}
+          pageSettings={{ ctaButtonLabel: "Speak to Us", ctaButtonUrl: "/contact" }}
+        />
+      );
+      expect(screen.getByText("Speak to Us")).toBeInTheDocument();
+    });
+  });
 });

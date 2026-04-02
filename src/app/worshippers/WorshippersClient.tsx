@@ -103,9 +103,12 @@ export default function WorshippersClient({
   const nextPrayerData = useNextPrayer(prayerSettings);
 
   // Normalize Sanity data with hardcoded fallbacks
-  const etiquetteItems = etiquette.length > 0
-    ? etiquette.map(e => ({ title: e.title, description: e.description, icon: e.icon }))
-    : fallbackEtiquette;
+  // pageSettings.etiquetteItems takes highest priority, then etiquette prop, then fallback
+  const etiquetteItems = (pageSettings?.etiquetteItems && pageSettings.etiquetteItems.length > 0)
+    ? pageSettings.etiquetteItems.map(e => ({ title: e.title, description: e.description, icon: e.icon }))
+    : etiquette.length > 0
+      ? etiquette.map(e => ({ title: e.title, description: e.description, icon: e.icon }))
+      : fallbackEtiquette;
 
   // Jumu'ah times from Sanity with hardcoded fallback
   const jumuahArabicTime = prayerSettings?.jumuahArabicTime ?? jumuahTimes[0]?.time;
@@ -431,7 +434,7 @@ export default function WorshippersClient({
             <FadeIn>
               <div className="flex items-end justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Islamic Talks</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">{pageSettings?.khutbahHeading ?? "Islamic Talks"}</h2>
                   <p className="text-gray-500 text-sm">Khutbahs and lectures from the Australian Islamic Centre</p>
                 </div>
                 <Link
@@ -484,62 +487,76 @@ export default function WorshippersClient({
       )}
 
       {/* Mosque Etiquette */}
-      <section id="etiquette" className={`py-10 md:py-14 ${youtubeVideos.length > 0 ? "bg-white" : "bg-neutral-50"}`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="mb-6">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-                Mosque Etiquette
-              </h2>
-              <p className="text-gray-500 text-sm">
-                Please observe these guidelines for a peaceful environment.
-              </p>
-            </div>
-          </FadeIn>
+      {pageSettings?.etiquetteVisible !== false && (
+        <section id="etiquette" className={`py-10 md:py-14 ${youtubeVideos.length > 0 ? "bg-white" : "bg-neutral-50"}`}>
+          <div className="max-w-7xl mx-auto px-6">
+            <FadeIn>
+              <div className="mb-6">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+                  {pageSettings?.etiquetteHeading ?? "Mosque Etiquette"}
+                </h2>
+                <p className="text-gray-500 text-sm">
+                  {pageSettings?.etiquetteDescription ?? "Please observe these guidelines for a peaceful environment."}
+                </p>
+              </div>
+            </FadeIn>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {etiquetteItems.map((item) => {
-              const Icon = etiquetteIcons[item.icon] || CheckCircle2;
-              return (
-                <FadeIn key={item.title}>
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-50 border border-gray-100">
-                    <div className="w-9 h-9 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-4 h-4 text-teal-600" />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {etiquetteItems.map((item) => {
+                const Icon = etiquetteIcons[item.icon ?? ""] || CheckCircle2;
+                return (
+                  <FadeIn key={item.title}>
+                    <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-50 border border-gray-100">
+                      <div className="w-9 h-9 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-4 h-4 text-teal-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 text-sm">{item.title}</h3>
+                        <p className="text-gray-500 text-xs leading-relaxed mt-0.5">{item.description}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">{item.title}</h3>
-                      <p className="text-gray-500 text-xs leading-relaxed mt-0.5">{item.description}</p>
-                    </div>
-                  </div>
-                </FadeIn>
-              );
-            })}
+                  </FadeIn>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Get Directions CTA */}
-      <section className={`py-10 ${youtubeVideos.length > 0 ? "bg-neutral-50" : "bg-white"}`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <div className="flex items-center gap-2 text-gray-700">
-                <MapPin className="w-5 h-5 text-teal-600" />
-                <span className="font-medium text-sm">{info.address.full}</span>
+      {pageSettings?.ctaVisible !== false && (
+        <section className={`py-10 ${youtubeVideos.length > 0 ? "bg-neutral-50" : "bg-white"}`}>
+          <div className="max-w-7xl mx-auto px-6">
+            <FadeIn>
+              {(pageSettings?.ctaHeading || pageSettings?.ctaDescription) && (
+                <div className="text-center mb-4">
+                  {pageSettings?.ctaHeading && (
+                    <h2 className="text-xl font-bold text-gray-900 mb-1">{pageSettings.ctaHeading}</h2>
+                  )}
+                  {pageSettings?.ctaDescription && (
+                    <p className="text-gray-500 text-sm">{pageSettings.ctaDescription}</p>
+                  )}
+                </div>
+              )}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <MapPin className="w-5 h-5 text-teal-600" />
+                  <span className="font-medium text-sm">{info.address.full}</span>
+                </div>
+                <a
+                  href={pageSettings?.ctaButtonUrl ?? "https://maps.app.goo.gl/DZUnHYjsaBvREAmw9"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors text-sm"
+                >
+                  <MapPin className="w-4 h-4" />
+                  {pageSettings?.ctaButtonLabel ?? "Get Directions"}
+                </a>
               </div>
-              <a
-                href="https://maps.app.goo.gl/DZUnHYjsaBvREAmw9"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors text-sm"
-              >
-                <MapPin className="w-4 h-4" />
-                Get Directions
-              </a>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
+            </FadeIn>
+          </div>
+        </section>
+      )}
     </>
   );
 }

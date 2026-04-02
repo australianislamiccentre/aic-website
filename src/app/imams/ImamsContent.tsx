@@ -32,7 +32,21 @@ interface ImamsContentProps {
   pageSettings?: SanityImamsPageSettings | null;
 }
 
+const FALLBACK_SERVICES = [
+  { title: "Religious Counselling", description: "Guidance on Islamic matters and spiritual well-being" },
+  { title: "Marriage Services", description: "Nikah ceremonies and pre-marriage counselling" },
+  { title: "Funeral Services", description: "Janazah prayers and support for families" },
+  { title: "Islamic Education", description: "Quran classes and religious instruction" },
+  { title: "Friday Sermons", description: "Weekly Jumu'ah khutbahs" },
+  { title: "Community Programs", description: "Ramadan, Eid, and spiritual events" },
+];
+
 export default function ImamsContent({ imams, pageSettings }: ImamsContentProps) {
+  const servicesCards =
+    pageSettings?.servicesOfferedCards && pageSettings.servicesOfferedCards.length > 0
+      ? pageSettings.servicesOfferedCards
+      : FALLBACK_SERVICES;
+
   return (
     <>
       {/* Page Header */}
@@ -61,11 +75,10 @@ export default function ImamsContent({ imams, pageSettings }: ImamsContentProps)
           <FadeIn>
             <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Meet Our Religious Leaders
+                {pageSettings?.imamsSectionHeading ?? "Meet Our Religious Leaders"}
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Our Imams bring years of Islamic scholarship and community service,
-                dedicated to nurturing faith and providing guidance to our community.
+                {pageSettings?.imamsSectionDescription ?? "Our Imams bring years of Islamic scholarship and community service, dedicated to nurturing faith and providing guidance to our community."}
               </p>
             </div>
           </FadeIn>
@@ -222,66 +235,79 @@ export default function ImamsContent({ imams, pageSettings }: ImamsContentProps)
       </section>
 
       {/* Services Section */}
-      <section className="py-12 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-              Services Offered by Our Imams
-            </h2>
-          </FadeIn>
+      {pageSettings?.servicesOfferedVisible !== false && (
+        <section className="py-12 bg-neutral-50">
+          <div className="max-w-7xl mx-auto px-6">
+            <FadeIn>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                {pageSettings?.servicesOfferedHeading ?? "Services Offered by Our Imams"}
+              </h2>
+            </FadeIn>
 
-          <StaggerContainer className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {[
-              { title: "Religious Counselling", description: "Guidance on Islamic matters and spiritual well-being" },
-              { title: "Marriage Services", description: "Nikah ceremonies and pre-marriage counselling" },
-              { title: "Funeral Services", description: "Janazah prayers and support for families" },
-              { title: "Islamic Education", description: "Quran classes and religious instruction" },
-              { title: "Friday Sermons", description: "Weekly Jumu'ah khutbahs" },
-              { title: "Community Programs", description: "Ramadan, Eid, and spiritual events" },
-            ].map((service) => (
-              <StaggerItem key={service.title}>
-                <div className="bg-white rounded-lg p-4 border border-gray-100">
-                  <h3 className="font-semibold text-gray-900 text-sm mb-1">{service.title}</h3>
-                  <p className="text-gray-500 text-xs">{service.description}</p>
-                </div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-        </div>
-      </section>
+            <StaggerContainer className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {servicesCards.map((service) => (
+                <StaggerItem key={service.title}>
+                  <div className="bg-white rounded-lg p-4 border border-gray-100">
+                    <h3 className="font-semibold text-gray-900 text-sm mb-1">{service.title}</h3>
+                    <p className="text-gray-500 text-xs">{service.description}</p>
+                  </div>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-br from-neutral-800 via-neutral-700 to-sage-700">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <FadeIn>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Need Spiritual Guidance?
-            </h2>
-            <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-              Our Imams are here to help. Whether you have questions about Islam, need counselling,
-              or require assistance with religious services, don&apos;t hesitate to reach out.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button
-                href="/contact"
-                variant="gold"
-                size="lg"
-                icon={<ArrowRight className="w-5 h-5" />}
-              >
-                Contact Us
-              </Button>
-              <Button
-                href="/services"
-                variant="outline"
-                size="lg"
-                className="text-white border-white/30 hover:bg-white/10"
-              >
-                View All Services
-              </Button>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
+      {pageSettings?.ctaVisible !== false && (
+        <section className="py-16 bg-gradient-to-br from-neutral-800 via-neutral-700 to-sage-700">
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <FadeIn>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+                {pageSettings?.ctaHeading ?? "Need Spiritual Guidance?"}
+              </h2>
+              <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
+                {pageSettings?.ctaDescription ?? "Our Imams are here to help. Whether you have questions about Islam, need counselling, or require assistance with religious services, don\u2019t hesitate to reach out."}
+              </p>
+              <div className="flex flex-wrap justify-center gap-4">
+                {pageSettings?.ctaButtons && pageSettings.ctaButtons.length > 0 ? (
+                  pageSettings.ctaButtons.map((btn, i) => (
+                    <Button
+                      key={i}
+                      href={btn.url}
+                      variant={btn.variant ?? (i === 0 ? "gold" : "outline")}
+                      size="lg"
+                      icon={i === 0 ? <ArrowRight className="w-5 h-5" /> : undefined}
+                      className={i !== 0 ? "text-white border-white/30 hover:bg-white/10" : undefined}
+                    >
+                      {btn.label}
+                    </Button>
+                  ))
+                ) : (
+                  <>
+                    <Button
+                      href="/contact"
+                      variant="gold"
+                      size="lg"
+                      icon={<ArrowRight className="w-5 h-5" />}
+                    >
+                      Contact Us
+                    </Button>
+                    <Button
+                      href="/services"
+                      variant="outline"
+                      size="lg"
+                      className="text-white border-white/30 hover:bg-white/10"
+                    >
+                      View All Services
+                    </Button>
+                  </>
+                )}
+              </div>
+            </FadeIn>
+          </div>
+        </section>
+      )}
     </>
   );
 }
