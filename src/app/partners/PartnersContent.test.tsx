@@ -142,4 +142,87 @@ describe("PartnersContent", () => {
     const img = screen.getByAltText("Test Partner");
     expect(img).toHaveAttribute("src", "/images/aic 5.jpg");
   });
+
+  describe("pageSettings wiring", () => {
+    it("renders fallback hero content when pageSettings is null", () => {
+      render(<PartnersContent partners={[]} pageSettings={null} />);
+      const h1 = screen.getByRole("heading", { level: 1 });
+      expect(h1).toHaveTextContent("Affiliated");
+      expect(h1).toHaveTextContent("Partners");
+    });
+
+    it("renders Sanity hero badge when provided", () => {
+      render(
+        <PartnersContent
+          partners={[]}
+          pageSettings={{ heroBadge: "Our Partners" }}
+        />
+      );
+      expect(screen.getByText("Our Partners")).toBeInTheDocument();
+    });
+
+    it("renders Sanity heroHeading and heroHeadingAccent", () => {
+      render(
+        <PartnersContent
+          partners={[]}
+          pageSettings={{ heroHeading: "Strategic", heroHeadingAccent: "Alliances" }}
+        />
+      );
+      const h1 = screen.getByRole("heading", { level: 1 });
+      expect(h1).toHaveTextContent("Strategic");
+      expect(h1).toHaveTextContent("Alliances");
+    });
+
+    it("renders Sanity hero description", () => {
+      render(
+        <PartnersContent
+          partners={[]}
+          pageSettings={{ heroDescription: "We work with trusted organisations." }}
+        />
+      );
+      expect(screen.getByText("We work with trusted organisations.")).toBeInTheDocument();
+    });
+
+    it("hides CTA section when ctaVisible is false", () => {
+      render(
+        <PartnersContent
+          partners={[]}
+          pageSettings={{ ctaVisible: false }}
+        />
+      );
+      expect(screen.queryByText(/Partner With/)).not.toBeInTheDocument();
+    });
+
+    it("renders Sanity CTA heading and accent", () => {
+      render(
+        <PartnersContent
+          partners={[]}
+          pageSettings={{ ctaHeading: "Work With", ctaHeadingAccent: "AIC" }}
+        />
+      );
+      expect(screen.getByText(/Work With/)).toBeInTheDocument();
+      expect(screen.getByText("AIC")).toBeInTheDocument();
+    });
+
+    it("renders Sanity CTA description", () => {
+      render(
+        <PartnersContent
+          partners={[]}
+          pageSettings={{ ctaDescription: "Join our network of community organisations." }}
+        />
+      );
+      expect(screen.getByText("Join our network of community organisations.")).toBeInTheDocument();
+    });
+
+    it("renders Sanity CTA button label and URL", () => {
+      render(
+        <PartnersContent
+          partners={[]}
+          pageSettings={{ ctaButtonLabel: "Apply Now", ctaButtonUrl: "/apply" }}
+        />
+      );
+      const link = screen.getByText("Apply Now");
+      expect(link.closest("a")).toHaveAttribute("href", "/apply");
+    });
+  });
 });

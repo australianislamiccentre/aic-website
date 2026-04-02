@@ -183,27 +183,32 @@ export default function PartnersContent({ partners, pageSettings }: PartnersCont
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <FadeIn>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-              Partner With <span className="text-teal-600">Us</span>
-            </h2>
-            <p className="text-gray-600 mb-8">
-              Interested in partnering with the Australian Islamic Centre? We
-              welcome organisations that share our commitment to community
-              development, education, and social impact.
-            </p>
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#00ad4c] text-white font-semibold rounded-lg hover:bg-[#009040] transition-colors"
-            >
-              Get in Touch
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </FadeIn>
-        </div>
-      </section>
+      {pageSettings?.ctaVisible !== false && (
+        <section className="py-16 bg-white">
+          <div className="max-w-3xl mx-auto px-6 text-center">
+            <FadeIn>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                {pageSettings?.ctaHeading ?? "Partner With"}{" "}
+                {pageSettings?.ctaHeadingAccent !== undefined ? (
+                  <span className="text-teal-600">{pageSettings.ctaHeadingAccent}</span>
+                ) : (
+                  <span className="text-teal-600">Us</span>
+                )}
+              </h2>
+              <p className="text-gray-600 mb-8">
+                {pageSettings?.ctaDescription ?? "Interested in partnering with the Australian Islamic Centre? We welcome organisations that share our commitment to community development, education, and social impact."}
+              </p>
+              <Link
+                href={pageSettings?.ctaButtonUrl ?? "/contact"}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#00ad4c] text-white font-semibold rounded-lg hover:bg-[#009040] transition-colors"
+              >
+                {pageSettings?.ctaButtonLabel ?? "Get in Touch"}
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </FadeIn>
+          </div>
+        </section>
+      )}
     </>
   );
 }

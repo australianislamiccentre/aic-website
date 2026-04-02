@@ -15,6 +15,7 @@ import { WhatsOnSection } from "@/components/sections/WhatsOnSection";
 import { AboutPreviewSection } from "@/components/sections/AboutPreviewSection";
 import { MeetImamsSection } from "@/components/sections/MeetImamsSection";
 import { GalleryStripSection } from "@/components/sections/GalleryStripSection";
+import { CTABannerSection } from "@/components/sections/CTABannerSection";
 import { MediaHighlightSection } from "@/components/sections/MediaHighlightSection";
 import {
   getFeaturedEvents,
@@ -89,11 +90,13 @@ export default async function HomePage() {
         services={services}
       />
 
-      <AboutPreviewSection />
+      <AboutPreviewSection welcomeSection={homepageSettings?.welcomeSection} />
 
       <MeetImamsSection imams={imams} />
 
       <GalleryStripSection images={galleryImages} />
+
+      <CTABannerSection ctaBanner={homepageSettings?.ctaBanner} />
 
       <MediaHighlightSection
         featuredYoutubeUrl={homepageSettings?.featuredYoutubeUrl}
