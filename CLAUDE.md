@@ -71,7 +71,16 @@ Always import `client` from `src/sanity/lib/client.ts` for production reads. Nev
 
 ### Singleton Schemas
 
-Five schemas are singletons (one document each): `siteSettings`, `prayerSettings`, `donationSettings`, `donatePageSettings`, `formSettings`. They use `.documentId("schemaName")` in the desk structure (`sanity.config.ts`) and are fetched with `_id == "schemaName"` in GROQ queries.
+Singletons are one-document-per-type schemas. They use `.documentId("schemaName")` in the desk structure (`sanity.config.ts`) and are fetched with `_id == "schemaName"` in GROQ queries.
+
+**Core singletons:** `siteSettings`, `prayerSettings`, `donationSettings`, `donatePageSettings`, `homepageSettings`
+
+**Page settings singletons** (one per page, controls hero text, section visibility, CTA content):
+`aboutPageSettings`, `architecturePageSettings`, `visitPageSettings`, `worshippersPageSettings`, `contactPageSettings`, `eventsPageSettings`, `announcementsPageSettings`, `servicesPageSettings`, `imamsPageSettings`, `resourcesPageSettings`, `mediaPageSettings`, `partnersPageSettings`, `privacyPageSettings`, `termsPageSettings`
+
+**Form singletons:** `contactFormSettings`, `serviceInquiryFormSettings`, `eventInquiryFormSettings`, `newsletterSettings`, `allowedFormDomains`
+
+Every singleton must have: schema → desk structure entry → GROQ query → fetch function → page.tsx wiring → component rendering → tests. See "Sanity CMS Rules" for the full checklist.
 
 ### Event Schema
 
@@ -116,17 +125,68 @@ if (images.length === 0) return null;
 
 ## Sanity CMS Rules
 
+### The #1 Rule: Every Sanity Field Must Work End-to-End
+
+A Sanity field is not "done" until changing its value in Sanity Studio changes what appears on the live site. A field that exists in the schema but doesn't render is a bug. Every field must be wired through the **complete pipeline**:
+
+```
+Schema field → GROQ query → TypeScript type → fetch function → page.tsx prop → Content.tsx renders it → test proves it works
+```
+
+If any link in this chain is missing, the field is broken. Do not commit partial implementations.
+
+### Mandatory Checklist: Adding a Sanity Field
+
+When adding ANY new field to a Sanity schema, complete ALL of these steps in the same commit. Do not split across PRs or leave any step for later:
+
+1. **Schema** — Add the field in `src/sanity/schemas/`
+2. **GROQ query** — Add the field to the query in `src/sanity/lib/queries.ts`. If the query uses explicit field projections, add the new field. If it fetches the whole object (e.g. `welcomeSection,`), verify the field is inside that object
+3. **TypeScript type** — Add the field to the interface in `src/types/sanity.ts` (mark optional with `?` if it may not exist in Sanity)
+4. **Fetch function** — Verify the fetch function in `src/sanity/lib/fetch.ts` returns the data (usually no change needed if query is updated)
+5. **Server component (page.tsx)** — Verify the fetched data is passed as a prop to the client component. **This is the step most likely to be missed.** Check that the prop is actually passed, not just that the component accepts it
+6. **Client component** — Use the prop with a fallback: `prop?.newField ?? "Default value"`. Never render `undefined`
+7. **Test** — Write a test that renders the component with the new field set AND with it missing (fallback). Both must work
+8. **Fallback content** — If the field has a hardcoded default, add it to `src/data/content.ts` or as inline fallback in the component
+
+### Mandatory Checklist: Adding a Sanity Page Settings Singleton
+
+When adding a new page settings singleton (e.g. `fooPageSettings`), complete ALL steps:
+
+1. **Schema** — Create `src/sanity/schemas/pages/fooPageSettings.ts` with all fields
+2. **Register schema** — Add to `src/sanity/schemas/index.ts`
+3. **Desk structure** — Add singleton entry in `sanity.config.ts` with `.documentId("fooPageSettings")`
+4. **GROQ query** — Add `fooPageSettingsQuery` in `src/sanity/lib/queries.ts` using `*[_id == "fooPageSettings"][0]`
+5. **TypeScript type** — Add `SanityFooPageSettings` interface in `src/types/sanity.ts`
+6. **Fetch function** — Add `getFooPageSettings()` in `src/sanity/lib/fetch.ts` with `skipCdn: true` and tags `["fooPageSettings"]`
+7. **Server component** — Call `getFooPageSettings()` in `app/foo/page.tsx` and pass as prop to `FooContent`
+8. **Client component** — Accept the settings prop and use every field with fallbacks
+9. **Revalidation** — Add `"fooPageSettings"` to `validDocumentTypes` and `documentTypeToPath` in `src/app/api/revalidate/route.ts`
+10. **Test** — Write tests covering: all fields rendering, missing fields falling back, empty/null settings
+
+### Verification After Any Sanity Change
+
+After implementing any Sanity schema change, verify the full pipeline by answering these questions:
+
+1. If I change this field's value in Sanity Studio, will the site update? (Trace: query → fetch → prop → render)
+2. If this field is empty/missing in Sanity, will the site crash or show a blank? (Must show fallback)
+3. Is the field included in the GROQ query? (Check explicit projections — a field not in the query won't be fetched even if it's in the schema)
+4. Is the fetched data actually passed as a prop from page.tsx to the Content component? (The most common failure point)
+5. Does the revalidation webhook know about this document type? (Check `validDocumentTypes` and `documentTypeToPath` in route.ts)
+
+### General Sanity Rules
+
 - Any UI change that displays Sanity content must account for the schema in src/sanity/schemas/
 - When adding new content sections, create or update the Sanity schema FIRST, then build the UI
-- Handle missing/null content gracefully - never crash if a Sanity field is empty
-- Use the fallback pattern: Sanity data -> src/data/content.ts defaults via context
-- Portable Text fields must use a proper serializer, not raw rendering
+- Handle missing/null content gracefully — never crash if a Sanity field is empty
+- Use the fallback pattern: Sanity data → `src/data/content.ts` defaults via context
+- Portable Text fields must use a proper `<PortableText>` serializer, not raw rendering
 - When renaming or restructuring content, consider existing published data migration
-- GROQ queries must be efficient - only fetch the fields you need, avoid *
-- New queries go in src/sanity/lib/queries.ts, never inline in components
-- Types for new schemas must be added to src/types/sanity.ts
-- Sanity Studio customisation (desk structure, input components) lives in src/sanity/
+- GROQ queries must be efficient — only fetch the fields you need, avoid `*`
+- New queries go in `src/sanity/lib/queries.ts`, never inline in components
+- Types for new schemas must be added to `src/types/sanity.ts`
+- Sanity Studio customisation (desk structure, input components) lives in `src/sanity/`
 - Validate that Sanity Studio still works at /studio after schema changes
+- **Never leave a Sanity field unwired** — if a field is in the schema, it must render on the site. If it's not ready to be wired, don't add it to the schema yet
 
 ---
 
@@ -224,6 +284,33 @@ Never render FundraiseUp HTML without running it through this sanitizer first.
 - Test donation page states: campaigns rendering, empty campaigns, sanitization of FundraiseUp HTML
 - Test loading, error, and empty states - not just the happy path
 - Test accessibility: keyboard navigation, screen reader labels, focus management
+
+### Sanity Field Wiring Tests — MANDATORY
+
+Every component that receives Sanity data must have tests proving the wiring works. These are not optional:
+
+1. **Sanity data renders** — Pass Sanity data as props, assert the values appear in the DOM
+2. **Fallback renders** — Pass `undefined`/missing props, assert the hardcoded fallback appears
+3. **Partial data** — Pass an object with some fields set and others missing, assert no crash and correct mix of Sanity + fallback content
+4. **Every field individually** — If a component uses 5 Sanity fields, test each one. Don't just test the happy path where all fields are present
+
+Example pattern for a page settings component:
+```tsx
+it("renders Sanity hero heading when provided", () => {
+  render(<FooContent pageSettings={{ heroHeading: "Custom Title" }} />);
+  expect(screen.getByText("Custom Title")).toBeInTheDocument();
+});
+
+it("renders fallback hero heading when pageSettings is undefined", () => {
+  render(<FooContent />);
+  expect(screen.getByText("Default Title")).toBeInTheDocument();
+});
+
+it("renders fallback hero heading when heroHeading is missing", () => {
+  render(<FooContent pageSettings={{ heroDescription: "Some desc" }} />);
+  expect(screen.getByText("Default Title")).toBeInTheDocument();
+});
+```
 
 ---
 
@@ -355,13 +442,16 @@ When any structural change is made (adding, removing, or renaming a page, route,
 - Update tests to use the new route/names
 
 ### When modifying a Sanity schema:
-- Update the corresponding GROQ queries
+- Update the corresponding GROQ queries to include new/renamed fields
 - Update TypeScript types in src/types/sanity.ts
 - Update fallback content in src/data/content.ts if fields changed
 - Update all components that consume that schema's data
+- **Verify the page.tsx server component passes the new data as props** — this is the most commonly missed step
 - Handle migration of existing published content if fields are renamed/removed
 - Check that null/undefined handling still works for changed fields
+- Write tests proving the new field renders when set AND falls back when missing
 - Verify Sanity Studio still works at /studio
+- Verify the revalidation webhook handles this document type (check `validDocumentTypes` and `documentTypeToPath` in `src/app/api/revalidate/route.ts`)
 
 ### When adding/removing a component:
 - Update all pages and sections that use it
@@ -438,7 +528,7 @@ Never push without running `npm run validate` first. Never create a branch from 
 ## When Making Any Change in This Project
 
 1. Check if it affects mobile layout - test at 375px, 768px, 1024px
-2. Check if it touches Sanity content - verify schema in src/sanity/schemas/
+2. **Check if it touches Sanity content** - verify schema, GROQ query, type, fetch function, page.tsx prop passing, component rendering, AND tests. If ANY link in this chain is missing, fix it before committing. See "Sanity CMS Rules" for the full checklist
 3. Check if it affects the donate page or FundraiseUp integration
 4. Check if tests exist for the affected code - add or update them (co-located, import from @/test/test-utils)
 5. Check if TypeScript types in src/types/sanity.ts need updating
@@ -448,6 +538,7 @@ Never push without running `npm run validate` first. Never create a branch from 
 9. Check performance - no unnecessary client components, images optimised, no bundle bloat
 10. Run npm run validate before committing
 11. Check stega is not breaking string comparisons on the client
+12. **If adding/modifying Sanity fields**: Verify the revalidation webhook handles the document type, and verify page.tsx actually passes the data to the client component
 
 ---
 
@@ -456,3 +547,7 @@ Never push without running `npm run validate` first. Never create a branch from 
 <!-- When Claude makes a mistake, ask "what rule in CLAUDE.md caused this or failed to prevent it?" then add the correction here so it never happens again -->
 
 1. **Stale local main caused orphaned commits (2026-03-18):** Created `fix/site-updates` from local `main` without pulling latest remote first. This meant the branch was missing commits that had been merged via PR on GitHub. Additionally, commits pushed to `feature/live-donations-api` after its PR was already merged never reached `main`. **Fix:** Added mandatory branch workflow in CI/CD section — always `git pull origin main` before branching, always rebase onto `origin/main` before pushing.
+
+2. **Sanity fields created but never wired to frontend (2026-04-02):** Schema fields, GROQ queries, fetch functions, and TypeScript types were all created for page settings singletons, but the final step — passing fetched data as props from `page.tsx` to the client component — was missed for 6 pages (homepage, visit, imams, partners, services, worshippers). Fields existed in Sanity Studio but changing them had zero effect on the live site. The homepage `AboutPreviewSection` was rendered as `<AboutPreviewSection />` (no props) instead of `<AboutPreviewSection welcomeSection={homepageSettings?.welcomeSection} />`. **Fix:** Added "Sanity CMS Rules" section with mandatory end-to-end checklist for every field, explicit verification step for page.tsx prop passing, and mandatory wiring tests. The rule: a Sanity field is not "done" until changing its value in Studio changes what appears on the site.
+
+3. **Revalidation webhook only busted page cache, not data cache (2026-04-01):** The `/api/revalidate` webhook called `revalidatePath()` but not `revalidateTag()`. In Next.js App Router, these bust separate caches — `revalidatePath` busts the rendered HTML cache, but `revalidateTag` busts the fetch data cache. Without both, pages would re-render using stale cached Sanity data. **Fix:** Added `revalidateTag("sanity")` and `revalidateTag(documentType)` calls to the webhook handler. Both are required for Sanity content changes to reflect immediately.
