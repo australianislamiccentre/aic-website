@@ -25,6 +25,10 @@ import {
   BookOpen,
   ArrowRight,
   User,
+  Heart,
+  Users,
+  Star,
+  HandHeart,
 } from "lucide-react";
 
 interface ImamsContentProps {
@@ -32,13 +36,23 @@ interface ImamsContentProps {
   pageSettings?: SanityImamsPageSettings | null;
 }
 
-const FALLBACK_SERVICES = [
-  { title: "Religious Counselling", description: "Guidance on Islamic matters and spiritual well-being" },
-  { title: "Marriage Services", description: "Nikah ceremonies and pre-marriage counselling" },
-  { title: "Funeral Services", description: "Janazah prayers and support for families" },
-  { title: "Islamic Education", description: "Quran classes and religious instruction" },
-  { title: "Friday Sermons", description: "Weekly Jumu'ah khutbahs" },
-  { title: "Community Programs", description: "Ramadan, Eid, and spiritual events" },
+// Icon map for Sanity-driven service cards
+const serviceIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  BookOpen,
+  Heart,
+  Users,
+  GraduationCap,
+  Star,
+  HandHeart,
+};
+
+const FALLBACK_SERVICES: NonNullable<SanityImamsPageSettings["servicesOfferedCards"]> = [
+  { title: "Religious Counselling", description: "Guidance on Islamic matters and spiritual well-being", icon: "Heart" },
+  { title: "Marriage Services", description: "Nikah ceremonies and pre-marriage counselling", icon: "HandHeart" },
+  { title: "Funeral Services", description: "Janazah prayers and support for families", icon: "Users" },
+  { title: "Islamic Education", description: "Quran classes and religious instruction", icon: "GraduationCap" },
+  { title: "Friday Sermons", description: "Weekly Jumu'ah khutbahs", icon: "BookOpen" },
+  { title: "Community Programs", description: "Ramadan, Eid, and spiritual events", icon: "Star" },
 ];
 
 export default function ImamsContent({ imams, pageSettings }: ImamsContentProps) {
@@ -245,14 +259,22 @@ export default function ImamsContent({ imams, pageSettings }: ImamsContentProps)
             </FadeIn>
 
             <StaggerContainer className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {servicesCards.map((service) => (
-                <StaggerItem key={service.title}>
-                  <div className="bg-white rounded-lg p-4 border border-gray-100">
-                    <h3 className="font-semibold text-gray-900 text-sm mb-1">{service.title}</h3>
-                    <p className="text-gray-500 text-xs">{service.description}</p>
-                  </div>
-                </StaggerItem>
-              ))}
+              {servicesCards.map((service) => {
+                const Icon = serviceIcons[service.icon ?? ""] ?? BookOpen;
+                return (
+                  <StaggerItem key={service.title}>
+                    <div className="bg-white rounded-lg p-4 border border-gray-100 flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-4 h-4 text-teal-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 text-sm mb-1">{service.title}</h3>
+                        <p className="text-gray-500 text-xs">{service.description}</p>
+                      </div>
+                    </div>
+                  </StaggerItem>
+                );
+              })}
             </StaggerContainer>
           </div>
         </section>

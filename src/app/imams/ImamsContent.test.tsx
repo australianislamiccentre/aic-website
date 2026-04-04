@@ -254,7 +254,7 @@ describe("ImamsContent", () => {
           imams={[]}
           pageSettings={{
             servicesOfferedCards: [
-              { title: "Custom Service", description: "A custom service description" },
+              { title: "Custom Service", description: "A custom service description", icon: "Heart" },
             ],
           }}
         />
@@ -263,6 +263,36 @@ describe("ImamsContent", () => {
       expect(screen.getByText("A custom service description")).toBeInTheDocument();
       // Fallback services should not appear
       expect(screen.queryByText("Religious Counselling")).not.toBeInTheDocument();
+    });
+
+    it("renders service card icon from Sanity when icon field is provided", () => {
+      const { container } = render(
+        <ImamsContent
+          imams={[]}
+          pageSettings={{
+            servicesOfferedCards: [
+              { title: "Teaching", description: "Quran classes", icon: "GraduationCap" },
+            ],
+          }}
+        />
+      );
+      // Icon container should be present
+      const iconContainer = container.querySelector(".bg-teal-50");
+      expect(iconContainer).toBeInTheDocument();
+    });
+
+    it("renders fallback icon when service card has no icon field", () => {
+      render(
+        <ImamsContent
+          imams={[]}
+          pageSettings={{
+            servicesOfferedCards: [
+              { title: "No Icon Service", description: "Should use default icon" },
+            ],
+          }}
+        />
+      );
+      expect(screen.getByText("No Icon Service")).toBeInTheDocument();
     });
 
     it("hides services section when servicesOfferedVisible is false", () => {
