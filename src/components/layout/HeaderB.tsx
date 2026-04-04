@@ -16,7 +16,7 @@
  * - Link hover micro-interactions (left accent bar + translateX)
  * - Backdrop blur overlay behind panel
  *
- * Uses the shared `headerNavGroups` data from `src/data/navigation.ts`.
+ * Uses nav groups from `src/data/navigation.ts`, including dynamic custom pages from Sanity.
  *
  * @module components/layout/HeaderB
  * @see src/data/navigation.ts -- navigation data
@@ -32,7 +32,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SearchDialog } from "@/components/ui/SearchDialog";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
-import { headerNavGroups } from "@/data/navigation";
+import { buildHeaderNavGroups } from "@/data/navigation";
 import {
   Menu,
   X,
@@ -79,6 +79,7 @@ const groupMeta: Record<string, { icon: typeof Users; description: string }> = {
   "Our Mosque": { icon: Landmark, description: "Prayer, worship & visiting" },
   "Media & Resources": { icon: Play, description: "Gallery & downloads" },
   "Get In Touch": { icon: MessageCircle, description: "Connect with us" },
+  More: { icon: ArrowRight, description: "Additional pages" },
 };
 
 /* ------------------------------------------------------------------ */
@@ -292,6 +293,7 @@ export function HeaderB() {
   const hamburgerRef = useRef<HTMLButtonElement | null>(null);
 
   const info = useSiteSettings();
+  const navGroups = buildHeaderNavGroups(info.customNavPages);
 
   /* ---------- Focus trap ---------- */
   useFocusTrap(overlayRef, overlayOpen);
@@ -540,7 +542,7 @@ export function HeaderB() {
                   animate="visible"
                   exit="exit"
                 >
-                  {headerNavGroups.map((group) => {
+                  {navGroups.map((group) => {
                     const isExpanded = expandedGroup === group.label;
 
                     return (
@@ -745,7 +747,7 @@ export function HeaderB() {
                   animate="visible"
                   className="max-w-6xl mx-auto grid grid-cols-3 lg:grid-cols-5 gap-6"
                 >
-                  {headerNavGroups.map((group) => {
+                  {navGroups.map((group) => {
                     const meta = groupMeta[group.label];
                     const Icon = meta?.icon;
 

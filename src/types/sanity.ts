@@ -199,12 +199,11 @@ export interface SanityTeamMember {
   orderRank?: string;
 }
 
-/** A CMS-managed content page (about, history, privacy policy, etc.). */
+/** A CMS-managed content page created via the Custom Pages section in Sanity Studio. */
 export interface SanityPageContent {
   _id: string;
   title: string;
   slug: string;
-  pageType: "about" | "history" | "mission" | "facilities" | "contact" | "privacy" | "terms" | "custom";
   subtitle?: string;
   introduction?: string;
   content?: PortableTextBlock[];
@@ -222,7 +221,7 @@ export interface SanityPageContent {
     ogImage?: SanityImage;
   };
   showInNav?: boolean;
-  navOrder?: number;
+  navLabel?: string;
   active?: boolean;
 }
 
@@ -317,7 +316,11 @@ export interface SanitySiteSettings {
     label: string;
     url: string;
   }>;
-  allowedEmbedDomains?: string[];
+  allowedEmbedDomains?: Array<{
+    domain: string;
+    label?: string;
+    category?: "form" | "video" | "map" | "other";
+  }>;
 }
 
 /** Homepage settings singleton — hero, quick links, video, welcome section, CTA banner. */
@@ -699,10 +702,6 @@ export interface SanityNewsletterSettings {
   newsletterSuccessMessage?: string;
 }
 
-/** Allowed embed domains singleton settings. */
-export interface SanityAllowedFormDomains {
-  allowedDomains?: Array<{ domain: string; label?: string }>;
-}
 
 /**
  * Prayer settings singleton — per-prayer iqamah configuration.

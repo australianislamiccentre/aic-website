@@ -53,7 +53,6 @@ const singletonIds = [
   "serviceInquiryFormSettings",
   "eventInquiryFormSettings",
   "newsletterSettings",
-  "allowedFormDomains",
 ];
 
 /** Helper: creates a singleton list item that pins to a single document. */
@@ -313,8 +312,6 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
               singleton(S, "serviceInquiryFormSettings", "Service Inquiry Form"),
               singleton(S, "eventInquiryFormSettings", "Event Inquiry Form"),
               singleton(S, "newsletterSettings", "Newsletter"),
-              S.divider(),
-              singleton(S, "allowedFormDomains", "Allowed Form Domains"),
             ])
         ),
 
@@ -368,7 +365,6 @@ const previewPaths: Record<string, (slug?: string) => string> = {
   serviceInquiryFormSettings: () => "/services",
   eventInquiryFormSettings: () => "/events",
   newsletterSettings: () => "/",
-  allowedFormDomains: () => "/events",
 };
 
 function resolvePreviewUrl(docType: string, slug?: string): string | undefined {

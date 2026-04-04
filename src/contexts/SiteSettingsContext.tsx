@@ -22,6 +22,13 @@ import type { SanitySiteSettings } from "@/types/sanity";
 import { aicInfo } from "@/data/content";
 
 /** Unified shape with guaranteed (non-optional) fields for all site info. */
+/** A custom page with showInNav enabled, used to inject dynamic nav items. */
+export interface CustomNavPage {
+  title: string;
+  slug: string;
+  navLabel?: string;
+}
+
 export interface SiteInfo {
   name: string;
   shortName: string;
@@ -49,13 +56,15 @@ export interface SiteInfo {
     bookstore: string;
     newportStorm: string;
   };
+  /** Custom pages with showInNav enabled, sorted by navOrder. */
+  customNavPages: CustomNavPage[];
 }
 
 /**
  * Merges Sanity siteSettings with hardcoded aicInfo fallbacks.
  * Guarantees all fields are populated even if Sanity returns null/partial data.
  */
-export function buildSiteInfo(settings: SanitySiteSettings | null): SiteInfo {
+export function buildSiteInfo(settings: SanitySiteSettings | null, customNavPages: CustomNavPage[] = []): SiteInfo {
   const addr = settings?.address;
   const street = addr?.street ?? aicInfo.address.street;
   const suburb = addr?.suburb ?? aicInfo.address.suburb;
@@ -90,6 +99,7 @@ export function buildSiteInfo(settings: SanitySiteSettings | null): SiteInfo {
       bookstore: settings?.externalLinks?.bookstore ?? aicInfo.externalLinks.bookstore,
       newportStorm: settings?.externalLinks?.sportsClub ?? aicInfo.externalLinks.newportStorm,
     },
+    customNavPages,
   };
 }
 
@@ -102,12 +112,14 @@ const SiteSettingsContext = createContext<SiteInfo>(buildSiteInfo(null));
  */
 export function SiteSettingsProvider({
   siteSettings,
+  customNavPages,
   children,
 }: {
   siteSettings: SanitySiteSettings | null;
+  customNavPages?: CustomNavPage[];
   children: React.ReactNode;
 }) {
-  const info = buildSiteInfo(siteSettings);
+  const info = buildSiteInfo(siteSettings, customNavPages);
   return (
     <SiteSettingsContext.Provider value={info}>
       {children}

@@ -63,8 +63,6 @@ import {
   latestAnnouncementsQuery,
   // Form Settings
   formSettingsQuery,
-  // Embed Security
-  allowedEmbedDomainsQuery,
   // Partners
   partnersQuery,
   partnerBySlugQuery,
@@ -88,7 +86,6 @@ import {
   serviceInquiryFormSettingsQuery,
   eventInquiryFormSettingsQuery,
   newsletterSettingsQuery,
-  allowedFormDomainsQuery,
 } from "./queries";
 import {
   SanityEvent,
@@ -121,7 +118,6 @@ import {
   SanityServiceInquiryFormSettings,
   SanityEventInquiryFormSettings,
   SanityNewsletterSettings,
-  SanityAllowedFormDomains,
 } from "@/types/sanity";
 
 // Donation Settings type (Fundraise Up config)
@@ -670,17 +666,6 @@ export async function getPartnersForStaticGeneration(): Promise<{ _id: string; s
   }
 }
 
-// Embed Security
-export async function getAllowedEmbedDomains(): Promise<string[]> {
-  try {
-    const result = await sanityFetch<string[] | null>(allowedEmbedDomainsQuery, {}, ["siteSettings"]);
-    return result ?? [];
-  } catch (error) {
-    console.error("Failed to fetch allowed embed domains from Sanity:", error);
-    return [];
-  }
-}
-
 // ── Page settings fetch functions ──
 
 export async function getAboutPageSettings(): Promise<SanityAboutPageSettings | null> {
@@ -829,10 +814,3 @@ export async function getNewsletterSettings(): Promise<SanityNewsletterSettings 
   }
 }
 
-export async function getAllowedFormDomains(): Promise<SanityAllowedFormDomains | null> {
-  try {
-    return await sanityFetch<SanityAllowedFormDomains>(allowedFormDomainsQuery, {}, ["allowedFormDomains"], { skipCdn: true });
-  } catch {
-    return null;
-  }
-}

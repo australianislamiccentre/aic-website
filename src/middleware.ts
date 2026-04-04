@@ -6,7 +6,7 @@
  * trusted domains for scripts, styles, frames, and images.
  *
  * Embed domains for `frame-src` are fetched from Sanity's
- * `allowedFormDomains.allowedDomains` singleton and cached for 5 minutes.
+ * `siteSettings.allowedEmbedDomains` and cached for 5 minutes.
  * The fetch is fire-and-forget (async, never blocks the request path).
  *
  * @module middleware
@@ -33,7 +33,7 @@ function refreshCacheInBackground(): void {
   if (fetchInFlight || !SANITY_PROJECT_ID) return;
   fetchInFlight = true;
 
-  const query = encodeURIComponent('*[_id == "allowedFormDomains"][0].allowedDomains[].domain');
+  const query = encodeURIComponent('*[_id == "siteSettings"][0].allowedEmbedDomains[].domain');
   const url = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${SANITY_DATASET}?query=${query}`;
 
   fetch(url)

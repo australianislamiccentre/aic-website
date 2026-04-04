@@ -114,11 +114,15 @@ export default defineType({
       ],
     }),
 
-    // ── 4. Embed Security ──
+    // ── 4. Trusted Embed Domains ──
     defineField({
       name: "allowedEmbedDomains",
-      title: "Allowed Embed Domains",
+      title: "Trusted Embed Domains",
       type: "array",
+      description:
+        "For security, the site only allows iframes/embeds from domains listed here. " +
+        "If an embedded form or video isn't loading, add its domain to this list. " +
+        "Example: if a JotForm registration form isn't showing on an event page, add 'form.jotform.com' here.",
       of: [
         {
           type: "object",
@@ -127,32 +131,58 @@ export default defineType({
               name: "domain",
               title: "Domain",
               type: "string",
-              description: "e.g. form.jotform.com, docs.google.com, typeform.com",
+              placeholder: "e.g. form.jotform.com",
+              description:
+                "Enter just the domain (e.g. 'form.jotform.com'), not a full URL.",
               validation: (Rule) =>
                 Rule.required()
                   .regex(/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, {
                     name: "domain",
                     invert: false,
                   })
-                  .error("Must be a valid domain (e.g. form.jotform.com)"),
+                  .error("Enter just the domain (e.g. form.jotform.com), not a full URL"),
             }),
             defineField({
               name: "label",
               title: "Label",
               type: "string",
-              description: "Friendly name for this provider (e.g. JotForm, Google Forms)",
+              placeholder: "e.g. JotForm",
+              description: "A friendly name so you remember what this domain is for.",
+            }),
+            defineField({
+              name: "category",
+              title: "Category",
+              type: "string",
+              options: {
+                list: [
+                  { title: "Form Provider", value: "form" },
+                  { title: "Video / Media", value: "video" },
+                  { title: "Map / Location", value: "map" },
+                  { title: "Other", value: "other" },
+                ],
+                layout: "radio",
+                direction: "horizontal",
+              },
+              initialValue: "form",
             }),
           ],
           preview: {
-            select: { title: "label", subtitle: "domain" },
-            prepare({ title, subtitle }) {
-              return { title: title || subtitle, subtitle: title ? subtitle : undefined };
+            select: { title: "label", subtitle: "domain", category: "category" },
+            prepare({ title, subtitle, category }: { title?: string; subtitle?: string; category?: string }) {
+              const categoryLabels: Record<string, string> = {
+                form: "Form",
+                video: "Video",
+                map: "Map",
+                other: "Other",
+              };
+              return {
+                title: title || subtitle,
+                subtitle: `${subtitle}${category ? ` · ${categoryLabels[category] || category}` : ""}`,
+              };
             },
           },
         },
       ],
-      description:
-        "Domains that are allowed to be embedded as iframes on event pages. Only HTTPS URLs from these domains will be permitted. Add form providers like JotForm, Google Forms, Typeform, etc.",
     }),
 
     // ── 5. External Links ──

@@ -31,10 +31,11 @@ export default defineType({
       initialValue: false,
     }),
     defineField({
-      name: "navOrder",
-      title: "Navigation Order",
-      type: "number",
-      description: "Order in navigation menu (lower = earlier)",
+      name: "navLabel",
+      title: "Navigation Label",
+      type: "string",
+      description: "Short name shown in the navigation menu. Leave blank to use the page title.",
+      placeholder: "e.g. Stallholder Info",
       hidden: ({ document }) => !document?.showInNav,
     }),
 
@@ -55,25 +56,6 @@ export default defineType({
       },
       validation: (Rule) => Rule.required(),
       description: "URL identifier (e.g., 'about-us', 'history')",
-    }),
-    defineField({
-      name: "pageType",
-      title: "Page Type",
-      type: "string",
-      options: {
-        list: [
-          { title: "About Us", value: "about" },
-          { title: "Our History", value: "history" },
-          { title: "Mission & Vision", value: "mission" },
-          { title: "Facilities", value: "facilities" },
-          { title: "Contact Us", value: "contact" },
-          { title: "Privacy Policy", value: "privacy" },
-          { title: "Terms of Service", value: "terms" },
-          { title: "Custom Page", value: "custom" },
-        ],
-        layout: "dropdown",
-      },
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "subtitle",
@@ -209,33 +191,23 @@ export default defineType({
       title: "SEO Settings",
       type: "object",
       fields: [
-        defineField({ name: "metaTitle", title: "Meta Title", type: "string", description: "Override the default page title for search engines" }),
-        defineField({ name: "metaDescription", title: "Meta Description", type: "text", rows: 3, description: "Description shown in search results (max 160 characters)", validation: (Rule) => Rule.max(160) }),
-        defineField({ name: "ogImage", title: "Social Share Image", type: "image", description: "Image shown when page is shared on social media" }),
+        defineField({ name: "metaTitle", title: "Meta Title", type: "string", placeholder: "e.g. Page Title | Australian Islamic Centre", description: "Browser tab title and Google result title. Leave blank to use the page heading.", validation: (Rule) => Rule.max(70).warning("Keep under 70 characters for best results.") }),
+        defineField({ name: "metaDescription", title: "Meta Description", type: "text", rows: 3, placeholder: "e.g. A compelling 1–2 sentence summary of this page for search results.", description: "Shown below the title in Google search results. Recommended: 120–160 characters.", validation: (Rule) => Rule.max(160).warning("Over 160 characters may be truncated in search results.") }),
+        defineField({ name: "ogImage", title: "Social Share Image", type: "image", description: "Image shown when this page is shared on Facebook, WhatsApp, etc. Recommended: 1200×630px." }),
       ],
     }),
   ],
   preview: {
     select: {
       title: "title",
-      pageType: "pageType",
+      subtitle: "subtitle",
       active: "active",
       media: "heroImage",
     },
-    prepare({ title, pageType, active, media }) {
-      const typeLabels: Record<string, string> = {
-        about: "About Us",
-        history: "History",
-        mission: "Mission & Vision",
-        facilities: "Facilities",
-        contact: "Contact",
-        privacy: "Privacy Policy",
-        terms: "Terms",
-        custom: "Custom",
-      };
+    prepare({ title, subtitle, active, media }) {
       return {
         title: `${active === false ? "(Draft) " : ""}${title}`,
-        subtitle: typeLabels[pageType] || pageType,
+        subtitle: subtitle || undefined,
         media,
       };
     },
@@ -245,11 +217,6 @@ export default defineType({
       title: "Title A-Z",
       name: "titleAsc",
       by: [{ field: "title", direction: "asc" }],
-    },
-    {
-      title: "Page Type",
-      name: "pageTypeAsc",
-      by: [{ field: "pageType", direction: "asc" }],
     },
   ],
 });

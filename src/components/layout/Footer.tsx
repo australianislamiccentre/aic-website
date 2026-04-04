@@ -14,7 +14,7 @@
  * @module components/layout/Footer
  * @see src/contexts/SiteSettingsContext.tsx — provides address, phone, social links
  * @see src/contexts/FormSettingsContext.tsx — provides newsletter copy and toggle
- * @see src/data/navigation.ts — provides footerNavGroups and buildAffiliateLinks
+ * @see src/data/navigation.ts — provides navGroups and buildAffiliateLinks
  */
 "use client";
 
@@ -39,13 +39,14 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { footerNavGroups, buildAffiliateLinks } from "@/data/navigation";
+import { buildFooterNavGroups, buildAffiliateLinks } from "@/data/navigation";
 
 /** Renders the site-wide footer. Consumes SiteSettings and FormSettings contexts. */
 export function Footer() {
   const info = useSiteSettings();
   const forms = useFormSettings();
 
+  const navGroups = buildFooterNavGroups(info.customNavPages);
   const affiliateLinks = buildAffiliateLinks(info.externalLinks);
 
   const socialLinks = [
@@ -269,7 +270,7 @@ export function Footer() {
 
           {/* About + What's On */}
           <div>
-            {footerNavGroups.slice(0, 2).map((group, groupIndex) => (
+            {navGroups.slice(0, 2).map((group, groupIndex) => (
               <div key={group.label} className={groupIndex > 0 ? "mt-8" : ""}>
                 <h4 className="font-semibold text-lg mb-6">{group.label}</h4>
                 <ul className="space-y-3">
@@ -291,7 +292,7 @@ export function Footer() {
 
           {/* Our Mosque + Media & Resources */}
           <div>
-            {footerNavGroups.slice(2, 4).map((group, groupIndex) => (
+            {navGroups.slice(2, 4).map((group, groupIndex) => (
               <div key={group.label} className={groupIndex > 0 ? "mt-8" : ""}>
                 <h4 className="font-semibold text-lg mb-6">{group.label}</h4>
                 <ul className="space-y-3">
@@ -313,7 +314,7 @@ export function Footer() {
 
           {/* Get Involved + Affiliates */}
           <div>
-            {footerNavGroups.slice(4).map((group) => (
+            {navGroups.slice(4).map((group) => (
               <div key={group.label}>
                 <h4 className="font-semibold text-lg mb-6">{group.label}</h4>
                 <ul className="space-y-3">
