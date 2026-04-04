@@ -17,7 +17,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { PreviewBanner } from "@/components/PreviewBanner";
-import { getSiteSettings, getDonationSettings, getContactFormSettings, getServiceInquiryFormSettings, getNewsletterSettings } from "@/sanity/lib/fetch";
+import { getSiteSettings, getDonationSettings, getContactFormSettings, getServiceInquiryFormSettings, getNewsletterSettings, getNavigationPages } from "@/sanity/lib/fetch";
 import { FundraiseUpScript } from "@/components/FundraiseUpScript";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import { getYouTubeLiveStream } from "@/lib/youtube";
@@ -98,7 +98,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, contactFormSettingsRaw, serviceInquiryFormSettingsRaw, newsletterSettingsRaw, liveStream] = await Promise.all([
+  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, contactFormSettingsRaw, serviceInquiryFormSettingsRaw, newsletterSettingsRaw, liveStream, navigationPages] = await Promise.all([
     draftMode(),
     getSiteSettings(),
     getDonationSettings(),
@@ -106,6 +106,7 @@ export default async function RootLayout({
     getServiceInquiryFormSettings(),
     getNewsletterSettings(),
     getYouTubeLiveStream(),
+    getNavigationPages(),
   ]);
 
   return (
@@ -153,7 +154,7 @@ export default async function RootLayout({
             }),
           }}
         />
-        <SiteSettingsProvider siteSettings={siteSettings}>
+        <SiteSettingsProvider siteSettings={siteSettings} customNavPages={navigationPages.map(p => ({ title: p.title, slug: p.slug, navLabel: p.navLabel }))}>
           <FormSettingsProvider
             contactFormSettings={contactFormSettingsRaw}
             serviceInquiryFormSettings={serviceInquiryFormSettingsRaw}

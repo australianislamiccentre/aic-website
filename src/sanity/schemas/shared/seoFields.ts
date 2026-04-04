@@ -15,8 +15,9 @@ export const seoFields = [
         name: "title",
         title: "Meta Title",
         type: "string",
+        placeholder: "e.g. About Us | Australian Islamic Centre",
         description:
-          "Browser tab title and Google result title. Leave blank to use the page heading.",
+          "Browser tab title and Google result title. Leave blank to use the page heading. Example: 'Events | Australian Islamic Centre'",
         validation: (Rule) => Rule.max(70).warning("Keep under 70 characters for best results."),
       }),
       defineField({
@@ -24,8 +25,9 @@ export const seoFields = [
         title: "Meta Description",
         type: "text",
         rows: 3,
+        placeholder: "e.g. Learn about the Australian Islamic Centre — a vibrant community hub in Newport, Melbourne.",
         description:
-          "Shown in Google search results. Recommended: 120–160 characters.",
+          "Shown below the title in Google search results. Write a compelling 1–2 sentence summary of what visitors will find on this page. Recommended: 120–160 characters.",
         validation: (Rule) =>
           Rule.max(160).warning("Over 160 characters may be truncated in search results."),
       }),

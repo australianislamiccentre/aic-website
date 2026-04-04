@@ -49,7 +49,6 @@ const mockPage: SanityPageContent = {
   _id: "page-1",
   title: "Test Page",
   slug: "test-page",
-  pageType: "custom" as const,
   subtitle: "A test subtitle",
   introduction: "This is a test introduction.",
   active: true,
@@ -243,7 +242,6 @@ describe("DynamicPage", () => {
         _id: "page-2",
         title: "Minimal Page",
         slug: "minimal",
-        pageType: "custom",
         active: true,
       });
       const Page = await DynamicPage({

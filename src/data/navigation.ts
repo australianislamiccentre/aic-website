@@ -79,3 +79,40 @@ export function buildAffiliateLinks(externalLinks: {
     { name: "Newport Storm FC", href: externalLinks.newportStorm, external: true },
   ];
 }
+
+/**
+ * Builds the full header nav groups by appending custom pages (those with
+ * showInNav enabled in Sanity) as a "More" group at the end.
+ */
+export function buildHeaderNavGroups(customNavPages?: Array<{ title: string; slug: string; navLabel?: string }>): NavGroup[] {
+  if (!customNavPages || customNavPages.length === 0) return headerNavGroups;
+
+  return [
+    ...headerNavGroups,
+    {
+      label: "More",
+      links: customNavPages.map((page) => ({
+        name: page.navLabel || page.title,
+        href: `/${page.slug}`,
+      })),
+    },
+  ];
+}
+
+/**
+ * Builds the full footer nav groups by appending custom pages.
+ */
+export function buildFooterNavGroups(customNavPages?: Array<{ title: string; slug: string; navLabel?: string }>): NavGroup[] {
+  if (!customNavPages || customNavPages.length === 0) return footerNavGroups;
+
+  return [
+    ...footerNavGroups,
+    {
+      label: "Pages",
+      links: customNavPages.map((page) => ({
+        name: page.navLabel || page.title,
+        href: `/${page.slug}`,
+      })),
+    },
+  ];
+}

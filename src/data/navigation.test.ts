@@ -3,6 +3,8 @@ import {
   headerNavGroups,
   footerNavGroups,
   buildAffiliateLinks,
+  buildHeaderNavGroups,
+  buildFooterNavGroups,
 } from "./navigation";
 
 describe("navigation data", () => {
@@ -58,6 +60,51 @@ describe("navigation data", () => {
       expect(names).toContain("Donate");
       expect(names).toContain("Contact Us");
       expect(names).toContain("Volunteer");
+    });
+  });
+
+  describe("buildHeaderNavGroups", () => {
+    it("returns static groups when no custom pages", () => {
+      const groups = buildHeaderNavGroups([]);
+      expect(groups).toBe(headerNavGroups);
+    });
+
+    it("appends a 'More' group when custom pages are provided", () => {
+      const groups = buildHeaderNavGroups([
+        { title: "FAQ", slug: "faq" },
+        { title: "History", slug: "history" },
+      ]);
+      expect(groups).toHaveLength(headerNavGroups.length + 1);
+      const moreGroup = groups[groups.length - 1];
+      expect(moreGroup.label).toBe("More");
+      expect(moreGroup.links).toHaveLength(2);
+      expect(moreGroup.links[0]).toEqual({ name: "FAQ", href: "/faq" });
+      expect(moreGroup.links[1]).toEqual({ name: "History", href: "/history" });
+    });
+
+    it("uses navLabel over title when provided", () => {
+      const groups = buildHeaderNavGroups([
+        { title: "AIC Festival Stallholder Information", slug: "stallholder-info", navLabel: "Stallholder Info" },
+      ]);
+      const moreGroup = groups[groups.length - 1];
+      expect(moreGroup.links[0].name).toBe("Stallholder Info");
+    });
+  });
+
+  describe("buildFooterNavGroups", () => {
+    it("returns static groups when no custom pages", () => {
+      const groups = buildFooterNavGroups([]);
+      expect(groups).toBe(footerNavGroups);
+    });
+
+    it("appends a 'Pages' group when custom pages are provided", () => {
+      const groups = buildFooterNavGroups([
+        { title: "FAQ", slug: "faq" },
+      ]);
+      expect(groups).toHaveLength(footerNavGroups.length + 1);
+      const pagesGroup = groups[groups.length - 1];
+      expect(pagesGroup.label).toBe("Pages");
+      expect(pagesGroup.links[0]).toEqual({ name: "FAQ", href: "/faq" });
     });
   });
 

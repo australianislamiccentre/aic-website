@@ -40,7 +40,7 @@ import contactFormSettings from "./forms/contactFormSettings";
 import serviceInquiryFormSettings from "./forms/serviceInquiryFormSettings";
 import eventInquiryFormSettings from "./forms/eventInquiryFormSettings";
 import newsletterSettings from "./forms/newsletterSettings";
-import allowedFormDomains from "./forms/allowedFormDomains";
+
 
 // ── Content documents ──
 import event from "./documents/event";
@@ -85,7 +85,6 @@ export const schemaTypes = [
   serviceInquiryFormSettings,
   eventInquiryFormSettings,
   newsletterSettings,
-  allowedFormDomains,
   // Content documents
   event,
   announcement,

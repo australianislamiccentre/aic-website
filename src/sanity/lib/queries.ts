@@ -428,16 +428,15 @@ export const featuredTeamMembersQuery = groq`
 // NEW: Page Content
 // ============================================
 export const pageContentQuery = groq`
-  *[_type == "pageContent" && active != false] | order(navOrder asc) {
+  *[_type == "pageContent" && active != false] | order(title asc) {
     _id,
     title,
     "slug": slug.current,
-    pageType,
     subtitle,
     introduction,
     heroImage,
     showInNav,
-    navOrder
+    navLabel
   }
 `;
 
@@ -446,7 +445,6 @@ export const pageContentBySlugQuery = groq`
     _id,
     title,
     "slug": slug.current,
-    pageType,
     subtitle,
     introduction,
     content,
@@ -459,11 +457,11 @@ export const pageContentBySlugQuery = groq`
 `;
 
 export const navigationPagesQuery = groq`
-  *[_type == "pageContent" && active != false && showInNav == true] | order(navOrder asc) {
+  *[_type == "pageContent" && active != false && showInNav == true] | order(title asc) {
     _id,
     title,
     "slug": slug.current,
-    navOrder
+    navLabel
   }
 `;
 
@@ -547,7 +545,11 @@ export const siteSettingsQuery = groq`
     socialMedia,
     externalLinks,
     quickLinks,
-    "allowedEmbedDomains": allowedEmbedDomains[].domain
+    "allowedEmbedDomains": allowedEmbedDomains[] {
+      domain,
+      label,
+      category
+    }
   }
 `;
 
@@ -581,11 +583,6 @@ export const homepageSettingsQuery = groq`
     welcomeSection,
     ctaBanner
   }
-`;
-
-// Allowed embed domains — lightweight query for security checks
-export const allowedEmbedDomainsQuery = groq`
-  *[_id == "siteSettings"][0].allowedEmbedDomains[].domain
 `;
 
 // Prayer Settings (singleton) - flat structure
@@ -855,8 +852,3 @@ export const newsletterSettingsQuery = groq`
   }
 `;
 
-export const allowedFormDomainsQuery = groq`
-  *[_id == "allowedFormDomains"][0] {
-    allowedDomains
-  }
-`;
