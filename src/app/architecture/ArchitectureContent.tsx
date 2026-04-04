@@ -106,20 +106,23 @@ const defaultGallery = [
   },
 ];
 
-const defaultAwards = [
+const defaultAwards: NonNullable<SanityArchitecturePageSettings["awardsCards"]> = [
   {
     year: "2017",
     title: "Australian Institute of Architects Award",
+    organization: "AIA",
     category: "Public Architecture",
   },
   {
     year: "2017",
     title: "World Architecture Festival Award",
+    organization: "WAF",
     category: "Religious Building of the Year",
   },
   {
     year: "2018",
     title: "Aga Khan Award for Architecture",
+    organization: "Aga Khan Foundation",
     category: "Shortlisted",
   },
 ];
@@ -465,6 +468,9 @@ export default function ArchitectureContent({ settings }: ArchitectureContentPro
                   <Award className="w-5 h-5 text-teal-400 mb-2" />
                   <p className="text-teal-400 font-bold text-xs mb-1">{award.year}</p>
                   <h3 className="text-white font-bold text-xs leading-tight mb-1">{award.title}</h3>
+                  {award.organization && (
+                    <p className="text-white/50 text-[10px] mb-0.5">{award.organization}</p>
+                  )}
                   <p className="text-white/60 text-[10px]">{award.category}</p>
                 </div>
               ))}

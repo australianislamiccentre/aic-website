@@ -85,14 +85,27 @@ describe("ArchitectureContent", () => {
     const settings: SanityArchitecturePageSettings = {
       ...defaultSettings,
       awardsCards: [
-        { year: "2020", title: "Best Mosque Design", category: "Religious Architecture" },
+        { year: "2020", title: "Best Mosque Design", organization: "AIA", category: "Religious Architecture" },
         { year: "2021", title: "Sustainability Prize", category: "Green Buildings" },
       ],
     };
     render(<ArchitectureContent settings={settings} />);
     expect(screen.getByText("Best Mosque Design")).toBeInTheDocument();
+    expect(screen.getByText("AIA")).toBeInTheDocument();
     expect(screen.getByText("Religious Architecture")).toBeInTheDocument();
     expect(screen.getByText("Sustainability Prize")).toBeInTheDocument();
+  });
+
+  it("renders awards without organization when organization is missing", () => {
+    const settings: SanityArchitecturePageSettings = {
+      ...defaultSettings,
+      awardsCards: [
+        { year: "2022", title: "Design Award", category: "Sacred Spaces" },
+      ],
+    };
+    render(<ArchitectureContent settings={settings} />);
+    expect(screen.getByText("Design Award")).toBeInTheDocument();
+    expect(screen.getByText("Sacred Spaces")).toBeInTheDocument();
   });
 
   it("renders default fallback awards when no awardsCards provided", () => {
