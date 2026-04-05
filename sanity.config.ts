@@ -28,6 +28,8 @@ import { schemaTypes } from "./src/sanity/schemas";
 const singletonIds = [
   "siteSettings",
   "homepageSettings",
+  "headerSettings",
+  "footerSettings",
   "prayerSettings",
   "donationSettings",
   "donatePageSettings",
@@ -299,6 +301,18 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
 
       S.divider(),
 
+      // ── Navigation Settings ──
+      S.listItem()
+        .title("Navigation Settings")
+        .child(
+          S.list()
+            .title("Navigation Settings")
+            .items([
+              singleton(S, "headerSettings", "Header Settings"),
+              singleton(S, "footerSettings", "Footer Settings"),
+            ])
+        ),
+
       // ── Prayer Times ──
       singleton(S, "prayerSettings", "Prayer Times"),
 
@@ -343,6 +357,8 @@ const previewPaths: Record<string, (slug?: string) => string> = {
   faq: () => "/resources",
   etiquette: () => "/visit",
   homepageSettings: () => "/",
+  headerSettings: () => "/",
+  footerSettings: () => "/",
   siteSettings: () => "/",
   prayerSettings: () => "/worshippers",
   teamMember: (slug) => `/imams${slug ? `/${slug}` : ""}`,
