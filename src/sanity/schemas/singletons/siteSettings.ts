@@ -90,12 +90,9 @@ export default defineType({
     defineField({
       name: "operatingHours",
       title: "Operating Hours",
-      type: "object",
-      fields: [
-        defineField({ name: "weekdays", title: "Weekdays", type: "string", description: "e.g., '9:00 AM - 5:00 PM'" }),
-        defineField({ name: "weekends", title: "Weekends", type: "string", description: "e.g., '10:00 AM - 2:00 PM'" }),
-        defineField({ name: "notes", title: "Notes", type: "string", description: "e.g., 'Open for all prayer times'" }),
-      ],
+      type: "string",
+      description: "Displayed site-wide in the footer and contact page. e.g. 'Open Daily from Fajr to Isha'",
+      initialValue: "Open Daily from Fajr to Isha",
     }),
 
     // ── 3. Social Media ──

@@ -56,9 +56,17 @@ vi.mock("@/contexts/SiteSettingsContext", () => ({
       bookstore: "https://aicbookstore.com.au",
       newportStorm: "https://newportstorm.com.au",
     },
+    operatingHours: "Open Daily from Fajr to Isha",
+    customNavPages: [],
+    headerSettings: null,
+    footerSettings: null,
   }),
   SiteSettingsProvider: ({ children }: { children: React.ReactNode }) =>
     children,
+}));
+
+vi.mock("@/lib/icon-map", () => ({
+  getIcon: () => null,
 }));
 
 // Mock SearchDialog
@@ -320,5 +328,26 @@ describe("HeaderB", () => {
     expect(desktopPanel?.textContent).toContain("Our Story");
     expect(desktopPanel?.textContent).toContain("Events");
     expect(desktopPanel?.textContent).toContain("Contact Us");
+  });
+
+  /* ---------- Header settings wiring ---------- */
+
+  describe("Header settings wiring", () => {
+    it("renders fallback welcome text when headerSettings is null", () => {
+      render(<HeaderB />);
+      expect(screen.getByText("Welcome to the Australian Islamic Centre")).toBeInTheDocument();
+      expect(screen.getByText("Welcome to AIC")).toBeInTheDocument();
+    });
+
+    it("renders fallback CTA label when headerSettings is null", () => {
+      render(<HeaderB />);
+      const donateLinks = screen.getAllByRole("link", { name: /Donate/i });
+      expect(donateLinks.length).toBeGreaterThan(0);
+    });
+
+    it("renders search button when headerSettings is null (default visible)", () => {
+      render(<HeaderB />);
+      expect(screen.getByLabelText("Search")).toBeInTheDocument();
+    });
   });
 });
