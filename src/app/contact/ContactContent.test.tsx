@@ -28,6 +28,7 @@ vi.mock("@/contexts/SiteSettingsContext", () => ({
     email: "info@aic.org.au",
     address: { full: "23-27 Blenheim Road, Newport VIC 3015" },
     socialMedia: { facebook: "#", instagram: "#", youtube: "#" },
+    operatingHours: "Open Daily from Fajr to Isha",
   }),
 }));
 vi.mock("@/contexts/FormSettingsContext", () => ({
@@ -78,12 +79,9 @@ describe("ContactContent", () => {
     expect(screen.getByText("Contact Details")).toBeInTheDocument();
   });
 
-  it("shows custom operating hours from settings", () => {
-    const settings: SanityContactPageSettings = {
-      operatingHours: "6:00 AM \u2013 9:00 PM Daily",
-    };
-    render(<ContactContent settings={settings} />);
-    expect(screen.getByText("6:00 AM \u2013 9:00 PM Daily")).toBeInTheDocument();
+  it("shows operating hours from site settings context", () => {
+    render(<ContactContent settings={null} />);
+    expect(screen.getByText("Open Daily from Fajr to Isha")).toBeInTheDocument();
   });
 
   it("renders form submit button", () => {

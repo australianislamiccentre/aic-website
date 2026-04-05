@@ -46,7 +46,7 @@ export default function ContactContent({ settings }: ContactContentProps) {
   const accentText = settings?.heroHeadingAccent ?? forms.contactHeadingAccent ?? "";
   const description = settings?.heroDescription ?? forms.contactDescription ?? "We'd love to hear from you. Send us a message and we'll get back to you as soon as possible.";
   const showSidebar = settings?.sidebarVisible !== false;
-  const operatingHours = settings?.operatingHours ?? "4:30 AM \u2013 10:30 PM Daily";
+  const operatingHours = info.operatingHours;
 
   const socialLinks = [
     { name: "Facebook", icon: Facebook, href: info.socialMedia.facebook, color: "hover:bg-blue-600" },
