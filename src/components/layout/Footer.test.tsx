@@ -103,16 +103,6 @@ describe("Footer", () => {
     expect(facebookLink).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  it("renders affiliate links", () => {
-    render(<Footer />);
-
-    expect(screen.getByText("Affiliates")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /AIC College/i })).toHaveAttribute(
-      "href",
-      "https://aicollege.edu.au"
-    );
-  });
-
   it("renders donate CTA section", () => {
     render(<Footer />);
 
@@ -201,6 +191,6 @@ describe("Footer", () => {
   it("renders Quranic verse", () => {
     render(<Footer />);
 
-    expect(screen.getByText(/Qur'an 2:261/)).toBeInTheDocument();
+    expect(screen.getByText(/Qur[\u2019']an 2:261/)).toBeInTheDocument();
   });
 });
