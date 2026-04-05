@@ -34,6 +34,7 @@ import { SearchDialog } from "@/components/ui/SearchDialog";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { headerNavGroups, type NavGroup } from "@/data/navigation";
 import { getIcon } from "@/lib/icon-map";
+import { resolveLink } from "@/lib/resolve-link";
 import {
   Menu,
   X,
@@ -364,11 +365,14 @@ export function HeaderB() {
         label: g.label || "",
         links: (g.links || [])
           .filter(l => l.visible !== false)
-          .map(l => ({
-            name: l.label || "",
-            href: l.url || "#",
-            external: l.url ? l.url.startsWith("http") : undefined,
-          })),
+          .map(l => {
+            const href = resolveLink(l, "#");
+            return {
+              name: l.label || "",
+              href,
+              external: href.startsWith("http") ? true : undefined,
+            };
+          }),
       }))
     : headerNavGroups;
 
@@ -570,7 +574,7 @@ export function HeaderB() {
                 )}
 
                 <Link
-                  href={hs?.ctaButton?.url ?? "/donate"}
+                  href={resolveLink(hs?.ctaButton, "/donate")}
                   className={cn(
                     "flex items-center gap-2 h-16 px-4 sm:px-6 font-semibold transition-all duration-200 text-sm sm:text-base",
                     {
@@ -732,11 +736,11 @@ export function HeaderB() {
                   {(hs?.contactLink?.visible !== false) && (
                   <motion.div variants={menuItemVariants} className="border-b border-white/10">
                     <Link
-                      href={hs?.contactLink?.url ?? "/contact"}
-                      onClick={() => handleOverlayNavClick(hs?.contactLink?.url ?? "/contact")}
+                      href={resolveLink(hs?.contactLink, "/contact")}
+                      onClick={() => handleOverlayNavClick(resolveLink(hs?.contactLink, "/contact"))}
                       className={cn(
                         "block py-4 text-2xl font-bold transition-colors",
-                        isActive(hs?.contactLink?.url ?? "/contact")
+                        isActive(resolveLink(hs?.contactLink, "/contact"))
                           ? "text-lime-400"
                           : "text-white hover:text-white/80",
                       )}
@@ -750,8 +754,8 @@ export function HeaderB() {
                   {(hs?.menuDonateCard?.visible !== false) && (
                   <motion.div variants={menuItemVariants} className="mt-8">
                     <Link
-                      href={hs?.menuDonateCard?.url ?? "/donate"}
-                      onClick={() => handleOverlayNavClick(hs?.menuDonateCard?.url ?? "/donate")}
+                      href={resolveLink(hs?.menuDonateCard, "/donate")}
+                      onClick={() => handleOverlayNavClick(resolveLink(hs?.menuDonateCard, "/donate"))}
                       className="group/donate flex items-center justify-between gap-4 px-6 py-4 rounded-xl bg-gradient-to-r from-lime-500/15 to-green-500/10 border border-lime-500/20 hover:border-lime-400/40 transition-all duration-300"
                     >
                       <div className="flex items-center gap-4">
@@ -914,10 +918,10 @@ export function HeaderB() {
                     </div>
                     <ul className="space-y-0.5">
                       <NavLinkItem
-                        href={hs?.contactLink?.url ?? "/contact"}
+                        href={resolveLink(hs?.contactLink, "/contact")}
                         name={hs?.contactLink?.label ?? "Contact Us"}
-                        active={isActive(hs?.contactLink?.url ?? "/contact")}
-                        onClick={() => handleOverlayNavClick(hs?.contactLink?.url ?? "/contact")}
+                        active={isActive(resolveLink(hs?.contactLink, "/contact"))}
+                        onClick={() => handleOverlayNavClick(resolveLink(hs?.contactLink, "/contact"))}
                       />
                     </ul>
                   </motion.div>
@@ -933,8 +937,8 @@ export function HeaderB() {
                   className="max-w-6xl mx-auto mt-10"
                 >
                   <Link
-                    href={hs?.menuDonateCard?.url ?? "/donate"}
-                    onClick={() => handleOverlayNavClick(hs?.menuDonateCard?.url ?? "/donate")}
+                    href={resolveLink(hs?.menuDonateCard, "/donate")}
+                    onClick={() => handleOverlayNavClick(resolveLink(hs?.menuDonateCard, "/donate"))}
                     className="group/donate flex items-center justify-between gap-4 px-6 py-4 rounded-xl bg-gradient-to-r from-lime-500/15 to-green-500/10 border border-lime-500/20 hover:border-lime-400/40 transition-all duration-300"
                   >
                     <div className="flex items-center gap-4">

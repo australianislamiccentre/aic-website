@@ -759,7 +759,10 @@ export interface SanityHeaderSettings {
   };
   ctaButton?: {
     label?: string;
-    url?: string;
+    linkType?: "page" | "custom";
+    page?: string;
+    customUrl?: string;
+    url?: string; // legacy fallback
     icon?: string;
     accentColor?: "lime" | "gold" | "teal";
   };
@@ -767,13 +770,19 @@ export interface SanityHeaderSettings {
     heading?: string;
     description?: string;
     buttonText?: string;
-    url?: string;
+    linkType?: "page" | "custom";
+    page?: string;
+    customUrl?: string;
+    url?: string; // legacy fallback
     visible?: boolean;
   };
   showSearch?: boolean;
   contactLink?: {
     label?: string;
-    url?: string;
+    linkType?: "page" | "custom";
+    page?: string;
+    customUrl?: string;
+    url?: string; // legacy fallback
     visible?: boolean;
   };
   navGroups?: SanityNavGroup[];
@@ -793,7 +802,10 @@ export interface SanityNavGroup {
 export interface SanityNavLink {
   _key: string;
   label?: string;
-  url?: string;
+  linkType?: "page" | "custom";
+  page?: string;
+  customUrl?: string;
+  url?: string; // legacy fallback
   visible?: boolean;
 }
 
@@ -807,7 +819,10 @@ export interface SanityFooterSettings {
     heading?: string;
     description?: string;
     buttonText?: string;
-    url?: string;
+    linkType?: "page" | "custom";
+    page?: string;
+    customUrl?: string;
+    url?: string; // legacy fallback
     visible?: boolean;
   };
   quranVerse?: {
@@ -819,7 +834,10 @@ export interface SanityFooterSettings {
   bottomBarLinks?: Array<{
     _key: string;
     label?: string;
-    url?: string;
+    linkType?: "page" | "custom";
+    page?: string;
+    customUrl?: string;
+    url?: string; // legacy fallback
   }>;
   copyrightText?: string;
   navGroups?: Array<{

@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { footerNavGroups } from "@/data/navigation";
+import { resolveLink } from "@/lib/resolve-link";
 
 /** Renders the site-wide footer. Consumes SiteSettings and FormSettings contexts. */
 export function Footer() {
@@ -55,7 +56,7 @@ export function Footer() {
         label: g.label || "",
         links: (g.links || [])
           .filter(l => l.visible !== false)
-          .map(l => ({ name: l.label || "", href: l.url || "#" })),
+          .map(l => ({ name: l.label || "", href: resolveLink(l, "#") })),
       }))
     : footerNavGroups;
 
@@ -366,7 +367,7 @@ export function Footer() {
                   <p className="text-sm text-white/80 mb-3">
                     {fs?.donateCard?.description ?? "Support our community programs, services, and the maintenance of our centre."}
                   </p>
-                  <Button href={fs?.donateCard?.url ?? "/donate"} variant="gold" size="sm" icon={<Heart className="w-4 h-4" />}>
+                  <Button href={resolveLink(fs?.donateCard, "/donate")} variant="gold" size="sm" icon={<Heart className="w-4 h-4" />}>
                     {fs?.donateCard?.buttonText ?? "Donate Now"}
                   </Button>
                 </div>
@@ -398,7 +399,7 @@ export function Footer() {
             <div className="flex items-center gap-6">
               {(fs?.bottomBarLinks && fs.bottomBarLinks.length > 0)
                 ? fs.bottomBarLinks.map((link) => (
-                    <Link key={link._key} href={link.url || "#"} className="hover:text-teal-400 transition-colors">
+                    <Link key={link._key} href={resolveLink(link, "#")} className="hover:text-teal-400 transition-colors">
                       {link.label}
                     </Link>
                   ))

@@ -44,7 +44,8 @@ async function main() {
       },
       ctaButton: {
         label: "Donate",
-        url: "/donate",
+        linkType: "page",
+        page: "/donate",
         accentColor: "lime",
       },
       showSearch: true,
@@ -52,12 +53,14 @@ async function main() {
         heading: "Support Our Community",
         description: "Your generosity helps us serve the community",
         buttonText: "Donate",
-        url: "/donate",
+        linkType: "page",
+        page: "/donate",
         visible: true,
       },
       contactLink: {
         label: "Contact Us",
-        url: "/contact",
+        linkType: "page",
+        page: "/contact",
         visible: true,
       },
       navGroups: [
@@ -67,9 +70,9 @@ async function main() {
           description: "Learn about our centre",
           visible: true,
           links: [
-            { _key: "story", label: "Our Story", url: "/about", visible: true },
-            { _key: "imams", label: "Our Imams", url: "/imams", visible: true },
-            { _key: "partners", label: "Affiliated Partners", url: "/partners", visible: true },
+            { _key: "story", label: "Our Story", linkType: "page", page: "/about", visible: true },
+            { _key: "imams", label: "Our Imams", linkType: "page", page: "/imams", visible: true },
+            { _key: "partners", label: "Affiliated Partners", linkType: "page", page: "/partners", visible: true },
           ],
         },
         {
@@ -78,10 +81,10 @@ async function main() {
           description: "Events, services & programs",
           visible: true,
           links: [
-            { _key: "events", label: "Events", url: "/events", visible: true },
-            { _key: "services", label: "Services", url: "/services", visible: true },
-            { _key: "announcements", label: "Announcements", url: "/announcements", visible: true },
-            { _key: "programs", label: "Programs", url: "/events#programs", visible: true },
+            { _key: "events", label: "Events", linkType: "page", page: "/events", visible: true },
+            { _key: "services", label: "Services", linkType: "page", page: "/services", visible: true },
+            { _key: "announcements", label: "Announcements", linkType: "page", page: "/announcements", visible: true },
+            { _key: "programs", label: "Programs", linkType: "custom", customUrl: "/events#programs", visible: true },
           ],
         },
         {
@@ -90,9 +93,9 @@ async function main() {
           description: "Prayer, worship & visiting",
           visible: true,
           links: [
-            { _key: "worshippers", label: "For Worshippers", url: "/worshippers", visible: true },
-            { _key: "visit", label: "Plan Your Visit", url: "/visit", visible: true },
-            { _key: "architecture", label: "Architecture", url: "/architecture", visible: true },
+            { _key: "worshippers", label: "For Worshippers", linkType: "page", page: "/worshippers", visible: true },
+            { _key: "visit", label: "Plan Your Visit", linkType: "page", page: "/visit", visible: true },
+            { _key: "architecture", label: "Architecture", linkType: "page", page: "/architecture", visible: true },
           ],
         },
         {
@@ -101,8 +104,8 @@ async function main() {
           description: "Gallery & downloads",
           visible: true,
           links: [
-            { _key: "gallery", label: "Media Gallery", url: "/media", visible: true },
-            { _key: "resources", label: "Resources", url: "/resources", visible: true },
+            { _key: "gallery", label: "Media Gallery", linkType: "page", page: "/media", visible: true },
+            { _key: "resources", label: "Resources", linkType: "page", page: "/resources", visible: true },
           ],
         },
       ],
@@ -126,19 +129,20 @@ async function main() {
         heading: "Support Us",
         description: "Support our community programs, services, and the maintenance of our centre.",
         buttonText: "Donate Now",
-        url: "/donate",
+        linkType: "page",
+        page: "/donate",
         visible: true,
       },
       quranVerse: {
         arabicText:
-          "مَثَلُ الَّذِينَ يُنْفِقُونَ أَمْوَالَهُمْ فِي سَبِيلِ اللَّهِ كَمَثَلِ حَبَّةٍ أَنْبَتَتْ سَبْعَ سَنَابِلَ",
+          "\u0645\u064E\u062B\u064E\u0644\u064F \u0627\u0644\u0651\u064E\u0630\u0650\u064A\u0646\u064E \u064A\u064F\u0646\u0641\u0650\u0642\u064F\u0648\u0646\u064E \u0623\u064E\u0645\u0648\u064E\u0627\u0644\u064E\u0647\u064F\u0645\u0652 \u0641\u0650\u064A \u0633\u064E\u0628\u0650\u064A\u0644\u0650 \u0627\u0644\u0644\u0651\u064E\u0647\u0650 \u0643\u064E\u0645\u064E\u062B\u064E\u0644\u0650 \u062D\u064E\u0628\u0651\u064E\u0629\u064D \u0623\u064E\u0646\u0628\u064E\u062A\u064E\u062A\u0652 \u0633\u064E\u0628\u0652\u0639\u064E \u0633\u064E\u0646\u064E\u0627\u0628\u0650\u0644\u064E",
         reference: "Qur'an 2:261",
         visible: true,
       },
       bottomBarLinks: [
-        { _key: "privacy", label: "Privacy Policy", url: "/privacy" },
-        { _key: "terms", label: "Terms of Use", url: "/terms" },
-        { _key: "accessibility", label: "Accessibility", url: "/accessibility" },
+        { _key: "privacy", label: "Privacy Policy", linkType: "page", page: "/privacy" },
+        { _key: "terms", label: "Terms of Use", linkType: "page", page: "/terms" },
+        { _key: "accessibility", label: "Accessibility", linkType: "custom", customUrl: "/accessibility" },
       ],
       navGroups: [
         {
@@ -146,9 +150,9 @@ async function main() {
           label: "About",
           visible: true,
           links: [
-            { _key: "story", label: "Our Story", url: "/about", visible: true },
-            { _key: "imams", label: "Our Imams", url: "/imams", visible: true },
-            { _key: "partners", label: "Affiliated Partners", url: "/partners", visible: true },
+            { _key: "story", label: "Our Story", linkType: "page", page: "/about", visible: true },
+            { _key: "imams", label: "Our Imams", linkType: "page", page: "/imams", visible: true },
+            { _key: "partners", label: "Affiliated Partners", linkType: "page", page: "/partners", visible: true },
           ],
         },
         {
@@ -156,10 +160,10 @@ async function main() {
           label: "What's On",
           visible: true,
           links: [
-            { _key: "events", label: "Events", url: "/events", visible: true },
-            { _key: "services", label: "Services", url: "/services", visible: true },
-            { _key: "announcements", label: "Announcements", url: "/announcements", visible: true },
-            { _key: "programs", label: "Programs", url: "/events#programs", visible: true },
+            { _key: "events", label: "Events", linkType: "page", page: "/events", visible: true },
+            { _key: "services", label: "Services", linkType: "page", page: "/services", visible: true },
+            { _key: "announcements", label: "Announcements", linkType: "page", page: "/announcements", visible: true },
+            { _key: "programs", label: "Programs", linkType: "custom", customUrl: "/events#programs", visible: true },
           ],
         },
         {
@@ -167,9 +171,9 @@ async function main() {
           label: "Our Mosque",
           visible: true,
           links: [
-            { _key: "worshippers", label: "For Worshippers", url: "/worshippers", visible: true },
-            { _key: "visit", label: "Plan Your Visit", url: "/visit", visible: true },
-            { _key: "architecture", label: "Architecture", url: "/architecture", visible: true },
+            { _key: "worshippers", label: "For Worshippers", linkType: "page", page: "/worshippers", visible: true },
+            { _key: "visit", label: "Plan Your Visit", linkType: "page", page: "/visit", visible: true },
+            { _key: "architecture", label: "Architecture", linkType: "page", page: "/architecture", visible: true },
           ],
         },
         {
@@ -177,8 +181,8 @@ async function main() {
           label: "Media & Resources",
           visible: true,
           links: [
-            { _key: "gallery", label: "Media Gallery", url: "/media", visible: true },
-            { _key: "resources", label: "Resources", url: "/resources", visible: true },
+            { _key: "gallery", label: "Media Gallery", linkType: "page", page: "/media", visible: true },
+            { _key: "resources", label: "Resources", linkType: "page", page: "/resources", visible: true },
           ],
         },
         {
@@ -186,10 +190,10 @@ async function main() {
           label: "Get Involved",
           visible: true,
           links: [
-            { _key: "donate", label: "Donate", url: "/donate", visible: true },
-            { _key: "contact", label: "Contact Us", url: "/contact", visible: true },
-            { _key: "volunteer", label: "Volunteer", url: "/contact", visible: true },
-            { _key: "partners", label: "Our Partners", url: "/partners", visible: true },
+            { _key: "donate", label: "Donate", linkType: "page", page: "/donate", visible: true },
+            { _key: "contact", label: "Contact Us", linkType: "page", page: "/contact", visible: true },
+            { _key: "volunteer", label: "Volunteer", linkType: "page", page: "/contact", visible: true },
+            { _key: "partners", label: "Our Partners", linkType: "page", page: "/partners", visible: true },
           ],
         },
       ],

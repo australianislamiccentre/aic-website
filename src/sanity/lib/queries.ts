@@ -864,7 +864,7 @@ export const headerSettingsQuery = groq`
     contactLink,
     navGroups[]{
       _key, label, description, icon, visible,
-      links[]{ _key, label, url, visible }
+      links[]{ _key, label, linkType, page, customUrl, url, visible }
     }
   }
 `;
@@ -875,11 +875,11 @@ export const footerSettingsQuery = groq`
     brandDescription,
     donateCard,
     quranVerse,
-    bottomBarLinks[]{ _key, label, url },
+    bottomBarLinks[]{ _key, label, linkType, page, customUrl, url },
     copyrightText,
     navGroups[]{
       _key, label, visible,
-      links[]{ _key, label, url, visible }
+      links[]{ _key, label, linkType, page, customUrl, url, visible }
     }
   }
 `;
