@@ -742,14 +742,6 @@ export interface SanityPrayerSettings {
   eidAdhaTime?: string;
 }
 
-/** Icon picker value from sanity-plugin-icon-picker. */
-export interface SanityIconPicker {
-  _type?: string;
-  provider?: string;
-  name?: string;
-  svg?: string;
-}
-
 /** Header settings singleton — announcement bar, CTA, nav groups, etc. */
 export interface SanityHeaderSettings {
   announcementBar?: {
@@ -768,7 +760,7 @@ export interface SanityHeaderSettings {
   ctaButton?: {
     label?: string;
     url?: string;
-    icon?: SanityIconPicker;
+    icon?: string;
     accentColor?: "lime" | "gold" | "teal";
   };
   menuDonateCard?: {
@@ -792,7 +784,7 @@ export interface SanityNavGroup {
   _key: string;
   label?: string;
   description?: string;
-  icon?: SanityIconPicker;
+  icon?: string;
   visible?: boolean;
   links?: SanityNavLink[];
 }

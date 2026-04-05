@@ -44,7 +44,6 @@
     "react-dom": "19.2.3",
     "resend": "^6.9.2",
     "sanity": "^5.6.0",
-    "sanity-plugin-icon-picker": "^4.0.0",
     "sanity-plugin-media": "^4.1.1",
     "styled-components": "^6.3.8",
     "tailwind-merge": "^3.4.0"

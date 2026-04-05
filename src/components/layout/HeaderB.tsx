@@ -869,7 +869,7 @@ export function HeaderB() {
                     const meta = groupMeta[group.label];
                     // Try to get icon from Sanity settings
                     const sanityGroup = hs?.navGroups?.find(g => g.label === group.label);
-                    const SanityIcon = getIcon(sanityGroup?.icon?.name);
+                    const SanityIcon = getIcon(sanityGroup?.icon);
                     const Icon = SanityIcon || meta?.icon;
                     const description = sanityGroup?.description || meta?.description;
 

@@ -3,5 +3,6 @@
     "additionalDirectories": [
       "/Users/rashidelhouli/australian-islamic-centre/src/app/events"
     ]
-  }
+  },
+  "read_token_limit": 30000
 }

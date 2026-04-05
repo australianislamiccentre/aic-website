@@ -129,10 +129,19 @@ export default defineType({
         defineField({
           name: "icon",
           title: "Button Icon",
-          type: "iconPicker",
+          type: "string",
           options: {
-            storeSvg: true,
+            list: [
+              { title: "Heart", value: "Heart" },
+              { title: "Star", value: "Star" },
+              { title: "Hand Heart", value: "HandHeart" },
+              { title: "Arrow Right", value: "ArrowRight" },
+              { title: "Plus", value: "Plus" },
+              { title: "External Link", value: "ExternalLink" },
+            ],
           },
+          initialValue: "Heart",
+          description: "Icon shown on the button. Uses Lucide icon names.",
         }),
         defineField({
           name: "accentColor",
@@ -215,9 +224,28 @@ export default defineType({
             defineField({
               name: "icon",
               title: "Icon",
-              type: "iconPicker",
-              options: { storeSvg: true },
-              description: "Group icon shown on desktop menu.",
+              type: "string",
+              options: {
+                list: [
+                  { title: "Users", value: "Users" },
+                  { title: "Calendar", value: "Calendar" },
+                  { title: "Landmark", value: "Landmark" },
+                  { title: "Play", value: "Play" },
+                  { title: "Message Circle", value: "MessageCircle" },
+                  { title: "Heart", value: "Heart" },
+                  { title: "Book Open", value: "BookOpen" },
+                  { title: "Graduation Cap", value: "GraduationCap" },
+                  { title: "Home", value: "Home" },
+                  { title: "Star", value: "Star" },
+                  { title: "Globe", value: "Globe" },
+                  { title: "Hand Heart", value: "HandHeart" },
+                  { title: "Megaphone", value: "Megaphone" },
+                  { title: "Camera", value: "Camera" },
+                  { title: "Info", value: "Info" },
+                  { title: "Arrow Right", value: "ArrowRight" },
+                ],
+              },
+              description: "Group icon shown on desktop menu. Uses Lucide icon names.",
             }),
             defineField({ name: "visible", title: "Visible", type: "boolean", initialValue: true }),
             defineField({
