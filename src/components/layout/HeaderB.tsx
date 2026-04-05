@@ -32,7 +32,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SearchDialog } from "@/components/ui/SearchDialog";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
-import { buildHeaderNavGroups } from "@/data/navigation";
+import { headerNavGroups, type NavGroup } from "@/data/navigation";
+import { getIcon } from "@/lib/icon-map";
 import {
   Menu,
   X,
@@ -278,6 +279,66 @@ function NavLinkItem({
 }
 
 /* ------------------------------------------------------------------ */
+/*  Announcement Bar                                                   */
+/* ------------------------------------------------------------------ */
+
+function AnnouncementBar({
+  message,
+  link,
+  linkText,
+  backgroundColor,
+  dismissable,
+}: {
+  message: string;
+  link?: string;
+  linkText?: string;
+  backgroundColor: string;
+  dismissable: boolean;
+}) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+
+  const bgColors: Record<string, string> = {
+    teal: "bg-teal-600",
+    gold: "bg-amber-500 text-neutral-900",
+    lime: "bg-lime-500 text-neutral-900",
+    red: "bg-red-600",
+  };
+
+  const content = link ? (
+    linkText ? (
+      <span>
+        {message}{" "}
+        <a href={link} className="underline font-semibold hover:no-underline">
+          {linkText}
+        </a>
+      </span>
+    ) : (
+      <a href={link} className="underline hover:no-underline">
+        {message}
+      </a>
+    )
+  ) : (
+    <span>{message}</span>
+  );
+
+  return (
+    <div className={cn("relative text-white text-sm text-center py-2 px-6", bgColors[backgroundColor] || bgColors.teal)}>
+      <div className="max-w-7xl mx-auto">{content}</div>
+      {dismissable && (
+        <button
+          onClick={() => setDismissed(true)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:opacity-70 transition-opacity"
+          aria-label="Dismiss announcement"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -293,7 +354,36 @@ export function HeaderB() {
   const hamburgerRef = useRef<HTMLButtonElement | null>(null);
 
   const info = useSiteSettings();
-  const navGroups = buildHeaderNavGroups(info.customNavPages);
+  const hs = info.headerSettings;
+
+  // Merge nav groups: Sanity settings -> fallback to hardcoded -> append custom pages
+  const baseGroups: NavGroup[] = (hs?.navGroups && hs.navGroups.length > 0)
+    ? hs.navGroups
+      .filter(g => g.visible !== false)
+      .map(g => ({
+        label: g.label || "",
+        links: (g.links || [])
+          .filter(l => l.visible !== false)
+          .map(l => ({
+            name: l.label || "",
+            href: l.url || "#",
+            external: l.url ? l.url.startsWith("http") : undefined,
+          })),
+      }))
+    : headerNavGroups;
+
+  // Append custom pages from pageContent with showInNav
+  const customPageGroup: NavGroup[] = (info.customNavPages && info.customNavPages.length > 0)
+    ? [{
+        label: "More",
+        links: info.customNavPages.map(p => ({
+          name: p.navLabel || p.title,
+          href: `/${p.slug}`,
+        })),
+      }]
+    : [];
+
+  const navGroups: NavGroup[] = [...baseGroups, ...customPageGroup];
 
   /* ---------- Focus trap ---------- */
   useFocusTrap(overlayRef, overlayOpen);
@@ -369,11 +459,24 @@ export function HeaderB() {
 
   return (
     <>
+      {/* ===== Announcement Bar ===== */}
+      {hs?.announcementBar?.enabled && hs.announcementBar.message && (
+        <AnnouncementBar
+          message={hs.announcementBar.message}
+          link={hs.announcementBar.link}
+          linkText={hs.announcementBar.linkText}
+          backgroundColor={hs.announcementBar.backgroundColor ?? "teal"}
+          dismissable={hs.announcementBar.dismissable !== false}
+        />
+      )}
+
       {/* ===== Top bar - Desktop ===== */}
+      {(hs?.topBar?.visible !== false) && (
+      <>
       <div className="hidden lg:block bg-neutral-900 text-white/90 py-2">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between text-sm">
           <div className="flex items-center gap-6">
-            <span className="text-white/70">Welcome to the Australian Islamic Centre</span>
+            <span className="text-white/70">{hs?.topBar?.desktopWelcome ?? "Welcome to the Australian Islamic Centre"}</span>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
@@ -396,7 +499,7 @@ export function HeaderB() {
       {/* ===== Top bar - Mobile / Tablet ===== */}
       <div className="lg:hidden bg-neutral-900 text-white py-2 px-4">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-white/70">Welcome to AIC</span>
+          <span className="text-white/70">{hs?.topBar?.mobileWelcome ?? "Welcome to AIC"}</span>
           <a
             href={`tel:${info.phone}`}
             className="flex items-center gap-1.5 text-white/70 hover:text-lime-400 transition-colors"
@@ -406,6 +509,8 @@ export function HeaderB() {
           </a>
         </div>
       </div>
+      </>
+      )}
 
       {/* ===== Main header (sticky) ===== */}
       <header
@@ -449,6 +554,7 @@ export function HeaderB() {
 
               {/* ----- Actions: Search + Donate + Hamburger ----- */}
               <div className="flex items-center h-16">
+                {(hs?.showSearch !== false) && (
                 <button
                   onClick={() => setSearchOpen(true)}
                   className={cn(
@@ -461,13 +567,21 @@ export function HeaderB() {
                 >
                   <Search className="w-5 h-5" />
                 </button>
+                )}
 
                 <Link
-                  href="/donate"
-                  className="flex items-center gap-2 h-16 px-4 sm:px-6 bg-lime-500 hover:bg-lime-600 text-neutral-900 font-semibold transition-all duration-200 text-sm sm:text-base"
+                  href={hs?.ctaButton?.url ?? "/donate"}
+                  className={cn(
+                    "flex items-center gap-2 h-16 px-4 sm:px-6 font-semibold transition-all duration-200 text-sm sm:text-base",
+                    {
+                      "bg-lime-500 hover:bg-lime-600 text-neutral-900": (hs?.ctaButton?.accentColor ?? "lime") === "lime",
+                      "bg-amber-500 hover:bg-amber-600 text-neutral-900": hs?.ctaButton?.accentColor === "gold",
+                      "bg-teal-600 hover:bg-teal-700 text-white": hs?.ctaButton?.accentColor === "teal",
+                    }
+                  )}
                 >
                   <Heart className="w-4 h-4" />
-                  <span>Donate</span>
+                  <span>{hs?.ctaButton?.label ?? "Donate"}</span>
                 </Link>
 
                 <button
@@ -615,26 +729,29 @@ export function HeaderB() {
                   })}
 
                   {/* Contact — standalone link */}
+                  {(hs?.contactLink?.visible !== false) && (
                   <motion.div variants={menuItemVariants} className="border-b border-white/10">
                     <Link
-                      href="/contact"
-                      onClick={() => handleOverlayNavClick("/contact")}
+                      href={hs?.contactLink?.url ?? "/contact"}
+                      onClick={() => handleOverlayNavClick(hs?.contactLink?.url ?? "/contact")}
                       className={cn(
                         "block py-4 text-2xl font-bold transition-colors",
-                        isActive("/contact")
+                        isActive(hs?.contactLink?.url ?? "/contact")
                           ? "text-lime-400"
                           : "text-white hover:text-white/80",
                       )}
                     >
-                      Contact Us
+                      {hs?.contactLink?.label ?? "Contact Us"}
                     </Link>
                   </motion.div>
+                  )}
 
                   {/* Donate feature card */}
+                  {(hs?.menuDonateCard?.visible !== false) && (
                   <motion.div variants={menuItemVariants} className="mt-8">
                     <Link
-                      href="/donate"
-                      onClick={() => handleOverlayNavClick("/donate")}
+                      href={hs?.menuDonateCard?.url ?? "/donate"}
+                      onClick={() => handleOverlayNavClick(hs?.menuDonateCard?.url ?? "/donate")}
                       className="group/donate flex items-center justify-between gap-4 px-6 py-4 rounded-xl bg-gradient-to-r from-lime-500/15 to-green-500/10 border border-lime-500/20 hover:border-lime-400/40 transition-all duration-300"
                     >
                       <div className="flex items-center gap-4">
@@ -643,19 +760,20 @@ export function HeaderB() {
                         </div>
                         <div>
                           <span className="block text-base font-semibold text-white">
-                            Support Our Community
+                            {hs?.menuDonateCard?.heading ?? "Support Our Community"}
                           </span>
                           <span className="block text-sm text-white/40">
-                            Your generosity helps us serve the community
+                            {hs?.menuDonateCard?.description ?? "Your generosity helps us serve the community"}
                           </span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-lime-400 font-semibold text-sm">
-                        <span className="hidden sm:inline">Donate</span>
+                        <span className="hidden sm:inline">{hs?.menuDonateCard?.buttonText ?? "Donate"}</span>
                         <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover/donate:translate-x-1" />
                       </div>
                     </Link>
                   </motion.div>
+                  )}
                 </motion.div>
               </div>
 
@@ -749,7 +867,11 @@ export function HeaderB() {
                 >
                   {navGroups.map((group) => {
                     const meta = groupMeta[group.label];
-                    const Icon = meta?.icon;
+                    // Try to get icon from Sanity settings
+                    const sanityGroup = hs?.navGroups?.find(g => g.label === group.label);
+                    const SanityIcon = getIcon(sanityGroup?.icon?.name);
+                    const Icon = SanityIcon || meta?.icon;
+                    const description = sanityGroup?.description || meta?.description;
 
                     return (
                       <motion.div key={group.label} variants={groupItemVariants}>
@@ -761,6 +883,9 @@ export function HeaderB() {
                             {group.label}
                           </h2>
                         </div>
+                        {description && (
+                          <p className="text-xs text-white/30 mb-2 -mt-1">{description}</p>
+                        )}
 
                         <ul className="space-y-0.5">
                           {group.links.map((link) => (
@@ -779,6 +904,7 @@ export function HeaderB() {
                   })}
 
                   {/* Get In Touch group */}
+                  {(hs?.contactLink?.visible !== false) && (
                   <motion.div variants={groupItemVariants}>
                     <div className="flex items-center gap-2.5 mb-3">
                       <MessageCircle className="w-4 h-4 text-lime-400/70" />
@@ -788,16 +914,18 @@ export function HeaderB() {
                     </div>
                     <ul className="space-y-0.5">
                       <NavLinkItem
-                        href="/contact"
-                        name="Contact Us"
-                        active={isActive("/contact")}
-                        onClick={() => handleOverlayNavClick("/contact")}
+                        href={hs?.contactLink?.url ?? "/contact"}
+                        name={hs?.contactLink?.label ?? "Contact Us"}
+                        active={isActive(hs?.contactLink?.url ?? "/contact")}
+                        onClick={() => handleOverlayNavClick(hs?.contactLink?.url ?? "/contact")}
                       />
                     </ul>
                   </motion.div>
+                  )}
                 </motion.div>
 
                 {/* Donate feature card */}
+                {(hs?.menuDonateCard?.visible !== false) && (
                 <motion.div
                   variants={donateCardVariants}
                   initial="hidden"
@@ -805,8 +933,8 @@ export function HeaderB() {
                   className="max-w-6xl mx-auto mt-10"
                 >
                   <Link
-                    href="/donate"
-                    onClick={() => handleOverlayNavClick("/donate")}
+                    href={hs?.menuDonateCard?.url ?? "/donate"}
+                    onClick={() => handleOverlayNavClick(hs?.menuDonateCard?.url ?? "/donate")}
                     className="group/donate flex items-center justify-between gap-4 px-6 py-4 rounded-xl bg-gradient-to-r from-lime-500/15 to-green-500/10 border border-lime-500/20 hover:border-lime-400/40 transition-all duration-300"
                   >
                     <div className="flex items-center gap-4">
@@ -815,19 +943,20 @@ export function HeaderB() {
                       </div>
                       <div>
                         <span className="block text-base font-semibold text-white">
-                          Support Our Community
+                          {hs?.menuDonateCard?.heading ?? "Support Our Community"}
                         </span>
                         <span className="block text-sm text-white/40">
-                          Your generosity helps us serve the community
+                          {hs?.menuDonateCard?.description ?? "Your generosity helps us serve the community"}
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 text-lime-400 font-semibold text-sm">
-                      <span>Donate</span>
+                      <span>{hs?.menuDonateCard?.buttonText ?? "Donate"}</span>
                       <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover/donate:translate-x-1" />
                     </div>
                   </Link>
                 </motion.div>
+                )}
               </div>
 
               {/* Contact info strip */}
