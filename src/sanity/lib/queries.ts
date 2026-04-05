@@ -852,3 +852,35 @@ export const newsletterSettingsQuery = groq`
   }
 `;
 
+// ── Navigation Settings queries ──
+
+export const headerSettingsQuery = groq`
+  *[_id == "headerSettings"][0]{
+    announcementBar,
+    topBar,
+    ctaButton,
+    menuDonateCard,
+    showSearch,
+    contactLink,
+    navGroups[]{
+      _key, label, description, icon, visible,
+      links[]{ _key, label, url, visible }
+    }
+  }
+`;
+
+export const footerSettingsQuery = groq`
+  *[_id == "footerSettings"][0]{
+    newsletter,
+    brandDescription,
+    donateCard,
+    quranVerse,
+    bottomBarLinks[]{ _key, label, url },
+    copyrightText,
+    navGroups[]{
+      _key, label, visible,
+      links[]{ _key, label, url, visible }
+    }
+  }
+`;
+
