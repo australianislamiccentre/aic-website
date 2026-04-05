@@ -18,6 +18,7 @@ import donatePageSettings from "./singletons/donatePageSettings";
 import offlineDonations from "./singletons/offlineDonations";
 import mediaGallery from "./singletons/mediaGallery";
 import formSettings from "./singletons/formSettings"; // deprecated — hidden from desk
+import headerSettings from "./singletons/headerSettings";
 
 // ── Page singletons ──
 import aboutPageSettings from "./pages/aboutPageSettings";
@@ -65,6 +66,7 @@ export const schemaTypes = [
   offlineDonations,
   mediaGallery,
   formSettings,
+  headerSettings,
   // Page singletons
   aboutPageSettings,
   architecturePageSettings,
