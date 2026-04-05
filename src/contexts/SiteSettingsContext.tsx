@@ -18,7 +18,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { SanitySiteSettings } from "@/types/sanity";
+import type { SanitySiteSettings, SanityHeaderSettings, SanityFooterSettings } from "@/types/sanity";
 import { aicInfo } from "@/data/content";
 
 /** Unified shape with guaranteed (non-optional) fields for all site info. */
@@ -45,7 +45,7 @@ export interface SiteInfo {
   phone: string;
   email: string;
   googleMapsUrl?: string;
-  operatingHours?: { weekdays?: string; weekends?: string; notes?: string };
+  operatingHours: string;
   socialMedia: {
     facebook: string;
     instagram: string;
@@ -58,13 +58,20 @@ export interface SiteInfo {
   };
   /** Custom pages with showInNav enabled, sorted by navOrder. */
   customNavPages: CustomNavPage[];
+  headerSettings: SanityHeaderSettings | null;
+  footerSettings: SanityFooterSettings | null;
 }
 
 /**
  * Merges Sanity siteSettings with hardcoded aicInfo fallbacks.
  * Guarantees all fields are populated even if Sanity returns null/partial data.
  */
-export function buildSiteInfo(settings: SanitySiteSettings | null, customNavPages: CustomNavPage[] = []): SiteInfo {
+export function buildSiteInfo(
+  settings: SanitySiteSettings | null,
+  customNavPages: CustomNavPage[] = [],
+  headerSettings: SanityHeaderSettings | null = null,
+  footerSettings: SanityFooterSettings | null = null,
+): SiteInfo {
   const addr = settings?.address;
   const street = addr?.street ?? aicInfo.address.street;
   const suburb = addr?.suburb ?? aicInfo.address.suburb;
@@ -88,7 +95,9 @@ export function buildSiteInfo(settings: SanitySiteSettings | null, customNavPage
     phone: settings?.phone ?? aicInfo.phone,
     email: settings?.email ?? aicInfo.email,
     googleMapsUrl: settings?.googleMapsUrl,
-    operatingHours: settings?.operatingHours,
+    operatingHours: (typeof settings?.operatingHours === "string"
+      ? settings.operatingHours
+      : null) ?? "Open Daily from Fajr to Isha",
     socialMedia: {
       facebook: settings?.socialMedia?.facebook ?? aicInfo.socialMedia.facebook,
       instagram: settings?.socialMedia?.instagram ?? aicInfo.socialMedia.instagram,
@@ -100,6 +109,8 @@ export function buildSiteInfo(settings: SanitySiteSettings | null, customNavPage
       newportStorm: settings?.externalLinks?.sportsClub ?? aicInfo.externalLinks.newportStorm,
     },
     customNavPages,
+    headerSettings,
+    footerSettings,
   };
 }
 
@@ -113,13 +124,17 @@ const SiteSettingsContext = createContext<SiteInfo>(buildSiteInfo(null));
 export function SiteSettingsProvider({
   siteSettings,
   customNavPages,
+  headerSettings,
+  footerSettings,
   children,
 }: {
   siteSettings: SanitySiteSettings | null;
   customNavPages?: CustomNavPage[];
+  headerSettings?: SanityHeaderSettings | null;
+  footerSettings?: SanityFooterSettings | null;
   children: React.ReactNode;
 }) {
-  const info = buildSiteInfo(siteSettings, customNavPages);
+  const info = buildSiteInfo(siteSettings, customNavPages, headerSettings ?? null, footerSettings ?? null);
   return (
     <SiteSettingsContext.Provider value={info}>
       {children}
