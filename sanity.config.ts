@@ -20,6 +20,7 @@ import { structureTool, type StructureBuilder, type StructureResolverContext } f
 import { visionTool } from "@sanity/vision";
 import { presentationTool } from "sanity/presentation";
 import { media } from "sanity-plugin-media";
+import { iconPicker } from "sanity-plugin-icon-picker";
 import { orderableDocumentListDeskItem } from "@sanity/orderable-document-list";
 import { schemaTypes } from "./src/sanity/schemas";
 
@@ -383,6 +384,7 @@ export default defineConfig({
   plugins: [
     structureTool({ structure }),
     media(),
+    iconPicker(),
     presentationTool({
       previewUrl: {
         initial: baseUrl,
