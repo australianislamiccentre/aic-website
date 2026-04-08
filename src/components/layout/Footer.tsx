@@ -294,9 +294,9 @@ export function Footer() {
           {/* About + What's On */}
           <div>
             {navGroups.slice(0, 2).map((group, groupIndex) => (
-              <div key={group.label} className={groupIndex > 0 ? "mt-8" : ""}>
-                <h4 className="font-semibold text-lg mb-6">{group.label}</h4>
-                <ul className="space-y-3">
+              <div key={group.label} className={groupIndex > 0 ? "mt-10" : ""}>
+                <h4 className="font-semibold text-lg mb-4">{group.label}</h4>
+                <ul className="space-y-2">
                   {group.links.map((link) => (
                     <li key={link.name}>
                       <Link
@@ -316,9 +316,9 @@ export function Footer() {
           {/* Our Mosque + Media & Resources */}
           <div>
             {navGroups.slice(2, 4).map((group, groupIndex) => (
-              <div key={group.label} className={groupIndex > 0 ? "mt-8" : ""}>
-                <h4 className="font-semibold text-lg mb-6">{group.label}</h4>
-                <ul className="space-y-3">
+              <div key={group.label} className={groupIndex > 0 ? "mt-10" : ""}>
+                <h4 className="font-semibold text-lg mb-4">{group.label}</h4>
+                <ul className="space-y-2">
                   {group.links.map((link) => (
                     <li key={link.name}>
                       <Link
@@ -337,10 +337,10 @@ export function Footer() {
 
           {/* Get Involved + Affiliates */}
           <div>
-            {navGroups.slice(4).map((group) => (
-              <div key={group.label}>
-                <h4 className="font-semibold text-lg mb-6">{group.label}</h4>
-                <ul className="space-y-3">
+            {navGroups.slice(4).map((group, groupIndex) => (
+              <div key={group.label} className={groupIndex > 0 ? "mt-10" : ""}>
+                <h4 className="font-semibold text-lg mb-4">{group.label}</h4>
+                <ul className="space-y-2">
                   {group.links.map((link) => (
                     <li key={link.name}>
                       <Link

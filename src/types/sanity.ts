@@ -262,10 +262,21 @@ export interface SanityPartner {
   slug: string;
   shortDescription?: string;
   fullDescription?: PortableTextBlock[];
-  logo?: SanityImage;
   coverImage?: SanityImage;
   icon?: string;
   color?: string;
+  heroTheme?: "teal" | "blue" | "green" | "purple" | "orange";
+  highlights?: Array<{
+    _key?: string;
+    icon: string;
+    title: string;
+    description: string;
+  }>;
+  aboutHeading?: string;
+  location?: string;
+  ctaHeading?: string;
+  ctaDescription?: string;
+  ctaButtonLabel?: string;
   website?: string;
   email?: string;
   phone?: string;

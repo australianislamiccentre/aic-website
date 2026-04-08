@@ -135,6 +135,28 @@ Schema field → GROQ query → TypeScript type → fetch function → page.tsx 
 
 If any link in this chain is missing, the field is broken. Do not commit partial implementations.
 
+### The #2 Rule: Site Content Must Always Match Sanity
+
+Every piece of content on the live site must come from Sanity, and every Sanity document that the site renders must actually exist in the dataset. Empty data in Sanity means empty content on the site — there is no silent "it used to work" fallback once a field/route is wired to Sanity.
+
+This means:
+
+- **If a route depends on Sanity data, that data must be seedable.** A dynamic route like `/partners/[slug]` is broken the moment the dataset has zero partner documents. Never delete a hardcoded page in favour of a Sanity-driven one without also shipping a seed script that covers the equivalent documents.
+- **Seed scripts must cover every document type the site reads from.** If you add a new document schema and the site renders it, you must also add/extend a seed script so running all seed scripts on a fresh dataset produces a fully working site.
+- **When wiring a new Sanity field with a hardcoded fallback, add the real value to the seed script too.** Fallbacks exist for resilience, not as the permanent source of truth. A field that only ever shows its fallback because no one populated Sanity is a latent bug.
+- **Before marking a Sanity-related task complete, verify the dataset state** (via `npx sanity documents query` or by opening Studio) to confirm the data you expect is really there. Type-check and tests pass with empty data — only a live query proves content exists.
+- **When refactoring or renaming, check both sides.** If you rename a schema field, write a migration script for existing documents. If you delete a document type, remove all references. If you consolidate fields (e.g. operating hours), plan the update for existing documents, not just the schema.
+
+**CRITICAL — do not mutate Sanity data without permission.** Claude must never run seed scripts, create/update/delete documents, or run content migrations against Sanity unless the user explicitly asks or an admin is performing the change through Studio. Instead:
+
+- Write/update the seed script so it is ready to run.
+- Surface the current Sanity dataset state to the user (counts, missing docs, empty fields) using read-only queries.
+- Ask the user before running anything that mutates Sanity content.
+- Never use createOrReplace on any document that already exists in the dataset. Always use patch.
+- Before running ANY script that writes to Sanity, list exactly which document IDs will be affected and what operation will be performed (create, patch, delete), and wait for user approval.
+
+If you discover site content is missing because a seed never ran, fix the seed script and **tell the user**. Do not fix it by adding another hardcoded fallback and do not run the seed script unilaterally.
+
 ### Mandatory Checklist: Adding a Sanity Field
 
 When adding ANY new field to a Sanity schema, complete ALL of these steps in the same commit. Do not split across PRs or leave any step for later:
@@ -187,6 +209,28 @@ After implementing any Sanity schema change, verify the full pipeline by answeri
 - Sanity Studio customisation (desk structure, input components) lives in `src/sanity/`
 - Validate that Sanity Studio still works at /studio after schema changes
 - **Never leave a Sanity field unwired** — if a field is in the schema, it must render on the site. If it's not ready to be wired, don't add it to the schema yet
+
+### Schema Changes Must Be Schema-Only
+
+- When modifying Sanity schemas (adding, removing, renaming, or restructuring fields), only touch schema files, queries.ts, sanity.ts types, fetch functions, and frontend components. Never touch Sanity dataset content.
+- NEVER use `createOrReplace` on existing Sanity documents. This overwrites the entire document and wipes any fields not included in the replacement object. Use patch operations instead.
+- NEVER delete and recreate Sanity documents to "match" a new schema structure.
+- NEVER re-run seed scripts against a dataset that already has published content unless the user explicitly asks.
+- If a field is renamed, write a migration script using `client.patch(id).set({newField: oldValue}).unset(['oldField'])` and ask the user before running it.
+- If a field is removed from the schema, leave the data in Sanity alone. The data persists harmlessly and can be cleaned up later if needed.
+- Schema changes alone cannot wipe content. If content disappears after a schema change, something destructive ran that should not have.
+
+### Seed Script Requirements
+
+Seed scripts must NEVER use `setIfMissing` on whole documents or `createIfNotExists` for content population. These silently skip if the document exists in any state (even an empty draft), and report success when nothing was written. This has caused repeated incidents where Claude reports "seeded successfully" but zero data was actually written.
+
+Seed scripts must:
+
+1. Use `client.patch(id).set({field: value})` for setting individual fields on existing documents. Only use `client.create()` for documents that genuinely do not exist yet (verify with a query first).
+2. After every seed run, immediately query Sanity to verify the data actually landed. Print the actual field values returned from a fresh query, not just "success". Example: after seeding `siteSettings.name`, query for it and print the value.
+3. If any field comes back null or undefined after seeding, throw an error and report exactly which fields failed to write.
+4. Never report a seed as successful based on the absence of errors. The only proof of success is a read-back query showing the expected values.
+5. Before running any seed script, query Sanity first to report current state: which documents exist, which are drafts vs published, which fields are populated vs null. Show this to the user before writing anything.
 
 ---
 
@@ -452,6 +496,9 @@ When any structural change is made (adding, removing, or renaming a page, route,
 - Write tests proving the new field renders when set AND falls back when missing
 - Verify Sanity Studio still works at /studio
 - Verify the revalidation webhook handles this document type (check `validDocumentTypes` and `documentTypeToPath` in `src/app/api/revalidate/route.ts`)
+- NEVER use createOrReplace to update existing documents - use patch operations only
+- NEVER re-run seed scripts on documents that already have published content
+- If fields are being renamed or restructured, write a patch-based migration script and ask the user before running it
 
 ### When adding/removing a component:
 - Update all pages and sections that use it
@@ -551,3 +598,9 @@ Never push without running `npm run validate` first. Never create a branch from 
 2. **Sanity fields created but never wired to frontend (2026-04-02):** Schema fields, GROQ queries, fetch functions, and TypeScript types were all created for page settings singletons, but the final step — passing fetched data as props from `page.tsx` to the client component — was missed for 6 pages (homepage, visit, imams, partners, services, worshippers). Fields existed in Sanity Studio but changing them had zero effect on the live site. The homepage `AboutPreviewSection` was rendered as `<AboutPreviewSection />` (no props) instead of `<AboutPreviewSection welcomeSection={homepageSettings?.welcomeSection} />`. **Fix:** Added "Sanity CMS Rules" section with mandatory end-to-end checklist for every field, explicit verification step for page.tsx prop passing, and mandatory wiring tests. The rule: a Sanity field is not "done" until changing its value in Studio changes what appears on the site.
 
 3. **Revalidation webhook only busted page cache, not data cache (2026-04-01):** The `/api/revalidate` webhook called `revalidatePath()` but not `revalidateTag()`. In Next.js App Router, these bust separate caches — `revalidatePath` busts the rendered HTML cache, but `revalidateTag` busts the fetch data cache. Without both, pages would re-render using stale cached Sanity data. **Fix:** Added `revalidateTag("sanity")` and `revalidateTag(documentType)` calls to the webhook handler. Both are required for Sanity content changes to reflect immediately.
+
+4. **Partner documents never existed in Sanity despite dynamic route depending on them (2026-04-08):** Commit `97d5ba8` replaced the hardcoded `/partners/aicc` and `/partners/newport-storm` pages with a dynamic `/partners/[slug]` route that reads from Sanity, but no seed script was written for the `partner` document type. Result: `/partners/newport-storm` returned 404 on prod and `/partners` showed an empty state, for weeks, silently. **Fix:** Added "The #2 Rule: Site Content Must Always Match Sanity" — seed scripts must cover every document type the site reads from, and a Sanity-backed route is not "done" until the data is seedable.
+
+5. **Claude ran seed scripts that mutated production Sanity content without permission (2026-04-08):** While investigating missing nav groups, Claude ran `seed-nav-settings.ts` against the live dataset unprompted. Seed scripts can overwrite admin-edited content. **Fix:** Added explicit prohibition in Rule #2 — Claude must never mutate Sanity (seed, migrate, create/update/delete documents) unless the user explicitly asks or an admin performs the change through Studio. Read-only queries to report state are allowed and encouraged.
+
+6. **Sanity content repeatedly reported as seeded but never actually written (2026-04-08):** Multiple seed scripts (`seed-nav-settings.ts` and others) used `client.createIfNotExists()` followed by `client.patch(id).setIfMissing(fields).commit()`. Because `setIfMissing` no-ops on any field that already has a value — including empty drafts created by simply opening the document in Studio — the scripts reported success while leaving `navGroups`, partner documents, team members, and other content null on the live site. This caused weeks of "content disappearing" incidents where the admin would edit a field, Claude would "re-seed" to fix it, and the seed would silently do nothing. **Fix:** Added "### Seed Script Requirements" and "### Schema Changes Must Be Schema-Only" subsections. Seed scripts must use explicit `patch().set({field})` operations, must read back the document after writing and assert the value is present, and must throw (not log) when verification fails. Schema changes must never touch data — migrations are separate, patch-based, and require user approval before running.
