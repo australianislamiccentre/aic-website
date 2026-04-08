@@ -59,17 +59,7 @@ export default defineType({
       initialValue: "Serving the community through prayer, education, and spiritual growth. A centre welcoming all who seek knowledge and connection.",
     }),
 
-    // ── 3. Operating Hours Note ──
-    defineField({
-      name: "operatingHoursNote",
-      title: "Operating Hours",
-      type: "string",
-      readOnly: true,
-      description: "Operating hours are configured in Site Settings. The footer displays them automatically.",
-      initialValue: "Configured in Site Settings",
-    }),
-
-    // ── 4. Donate Card ──
+    // ── 3. Donate Card ──
     defineField({
       name: "donateCard",
       title: "Donate Card",
