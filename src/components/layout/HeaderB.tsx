@@ -24,7 +24,7 @@
  */
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
+import { createElement, useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -356,6 +356,7 @@ export function HeaderB() {
 
   const info = useSiteSettings();
   const hs = info.headerSettings;
+  const ctaIconNode = createElement(getIcon(hs?.ctaButton?.icon, "Heart") ?? Heart, { className: "w-4 h-4" });
 
   // Merge nav groups: Sanity settings -> fallback to hardcoded -> append custom pages
   const baseGroups: NavGroup[] = (hs?.navGroups && hs.navGroups.length > 0)
@@ -584,7 +585,7 @@ export function HeaderB() {
                     }
                   )}
                 >
-                  <Heart className="w-4 h-4" />
+                  {ctaIconNode}
                   <span>{hs?.ctaButton?.label ?? "Donate"}</span>
                 </Link>
 

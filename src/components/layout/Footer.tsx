@@ -395,7 +395,7 @@ export function Footer() {
       <div className="relative border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/50">
-            <p>&copy; {currentYear} {fs?.copyrightText ?? `${info.name}. All rights reserved.`}</p>
+            <p>{fs?.copyrightText ?? `\u00A9 ${currentYear} ${info.name}. All rights reserved.`}</p>
             <div className="flex items-center gap-6">
               {(fs?.bottomBarLinks && fs.bottomBarLinks.length > 0)
                 ? fs.bottomBarLinks.map((link) => (
