@@ -101,7 +101,7 @@ function DatedEventCard({ event, index }: { event: SanityEvent; index: number })
       <Link href={`/events/${event.slug || event._id}`} className="block group">
         <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100">
           {/* Image with date overlay */}
-          <div className="relative h-44 overflow-hidden">
+          <div className="relative aspect-[4/5] overflow-hidden">
             <Image
               src={imageUrl}
               alt={event.title}

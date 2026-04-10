@@ -162,15 +162,17 @@ export default async function EventPage({ params }: EventPageProps) {
       />
       {/* Hero Image Banner */}
       {heroImageUrl && (
-        <section className="relative h-64 md:h-80 lg:h-96 bg-gray-900">
-          <Image
-            src={heroImageUrl}
-            alt={event.title}
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+        <section className="bg-gray-900">
+          <div className="max-w-3xl mx-auto">
+            <Image
+              src={heroImageUrl}
+              alt={event.title}
+              width={1080}
+              height={1350}
+              className="w-full h-auto"
+              priority
+            />
+          </div>
         </section>
       )}
 

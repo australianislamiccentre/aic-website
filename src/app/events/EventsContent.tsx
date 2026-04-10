@@ -104,7 +104,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
         className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all flex flex-col md:flex-row group"
       >
         <div className="relative md:w-1/3 overflow-hidden">
-          <div className="relative h-40 md:h-full">
+          <div className="relative aspect-[4/5] md:aspect-auto md:h-full">
             <motion.div
               animate={{ scale: isHovered ? 1.1 : 1 }}
               transition={{ duration: 0.4 }}
@@ -230,7 +230,7 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
       onHoverEnd={() => setIsHovered(false)}
       className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all group relative"
     >
-      <div className="relative h-40 overflow-hidden">
+      <div className="relative aspect-[4/5] overflow-hidden">
         <motion.div
           animate={{ scale: isHovered ? 1.15 : 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}

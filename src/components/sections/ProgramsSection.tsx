@@ -249,7 +249,7 @@ export function ProgramsSection({ programs }: ProgramsSectionProps) {
                   className="bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-800"
                 >
                   {/* Image */}
-                  <div className="relative h-52 md:h-64">
+                  <div className="relative aspect-[4/5]">
                     <Image
                       src={getImageUrl(activeProgram)}
                       alt={activeProgram.title}
