@@ -122,7 +122,7 @@ export default async function EventPage({ params }: EventPageProps) {
   };
 
   const heroImageUrl = event.image
-    ? urlFor(event.image).width(1200).height(500).url()
+    ? urlFor(event.image).width(1080).height(1350).url()
     : null;
 
   const eventJsonLd = {

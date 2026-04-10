@@ -64,7 +64,7 @@ function getImageUrl(image: SanityImage | string | undefined, fallbackIndex: num
   const fallbacks = ["/images/aic start.jpg", "/images/aic 1.jpg", "/images/aic end.jpg"];
   if (!image) return fallbacks[fallbackIndex % fallbacks.length];
   if (typeof image === "string") return image;
-  return urlFor(image).width(400).height(300).url();
+  return urlFor(image).width(540).height(675).url();
 }
 
 // Helper to check if a date string is a valid date

@@ -112,7 +112,7 @@ export function ProgramsSection({ programs }: ProgramsSectionProps) {
   // Get image URL - handle both Sanity images and static paths
   const getImageUrl = (program: SanityProgram) => {
     if (program.image) {
-      return urlFor(program.image).width(800).height(600).url();
+      return urlFor(program.image).width(540).height(675).url();
     }
     return "/images/aic start.jpg"; // Fallback image
   };

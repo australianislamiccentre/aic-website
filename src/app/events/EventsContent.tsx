@@ -36,7 +36,7 @@ import {
 function getImageUrl(image: SanityImage | string | undefined): string {
   if (!image) return "/images/aic 1.jpg";
   if (typeof image === "string") return image;
-  return urlFor(image).width(800).height(600).url();
+  return urlFor(image).width(540).height(675).url();
 }
 
 // Interactive Event Card with hover reveal
