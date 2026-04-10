@@ -97,7 +97,7 @@ export default defineType({
       name: "image",
       title: "Hero Image",
       type: "image",
-      description: "Banner image shown at the top of the event page. Recommended: 1200x500px.",
+      description: "Image for this event/program. Upload at 1080 x 1350 px (portrait 4:5 ratio). Images that don't match these dimensions will be cropped automatically.",
       options: {
         hotspot: true,
       },
