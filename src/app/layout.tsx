@@ -3,7 +3,7 @@
  *
  * Top-level layout wrapping every page in the application. Fetches siteSettings,
  * donationSettings, and formSettings from Sanity, then provides them via context.
- * Renders the Header, Footer, ScrollToTop, ScrollProgress, and FundraiseUpScript.
+ * Renders the Header, Footer, ScrollToTop, and FundraiseUpScript.
  *
  * @module app/layout
  */
@@ -14,7 +14,6 @@ import { VisualEditing } from "next-sanity";
 import "./globals.css";
 import { HeaderB } from "@/components/layout/HeaderB";
 import { Footer } from "@/components/layout/Footer";
-import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { PreviewBanner } from "@/components/PreviewBanner";
 import { getSiteSettings, getDonationSettings, getContactFormSettings, getServiceInquiryFormSettings, getNewsletterSettings, getNavigationPages } from "@/sanity/lib/fetch";
@@ -23,6 +22,7 @@ import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import { getYouTubeLiveStream } from "@/lib/youtube";
 import { LiveBanner } from "@/components/LiveBanner";
 import { FormSettingsProvider } from "@/contexts/FormSettingsContext";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -160,9 +160,9 @@ export default async function RootLayout({
             serviceInquiryFormSettings={serviceInquiryFormSettingsRaw}
             newsletterSettings={newsletterSettingsRaw}
           >
+            <GoogleAnalytics />
             <FundraiseUpScript settings={donationSettings} />
             <ScrollToTop />
-            <ScrollProgress />
             <LiveBanner liveStream={liveStream} />
             <HeaderB />
             <main id="main-content" className="overflow-x-hidden">{children}</main>
@@ -175,6 +175,7 @@ export default async function RootLayout({
             <VisualEditing />
           </>
         )}
+
       </body>
     </html>
   );

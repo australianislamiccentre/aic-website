@@ -1,15 +1,11 @@
 /**
- * Scroll-Based Animation Hooks
+ * Scroll-Based Animation Hook
  *
- * Two hooks for scroll-driven UI effects:
- * - `useScrollAnimation` — triggers "visible" state when an element enters the viewport
- *   (via IntersectionObserver). Used by FadeIn and other animation components.
- * - `useScrollProgress` — tracks overall page scroll progress as a 0–100 percentage.
- *   Used by the ScrollProgress bar at the top of long pages.
+ * Triggers "visible" state when an element enters the viewport
+ * (via IntersectionObserver). Used by FadeIn and other animation components.
  *
  * @module hooks/useScrollAnimation
  * @see src/components/animations/FadeIn.tsx — consumes useScrollAnimation
- * @see src/components/ui/ScrollProgress.tsx — consumes useScrollProgress
  */
 "use client";
 
@@ -62,27 +58,4 @@ export function useScrollAnimation<T extends HTMLElement = HTMLDivElement>(
   }, [threshold, rootMargin, triggerOnce]);
 
   return [ref, isVisible];
-}
-
-/**
- * Tracks overall page scroll progress as a percentage (0–100).
- * Updates on every scroll event (passive listener for performance).
- */
-export function useScrollProgress(): number {
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const scrollPosition = window.scrollY;
-      setProgress(totalHeight > 0 ? (scrollPosition / totalHeight) * 100 : 0);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  return progress;
 }
