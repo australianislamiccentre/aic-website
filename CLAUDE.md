@@ -241,6 +241,14 @@ Never render FundraiseUp HTML without running it through this sanitizer first.
 - Stagger children by 0.05s-0.1s max, not 0.2s+
 - Scroll-triggered animations should use `whileInView` with `viewport={{ once: true }}`, not scroll listeners
 - Don't animate layout properties (width, height, top, left) - use transform and opacity only for performance
+- **Hydration-safe motion components**: Any `motion.*` component that uses dynamic motion values (`useScroll`, `useSpring`, `useTransform`, `useMotionValue`) must defer rendering until after mount. Framer Motion injects dynamic inline `style` attributes on the client that won't match the server-rendered HTML, causing hydration mismatches. Use the mount-guard pattern:
+  ```tsx
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+  return <motion.div style={{ scaleX }} />;
+  ```
+  This applies especially to components rendered in the root layout tree. Static animation props (`animate`, `whileInView`, `whileHover`) are safe because they don't inject conflicting inline styles during hydration.
 
 ---
 
@@ -551,3 +559,5 @@ Never push without running `npm run validate` first. Never create a branch from 
 2. **Sanity fields created but never wired to frontend (2026-04-02):** Schema fields, GROQ queries, fetch functions, and TypeScript types were all created for page settings singletons, but the final step — passing fetched data as props from `page.tsx` to the client component — was missed for 6 pages (homepage, visit, imams, partners, services, worshippers). Fields existed in Sanity Studio but changing them had zero effect on the live site. The homepage `AboutPreviewSection` was rendered as `<AboutPreviewSection />` (no props) instead of `<AboutPreviewSection welcomeSection={homepageSettings?.welcomeSection} />`. **Fix:** Added "Sanity CMS Rules" section with mandatory end-to-end checklist for every field, explicit verification step for page.tsx prop passing, and mandatory wiring tests. The rule: a Sanity field is not "done" until changing its value in Studio changes what appears on the site.
 
 3. **Revalidation webhook only busted page cache, not data cache (2026-04-01):** The `/api/revalidate` webhook called `revalidatePath()` but not `revalidateTag()`. In Next.js App Router, these bust separate caches — `revalidatePath` busts the rendered HTML cache, but `revalidateTag` busts the fetch data cache. Without both, pages would re-render using stale cached Sanity data. **Fix:** Added `revalidateTag("sanity")` and `revalidateTag(documentType)` calls to the webhook handler. Both are required for Sanity content changes to reflect immediately.
+
+4. **Framer Motion dynamic values cause hydration mismatch (2026-04-14):** `ScrollProgress` component used `motion.div` with `style={{ scaleX }}` where `scaleX` came from `useSpring(useScroll().scrollYProgress)`. On the server, Framer Motion renders a `<div>` with static inline styles. On the client, it injects different dynamic styles during hydration. Because `ScrollProgress` was a direct child in the root layout (sibling of `<main>`), the attribute mismatch caused React to lose its place in the DOM tree — it expected `<main>` but found `<section>` (the hero), producing a "Recoverable Error: Hydration failed" warning. **Fix:** Added rule to Animation Conventions: any `motion.*` component using dynamic motion values (`useScroll`, `useSpring`, `useTransform`, `useMotionValue`) must defer rendering until after mount. The `ScrollProgress` component was later removed entirely.

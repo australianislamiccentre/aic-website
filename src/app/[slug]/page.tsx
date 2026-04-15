@@ -83,6 +83,7 @@ export async function generateMetadata({
   return {
     title: `${title} | Australian Islamic Centre`,
     description,
+    alternates: { canonical: `/${slug}` },
     openGraph: {
       title,
       description,

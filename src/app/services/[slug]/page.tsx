@@ -89,6 +89,7 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
   return {
     title: `${service.title} | Australian Islamic Centre`,
     description: service.shortDescription,
+    alternates: { canonical: `/services/${slug}` },
     openGraph: {
       title: service.title,
       description: service.shortDescription,
@@ -128,8 +129,36 @@ export default async function ServicePage({ params }: ServicePageProps) {
     ? urlFor(service.image).width(1200).height(500).url()
     : null;
 
+  const serviceJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.title,
+    description: service.shortDescription,
+    provider: {
+      "@type": "Organization",
+      name: "Australian Islamic Centre",
+      url: "https://australianislamiccentre.org",
+    },
+    areaServed: {
+      "@type": "City",
+      name: "Melbourne",
+    },
+    ...(heroImageUrl && { image: heroImageUrl }),
+    ...(service.fee?.type === "free" && {
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "AUD",
+      },
+    }),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
       {/* Hero Image Banner */}
       {heroImageUrl && (
         <section className="relative h-64 md:h-80 lg:h-96 bg-gray-900">

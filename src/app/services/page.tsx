@@ -20,6 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: settings?.seo?.title ?? "Services | Australian Islamic Centre",
     description: settings?.seo?.description ?? "Comprehensive Islamic services including religious guidance, nikah ceremonies, funeral services, and counselling support for our community.",
+    alternates: { canonical: "/services" },
   };
 }
 

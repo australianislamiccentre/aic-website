@@ -18,6 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: settings?.seo?.title ?? "Partners | Australian Islamic Centre",
     description: settings?.seo?.description ?? "Discover the Australian Islamic Centre's affiliated partner organisations working together in education, sports, and community development.",
+    alternates: { canonical: "/partners" },
   };
 }
 

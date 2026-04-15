@@ -87,6 +87,7 @@ export async function generateMetadata({ params }: AnnouncementPageProps): Promi
   return {
     title: `${announcement.title} | Australian Islamic Centre`,
     description: announcement.excerpt,
+    alternates: { canonical: `/announcements/${slug}` },
     openGraph: {
       title: announcement.title,
       description: announcement.excerpt,
@@ -112,8 +113,31 @@ export default async function AnnouncementPage({ params }: AnnouncementPageProps
   const ctaHref = getCtaHref(announcement.callToAction);
   const isExternalCta = announcement.callToAction?.linkType === "external";
 
+  const announcementJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: announcement.title,
+    description: announcement.excerpt,
+    datePublished: announcement.date,
+    author: {
+      "@type": "Organization",
+      name: "Australian Islamic Centre",
+      url: "https://australianislamiccentre.org",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Australian Islamic Centre",
+      url: "https://australianislamiccentre.org",
+    },
+    ...(heroImageUrl && { image: heroImageUrl }),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(announcementJsonLd) }}
+      />
       {/* Hero Image Banner */}
       {heroImageUrl && (
         <section className="relative h-64 md:h-80 lg:h-96 bg-gray-900">

@@ -93,6 +93,7 @@ export function middleware(_request: NextRequest) {
       'https://*.sanity.io',
       'https://www.googletagmanager.com',
       'https://www.google-analytics.com',
+      'https://browser.sentry-cdn.com',
     ].join(' '),
 
     // Styles: self + inline (Tailwind / Next.js injects inline styles)
@@ -125,6 +126,7 @@ export function middleware(_request: NextRequest) {
       'https://*.fundraiseup.com',
       'https://www.google-analytics.com',
       'https://vitals.vercel-insights.com',
+      'https://*.ingest.sentry.io',
     ].join(' '),
 
     // Iframes: infrastructure + Sanity-managed content domains

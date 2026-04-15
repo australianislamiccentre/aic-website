@@ -39,6 +39,11 @@ import {
   SanityGalleryImage,
   SanityHomepageSettings,
 } from "@/types/sanity";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function HomePage() {
   const results = await Promise.allSettled([
