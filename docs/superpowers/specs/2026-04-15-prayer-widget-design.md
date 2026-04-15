@@ -301,18 +301,38 @@ Expanded widget is never hidden by scroll.
 
 ## Sanity Integration
 
-**No schema changes required.** The existing `prayerSettings` singleton contains all fields needed:
+**Read-only consumer. No schema changes, no new fields, no modified queries.** The content editor experience in Sanity Studio is completely unchanged.
 
-- Daily prayer iqamah modes/times/delays (fajr, dhuhr, asr, maghrib, isha, plus sunrise handled implicitly)
+The existing `prayerSettings` singleton already contains every field the widget needs:
+
+- Daily prayer iqamah modes/times/delays (fajr, dhuhr, asr, maghrib, isha; sunrise handled implicitly)
 - `jumuahArabicTime`, `jumuahEnglishTime`
 - `taraweehEnabled`, `taraweehTime`
 - `eidFitrActive`, `eidFitrTime`, `eidAdhaActive`, `eidAdhaTime`
 
-The widget reads these via `getPrayerSettings()` in the root layout and passes them through the `usePrayerTimes(prayerSettings)` and `useNextPrayer(prayerSettings)` hooks. Sanity overrides apply; fallbacks in `src/lib/prayer-config.ts` are used if Sanity returns null.
+The widget reads these via the existing `getPrayerSettings()` fetch in the root layout and passes them through the existing `usePrayerTimes(prayerSettings)` and `useNextPrayer(prayerSettings)` hooks. Sanity overrides apply; fallbacks in `src/lib/prayer-config.ts` kick in if Sanity returns null.
+
+After the refactor, the widget becomes the rendering consumer of this singleton (in place of the hero strip and the worshippers prayer grid). Nothing about the singleton itself changes.
 
 ### Revalidation
 
-`src/app/api/revalidate/route.ts` already knows about `prayerSettings` in `validDocumentTypes` and triggers `revalidatePath("/")` on updates. No changes needed there. Changes to prayerSettings in Studio will revalidate pages and propagate to the widget on next navigation.
+`src/app/api/revalidate/route.ts` already knows about `prayerSettings` in `validDocumentTypes` and triggers `revalidatePath("/")` + `revalidateTag("sanity")` on updates. No changes needed. Publishing in Studio propagates to the widget on next navigation.
+
+---
+
+## Timezone
+
+**All prayer times and date operations use Australia/Melbourne, regardless of the visitor's local timezone.** A user in Perth, Sydney, London, or New York all see the same Melbourne-based prayer times — because the mosque is in Newport, Melbourne and that's the authoritative timezone for prayer.
+
+The widget reuses the existing timezone infrastructure; it does not introduce new timezone logic.
+
+- **Prayer calculations** — `src/lib/prayer-times.ts` uses `getMelbourneDateComponents()` which calls `toLocaleDateString(..., { timeZone: "Australia/Melbourne" })`. Melbourne DST is detected automatically (first Sunday of October on, first Sunday of April off), so Fajr / Isha shift correctly across DST boundaries without any seasonal config.
+- **"Today" detection** — `isSameDay()` in `PrayerTimesCard.tsx` (which we'll port into the new widget) compares two dates using `toLocaleDateString("en-AU", { timeZone: "Australia/Melbourne" })`, so "today" always means "today in Melbourne".
+- **Date formatting in the widget header** — `formatDisplayDate()` uses `timeZone: "Australia/Melbourne"` so the visible date ("Wednesday, 15 April 2026") reflects Melbourne's calendar day.
+- **Native date picker** — `<input type="date">` returns a `YYYY-MM-DD` string. We parse it with `new Date(value + "T12:00:00")` (midday anchor prevents timezone-boundary drift) and then all downstream formatting/comparison uses Melbourne timezone. This is the same pattern used by `handleDateChange` in `WorshippersClient.tsx` today.
+- **Countdown to next prayer** — computed relative to current wall-clock time, with prayer times in Melbourne timezone.
+
+Practically: if a user opens the site at 3pm Perth time (5pm Melbourne), the widget shows Maghrib at 5:51pm (Melbourne) and a countdown of "in ~50 min" — correctly aligned to Melbourne's Maghrib, not Perth's.
 
 ---
 
