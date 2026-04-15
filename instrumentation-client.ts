@@ -1,8 +1,12 @@
 /**
- * Sentry Client-Side Configuration
+ * Sentry Client-Side Instrumentation
  *
  * Initialises the Sentry browser SDK for error tracking and performance
  * monitoring. Runs in the user's browser.
+ *
+ * Must be named `instrumentation-client.ts` (not `sentry.client.config.ts`)
+ * for Next.js 15+ with Turbopack builds — the webpack plugin auto-injection
+ * pattern doesn't work with Turbopack.
  *
  * @see https://docs.sentry.io/platforms/javascript/guides/nextjs/
  */
@@ -41,3 +45,6 @@ Sentry.init({
     }),
   ],
 });
+
+// Required for Sentry to track App Router navigations in Next.js 15+
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
