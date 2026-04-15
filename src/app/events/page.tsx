@@ -20,6 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: settings?.seo?.title ?? "Events | Australian Islamic Centre",
     description: settings?.seo?.description ?? "Join us for spiritual gatherings, educational workshops, and community celebrations at the Australian Islamic Centre.",
+    alternates: { canonical: "/events" },
   };
 }
 

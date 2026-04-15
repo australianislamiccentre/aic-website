@@ -24,6 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: settings?.seo?.description ?? "Meet the dedicated imams and scholars of the Australian Islamic Centre.",
       type: "website",
     },
+    alternates: { canonical: "/imams" },
   };
 }
 

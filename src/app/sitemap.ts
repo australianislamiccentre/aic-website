@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-import { getEventsForStaticGeneration, getAnnouncements, getServices } from "@/sanity/lib/fetch";
-import type { SanityEvent, SanityAnnouncement, SanityService } from "@/types/sanity";
+import { getEventsForStaticGeneration, getAnnouncements, getServices, getPartners } from "@/sanity/lib/fetch";
+import type { SanityEvent, SanityAnnouncement, SanityService, SanityPartner } from "@/types/sanity";
 
 const BASE_URL = "https://australianislamiccentre.org";
 
@@ -27,10 +27,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // Dynamic routes from Sanity
-  const [events, announcements, services] = await Promise.all([
+  const [events, announcements, services, partners] = await Promise.all([
     getEventsForStaticGeneration(),
     getAnnouncements(),
     getServices(),
+    getPartners(),
   ]);
 
   const eventRoutes: MetadataRoute.Sitemap = ((events || []) as SanityEvent[]).map((event) => ({
@@ -51,5 +52,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticRoutes, ...eventRoutes, ...announcementRoutes, ...serviceRoutes];
+  const partnerRoutes: MetadataRoute.Sitemap = ((partners || []) as SanityPartner[])
+    .filter((p) => p.slug)
+    .map((p) => ({
+      url: `${BASE_URL}/partners/${p.slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    }));
+
+  return [...staticRoutes, ...eventRoutes, ...announcementRoutes, ...serviceRoutes, ...partnerRoutes];
 }
