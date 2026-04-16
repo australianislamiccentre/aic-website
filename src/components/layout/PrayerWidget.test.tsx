@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import { PrayerWidget } from "./PrayerWidget";
 
@@ -35,6 +35,10 @@ describe("PrayerWidget — pill skeleton", () => {
     // Freeze time so countdown is stable
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00")); // Melbourne AEST = 3:19 PM, 23 min before Asr
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("renders the pill with the next prayer name and time", () => {
