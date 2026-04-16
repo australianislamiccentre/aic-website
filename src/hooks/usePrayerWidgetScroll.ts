@@ -20,12 +20,7 @@ export function usePrayerWidgetScroll(paused: boolean = false): boolean {
   const lastScrollY = useRef(0);
 
   useEffect(() => {
-    if (paused) {
-      setIsHidden(false);
-      return;
-    }
-
-    lastScrollY.current = window.scrollY;
+    if (paused) return; // no listener when paused; derived return handles visibility
 
     const mediaQuery =
       typeof window.matchMedia === "function"
@@ -33,6 +28,8 @@ export function usePrayerWidgetScroll(paused: boolean = false): boolean {
         : null;
     const prefersReducedMotion = mediaQuery?.matches ?? false;
     if (prefersReducedMotion) return;
+
+    lastScrollY.current = window.scrollY;
 
     const onScroll = () => {
       const y = window.scrollY;
@@ -50,5 +47,6 @@ export function usePrayerWidgetScroll(paused: boolean = false): boolean {
     return () => window.removeEventListener("scroll", onScroll);
   }, [paused]);
 
-  return isHidden;
+  // When paused, always report visible (don't leak stale scroll state)
+  return paused ? false : isHidden;
 }
