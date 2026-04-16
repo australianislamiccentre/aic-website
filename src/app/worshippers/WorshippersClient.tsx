@@ -2,27 +2,23 @@
  * Worshippers Page Client Component
  *
  * Interactive client-side portion of the /worshippers page. Renders
- * prayer times with date picker, Jumu'ah schedule, Taraweeh/Eid info,
- * mosque etiquette guidelines, and the next-prayer countdown.
+ * special prayer reference info (Jumu'ah, Taraweeh, Eid), mosque etiquette
+ * guidelines, Islamic talks, and directions.
  *
  * @module app/worshippers/WorshippersClient
  */
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
+import { FadeIn } from "@/components/animations/FadeIn";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import {
   jumuahTimes,
   mosqueEtiquette as fallbackEtiquette,
 } from "@/data/content";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
-import { getPrayerTimesForDate } from "@/lib/prayer-times";
-import { useNextPrayer } from "@/hooks/usePrayerTimes";
 import { TARAWEEH_CONFIG, EID_CONFIG } from "@/lib/prayer-config";
-import type { PrayerName } from "@/lib/prayer-times";
 import type { SanityPrayerSettings, SanityEtiquette, SanityWorshippersPageSettings } from "@/types/sanity";
 import type { YouTubeVideo } from "@/lib/youtube";
 import {
@@ -30,7 +26,6 @@ import {
   MapPin,
   Heart,
   CheckCircle2,
-  Calendar,
   Footprints,
   Shirt,
   Volume2,
@@ -38,28 +33,11 @@ import {
   Droplets,
   HelpCircle,
   Moon,
-  Sun,
-  Sunrise,
-  Sunset,
-  Cloud,
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw,
   Star,
   Play,
   ArrowRight,
   Users,
 } from "lucide-react";
-
-// Prayer icon mapping
-const PRAYER_ICONS: Record<PrayerName, typeof Moon> = {
-  fajr: Moon,
-  sunrise: Sunrise,
-  dhuhr: Sun,
-  asr: Cloud,
-  maghrib: Sunset,
-  isha: Moon,
-};
 
 // Icon map supports both lowercase (hardcoded) and PascalCase (Sanity) icon names
 const etiquetteIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -98,9 +76,6 @@ export default function WorshippersClient({
   pageSettings,
 }: WorshippersClientProps) {
   const info = useSiteSettings();
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const prayerTimes = getPrayerTimesForDate(selectedDate, prayerSettings);
-  const nextPrayerData = useNextPrayer(prayerSettings);
 
   // Normalize Sanity data with hardcoded fallbacks
   // pageSettings.etiquetteItems takes highest priority, then etiquette prop, then fallback
@@ -121,74 +96,6 @@ export default function WorshippersClient({
   const eidFitrTime = prayerSettings?.eidFitrTime ?? EID_CONFIG.eidAlFitr.times[0]?.time;
   const eidAdhaActive = prayerSettings?.eidAdhaActive ?? EID_CONFIG.eidAlAdha.active;
   const eidAdhaTime = prayerSettings?.eidAdhaTime ?? EID_CONFIG.eidAlAdha.times[0]?.time;
-
-  const isViewingToday = (() => {
-    const today = new Date();
-    return (
-      selectedDate.getDate() === today.getDate() &&
-      selectedDate.getMonth() === today.getMonth() &&
-      selectedDate.getFullYear() === today.getFullYear()
-    );
-  })();
-
-  const formatDisplayDate = (date: Date) => {
-    return date.toLocaleDateString("en-AU", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      timeZone: "Australia/Melbourne",
-    });
-  };
-
-  const formatInputDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
-  const goToPreviousDay = () => {
-    const newDate = new Date(selectedDate);
-    newDate.setDate(newDate.getDate() - 1);
-    setSelectedDate(newDate);
-  };
-
-  const goToNextDay = () => {
-    const newDate = new Date(selectedDate);
-    newDate.setDate(newDate.getDate() + 1);
-    setSelectedDate(newDate);
-  };
-
-  const goToToday = () => {
-    setSelectedDate(new Date());
-  };
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = new Date(e.target.value + "T12:00:00");
-    if (!isNaN(newDate.getTime())) {
-      setSelectedDate(newDate);
-    }
-  };
-
-  // Build prayer list from dynamic times
-  const prayerList: {
-    key: PrayerName;
-    name: string;
-    adhan: string;
-    iqamah: string;
-    arabic: string;
-    isSunrise?: boolean;
-  }[] = [
-    { key: "fajr", name: "Fajr", adhan: prayerTimes.fajr.adhan, iqamah: prayerTimes.fajr.iqamah, arabic: "الفجر" },
-    { key: "sunrise", name: "Sunrise", adhan: prayerTimes.sunrise.adhan, iqamah: prayerTimes.sunrise.iqamah, arabic: "الشروق", isSunrise: true },
-    { key: "dhuhr", name: "Dhuhr", adhan: prayerTimes.dhuhr.adhan, iqamah: prayerTimes.dhuhr.iqamah, arabic: "الظهر" },
-    { key: "asr", name: "Asr", adhan: prayerTimes.asr.adhan, iqamah: prayerTimes.asr.iqamah, arabic: "العصر" },
-    { key: "maghrib", name: "Maghrib", adhan: prayerTimes.maghrib.adhan, iqamah: prayerTimes.maghrib.iqamah, arabic: "المغرب" },
-    { key: "isha", name: "Isha", adhan: prayerTimes.isha.adhan, iqamah: prayerTimes.isha.iqamah, arabic: "العشاء" },
-  ];
-
-  const nextPrayerKey = nextPrayerData.name;
 
   return (
     <>
@@ -245,141 +152,20 @@ export default function WorshippersClient({
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               </div>
-
-              {/* Next prayer card overlay */}
-              {isViewingToday && (
-                <div className="absolute -bottom-4 -right-4 bg-white rounded-xl p-4 shadow-xl">
-                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Next Prayer</p>
-                  <div className="flex items-center gap-3">
-                    {(() => {
-                      const Icon = PRAYER_ICONS[nextPrayerKey];
-                      return <Icon className="w-5 h-5 text-teal-600" />;
-                    })()}
-                    <div>
-                      <p className="text-lg font-bold text-gray-900">{nextPrayerData.displayName}</p>
-                      <p className="text-sm text-teal-600 font-semibold">{nextPrayerData.adhan}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Prayer Times Section */}
-      <section id="prayers" className="py-10 md:py-14 bg-white">
+      {/* Special Prayers — Jumu'ah, Taraweeh, Eid reference */}
+      <section className="py-10 md:py-14 bg-white">
         <div className="max-w-7xl mx-auto px-6">
-          {/* Section header + date navigation */}
           <FadeIn>
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-                  Prayer Schedule
-                </h2>
-                <p className="text-gray-500 text-sm">
-                  {isViewingToday ? "Today's prayer times for Melbourne" : "Prayer times for Melbourne"}
-                </p>
-              </div>
-
-              {/* Date Navigation */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={goToPreviousDay}
-                  className="p-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-colors"
-                  aria-label="Previous day"
-                >
-                  <ChevronLeft className="w-4 h-4 text-gray-600" />
-                </button>
-
-                <div className="px-4 py-2 bg-white border border-gray-200 rounded-lg min-w-[220px] text-center">
-                  <span className="text-gray-900 font-medium text-sm">{formatDisplayDate(selectedDate)}</span>
-                </div>
-
-                <button
-                  onClick={goToNextDay}
-                  className="p-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-colors"
-                  aria-label="Next day"
-                >
-                  <ChevronRight className="w-4 h-4 text-gray-600" />
-                </button>
-
-                <div className="relative">
-                  <button
-                    className="p-2 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors"
-                    aria-label="Open calendar"
-                  >
-                    <Calendar className="w-4 h-4 text-white" />
-                  </button>
-                  <input
-                    type="date"
-                    value={formatInputDate(selectedDate)}
-                    onChange={handleDateChange}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    aria-label="Select date"
-                  />
-                </div>
-
-                {!isViewingToday && (
-                  <button
-                    onClick={goToToday}
-                    className="p-2 rounded-lg bg-gray-800 hover:bg-gray-900 transition-colors"
-                    aria-label="Back to today"
-                    title="Back to today"
-                  >
-                    <RotateCcw className="w-4 h-4 text-white" />
-                  </button>
-                )}
-              </div>
+            <div className="mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Special Prayers</h2>
+              <p className="text-gray-500 text-sm">Jumu&apos;ah, Taraweeh, and Eid prayer times</p>
             </div>
-          </FadeIn>
-
-          {/* Prayer Cards */}
-          <StaggerContainer className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-            {prayerList.map((prayer) => {
-              const isNext = isViewingToday && prayer.key === nextPrayerKey;
-              const Icon = PRAYER_ICONS[prayer.key];
-              return (
-                <StaggerItem key={prayer.key}>
-                  <div
-                    className={`rounded-xl p-4 text-center transition-all ${
-                      isNext
-                        ? "bg-teal-50 border-2 border-teal-500 shadow-md ring-1 ring-teal-500/20"
-                        : "bg-white border border-gray-100 hover:shadow-md"
-                    }`}
-                  >
-                    {isNext && (
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-teal-600 mb-2">Next Prayer</p>
-                    )}
-                    <div className={`w-10 h-10 mx-auto rounded-lg flex items-center justify-center mb-2 ${
-                      isNext ? "bg-teal-500" : "bg-gray-100"
-                    }`}>
-                      <Icon className={`w-5 h-5 ${isNext ? "text-white" : "text-gray-500"}`} />
-                    </div>
-                    <p className={`text-sm font-arabic mb-0.5 ${isNext ? "text-teal-600" : "text-gray-400"}`}>{prayer.arabic}</p>
-                    <h3 className={`font-semibold text-sm mb-2 ${isNext ? "text-teal-700" : "text-gray-900"}`}>{prayer.name}</h3>
-                    <div className="space-y-0.5 text-xs">
-                      {prayer.isSunrise ? (
-                        <>
-                          <p className="text-gray-500">Sunrise: <span className="font-medium text-gray-700">{prayer.adhan}</span></p>
-                          <p className={`font-bold ${isNext ? "text-teal-700" : "text-gray-900"}`}>Shuruk: {prayer.iqamah}</p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-gray-500">Adhan: <span className="font-medium text-gray-700">{prayer.adhan}</span></p>
-                          <p className={`font-bold ${isNext ? "text-teal-700" : "text-gray-900"}`}>Iqamah: {prayer.iqamah}</p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </StaggerItem>
-              );
-            })}
-          </StaggerContainer>
-
-          {/* Jumu'ah, Taraweeh & Eid — inline row below prayer cards */}
-          <FadeIn>
-            <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-gray-100">
+            <div className="flex flex-wrap items-center gap-3">
               <span className="text-gray-500 text-sm font-medium">Jumu&apos;ah</span>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-100">
                 <span className="text-gray-500 text-xs">Arabic</span>

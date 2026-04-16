@@ -70,28 +70,6 @@ vi.mock("@/contexts/SiteSettingsContext", () => ({
   }),
 }));
 
-// Mock getPrayerTimesForDate
-vi.mock("@/lib/prayer-times", () => ({
-  getPrayerTimesForDate: () => ({
-    fajr: { adhan: "05:30", iqamah: "05:45" },
-    sunrise: { adhan: "07:00", iqamah: "07:00" },
-    dhuhr: { adhan: "12:30", iqamah: "12:45" },
-    asr: { adhan: "15:30", iqamah: "15:45" },
-    maghrib: { adhan: "18:00", iqamah: "18:05" },
-    isha: { adhan: "19:30", iqamah: "19:45" },
-  }),
-}));
-
-// Mock useNextPrayer
-vi.mock("@/hooks/usePrayerTimes", () => ({
-  useNextPrayer: () => ({
-    name: "dhuhr" as const,
-    displayName: "Dhuhr",
-    adhan: "12:30",
-    iqamah: "12:45",
-  }),
-}));
-
 // Mock prayer-config
 vi.mock("@/lib/prayer-config", () => ({
   TARAWEEH_CONFIG: { enabled: false, time: "9:00 PM" },
@@ -129,19 +107,9 @@ describe("WorshippersClient", () => {
     expect(h1).toHaveTextContent("Worshippers");
   });
 
-  it("renders the prayer schedule section", () => {
+  it("renders the Special Prayers section heading", () => {
     render(<WorshippersClient />);
-    expect(screen.getByText("Prayer Schedule")).toBeInTheDocument();
-  });
-
-  it("renders all 6 prayer names", () => {
-    render(<WorshippersClient />);
-    expect(screen.getAllByText("Fajr").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Sunrise").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Dhuhr").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Asr").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Maghrib").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Isha").length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: "Special Prayers" })).toBeInTheDocument();
   });
 
   it("renders Jumu'ah times", () => {
