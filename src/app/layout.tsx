@@ -16,7 +16,8 @@ import { HeaderB } from "@/components/layout/HeaderB";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { PreviewBanner } from "@/components/PreviewBanner";
-import { getSiteSettings, getDonationSettings, getContactFormSettings, getServiceInquiryFormSettings, getNewsletterSettings, getNavigationPages } from "@/sanity/lib/fetch";
+import { getSiteSettings, getDonationSettings, getContactFormSettings, getServiceInquiryFormSettings, getNewsletterSettings, getNavigationPages, getPrayerSettings } from "@/sanity/lib/fetch";
+import { PrayerWidget } from "@/components/layout/PrayerWidget";
 import { FundraiseUpScript } from "@/components/FundraiseUpScript";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import { getYouTubeLiveStream } from "@/lib/youtube";
@@ -98,7 +99,17 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, contactFormSettingsRaw, serviceInquiryFormSettingsRaw, newsletterSettingsRaw, liveStream, navigationPages] = await Promise.all([
+  const [
+    { isEnabled: isDraftMode },
+    siteSettings,
+    donationSettings,
+    contactFormSettingsRaw,
+    serviceInquiryFormSettingsRaw,
+    newsletterSettingsRaw,
+    liveStream,
+    navigationPages,
+    prayerSettings,
+  ] = await Promise.all([
     draftMode(),
     getSiteSettings(),
     getDonationSettings(),
@@ -107,6 +118,7 @@ export default async function RootLayout({
     getNewsletterSettings(),
     getYouTubeLiveStream(),
     getNavigationPages(),
+    getPrayerSettings(),
   ]);
 
   return (
@@ -167,6 +179,7 @@ export default async function RootLayout({
             <HeaderB />
             <main id="main-content" className="overflow-x-hidden">{children}</main>
             <Footer />
+            <PrayerWidget prayerSettings={prayerSettings} />
           </FormSettingsProvider>
         </SiteSettingsProvider>
         {isDraftMode && (
