@@ -207,3 +207,77 @@ describe("PrayerWidget — open/close interactions", () => {
     expect(backdrop).toHaveStyle({ pointerEvents: "auto" });
   });
 });
+
+describe("PrayerWidget — date picker", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("shows today's date in the header", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const dateLabel = screen.getByTestId("widget-date-label");
+    // Melbourne format: "Wednesday, 15 April 2026"
+    expect(dateLabel.textContent).toContain("15 April 2026");
+  });
+
+  it("clicking the next-day button shifts to tomorrow", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const nextBtn = screen.getByRole("button", { name: /next day/i });
+    await user.click(nextBtn);
+    const dateLabel = screen.getByTestId("widget-date-label");
+    expect(dateLabel.textContent).toContain("16 April 2026");
+  });
+
+  it("clicking the previous-day button shifts to yesterday", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const prevBtn = screen.getByRole("button", { name: /previous day/i });
+    await user.click(prevBtn);
+    const dateLabel = screen.getByTestId("widget-date-label");
+    expect(dateLabel.textContent).toContain("14 April 2026");
+  });
+
+  it("shows 'Back to today' button when viewing a non-today date, hidden when today", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    expect(screen.queryByRole("button", { name: /back to today/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /next day/i }));
+    expect(screen.getByRole("button", { name: /back to today/i })).toBeInTheDocument();
+  });
+
+  it("clicking 'Back to today' returns to today's prayer times", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    await user.click(screen.getByRole("button", { name: /next day/i }));
+    await user.click(screen.getByRole("button", { name: /back to today/i }));
+    const dateLabel = screen.getByTestId("widget-date-label");
+    expect(dateLabel.textContent).toContain("15 April 2026");
+  });
+
+  it("hides the next-prayer highlight when viewing a non-today date", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const { container } = render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    // Today: Asr card should have data-is-next="true"
+    expect(container.querySelector('[data-prayer="asr"]')).toHaveAttribute("data-is-next", "true");
+    // Move to tomorrow
+    await user.click(screen.getByRole("button", { name: /next day/i }));
+    // No prayer should be marked as "next" on a non-today view
+    expect(container.querySelectorAll('[data-is-next="true"]').length).toBe(0);
+  });
+
+  it("native date input updates the selected date", async () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const input = screen.getByLabelText(/pick a date/i) as HTMLInputElement;
+    // Simulate a native date picker change using fireEvent (userEvent doesn't fully support <input type="date">)
+    const { fireEvent } = await import("@testing-library/react");
+    fireEvent.change(input, { target: { value: "2026-04-20" } });
+    const dateLabel = screen.getByTestId("widget-date-label");
+    expect(dateLabel.textContent).toContain("20 April 2026");
+  });
+});

@@ -18,9 +18,9 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, RotateCcw, X } from "lucide-react";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
-import { type PrayerName } from "@/lib/prayer-times";
+import { getPrayerTimesForDate, type PrayerName, type TodaysPrayerTimes } from "@/lib/prayer-times";
 import type { SanityPrayerSettings } from "@/types/sanity";
 
 interface PrayerWidgetProps {
@@ -75,11 +75,69 @@ function formatCountdownShort(target: Date | null): string {
   return `${Math.floor(diffMin / 60)}h ${diffMin % 60}m`;
 }
 
+const MELBOURNE_TZ = "Australia/Melbourne";
+
+function formatMelbourneDate(date: Date): string {
+  return date.toLocaleDateString("en-AU", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: MELBOURNE_TZ,
+  });
+}
+
+function formatDateInputValue(date: Date): string {
+  // Format as YYYY-MM-DD in Melbourne's calendar day
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: MELBOURNE_TZ,
+  }).formatToParts(date);
+  const year = parts.find((p) => p.type === "year")!.value;
+  const month = parts.find((p) => p.type === "month")!.value;
+  const day = parts.find((p) => p.type === "day")!.value;
+  return `${year}-${month}-${day}`;
+}
+
+function isSameMelbourneDay(a: Date, b: Date): boolean {
+  return (
+    a.toLocaleDateString("en-AU", { timeZone: MELBOURNE_TZ }) ===
+    b.toLocaleDateString("en-AU", { timeZone: MELBOURNE_TZ })
+  );
+}
+
 export function PrayerWidget({ prayerSettings, testOpenInitially = false }: PrayerWidgetProps) {
   const pathname = usePathname();
   const todaysPrayers = usePrayerTimes(prayerSettings);
   const nextPrayer = useNextPrayer(prayerSettings);
   const [isOpen, setIsOpen] = useState(testOpenInitially);
+
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
+
+  const viewedPrayers: TodaysPrayerTimes = isSameMelbourneDay(selectedDate, new Date())
+    ? todaysPrayers
+    : getPrayerTimesForDate(selectedDate, prayerSettings ?? undefined);
+
+  const isViewingToday = isSameMelbourneDay(selectedDate, new Date());
+
+  const shiftDate = (days: number) => {
+    setSelectedDate((d) => {
+      const next = new Date(d);
+      next.setDate(next.getDate() + days);
+      return next;
+    });
+  };
+
+  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value; // YYYY-MM-DD
+    if (!value) return;
+    const next = new Date(value + "T12:00:00");
+    if (!isNaN(next.getTime())) setSelectedDate(next);
+  };
+
+  const goToToday = () => setSelectedDate(new Date());
 
   // Tick countdown every 30s
   const [now, setNow] = useState(() => Date.now());
@@ -206,16 +264,60 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             <div>
               <h2 className="text-xl font-serif text-gray-900">Prayer Times</h2>
               <div className="text-xs text-gray-500 font-medium" data-testid="widget-date-label">
-                {/* Filled by Task 5 */}
+                {formatMelbourneDate(selectedDate)}
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              {/* date-picker-nav buttons — filled by Task 5 */}
+              <button
+                type="button"
+                aria-label="Previous day"
+                onClick={() => shiftDate(-1)}
+                className="w-8 h-8 border border-gray-200 bg-white hover:bg-gray-100 rounded-lg text-gray-600 flex items-center justify-center transition-colors"
+              >
+                <ChevronLeft size={16} aria-hidden="true" />
+              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  className="h-8 px-3 border-none rounded-lg text-white text-xs flex items-center gap-1.5 hover:brightness-110 transition-all"
+                  style={{ background: "#01476b" }}
+                >
+                  <Calendar size={14} aria-hidden="true" />
+                  Today
+                </button>
+                <input
+                  type="date"
+                  aria-label="Pick a date"
+                  value={formatDateInputValue(selectedDate)}
+                  onChange={handleDateInputChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                />
+              </div>
+              <button
+                type="button"
+                aria-label="Next day"
+                onClick={() => shiftDate(1)}
+                className="w-8 h-8 border border-gray-200 bg-white hover:bg-gray-100 rounded-lg text-gray-600 flex items-center justify-center transition-colors"
+              >
+                <ChevronRight size={16} aria-hidden="true" />
+              </button>
+              {!isViewingToday && (
+                <button
+                  type="button"
+                  aria-label="Back to today"
+                  onClick={goToToday}
+                  className="w-8 h-8 border-none rounded-lg text-white flex items-center justify-center transition-colors"
+                  style={{ background: "#1e293b" }}
+                  title="Back to today"
+                >
+                  <RotateCcw size={14} aria-hidden="true" />
+                </button>
+              )}
               <button
                 type="button"
                 aria-label="Close prayer times"
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 border-none bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600 hover:text-gray-900 text-xl flex items-center justify-center transition-colors"
+                className="w-8 h-8 border-none bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600 hover:text-gray-900 flex items-center justify-center transition-colors"
               >
                 <X size={16} aria-hidden="true" />
               </button>
@@ -266,8 +368,8 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             {/* Prayer grid */}
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-5">
               {PRAYER_ORDER.map(({ key, displayName }) => {
-                const row = todaysPrayers[key];
-                const isNext = nextPrayer.name === key;
+                const row = viewedPrayers[key];
+                const isNext = isViewingToday && nextPrayer.name === key;
                 return (
                   <div
                     key={key}
