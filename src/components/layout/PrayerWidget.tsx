@@ -18,6 +18,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { X } from "lucide-react";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
 import { type PrayerName } from "@/lib/prayer-times";
 import type { SanityPrayerSettings } from "@/types/sanity";
@@ -212,11 +213,11 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               {/* date-picker-nav buttons — filled by Task 5 */}
               <button
                 type="button"
-                aria-label="Close"
+                aria-label="Close prayer times"
                 onClick={() => setIsOpen(false)}
                 className="w-8 h-8 border-none bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600 hover:text-gray-900 text-xl flex items-center justify-center transition-colors"
               >
-                ×
+                <X size={16} aria-hidden="true" />
               </button>
             </div>
           </div>
