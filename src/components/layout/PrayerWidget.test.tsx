@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import userEvent from "@testing-library/user-event";
+import { renderToString } from "react-dom/server";
 import { render, screen } from "@/test/test-utils";
 import { PrayerWidget } from "./PrayerWidget";
 
@@ -63,6 +64,38 @@ describe("PrayerWidget — pill skeleton", () => {
     // The expanded widget's title "Prayer Times" should be hidden (aria-hidden or display:none)
     const dialog = screen.queryByRole("dialog");
     expect(dialog).not.toBeInTheDocument();
+  });
+});
+
+describe("PrayerWidget — hydration mismatch regression (Sentry AIC-WEBSITE-1)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("server-rendered HTML does not contain the Date.now()-dependent countdown text", () => {
+    // Why: the countdown ("in 23 min") depends on `Date.now()`, which produces
+    // different millisecond values on the Vercel server vs the user's browser
+    // during hydration. If the SSR output contained that string, React would
+    // detect a mismatch and fire the hydration error that Sentry recorded 70+
+    // times in 18 hours. Gating the countdown on an `isMounted` flag that only
+    // flips inside `useEffect` guarantees SSR and first client render emit the
+    // same HTML (no countdown), and the real text appears only post-hydration.
+    const html = renderToString(<PrayerWidget prayerSettings={null} />);
+    expect(html).not.toMatch(/in \d+\s*min/i);
+    expect(html).not.toMatch(/\bin \d+h \d+m\b/i);
+  });
+
+  it("server-rendered HTML does contain the deterministic next-prayer name and time", () => {
+    // Sanity check — we only want to hide the Date.now()-dependent countdown,
+    // NOT the prayer name/time which are deterministic after the getNextPrayer fix.
+    const html = renderToString(<PrayerWidget prayerSettings={null} />);
+    expect(html).toContain("Asr");
+    expect(html).toContain("3:42 PM");
   });
 });
 
@@ -309,11 +342,17 @@ describe("PrayerWidget — scroll auto-hide", () => {
 
   it("hides the pill when usePrayerWidgetScroll returns true", async () => {
     const { usePrayerWidgetScroll } = await import("@/hooks/usePrayerWidgetScroll");
-    vi.mocked(usePrayerWidgetScroll).mockReturnValueOnce(true);
+    // mockReturnValue (not ReturnValueOnce): the component re-renders once after
+    // mount when the `isMounted` effect fires (hydration-mismatch fix). We want
+    // the scroll hook to consistently return true for every render in this test.
+    vi.mocked(usePrayerWidgetScroll).mockReturnValue(true);
 
     render(<PrayerWidget prayerSettings={null} />);
     const pill = screen.getByRole("button", { name: /open prayer times/i });
     expect(pill).toHaveAttribute("data-hidden-by-scroll", "true");
+
+    // Restore the module-level default so subsequent tests aren't affected
+    vi.mocked(usePrayerWidgetScroll).mockReturnValue(false);
   });
 
   it("keeps the pill visible when scroll hook returns false", () => {

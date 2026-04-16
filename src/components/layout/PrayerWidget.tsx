@@ -148,6 +148,20 @@ function usePrefersReducedMotion(): boolean {
   );
 }
 
+/**
+ * Returns `true` only after the first client render. SSR and the initial
+ * client render both return `false`, so any `Date.now()`-dependent rendering
+ * that depends on this flag will produce matching HTML on both sides — avoiding
+ * hydration warnings. Implemented via `useSyncExternalStore` so it doesn't
+ * trip the `react-hooks/set-state-in-effect` lint rule.
+ */
+const noopSubscribe = () => () => {};
+const alwaysTrue = () => true;
+const alwaysFalse = () => false;
+function useIsMounted(): boolean {
+  return useSyncExternalStore(noopSubscribe, alwaysTrue, alwaysFalse);
+}
+
 export function PrayerWidget({ prayerSettings, testOpenInitially = false }: PrayerWidgetProps) {
   const pathname = usePathname();
   const todaysPrayers = usePrayerTimes(prayerSettings);
@@ -204,8 +218,10 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
     input.click();
   };
 
-  // Tick countdown every 30s
+  // Tick countdown every 30s. `isMounted` gates the `Date.now()`-dependent
+  // countdown text so server and first-client render produce identical HTML.
   const [now, setNow] = useState(() => Date.now());
+  const isMounted = useIsMounted();
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(id);
@@ -285,7 +301,9 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
   if (pathname?.startsWith("/studio")) return null;
 
   const countdownTarget = parsePrayerTimeToDate(nextPrayer.adhan, nextPrayer.isNextDay);
-  const countdown = formatCountdown(countdownTarget);
+  // Empty string on SSR and first client render keeps the `{countdown && ...}` block
+  // hidden identically on both sides; real text appears after mount effect flips isMounted.
+  const countdown = isMounted ? formatCountdown(countdownTarget) : "";
 
   const jumuahArabic = prayerSettings?.jumuahArabicTime;
   const jumuahEnglish = prayerSettings?.jumuahEnglishTime;
@@ -461,41 +479,57 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           </div>
 
           <div className="px-6 pt-6 pb-6 overflow-y-auto flex-1">
-            {/* Next prayer — flat, type-led */}
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="block w-6 h-[2px] bg-green-600" aria-hidden="true" />
-                <span className="text-[10px] font-semibold text-green-600 uppercase tracking-[0.16em]">
+            {/* Next prayer — hero block with subtle green wash + accent bar */}
+            <div
+              className="relative mb-8 p-5 pl-6 rounded-2xl overflow-hidden"
+              style={{ background: "rgba(0, 173, 76, 0.06)" }}
+            >
+              <span
+                className="absolute left-0 top-0 bottom-0 w-1 bg-green-600"
+                aria-hidden="true"
+              />
+
+              <div className="flex items-center gap-3 mb-4 flex-wrap">
+                <span className="text-[10px] font-semibold text-green-700 uppercase tracking-[0.18em]">
                   Next Prayer
                 </span>
                 {countdown && (
                   <>
-                    <span className="text-gray-300" aria-hidden="true">·</span>
-                    <span className="text-[11px] font-medium text-gray-500" aria-live="polite" aria-atomic="true">
+                    <span className="text-green-300" aria-hidden="true">·</span>
+                    <span
+                      className="text-xs font-semibold text-green-700"
+                      aria-live="polite"
+                      aria-atomic="true"
+                    >
                       {countdown}
                     </span>
                   </>
                 )}
               </div>
-              <div className="flex items-baseline justify-between gap-4 flex-wrap">
-                <div className="text-4xl font-semibold text-gray-900 tracking-tight leading-none">
+
+              <div className="flex items-baseline justify-between gap-4 flex-wrap mb-3">
+                <div className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight leading-none">
                   {nextPrayer.displayName}
                 </div>
-                <time className="text-3xl font-mono text-gray-900 tracking-tight leading-none" dateTime={toISO24Hour(nextPrayer.adhan)}>
+                <time
+                  className="text-4xl md:text-5xl font-mono font-semibold text-gray-900 tracking-tight leading-none"
+                  dateTime={toISO24Hour(nextPrayer.adhan)}
+                >
                   {nextPrayer.adhan}
                 </time>
               </div>
-              <div className="mt-3 flex items-center gap-3 text-sm text-gray-500">
+
+              <div className="flex items-center gap-3 text-sm text-gray-600">
                 <span>
                   Athan{" "}
                   <time className="text-gray-700 font-mono" dateTime={toISO24Hour(nextPrayer.adhan)}>
                     {nextPrayer.adhan}
                   </time>
                 </span>
-                <span className="text-gray-300" aria-hidden="true">·</span>
+                <span className="text-green-300" aria-hidden="true">·</span>
                 <span>
                   Iqamah{" "}
-                  <time className="text-gray-700 font-mono" dateTime={toISO24Hour(nextPrayer.iqamah)}>
+                  <time className="text-green-700 font-mono font-semibold" dateTime={toISO24Hour(nextPrayer.iqamah)}>
                     {nextPrayer.iqamah}
                   </time>
                 </span>
