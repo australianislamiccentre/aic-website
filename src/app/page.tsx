@@ -2,7 +2,7 @@
  * Homepage
  *
  * Server component serving the landing page. Fetches featured events, urgent
- * announcements, services, prayer settings, programs, team members, and gallery
+ * announcements, services, programs, team members, and gallery
  * images from Sanity, then renders HeroSection and all homepage content sections.
  *
  * @route /
@@ -21,7 +21,6 @@ import {
   getFeaturedEvents,
   getUrgentAnnouncements,
   getFeaturedServices,
-  getPrayerSettings,
   getLatestAnnouncements,
   getPrograms,
   getTeamMembersByCategory,
@@ -33,7 +32,6 @@ import {
   SanityEvent,
   SanityAnnouncement,
   SanityService,
-  SanityPrayerSettings,
   SanityProgram,
   SanityTeamMember,
   SanityGalleryImage,
@@ -50,7 +48,6 @@ export default async function HomePage() {
     getFeaturedEvents(),
     getUrgentAnnouncements(),
     getFeaturedServices(),
-    getPrayerSettings(),
     getLatestAnnouncements(),
     getPrograms(),
     getTeamMembersByCategory("imam"),
@@ -61,19 +58,17 @@ export default async function HomePage() {
   const allEvents = results[0].status === "fulfilled" ? (results[0].value as SanityEvent[]) : [];
   const urgentAnnouncements = results[1].status === "fulfilled" ? (results[1].value as SanityAnnouncement[]) : [];
   const services = results[2].status === "fulfilled" ? (results[2].value as SanityService[]) : [];
-  const prayerSettings = results[3].status === "fulfilled" ? (results[3].value as SanityPrayerSettings | null) : null;
-  const announcements = results[4].status === "fulfilled" ? (results[4].value as LatestUpdateItem[]) : [];
-  const programs = results[5].status === "fulfilled" ? (results[5].value as SanityProgram[]) : [];
-  const imams = results[6].status === "fulfilled" ? (results[6].value as SanityTeamMember[]) : [];
-  const galleryImages = results[7].status === "fulfilled" ? (results[7].value as SanityGalleryImage[]) : [];
-  const homepageSettings = results[8].status === "fulfilled" ? (results[8].value as SanityHomepageSettings | null) : null;
+  const announcements = results[3].status === "fulfilled" ? (results[3].value as LatestUpdateItem[]) : [];
+  const programs = results[4].status === "fulfilled" ? (results[4].value as SanityProgram[]) : [];
+  const imams = results[5].status === "fulfilled" ? (results[5].value as SanityTeamMember[]) : [];
+  const galleryImages = results[6].status === "fulfilled" ? (results[6].value as SanityGalleryImage[]) : [];
+  const homepageSettings = results[7].status === "fulfilled" ? (results[7].value as SanityHomepageSettings | null) : null;
 
   const urgentAnnouncement = urgentAnnouncements.length > 0 ? urgentAnnouncements[0] : null;
 
   return (
     <>
       <HeroSection
-        prayerSettings={prayerSettings}
         heroMode={homepageSettings?.heroMode}
         heroVideoUrl={homepageSettings?.heroVideoUrl}
         heroSlides={homepageSettings?.heroSlides}
