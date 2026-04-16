@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import userEvent from "@testing-library/user-event";
 import { render, screen } from "@/test/test-utils";
 import { PrayerWidget } from "./PrayerWidget";
 
@@ -147,5 +148,62 @@ describe("PrayerWidget — expanded content (when forced open for layout testing
     const { container } = render(<PrayerWidget prayerSettings={null} testOpenInitially />);
     const asrCard = container.querySelector('[data-prayer="asr"]');
     expect(asrCard).toHaveAttribute("data-is-next", "true");
+  });
+});
+
+describe("PrayerWidget — open/close interactions", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("clicking the pill opens the widget", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<PrayerWidget prayerSettings={null} />);
+    const pill = screen.getByRole("button", { name: /open prayer times/i });
+    await user.click(pill);
+    expect(screen.getByRole("dialog", { name: /prayer times/i })).toBeInTheDocument();
+  });
+
+  it("clicking the close button closes the widget", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const closeBtn = screen.getByRole("button", { name: /close/i });
+    await user.click(closeBtn);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /open prayer times/i })).toBeInTheDocument();
+  });
+
+  it("clicking the backdrop closes the widget", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const backdrop = screen.getByTestId("prayer-widget-backdrop");
+    await user.click(backdrop);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("pressing Escape closes the widget", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("backdrop is hidden (opacity 0, non-interactive) when widget is closed", () => {
+    render(<PrayerWidget prayerSettings={null} />);
+    const backdrop = screen.getByTestId("prayer-widget-backdrop");
+    expect(backdrop).toHaveStyle({ opacity: "0" });
+    expect(backdrop).toHaveStyle({ pointerEvents: "none" });
+  });
+
+  it("backdrop becomes interactive when widget is open", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const backdrop = screen.getByTestId("prayer-widget-backdrop");
+    expect(backdrop).toHaveStyle({ opacity: "1" });
+    expect(backdrop).toHaveStyle({ pointerEvents: "auto" });
   });
 });

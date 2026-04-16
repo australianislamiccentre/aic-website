@@ -88,6 +88,16 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
   }, []);
   void now;
 
+  // Close on Esc
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isOpen]);
+
   if (pathname?.startsWith("/studio")) return null;
 
   const countdownTarget = parsePrayerTimeToDate(nextPrayer.adhan, nextPrayer.isNextDay);
@@ -105,6 +115,22 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
 
   return (
     <>
+      {/* Backdrop — always rendered, opacity toggles */}
+      <div
+        data-testid="prayer-widget-backdrop"
+        onClick={() => setIsOpen(false)}
+        aria-hidden="true"
+        className="fixed inset-0 z-[900]"
+        style={{
+          background: "rgba(15, 23, 42, 0.45)",
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
+          opacity: isOpen ? 1 : 0,
+          pointerEvents: isOpen ? "auto" : "none",
+          transition: "opacity 400ms cubic-bezier(0.33, 1, 0.68, 1)",
+        }}
+      />
+
       {/* Pill — always rendered, hidden via CSS when expanded */}
       <button
         type="button"
@@ -182,7 +208,17 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 {/* Filled by Task 5 */}
               </div>
             </div>
-            {/* date-picker-nav placeholder — Task 5 */}
+            <div className="flex items-center gap-1.5">
+              {/* date-picker-nav buttons — filled by Task 5 */}
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => setIsOpen(false)}
+                className="w-8 h-8 border-none bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600 hover:text-gray-900 text-xl flex items-center justify-center transition-colors"
+              >
+                ×
+              </button>
+            </div>
           </div>
 
           <div className="px-6 py-5 pb-6 overflow-y-auto flex-1">
