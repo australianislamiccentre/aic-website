@@ -164,6 +164,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
   const [isOpen, setIsOpen] = useState(testOpenInitially);
   const pillRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
   const wasOpenRef = useRef(false);
   const prefersReducedMotion = usePrefersReducedMotion();
 
@@ -194,6 +195,23 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
   };
 
   const goToToday = () => setSelectedDate(new Date());
+
+  const openNativeDatePicker = () => {
+    const input = dateInputRef.current;
+    if (!input) return;
+    // Use showPicker() when available (Chrome 99+, Safari 16+, Firefox 101+)
+    // Falls back to focus+click for older browsers
+    if (typeof input.showPicker === "function") {
+      try {
+        input.showPicker();
+        return;
+      } catch {
+        // showPicker can throw if the input isn't interactable; fall through
+      }
+    }
+    input.focus();
+    input.click();
+  };
 
   // Tick countdown every 30s
   const [now, setNow] = useState(() => Date.now());
@@ -408,18 +426,21 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 <button
                   type="button"
                   aria-label={isViewingToday ? "Open date picker" : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`}
-                  className="h-11 px-4 border-none rounded-lg text-white text-xs flex items-center gap-1.5 hover:brightness-110 transition-all"
+                  onClick={openNativeDatePicker}
+                  className="h-11 px-4 border-none rounded-lg text-white text-xs flex items-center gap-1.5 hover:brightness-110 transition-all cursor-pointer"
                   style={{ background: "#01476b" }}
                 >
                   <Calendar size={14} aria-hidden="true" />
                   {isViewingToday ? "Today" : formatShortMelbourneDate(selectedDate)}
                 </button>
                 <input
+                  ref={dateInputRef}
                   type="date"
                   aria-label="Pick a date"
                   value={formatDateInputValue(selectedDate)}
                   onChange={handleDateInputChange}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  tabIndex={-1}
+                  className="sr-only"
                 />
               </div>
               <button
