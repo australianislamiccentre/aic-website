@@ -25,8 +25,10 @@ export function usePrayerWidgetScroll(paused: boolean = false): boolean {
       return;
     }
 
+    lastScrollY.current = window.scrollY;
+
     const mediaQuery =
-      typeof window !== "undefined" && typeof window.matchMedia === "function"
+      typeof window.matchMedia === "function"
         ? window.matchMedia("(prefers-reduced-motion: reduce)")
         : null;
     const prefersReducedMotion = mediaQuery?.matches ?? false;
