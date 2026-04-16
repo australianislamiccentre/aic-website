@@ -18,7 +18,6 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
-import { Calendar, ChevronLeft, ChevronRight, RotateCcw, X } from "lucide-react";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
 import { usePrayerWidgetScroll } from "@/hooks/usePrayerWidgetScroll";
 import { getPrayerTimesForDate, type PrayerName, type TodaysPrayerTimes } from "@/lib/prayer-times";
@@ -66,14 +65,6 @@ function formatCountdown(target: Date | null): string {
   const h = Math.floor(diffMin / 60);
   const m = diffMin % 60;
   return `in ${h}h ${m}m`;
-}
-
-function formatCountdownShort(target: Date | null): string {
-  if (!target) return "";
-  const diffMs = target.getTime() - Date.now();
-  const diffMin = Math.max(0, Math.floor(diffMs / 60000));
-  if (diffMin < 60) return `${diffMin}m`;
-  return `${Math.floor(diffMin / 60)}h ${diffMin % 60}m`;
 }
 
 const MELBOURNE_TZ = "Australia/Melbourne";
@@ -295,7 +286,6 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
 
   const countdownTarget = parsePrayerTimeToDate(nextPrayer.adhan, nextPrayer.isNextDay);
   const countdown = formatCountdown(countdownTarget);
-  const countdownShort = formatCountdownShort(countdownTarget);
 
   const jumuahArabic = prayerSettings?.jumuahArabicTime;
   const jumuahEnglish = prayerSettings?.jumuahEnglishTime;
@@ -404,33 +394,31 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               "transform 520ms cubic-bezier(0.33, 1, 0.68, 1)",
         }}
       >
-          <div className="w-12 h-[5px] bg-gray-300 rounded-full mx-auto mt-2.5 flex-shrink-0" aria-hidden="true" />
+          <div className="w-8 h-1 bg-gray-200 rounded-full mx-auto mt-2.5 flex-shrink-0" aria-hidden="true" />
 
-          <div className="px-6 pb-4 pt-2 border-b border-gray-100 flex items-center justify-between gap-4 flex-shrink-0">
+          <div className="px-6 pt-3 pb-4 border-b border-gray-100 flex items-start justify-between gap-4 flex-shrink-0">
             <div>
-              <h2 className="text-xl font-serif text-gray-900">Prayer Times</h2>
-              <div className="text-xs text-gray-500 font-medium" data-testid="widget-date-label">
+              <h2 className="text-base font-semibold text-gray-900 tracking-tight">Prayer Times</h2>
+              <div className="text-xs text-gray-500 mt-0.5" data-testid="widget-date-label">
                 {formatMelbourneDate(selectedDate)}
               </div>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-0.5 -mr-2">
               <button
                 type="button"
                 aria-label="Previous day"
                 onClick={() => shiftDate(-1)}
-                className="w-11 h-11 border border-gray-200 bg-white hover:bg-gray-100 rounded-lg text-gray-600 flex items-center justify-center transition-colors"
+                className="h-11 w-11 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-md text-xl font-light transition-colors flex items-center justify-center"
               >
-                <ChevronLeft size={18} aria-hidden="true" />
+                <span aria-hidden="true">‹</span>
               </button>
               <div className="relative">
                 <button
                   type="button"
                   aria-label={isViewingToday ? "Open date picker" : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`}
                   onClick={openNativeDatePicker}
-                  className="h-11 px-4 border-none rounded-lg text-white text-xs flex items-center gap-1.5 hover:brightness-110 transition-all cursor-pointer"
-                  style={{ background: "#01476b" }}
+                  className="h-11 px-3 text-xs font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
                 >
-                  <Calendar size={14} aria-hidden="true" />
                   {isViewingToday ? "Today" : formatShortMelbourneDate(selectedDate)}
                 </button>
                 <input
@@ -447,82 +435,75 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 type="button"
                 aria-label="Next day"
                 onClick={() => shiftDate(1)}
-                className="w-11 h-11 border border-gray-200 bg-white hover:bg-gray-100 rounded-lg text-gray-600 flex items-center justify-center transition-colors"
+                className="h-11 w-11 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-md text-xl font-light transition-colors flex items-center justify-center"
               >
-                <ChevronRight size={18} aria-hidden="true" />
+                <span aria-hidden="true">›</span>
               </button>
               {!isViewingToday && (
                 <button
                   type="button"
                   aria-label="Back to today"
                   onClick={goToToday}
-                  className="w-11 h-11 border-none rounded-lg text-white flex items-center justify-center transition-colors"
-                  style={{ background: "#1e293b" }}
-                  title="Back to today"
+                  className="h-11 px-2.5 text-xs font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
                 >
-                  <RotateCcw size={16} aria-hidden="true" />
+                  Reset
                 </button>
               )}
               <button
                 type="button"
                 aria-label="Close prayer times"
                 onClick={closeWidget}
-                className="w-11 h-11 border-none bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600 hover:text-gray-900 flex items-center justify-center transition-colors"
+                className="h-11 w-11 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-md text-2xl font-light leading-none transition-colors flex items-center justify-center"
               >
-                <X size={18} aria-hidden="true" />
+                <span aria-hidden="true">×</span>
               </button>
             </div>
           </div>
 
-          <div className="px-6 py-5 pb-6 overflow-y-auto flex-1">
-            {/* Next prayer card */}
-            <div
-              className="relative overflow-hidden rounded-2xl border p-4 mb-5 flex items-center gap-4"
-              style={{
-                background: "linear-gradient(135deg, rgba(0,173,76,0.10) 0%, rgba(132,204,22,0.08) 100%)",
-                borderColor: "rgba(0,173,76,0.22)",
-              }}
-            >
-              <div
-                className="rounded-2xl flex items-center justify-center text-white text-2xl flex-shrink-0"
-                style={{
-                  width: "52px",
-                  height: "52px",
-                  background: "linear-gradient(135deg, #00ad4c 0%, #84cc16 100%)",
-                  boxShadow: "0 6px 16px rgba(0,173,76,0.3)",
-                }}
-                aria-hidden="true"
-              >
-                ☪
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[11px] text-green-600 font-bold tracking-wider uppercase mb-0.5">
+          <div className="px-6 pt-6 pb-6 overflow-y-auto flex-1">
+            {/* Next prayer — flat, type-led */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="block w-6 h-[2px] bg-green-600" aria-hidden="true" />
+                <span className="text-[10px] font-semibold text-green-600 uppercase tracking-[0.16em]">
                   Next Prayer
-                </div>
-                <div className="text-lg font-bold text-gray-900 font-serif">{nextPrayer.displayName}</div>
-                <div className="flex gap-4 text-[13px] mt-1 flex-wrap">
-                  <span className="text-gray-500">
-                    Athan{" "}
-                    <time className="text-gray-900 font-mono font-bold" dateTime={toISO24Hour(nextPrayer.adhan)}>
-                      {nextPrayer.adhan}
-                    </time>
-                  </span>
-                  <span className="text-gray-500">
-                    Iqamah{" "}
-                    <time className="text-green-600 font-mono font-bold" dateTime={toISO24Hour(nextPrayer.iqamah)}>
-                      {nextPrayer.iqamah}
-                    </time>
-                  </span>
-                </div>
+                </span>
+                {countdown && (
+                  <>
+                    <span className="text-gray-300" aria-hidden="true">·</span>
+                    <span className="text-[11px] font-medium text-gray-500" aria-live="polite" aria-atomic="true">
+                      {countdown}
+                    </span>
+                  </>
+                )}
               </div>
-              <div className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-center flex-shrink-0 shadow-sm">
-                <div className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">In</div>
-                <div className="text-base font-bold text-green-600 font-mono mt-0.5">{countdownShort}</div>
+              <div className="flex items-baseline justify-between gap-4 flex-wrap">
+                <div className="text-4xl font-semibold text-gray-900 tracking-tight leading-none">
+                  {nextPrayer.displayName}
+                </div>
+                <time className="text-3xl font-mono text-gray-900 tracking-tight leading-none" dateTime={toISO24Hour(nextPrayer.adhan)}>
+                  {nextPrayer.adhan}
+                </time>
+              </div>
+              <div className="mt-3 flex items-center gap-3 text-sm text-gray-500">
+                <span>
+                  Athan{" "}
+                  <time className="text-gray-700 font-mono" dateTime={toISO24Hour(nextPrayer.adhan)}>
+                    {nextPrayer.adhan}
+                  </time>
+                </span>
+                <span className="text-gray-300" aria-hidden="true">·</span>
+                <span>
+                  Iqamah{" "}
+                  <time className="text-gray-700 font-mono" dateTime={toISO24Hour(nextPrayer.iqamah)}>
+                    {nextPrayer.iqamah}
+                  </time>
+                </span>
               </div>
             </div>
 
-            {/* Prayer grid */}
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-5">
+            {/* Prayer grid — flat, no borders */}
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-x-4 gap-y-5 pb-6 border-b border-gray-100">
               {PRAYER_ORDER.map(({ key, displayName }) => {
                 const row = viewedPrayers[key];
                 const isNext = isViewingToday && nextPrayer.name === key;
@@ -531,67 +512,64 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                     key={key}
                     data-prayer={key}
                     data-is-next={isNext ? "true" : undefined}
-                    className={
-                      "rounded-xl p-3 text-center border " +
-                      (isNext
-                        ? "bg-white border-green-500 shadow-[0_0_0_2px_rgba(0,173,76,0.15),0_4px_12px_rgba(0,173,76,0.1)]"
-                        : "bg-gray-50 border-gray-200")
-                    }
                   >
-                    <div className={"text-xs font-semibold mb-1.5 uppercase tracking-wide " + (isNext ? "text-green-600" : "text-gray-600")}>
-                      {displayName}
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      {isNext && <span className="w-1 h-1 rounded-full bg-green-600" aria-hidden="true" />}
+                      <div className={"text-[10px] font-semibold uppercase tracking-[0.12em] " + (isNext ? "text-green-600" : "text-gray-400")}>
+                        {displayName}
+                      </div>
                     </div>
-                    <time className="block text-xs text-gray-500 font-mono" dateTime={toISO24Hour(row.adhan)}>
-                      {row.adhan}
-                    </time>
                     <time
                       className={
-                        "block text-sm font-bold font-mono mt-1 pt-1 border-t border-gray-200 " +
-                        (isNext ? "text-green-600" : key === "sunrise" ? "text-amber-500" : "text-gray-900")
+                        "block text-xl font-mono tracking-tight " +
+                        (isNext ? "text-gray-900 font-semibold" : "text-gray-900 font-medium")
                       }
                       dateTime={toISO24Hour(row.iqamah)}
                     >
                       {row.iqamah}
+                    </time>
+                    <time className="block text-xs text-gray-400 font-mono mt-0.5" dateTime={toISO24Hour(row.adhan)}>
+                      {row.adhan}
                     </time>
                   </div>
                 );
               })}
             </div>
 
-            {/* Special prayers row */}
+            {/* Special prayers — flat list, no chips */}
             {(jumuahArabic || jumuahEnglish || (taraweehEnabled && taraweehTime) || (eidFitrActive && eidFitrTime) || (eidAdhaActive && eidAdhaTime)) && (
-              <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
+              <dl className="pt-5 divide-y divide-gray-100">
                 {jumuahArabic && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs" style={{ background: "rgba(1,71,107,0.06)" }}>
-                    <span className="text-gray-500 font-medium">Jumu&apos;ah Arabic</span>
-                    <span className="font-bold font-mono" style={{ color: "#01476b" }}>{jumuahArabic}</span>
+                  <div className="flex items-baseline justify-between gap-4 py-2.5 text-sm">
+                    <dt className="text-gray-600">Jumu&apos;ah Arabic</dt>
+                    <dd className="text-gray-900 font-mono font-medium">{jumuahArabic}</dd>
                   </div>
                 )}
                 {jumuahEnglish && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs" style={{ background: "rgba(1,71,107,0.06)" }}>
-                    <span className="text-gray-500 font-medium">Jumu&apos;ah English</span>
-                    <span className="font-bold font-mono" style={{ color: "#01476b" }}>{jumuahEnglish}</span>
+                  <div className="flex items-baseline justify-between gap-4 py-2.5 text-sm">
+                    <dt className="text-gray-600">Jumu&apos;ah English</dt>
+                    <dd className="text-gray-900 font-mono font-medium">{jumuahEnglish}</dd>
                   </div>
                 )}
                 {taraweehEnabled && taraweehTime && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-purple-50">
-                    <span className="text-purple-700 font-medium">Taraweeh</span>
-                    <span className="text-purple-600 font-bold font-mono">{taraweehTime}</span>
+                  <div className="flex items-baseline justify-between gap-4 py-2.5 text-sm">
+                    <dt className="text-gray-600">Taraweeh</dt>
+                    <dd className="text-gray-900 font-mono font-medium">{taraweehTime}</dd>
                   </div>
                 )}
                 {eidFitrActive && eidFitrTime && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-amber-50">
-                    <span className="text-amber-700 font-medium">Eid al-Fitr</span>
-                    <span className="text-amber-600 font-bold font-mono">{eidFitrTime}</span>
+                  <div className="flex items-baseline justify-between gap-4 py-2.5 text-sm">
+                    <dt className="text-gray-600">Eid al-Fitr</dt>
+                    <dd className="text-gray-900 font-mono font-medium">{eidFitrTime}</dd>
                   </div>
                 )}
                 {eidAdhaActive && eidAdhaTime && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-amber-50">
-                    <span className="text-amber-700 font-medium">Eid al-Adha</span>
-                    <span className="text-amber-600 font-bold font-mono">{eidAdhaTime}</span>
+                  <div className="flex items-baseline justify-between gap-4 py-2.5 text-sm">
+                    <dt className="text-gray-600">Eid al-Adha</dt>
+                    <dd className="text-gray-900 font-mono font-medium">{eidAdhaTime}</dd>
                   </div>
                 )}
-              </div>
+              </dl>
             )}
           </div>
         </div>
