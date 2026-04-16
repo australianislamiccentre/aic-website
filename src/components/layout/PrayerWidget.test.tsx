@@ -281,3 +281,30 @@ describe("PrayerWidget — date picker", () => {
     expect(dateLabel.textContent).toContain("20 April 2026");
   });
 });
+
+describe("PrayerWidget — scroll auto-hide", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+    window.scrollY = 0;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("hides the pill when usePrayerWidgetScroll returns true", async () => {
+    const { usePrayerWidgetScroll } = await import("@/hooks/usePrayerWidgetScroll");
+    vi.mocked(usePrayerWidgetScroll).mockReturnValueOnce(true);
+
+    render(<PrayerWidget prayerSettings={null} />);
+    const pill = screen.getByRole("button", { name: /open prayer times/i });
+    expect(pill).toHaveAttribute("data-hidden-by-scroll", "true");
+  });
+
+  it("keeps the pill visible when scroll hook returns false", () => {
+    render(<PrayerWidget prayerSettings={null} />);
+    const pill = screen.getByRole("button", { name: /open prayer times/i });
+    expect(pill).toHaveAttribute("data-hidden-by-scroll", "false");
+  });
+});

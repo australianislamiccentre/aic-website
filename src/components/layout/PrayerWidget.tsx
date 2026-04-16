@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Calendar, ChevronLeft, ChevronRight, RotateCcw, X } from "lucide-react";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
+import { usePrayerWidgetScroll } from "@/hooks/usePrayerWidgetScroll";
 import { getPrayerTimesForDate, type PrayerName, type TodaysPrayerTimes } from "@/lib/prayer-times";
 import type { SanityPrayerSettings } from "@/types/sanity";
 
@@ -122,6 +123,9 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
   const nextPrayer = useNextPrayer(prayerSettings);
   const [isOpen, setIsOpen] = useState(testOpenInitially);
 
+  // Hide pill on scroll down; paused while widget is open so the widget doesn't disappear mid-view
+  const isHiddenByScroll = usePrayerWidgetScroll(isOpen);
+
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
 
   const currentDate = new Date();
@@ -205,6 +209,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         aria-hidden={isOpen ? "true" : undefined}
         tabIndex={isOpen ? -1 : 0}
         onClick={() => setIsOpen(true)}
+        data-hidden-by-scroll={isHiddenByScroll ? "true" : "false"}
         className="fixed left-1/2 flex items-center gap-3 px-4 py-3
                    rounded-full text-white text-sm border border-white/10 z-[1000]
                    cursor-pointer shadow-[0_12px_32px_rgba(1,71,107,0.35),0_4px_12px_rgba(0,0,0,0.1)]
@@ -216,9 +221,11 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           bottom: "20px",
           transform: isOpen
             ? "translateX(-50%) translateY(120px) scale(0.9)"
+            : isHiddenByScroll
+            ? "translateX(-50%) translateY(120px)"
             : "translateX(-50%)",
-          opacity: isOpen ? 0 : 1,
-          pointerEvents: isOpen ? "none" : "auto",
+          opacity: isOpen || isHiddenByScroll ? 0 : 1,
+          pointerEvents: isOpen || isHiddenByScroll ? "none" : "auto",
           transition:
             "opacity 220ms cubic-bezier(0.33, 1, 0.68, 1), " +
             "transform 400ms cubic-bezier(0.33, 1, 0.68, 1), " +
