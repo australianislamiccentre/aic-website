@@ -19,7 +19,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
-import { getPrayerTimesForDate, type PrayerName, type TodaysPrayerTimes } from "@/lib/prayer-times";
+import { type PrayerName } from "@/lib/prayer-times";
 import type { SanityPrayerSettings } from "@/types/sanity";
 
 interface PrayerWidgetProps {
@@ -154,6 +154,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         aria-label="Prayer Times"
         aria-hidden={isOpen ? undefined : "true"}
         aria-modal={isOpen ? "true" : undefined}
+        tabIndex={isOpen ? undefined : -1}
         className="fixed left-1/2 bottom-0 bg-white z-[950]
                    rounded-t-3xl overflow-hidden flex flex-col
                    shadow-[0_-24px_64px_rgba(0,0,0,0.22),0_-4px_16px_rgba(0,0,0,0.08)]
@@ -194,7 +195,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               }}
             >
               <div
-                className="w-13 h-13 rounded-2xl flex items-center justify-center text-white text-2xl flex-shrink-0"
+                className="rounded-2xl flex items-center justify-center text-white text-2xl flex-shrink-0"
                 style={{
                   width: "52px",
                   height: "52px",
@@ -234,7 +235,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                   <div
                     key={key}
                     data-prayer={key}
-                    data-is-next={isNext ? "true" : "false"}
+                    data-is-next={isNext ? "true" : undefined}
                     className={
                       "rounded-xl p-3 text-center border " +
                       (isNext
