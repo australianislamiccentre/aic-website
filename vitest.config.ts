@@ -13,6 +13,14 @@ import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
+// Lock Node's process timezone to Melbourne for all tests. Several time-sensitive
+// tests (notably PrayerWidget's countdown) rely on `Date.prototype.setHours` /
+// `getHours`, which are local-tz-relative. Devs run locally in Melbourne tz so
+// these tests pass, but GitHub Actions runs under UTC and they fail. Pinning
+// here (before vitest spawns workers) aligns both environments with the
+// Melbourne-first product and keeps assertions deterministic.
+process.env.TZ = "Australia/Melbourne";
+
 export default defineConfig({
   plugins: [react()],
   test: {
