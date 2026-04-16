@@ -16,7 +16,7 @@
  */
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { Calendar, ChevronLeft, ChevronRight, RotateCcw, X } from "lucide-react";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
@@ -117,13 +117,55 @@ function isSameMelbourneDay(a: Date, b: Date): boolean {
   );
 }
 
+/** Parse "3:42 PM" → "15:42" for a <time datetime="..."> attribute. */
+function toISO24Hour(time: string): string {
+  const match = time.match(/^(\d{1,2}):(\d{2})\s+(AM|PM)$/i);
+  if (!match) return time;
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2];
+  const period = match[3].toUpperCase();
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+  return `${String(hours).padStart(2, "0")}:${minutes}`;
+}
+
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribeReducedMotion(callback: () => void): () => void {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return () => {};
+  }
+  const mq = window.matchMedia(REDUCED_MOTION_QUERY);
+  mq.addEventListener("change", callback);
+  return () => mq.removeEventListener("change", callback);
+}
+
+function getReducedMotionSnapshot(): boolean {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
+}
+
+function getServerReducedMotionSnapshot(): boolean {
+  return false;
+}
+
+function usePrefersReducedMotion(): boolean {
+  return useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotionSnapshot,
+    getServerReducedMotionSnapshot,
+  );
+}
+
 export function PrayerWidget({ prayerSettings, testOpenInitially = false }: PrayerWidgetProps) {
   const pathname = usePathname();
   const todaysPrayers = usePrayerTimes(prayerSettings);
   const nextPrayer = useNextPrayer(prayerSettings);
   const [isOpen, setIsOpen] = useState(testOpenInitially);
   const pillRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const wasOpenRef = useRef(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   // Hide pill on scroll down; paused while widget is open so the widget doesn't disappear mid-view
   const isHiddenByScroll = usePrayerWidgetScroll(isOpen);
@@ -165,8 +207,53 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
+      if (e.key === "Escape") {
+        setIsOpen(false);
+        setSelectedDate(new Date());
+      }
     };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isOpen]);
+
+  // Focus trap while dialog is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const getFocusable = (): HTMLElement[] => {
+      return Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      );
+    };
+
+    const initialFocus = getFocusable()[0];
+    initialFocus?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const focusables = getFocusable();
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+
+      if (e.shiftKey) {
+        if (active === first || !dialog.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (active === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [isOpen]);
@@ -179,6 +266,12 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
     }
     wasOpenRef.current = isOpen;
   }, [isOpen]);
+
+  // Close handler — resets selected date alongside closing so reopening is fresh
+  const closeWidget = () => {
+    setIsOpen(false);
+    setSelectedDate(new Date());
+  };
 
   if (pathname?.startsWith("/studio")) return null;
 
@@ -200,7 +293,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
       {/* Backdrop — always rendered, opacity toggles */}
       <div
         data-testid="prayer-widget-backdrop"
-        onClick={() => setIsOpen(false)}
+        onClick={closeWidget}
         aria-hidden="true"
         className="fixed inset-0 z-[900]"
         style={{
@@ -209,7 +302,9 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           WebkitBackdropFilter: "blur(6px)",
           opacity: isOpen ? 1 : 0,
           pointerEvents: isOpen ? "auto" : "none",
-          transition: "opacity 400ms cubic-bezier(0.33, 1, 0.68, 1)",
+          transition: prefersReducedMotion
+            ? "opacity 150ms ease"
+            : "opacity 400ms cubic-bezier(0.33, 1, 0.68, 1)",
         }}
       />
 
@@ -238,10 +333,11 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             : "translateX(-50%)",
           opacity: isOpen || isHiddenByScroll ? 0 : 1,
           pointerEvents: isOpen || isHiddenByScroll ? "none" : "auto",
-          transition:
-            "opacity 220ms cubic-bezier(0.33, 1, 0.68, 1), " +
-            "transform 400ms cubic-bezier(0.33, 1, 0.68, 1), " +
-            "box-shadow 300ms ease",
+          transition: prefersReducedMotion
+            ? "opacity 150ms ease"
+            : "opacity 220ms cubic-bezier(0.33, 1, 0.68, 1), " +
+              "transform 400ms cubic-bezier(0.33, 1, 0.68, 1), " +
+              "box-shadow 300ms ease",
         }}
       >
         <span className="flex items-center gap-3 flex-1 max-[440px]:flex-initial">
@@ -255,13 +351,18 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           <span className="text-lime-300 font-bold font-mono">{nextPrayer.adhan}</span>
         </span>
         <span className="flex items-center gap-2">
-          {countdown && <span className="text-white/55 text-xs">{countdown}</span>}
+          {countdown && (
+            <span className="text-white/55 text-xs" aria-live="polite" aria-atomic="true">
+              {countdown}
+            </span>
+          )}
           <span className="text-white/40 text-[10px]" aria-hidden="true">▴</span>
         </span>
       </button>
 
       {/* Expanded widget — always rendered, hidden via CSS when collapsed */}
       <div
+        ref={dialogRef}
         role="dialog"
         aria-label="Prayer Times"
         aria-hidden={isOpen ? undefined : "true"}
@@ -279,14 +380,14 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             : "translateX(-50%) translateY(100%)",
           opacity: isOpen ? 1 : 0,
           pointerEvents: isOpen ? "auto" : "none",
-          transition:
-            "opacity 320ms cubic-bezier(0.33, 1, 0.68, 1), " +
-            "transform 520ms cubic-bezier(0.33, 1, 0.68, 1)",
+          transition: prefersReducedMotion
+            ? "opacity 150ms ease"
+            : "opacity 320ms cubic-bezier(0.33, 1, 0.68, 1), " +
+              "transform 520ms cubic-bezier(0.33, 1, 0.68, 1)",
         }}
       >
           <div className="w-12 h-[5px] bg-gray-300 rounded-full mx-auto mt-2.5 flex-shrink-0" aria-hidden="true" />
 
-          {/* Header — date picker nav will be filled in Task 5 */}
           <div className="px-6 pb-4 pt-2 border-b border-gray-100 flex items-center justify-between gap-4 flex-shrink-0">
             <div>
               <h2 className="text-xl font-serif text-gray-900">Prayer Times</h2>
@@ -299,15 +400,15 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 type="button"
                 aria-label="Previous day"
                 onClick={() => shiftDate(-1)}
-                className="w-8 h-8 border border-gray-200 bg-white hover:bg-gray-100 rounded-lg text-gray-600 flex items-center justify-center transition-colors"
+                className="w-11 h-11 border border-gray-200 bg-white hover:bg-gray-100 rounded-lg text-gray-600 flex items-center justify-center transition-colors"
               >
-                <ChevronLeft size={16} aria-hidden="true" />
+                <ChevronLeft size={18} aria-hidden="true" />
               </button>
               <div className="relative">
                 <button
                   type="button"
                   aria-label={isViewingToday ? "Open date picker" : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`}
-                  className="h-8 px-3 border-none rounded-lg text-white text-xs flex items-center gap-1.5 hover:brightness-110 transition-all"
+                  className="h-11 px-4 border-none rounded-lg text-white text-xs flex items-center gap-1.5 hover:brightness-110 transition-all"
                   style={{ background: "#01476b" }}
                 >
                   <Calendar size={14} aria-hidden="true" />
@@ -325,29 +426,29 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 type="button"
                 aria-label="Next day"
                 onClick={() => shiftDate(1)}
-                className="w-8 h-8 border border-gray-200 bg-white hover:bg-gray-100 rounded-lg text-gray-600 flex items-center justify-center transition-colors"
+                className="w-11 h-11 border border-gray-200 bg-white hover:bg-gray-100 rounded-lg text-gray-600 flex items-center justify-center transition-colors"
               >
-                <ChevronRight size={16} aria-hidden="true" />
+                <ChevronRight size={18} aria-hidden="true" />
               </button>
               {!isViewingToday && (
                 <button
                   type="button"
                   aria-label="Back to today"
                   onClick={goToToday}
-                  className="w-8 h-8 border-none rounded-lg text-white flex items-center justify-center transition-colors"
+                  className="w-11 h-11 border-none rounded-lg text-white flex items-center justify-center transition-colors"
                   style={{ background: "#1e293b" }}
                   title="Back to today"
                 >
-                  <RotateCcw size={14} aria-hidden="true" />
+                  <RotateCcw size={16} aria-hidden="true" />
                 </button>
               )}
               <button
                 type="button"
                 aria-label="Close prayer times"
-                onClick={() => setIsOpen(false)}
-                className="w-8 h-8 border-none bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600 hover:text-gray-900 flex items-center justify-center transition-colors"
+                onClick={closeWidget}
+                className="w-11 h-11 border-none bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600 hover:text-gray-900 flex items-center justify-center transition-colors"
               >
-                <X size={16} aria-hidden="true" />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -380,10 +481,16 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 <div className="text-lg font-bold text-gray-900 font-serif">{nextPrayer.displayName}</div>
                 <div className="flex gap-4 text-[13px] mt-1 flex-wrap">
                   <span className="text-gray-500">
-                    Athan <strong className="text-gray-900 font-mono font-bold">{nextPrayer.adhan}</strong>
+                    Athan{" "}
+                    <time className="text-gray-900 font-mono font-bold" dateTime={toISO24Hour(nextPrayer.adhan)}>
+                      {nextPrayer.adhan}
+                    </time>
                   </span>
                   <span className="text-gray-500">
-                    Iqamah <strong className="text-green-600 font-mono font-bold">{nextPrayer.iqamah}</strong>
+                    Iqamah{" "}
+                    <time className="text-green-600 font-mono font-bold" dateTime={toISO24Hour(nextPrayer.iqamah)}>
+                      {nextPrayer.iqamah}
+                    </time>
                   </span>
                 </div>
               </div>
@@ -413,15 +520,18 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                     <div className={"text-xs font-semibold mb-1.5 uppercase tracking-wide " + (isNext ? "text-green-600" : "text-gray-600")}>
                       {displayName}
                     </div>
-                    <div className="text-xs text-gray-500 font-mono">{row.adhan}</div>
-                    <div
+                    <time className="block text-xs text-gray-500 font-mono" dateTime={toISO24Hour(row.adhan)}>
+                      {row.adhan}
+                    </time>
+                    <time
                       className={
-                        "text-sm font-bold font-mono mt-1 pt-1 border-t border-gray-200 " +
+                        "block text-sm font-bold font-mono mt-1 pt-1 border-t border-gray-200 " +
                         (isNext ? "text-green-600" : key === "sunrise" ? "text-amber-500" : "text-gray-900")
                       }
+                      dateTime={toISO24Hour(row.iqamah)}
                     >
                       {row.iqamah}
-                    </div>
+                    </time>
                   </div>
                 );
               })}

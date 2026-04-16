@@ -280,6 +280,20 @@ describe("PrayerWidget — date picker", () => {
     const dateLabel = screen.getByTestId("widget-date-label");
     expect(dateLabel.textContent).toContain("20 April 2026");
   });
+
+  it("resets the selected date to today when the widget is closed", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    // Navigate to a different day
+    await user.click(screen.getByRole("button", { name: /next day/i }));
+    expect(screen.getByTestId("widget-date-label").textContent).toContain("16 April 2026");
+    // Close via X button
+    await user.click(screen.getByRole("button", { name: /close prayer times/i }));
+    // Reopen
+    await user.click(screen.getByRole("button", { name: /open prayer times/i }));
+    // Should be back to today
+    expect(screen.getByTestId("widget-date-label").textContent).toContain("15 April 2026");
+  });
 });
 
 describe("PrayerWidget — scroll auto-hide", () => {
