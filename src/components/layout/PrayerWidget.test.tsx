@@ -308,3 +308,56 @@ describe("PrayerWidget — scroll auto-hide", () => {
     expect(pill).toHaveAttribute("data-hidden-by-scroll", "false");
   });
 });
+
+describe("PrayerWidget — accessibility & edge cases", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("does not render on /studio routes", async () => {
+    const nav = await import("next/navigation");
+    (nav.usePathname as unknown as ReturnType<typeof vi.fn>).mockReturnValue("/studio");
+
+    const { container } = render(<PrayerWidget prayerSettings={null} />);
+    expect(container).toBeEmptyDOMElement();
+
+    (nav.usePathname as unknown as ReturnType<typeof vi.fn>).mockReturnValue("/");
+  });
+
+  it("pill is keyboard-focusable and has aria-label", () => {
+    render(<PrayerWidget prayerSettings={null} />);
+    const pill = screen.getByRole("button", { name: /open prayer times/i });
+    expect(pill).toHaveAttribute("aria-label", "Open prayer times");
+    expect(pill.tabIndex).not.toBe(-1);
+  });
+
+  it("dialog has role=dialog and aria-modal=true", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toHaveAttribute("aria-label", "Prayer Times");
+  });
+
+  it("closing the widget returns focus to the pill", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<PrayerWidget prayerSettings={null} />);
+    const pill = screen.getByRole("button", { name: /open prayer times/i });
+    pill.focus();
+    await user.click(pill);
+    await user.click(screen.getByRole("button", { name: /close/i }));
+    // After close, the pill should exist again and have focus
+    const pillAfter = screen.getByRole("button", { name: /open prayer times/i });
+    expect(document.activeElement).toBe(pillAfter);
+  });
+
+  it("pulse dot has aria-hidden=true", () => {
+    const { container } = render(<PrayerWidget prayerSettings={null} />);
+    const pulseRing = container.querySelector(".prayer-widget-pulse-ring");
+    expect(pulseRing).toHaveAttribute("aria-hidden", "true");
+  });
+});

@@ -16,7 +16,7 @@
  */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Calendar, ChevronLeft, ChevronRight, RotateCcw, X } from "lucide-react";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
@@ -122,6 +122,8 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
   const todaysPrayers = usePrayerTimes(prayerSettings);
   const nextPrayer = useNextPrayer(prayerSettings);
   const [isOpen, setIsOpen] = useState(testOpenInitially);
+  const pillRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
 
   // Hide pill on scroll down; paused while widget is open so the widget doesn't disappear mid-view
   const isHiddenByScroll = usePrayerWidgetScroll(isOpen);
@@ -169,6 +171,15 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
     return () => document.removeEventListener("keydown", onKey);
   }, [isOpen]);
 
+  // When transitioning from open→closed, return focus to the pill
+  useEffect(() => {
+    if (wasOpenRef.current && !isOpen) {
+      // Re-focus after the pill is rendered/interactive again
+      setTimeout(() => pillRef.current?.focus(), 0);
+    }
+    wasOpenRef.current = isOpen;
+  }, [isOpen]);
+
   if (pathname?.startsWith("/studio")) return null;
 
   const countdownTarget = parsePrayerTimeToDate(nextPrayer.adhan, nextPrayer.isNextDay);
@@ -204,6 +215,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
 
       {/* Pill — always rendered, hidden via CSS when expanded */}
       <button
+        ref={pillRef}
         type="button"
         aria-label="Open prayer times"
         aria-hidden={isOpen ? "true" : undefined}
