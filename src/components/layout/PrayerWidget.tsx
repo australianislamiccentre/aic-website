@@ -101,6 +101,14 @@ function formatDateInputValue(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+function formatShortMelbourneDate(date: Date): string {
+  return date.toLocaleDateString("en-AU", {
+    month: "short",
+    day: "numeric",
+    timeZone: MELBOURNE_TZ,
+  });
+}
+
 function isSameMelbourneDay(a: Date, b: Date): boolean {
   return (
     a.toLocaleDateString("en-AU", { timeZone: MELBOURNE_TZ }) ===
@@ -116,11 +124,11 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
 
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
 
-  const viewedPrayers: TodaysPrayerTimes = isSameMelbourneDay(selectedDate, new Date())
+  const currentDate = new Date();
+  const isViewingToday = isSameMelbourneDay(selectedDate, currentDate);
+  const viewedPrayers: TodaysPrayerTimes = isViewingToday
     ? todaysPrayers
     : getPrayerTimesForDate(selectedDate, prayerSettings ?? undefined);
-
-  const isViewingToday = isSameMelbourneDay(selectedDate, new Date());
 
   const shiftDate = (days: number) => {
     setSelectedDate((d) => {
@@ -279,11 +287,12 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               <div className="relative">
                 <button
                   type="button"
+                  aria-label={isViewingToday ? "Open date picker" : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`}
                   className="h-8 px-3 border-none rounded-lg text-white text-xs flex items-center gap-1.5 hover:brightness-110 transition-all"
                   style={{ background: "#01476b" }}
                 >
                   <Calendar size={14} aria-hidden="true" />
-                  Today
+                  {isViewingToday ? "Today" : formatShortMelbourneDate(selectedDate)}
                 </button>
                 <input
                   type="date"
