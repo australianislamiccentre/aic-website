@@ -2,8 +2,9 @@
  * Worshippers Page Client Component
  *
  * Interactive client-side portion of the /worshippers page. Renders
- * special prayer reference info (Jumu'ah, Taraweeh, Eid), mosque etiquette
- * guidelines, Islamic talks, and directions.
+ * mosque etiquette guidelines, Islamic talks (YouTube khutbahs), and
+ * directions. All prayer-time information now lives in the global
+ * PrayerWidget (mounted in the root layout).
  *
  * @module app/worshippers/WorshippersClient
  */
@@ -13,13 +14,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
-import {
-  jumuahTimes,
-  mosqueEtiquette as fallbackEtiquette,
-} from "@/data/content";
+import { mosqueEtiquette as fallbackEtiquette } from "@/data/content";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
-import { TARAWEEH_CONFIG, EID_CONFIG } from "@/lib/prayer-config";
-import type { SanityPrayerSettings, SanityEtiquette, SanityWorshippersPageSettings } from "@/types/sanity";
+import type { SanityEtiquette, SanityWorshippersPageSettings } from "@/types/sanity";
 import type { YouTubeVideo } from "@/lib/youtube";
 import {
   Clock,
@@ -63,14 +60,12 @@ const etiquetteIcons: Record<string, React.ComponentType<{ className?: string }>
 };
 
 interface WorshippersClientProps {
-  prayerSettings?: SanityPrayerSettings | null;
   etiquette?: SanityEtiquette[];
   youtubeVideos?: YouTubeVideo[];
   pageSettings?: SanityWorshippersPageSettings | null;
 }
 
 export default function WorshippersClient({
-  prayerSettings,
   etiquette = [],
   youtubeVideos = [],
   pageSettings,
@@ -84,18 +79,6 @@ export default function WorshippersClient({
     : etiquette.length > 0
       ? etiquette.map(e => ({ title: e.title, description: e.description, icon: e.icon }))
       : fallbackEtiquette;
-
-  // Jumu'ah times from Sanity with hardcoded fallback
-  const jumuahArabicTime = prayerSettings?.jumuahArabicTime ?? jumuahTimes[0]?.time;
-  const jumuahEnglishTime = prayerSettings?.jumuahEnglishTime ?? jumuahTimes[1]?.time;
-
-  // Use Sanity data with fallback to hardcoded config
-  const taraweehActive = prayerSettings?.taraweehEnabled ?? TARAWEEH_CONFIG.enabled;
-  const taraweehTime = prayerSettings?.taraweehTime ?? TARAWEEH_CONFIG.time;
-  const eidFitrActive = prayerSettings?.eidFitrActive ?? EID_CONFIG.eidAlFitr.active;
-  const eidFitrTime = prayerSettings?.eidFitrTime ?? EID_CONFIG.eidAlFitr.times[0]?.time;
-  const eidAdhaActive = prayerSettings?.eidAdhaActive ?? EID_CONFIG.eidAlAdha.active;
-  const eidAdhaTime = prayerSettings?.eidAdhaTime ?? EID_CONFIG.eidAlAdha.times[0]?.time;
 
   return (
     <>
@@ -111,7 +94,7 @@ export default function WorshippersClient({
             <div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-6">
                 <Clock className="w-4 h-4" />
-                {pageSettings?.heroBadge ?? "Prayer Times & Guidance"}
+                {pageSettings?.heroBadge ?? "Guidance & Etiquette"}
               </div>
 
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -124,18 +107,18 @@ export default function WorshippersClient({
               </h1>
 
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                {pageSettings?.heroDescription ?? "Join our congregation for daily prayers, Friday Jumu\u2019ah, and spiritual programs at the Australian Islamic Centre."}
+                {pageSettings?.heroDescription ?? "Mosque etiquette, Islamic talks, and everything you need to know before your visit to the Australian Islamic Centre."}
               </p>
 
               <div className="flex flex-wrap gap-3">
                 <span className="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-full text-sm font-medium">
-                  Daily Prayers
+                  Etiquette
                 </span>
                 <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                  Friday Jumu&apos;ah
+                  Khutbahs
                 </span>
                 <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                  Special Prayers
+                  Directions
                 </span>
               </div>
             </div>
@@ -154,62 +137,6 @@ export default function WorshippersClient({
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Special Prayers — Jumu'ah, Taraweeh, Eid reference */}
-      <section className="py-10 md:py-14 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="mb-6">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Special Prayers</h2>
-              <p className="text-gray-500 text-sm">Jumu&apos;ah, Taraweeh, and Eid prayer times</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-gray-500 text-sm font-medium">Jumu&apos;ah</span>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-100">
-                <span className="text-gray-500 text-xs">Arabic</span>
-                <span className="text-teal-600 font-semibold text-sm">{jumuahArabicTime}</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-100">
-                <span className="text-gray-500 text-xs">English</span>
-                <span className="text-teal-600 font-semibold text-sm">{jumuahEnglishTime}</span>
-              </div>
-
-              {taraweehActive && (
-                <>
-                  <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block" />
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-50 border border-purple-100">
-                    <Star className="w-3.5 h-3.5 text-purple-500" />
-                    <span className="text-purple-700 text-xs font-medium">Taraweeh</span>
-                    <span className="text-purple-600 font-semibold text-sm">{taraweehTime}</span>
-                  </div>
-                </>
-              )}
-
-              {eidFitrActive && (
-                <>
-                  <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block" />
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-100">
-                    <Star className="w-3.5 h-3.5 text-amber-500" />
-                    <span className="text-amber-700 text-xs font-medium">Eid al-Fitr</span>
-                    <span className="text-amber-600 font-semibold text-sm">{eidFitrTime}</span>
-                  </div>
-                </>
-              )}
-
-              {eidAdhaActive && (
-                <>
-                  <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block" />
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-100">
-                    <Star className="w-3.5 h-3.5 text-amber-500" />
-                    <span className="text-amber-700 text-xs font-medium">Eid al-Adha</span>
-                    <span className="text-amber-600 font-semibold text-sm">{eidAdhaTime}</span>
-                  </div>
-                </>
-              )}
-            </div>
-          </FadeIn>
         </div>
       </section>
 

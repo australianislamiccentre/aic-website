@@ -188,7 +188,7 @@ export function HeroSection({ heroMode, heroVideoUrl, heroSlides, heroVideoOverl
   const currentSlideData = slides[currentSlide];
 
   return (
-    <section ref={containerRef} className="relative h-[45vh] md:h-[55vh] lg:h-[65vh] min-h-[400px] overflow-hidden bg-black">
+    <section ref={containerRef} className="relative h-[100svh] min-h-[600px] overflow-hidden bg-black">
       {/* Background — Video or Image Carousel */}
       <motion.div
         style={{ y, scale }}

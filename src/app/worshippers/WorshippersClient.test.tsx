@@ -70,25 +70,6 @@ vi.mock("@/contexts/SiteSettingsContext", () => ({
   }),
 }));
 
-// Mock prayer-config
-vi.mock("@/lib/prayer-config", () => ({
-  TARAWEEH_CONFIG: { enabled: false, time: "9:00 PM" },
-  EID_CONFIG: {
-    eidAlFitr: { active: false, times: [{ time: "8:00 AM" }] },
-    eidAlAdha: { active: false, times: [{ time: "8:00 AM" }] },
-  },
-  getJumuahTimes: () => [
-    { session: "Arabic Session", time: "12:30 PM", language: "Arabic" },
-    { session: "English Session", time: "1:30 PM", language: "English" },
-  ],
-  JUMUAH_CONFIG: {
-    sessions: [
-      { language: "Arabic", khutbahTime: "12:30 PM", iqamahTime: "12:45 PM", enabled: true },
-      { language: "English", khutbahTime: "1:30 PM", iqamahTime: "1:45 PM", enabled: true },
-    ],
-  },
-}));
-
 function makeEtiquette(overrides: Partial<SanityEtiquette> = {}): SanityEtiquette {
   return {
     _id: "etq-1",
@@ -105,16 +86,6 @@ describe("WorshippersClient", () => {
     const h1 = screen.getByRole("heading", { level: 1 });
     expect(h1).toHaveTextContent("For");
     expect(h1).toHaveTextContent("Worshippers");
-  });
-
-  it("renders the Special Prayers section heading", () => {
-    render(<WorshippersClient />);
-    expect(screen.getByRole("heading", { name: "Special Prayers" })).toBeInTheDocument();
-  });
-
-  it("renders Jumu'ah times", () => {
-    render(<WorshippersClient />);
-    expect(screen.getAllByText(/Jumu['']ah/i).length).toBeGreaterThan(0);
   });
 
   it("renders etiquette section when etiquette prop is provided", () => {
@@ -286,33 +257,4 @@ describe("WorshippersClient", () => {
     });
   });
 
-  describe("Taraweeh and Eid settings", () => {
-    it("shows Taraweeh when prayerSettings.taraweehEnabled is true", () => {
-      render(
-        <WorshippersClient
-          prayerSettings={{ taraweehEnabled: true, taraweehTime: "9:00 PM" } as Parameters<typeof WorshippersClient>[0]["prayerSettings"]}
-        />
-      );
-      expect(screen.getByText("Taraweeh")).toBeInTheDocument();
-      expect(screen.getByText("9:00 PM")).toBeInTheDocument();
-    });
-
-    it("shows Eid al-Fitr when prayerSettings.eidFitrActive is true", () => {
-      render(
-        <WorshippersClient
-          prayerSettings={{ eidFitrActive: true, eidFitrTime: "8:00 AM" } as Parameters<typeof WorshippersClient>[0]["prayerSettings"]}
-        />
-      );
-      expect(screen.getByText("Eid al-Fitr")).toBeInTheDocument();
-    });
-
-    it("shows Eid al-Adha when prayerSettings.eidAdhaActive is true", () => {
-      render(
-        <WorshippersClient
-          prayerSettings={{ eidAdhaActive: true, eidAdhaTime: "8:30 AM" } as Parameters<typeof WorshippersClient>[0]["prayerSettings"]}
-        />
-      );
-      expect(screen.getByText("Eid al-Adha")).toBeInTheDocument();
-    });
-  });
 });
