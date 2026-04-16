@@ -1,0 +1,13 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin/node",
+      "runtimeArgs": ["/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin/npm", "run", "dev"],
+      "env": {"PATH": "/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:/usr/bin:/bin"},
+      "port": 3000,
+      "autoPort": true
+    }
+  ]
+}

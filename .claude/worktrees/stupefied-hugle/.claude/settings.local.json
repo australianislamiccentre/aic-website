@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git worktree prune)",
+      "Bash(git commit:*)",
+      "Bash(export PATH=\"$HOME/.nvm/versions/node/v22.13.0/bin:/opt/homebrew/bin:$PATH\")",
+      "Bash(npm run type-check)",
+      "Bash(export PATH=\"/Users/rashidelhouli/.nvm/versions/node/v20.19.0/bin:$PATH\")",
+      "Bash(export PATH=\"/Users/rashidelhouli/.nvm/versions/node/v20.19.0/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:$PATH\")",
+      "Bash(echo $PATH)",
+      "Bash(export PATH=\"/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:$PATH\")",
+      "Bash(git -c core.hooksPath=/dev/null add src/lib/youtube.ts)",
+      "Bash(git -c:*)",
+      "Bash(npx vitest run src/components/LiveBanner.test.tsx)",
+      "Bash(npx vitest run src/app/media/MediaContent.test.tsx)",
+      "Bash(npx vitest run src/app/media/MediaContent.test.tsx src/components/LiveBanner.test.tsx)",
+      "Bash(xargs ls -lh)",
+      "Bash(PATH=\"/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:$PATH\" npx vitest run)",
+      "Bash(export PATH=\"/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:$PATH\")",
+      "Bash(npx vitest run)",
+      "Bash(npm run test:run)",
+      "Bash(git log --oneline feature/media-redesign --not main)",
+      "Bash(PATH=\"/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:$PATH\")",
+      "Bash(git push -u origin feature/media-redesign)",
+      "Bash(gh pr:*)",
+      "Bash(PATH=\"/opt/homebrew/bin:/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:$PATH\")",
+      "Bash(git checkout main)",
+      "Bash(git pull)",
+      "Bash(git checkout feature/media-redesign)",
+      "Bash(PATH=\"/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/homebrew/bin:$PATH\" npm run type-check)",
+      "Bash(PATH=\"/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/homebrew/bin:$PATH\" npm run lint)",
+      "Bash(PATH=\"/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/homebrew/bin:$PATH\" npm run test:run)",
+      "Bash(PATH=\"/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/homebrew/bin:$PATH\" npx vitest run src/components/LiveBanner.test.tsx)",
+      "Bash(PATH=\"/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/homebrew/bin:$PATH\" npx tsc --noEmit)",
+      "Bash(PATH=\"/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/homebrew/bin:$PATH\" npx vitest run src/app/media/MediaContent.test.tsx)",
+      "Bash(PATH=\"/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/homebrew/bin:$PATH\" npx eslint --format compact)",
+      "Bash(PATH=\"/Users/rashidelhouli/.nvm/versions/node/v22.13.0/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/homebrew/bin:$PATH\" npx eslint src/app/media/ src/lib/youtube.ts src/app/api/youtube/streams/)",
+      "Bash(npx eslint src/lib/youtube.ts src/app/media/MediaContent.tsx src/app/media/MediaContent.test.tsx src/app/api/youtube/streams/route.ts src/app/api/youtube/playlists/[id]/route.ts src/test/setup.tsx)",
+      "Bash(npx tsc --noEmit)"
+    ]
+  }
+}
