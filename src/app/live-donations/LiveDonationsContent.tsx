@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import { Moon, Star, User, Trophy, Clock } from "lucide-react";
-import { useIsMounted } from "@/lib/time";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 const POLL_INTERVAL = 5_000; // 5 seconds
 const CAMPAIGN_GOAL = 360_000; // $360,000 AUD

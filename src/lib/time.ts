@@ -10,7 +10,11 @@
  *
  * The helpers below use `Intl.DateTimeFormat` with an explicit
  * `timeZone: "Australia/Melbourne"` option, which produces identical results
- * regardless of where the code executes.
+ * regardless of where the code executes. This file contains **pure functions
+ * only** — no React hooks — so it can safely be imported from server components
+ * and API routes as well as client components. For the client-only
+ * `useIsMounted` hook (gates `Date.now()`-dependent render output), see
+ * `@/hooks/useIsMounted`.
  *
  * **Rules** (also in `CLAUDE.md`):
  * - Do not call `date.getHours()`, `date.getMinutes()`, `date.getDate()`,
@@ -19,12 +23,11 @@
  * - Do not call `toLocaleDateString()` or `toLocaleTimeString()` without an
  *   explicit `timeZone` option. Use `formatMelbourneDate` / `formatMelbourneTime`.
  * - For any client-rendered value that depends on `Date.now()` (e.g. countdowns,
- *   "5 min ago" timestamps), gate the output behind `useIsMounted()` so the
- *   SSR and first client render produce matching HTML.
+ *   "5 min ago" timestamps), gate the output behind the `useIsMounted()` hook
+ *   from `@/hooks/useIsMounted`.
  *
  * @module lib/time
  */
-import { useSyncExternalStore } from "react";
 
 /**
  * The canonical IANA timezone for the Australian Islamic Centre audience.
@@ -137,28 +140,3 @@ export function formatMelbourneTime(
   });
 }
 
-/**
- * React hook that returns `false` during SSR and the first client render
- * (hydration), then flips to `true` once the component has mounted on the
- * client.
- *
- * Use this to gate any render output that depends on `Date.now()` or other
- * inherently non-deterministic values (e.g. countdown text like "in 3 min",
- * "5 minutes ago"). The SSR HTML will show the placeholder branch; the client
- * takes over after mount without a hydration mismatch.
- *
- * Implemented via `useSyncExternalStore` with a no-op subscribe so it never
- * re-renders on its own and doesn't trip the `react-hooks/set-state-in-effect`
- * lint rule.
- *
- * @example
- *   const isMounted = useIsMounted();
- *   const label = isMounted ? formatRelativeTime(donationDate) : "";
- *   return <span>{label}</span>;
- */
-const noopSubscribe: (onStoreChange: () => void) => () => void = () => () => {};
-const alwaysTrue = () => true;
-const alwaysFalse = () => false;
-export function useIsMounted(): boolean {
-  return useSyncExternalStore(noopSubscribe, alwaysTrue, alwaysFalse);
-}

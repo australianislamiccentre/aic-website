@@ -262,13 +262,20 @@ That module is the only place in the codebase allowed to use `Intl.DateTimeForma
 
 Helpers you should be reaching for:
 
+From `@/lib/time` (pure functions — safe to import anywhere):
+
 - `getMelbourneMinutesOfDay(date)` — "what's the minute-of-day in Melbourne right now?"
 - `getMelbourneDateString(date?)` — "what's today's Melbourne calendar date (YYYY-MM-DD)?"
 - `isSameMelbourneDay(a, b)` — "are these two instants on the same Melbourne day?"
 - `formatMelbourneDate(date, options?)` — "format this date for display in Melbourne tz"
 - `formatMelbourneTime(date, options?)` — "format this time for display in Melbourne tz"
-- `useIsMounted()` — hook that returns `false` during SSR and the first client render, then flips to `true`
 - `MELBOURNE_TZ` — the string `"Australia/Melbourne"` (import the constant, don't inline the string)
+
+From `@/hooks/useIsMounted` (React hook — client components only):
+
+- `useIsMounted()` — returns `false` during SSR and the first client render, then flips to `true` after mount. Used to gate `Date.now()`-dependent render output.
+
+The hook lives in its own file because Next.js disallows importing React hooks from modules that are reachable from server components; splitting keeps `lib/time.ts` importable from API routes and server components without pulling the hook into their module graph.
 
 **Rule 2: NEVER call these directly in component code:**
 
@@ -306,11 +313,33 @@ function RecentDonation({ at }: { at: string }) {
 }
 ```
 
-**Rule 4: Prefer string-based comparisons for date-only data.**
+**Rule 4: GROQ date filters take `$today` as a parameter, not `now()`.**
 
-Sanity `type: "date"` fields store `"YYYY-MM-DD"`. Compare them as strings (`>=`, `<=`, `===`) — do not round-trip through `new Date(...)` unless you specifically need Melbourne-aware calendar math, in which case use `getMelbourneDateString()`.
+Sanity `type: "date"` fields store `"YYYY-MM-DD"` in the admin's intended local calendar (Melbourne). GROQ's `now()` returns UTC, so using it inline for date-only comparisons introduces a ~10-hour skew at the Melbourne midnight boundary — an event that should disappear at midnight Melbourne keeps showing until UTC catches up.
 
-GROQ queries that filter by date already do this correctly with `string::split(string(now()), "T")[0]`. Follow that pattern for any new date filter.
+Correct pattern for date-only comparisons:
+
+```ts
+// src/sanity/lib/fetch.ts
+import { getMelbourneDateString } from "@/lib/time";
+
+export async function getEvents() {
+  return sanityFetch(eventsQuery, { today: getMelbourneDateString() }, ["events"]);
+}
+```
+
+```groq
+// src/sanity/lib/queries.ts
+export const eventsQuery = groq`
+  *[_type == "event" && active != false && (
+    date >= $today || endDate >= $today
+  )] { ... }
+`;
+```
+
+When comparing `datetime` fields (stored as UTC ISO strings, e.g. `expiresAt`) against "now", continue to use `expiresAt > now()` — that comparison is tz-neutral because both sides are absolute instants. `$today` is only for date-string fields.
+
+Prefer string-based comparisons for date-only data. Compare `"YYYY-MM-DD"` strings with `>=`, `<=`, `===` — do not round-trip through `new Date(...)` unless you specifically need Melbourne-aware calendar math, in which case use `getMelbourneDateString()`.
 
 **Rule 5: Tests run with `TZ=Australia/Melbourne`.**
 
@@ -631,3 +660,5 @@ Never push without running `npm run validate` first. Never create a branch from 
 4. **Framer Motion dynamic values cause hydration mismatch (2026-04-14):** `ScrollProgress` component used `motion.div` with `style={{ scaleX }}` where `scaleX` came from `useSpring(useScroll().scrollYProgress)`. On the server, Framer Motion renders a `<div>` with static inline styles. On the client, it injects different dynamic styles during hydration. Because `ScrollProgress` was a direct child in the root layout (sibling of `<main>`), the attribute mismatch caused React to lose its place in the DOM tree — it expected `<main>` but found `<section>` (the hero), producing a "Recoverable Error: Hydration failed" warning. **Fix:** Added rule to Animation Conventions: any `motion.*` component using dynamic motion values (`useScroll`, `useSpring`, `useTransform`, `useMotionValue`) must defer rendering until after mount. The `ScrollProgress` component was later removed entirely.
 
 5. **Timezone-local `Date` APIs in render caused site-wide hydration errors (2026-04-16):** The prayer widget — mounted in the root layout and therefore rendered on every page — called `date.getHours() * 60 + date.getMinutes()` inside `getNextPrayer()`. Vercel's Node runs in UTC, users' browsers run in Melbourne, so the two environments computed a different "current minute of day" → different "next prayer" name → different SSR vs hydration HTML. Sentry issue AIC-WEBSITE-1 fired 112+ times across every browser/device/geo in 24 hours before we caught it. Secondary issues: `parsePrayerTimeToDate()` used `setHours()` with runtime-local tz, and the "in X min" countdown text was computed from `Date.now()` during render. **Fix:** (1) Added the "Dates and hydration" section above with strict rules banning timezone-local `Date` methods outside `lib/time.ts`. (2) Extracted all Melbourne-aware helpers into `src/lib/time.ts` as the single source of truth. (3) Added a `useIsMounted()` hook from the same module for gating `Date.now()`-dependent render output. (4) Pinned `process.env.TZ = "Australia/Melbourne"` in `vitest.config.ts` so tests are deterministic across dev and CI. The rule is now: if a component needs to know "what time is it", it imports a helper from `lib/time.ts` — it does not call `Date` methods directly.
+
+6. **GROQ `now()` created a 10-hour Melbourne-midnight skew on event auto-hide (2026-04-17):** Event/program queries used `string::split(string(now()), "T")[0]` to extract "today's date" for filtering. `now()` returns UTC, so between Melbourne midnight (00:00 AEST/AEDT) and UTC midnight — roughly 10 hours each day — the extracted date was *yesterday* in Melbourne terms. An admin setting an event to end on April 19 would see it keep showing until 10am on April 20 (= UTC midnight). **Fix:** Changed all date-filtering queries (`eventsQuery`, `featuredEventsQuery`, `programsQuery`) to accept a `$today` parameter. Fetch functions compute `today = getMelbourneDateString()` server-side and pass it in. The datetime-comparison queries (`expiresAt > now()` on announcements) are unchanged — `datetime` fields are already UTC-anchored, so `now()` is correct for them. New rule in "Dates and hydration" documents this split.

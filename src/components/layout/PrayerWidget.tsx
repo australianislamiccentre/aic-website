@@ -21,6 +21,12 @@ import { usePathname } from "next/navigation";
 import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
 import { usePrayerWidgetScroll } from "@/hooks/usePrayerWidgetScroll";
 import { getPrayerTimesForDate, type PrayerName, type TodaysPrayerTimes } from "@/lib/prayer-times";
+import {
+  formatMelbourneDate,
+  getMelbourneDateString,
+  isSameMelbourneDay,
+} from "@/lib/time";
+import { useIsMounted } from "@/hooks/useIsMounted";
 import type { SanityPrayerSettings } from "@/types/sanity";
 
 interface PrayerWidgetProps {
@@ -67,47 +73,6 @@ function formatCountdown(target: Date | null): string {
   return `in ${h}h ${m}m`;
 }
 
-const MELBOURNE_TZ = "Australia/Melbourne";
-
-function formatMelbourneDate(date: Date): string {
-  return date.toLocaleDateString("en-AU", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: MELBOURNE_TZ,
-  });
-}
-
-function formatDateInputValue(date: Date): string {
-  // Format as YYYY-MM-DD in Melbourne's calendar day
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    timeZone: MELBOURNE_TZ,
-  }).formatToParts(date);
-  const year = parts.find((p) => p.type === "year")!.value;
-  const month = parts.find((p) => p.type === "month")!.value;
-  const day = parts.find((p) => p.type === "day")!.value;
-  return `${year}-${month}-${day}`;
-}
-
-function formatShortMelbourneDate(date: Date): string {
-  return date.toLocaleDateString("en-AU", {
-    month: "short",
-    day: "numeric",
-    timeZone: MELBOURNE_TZ,
-  });
-}
-
-function isSameMelbourneDay(a: Date, b: Date): boolean {
-  return (
-    a.toLocaleDateString("en-AU", { timeZone: MELBOURNE_TZ }) ===
-    b.toLocaleDateString("en-AU", { timeZone: MELBOURNE_TZ })
-  );
-}
-
 /** Parse "3:42 PM" → "15:42" for a <time datetime="..."> attribute. */
 function toISO24Hour(time: string): string {
   const match = time.match(/^(\d{1,2}):(\d{2})\s+(AM|PM)$/i);
@@ -146,20 +111,6 @@ function usePrefersReducedMotion(): boolean {
     getReducedMotionSnapshot,
     getServerReducedMotionSnapshot,
   );
-}
-
-/**
- * Returns `true` only after the first client render. SSR and the initial
- * client render both return `false`, so any `Date.now()`-dependent rendering
- * that depends on this flag will produce matching HTML on both sides — avoiding
- * hydration warnings. Implemented via `useSyncExternalStore` so it doesn't
- * trip the `react-hooks/set-state-in-effect` lint rule.
- */
-const noopSubscribe = () => () => {};
-const alwaysTrue = () => true;
-const alwaysFalse = () => false;
-function useIsMounted(): boolean {
-  return useSyncExternalStore(noopSubscribe, alwaysTrue, alwaysFalse);
 }
 
 export function PrayerWidget({ prayerSettings, testOpenInitially = false }: PrayerWidgetProps) {
@@ -437,13 +388,13 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                   onClick={openNativeDatePicker}
                   className="h-11 px-3 text-xs font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
                 >
-                  {isViewingToday ? "Today" : formatShortMelbourneDate(selectedDate)}
+                  {isViewingToday ? "Today" : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
                 </button>
                 <input
                   ref={dateInputRef}
                   type="date"
                   aria-label="Pick a date"
-                  value={formatDateInputValue(selectedDate)}
+                  value={getMelbourneDateString(selectedDate)}
                   onChange={handleDateInputChange}
                   tabIndex={-1}
                   className="sr-only"
