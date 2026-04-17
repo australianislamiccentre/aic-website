@@ -8,6 +8,7 @@
  */
 
 import { getIqamahConfig } from "./prayer-config";
+import { getMelbourneMinutesOfDay } from "./time";
 import type { SanityPrayerSettings } from "@/types/sanity";
 
 // Prayer times data for each day of the year
@@ -673,27 +674,11 @@ function getDefaultPrayerTimes(date: Date): TodaysPrayerTimes {
 }
 
 /**
- * Returns the Melbourne-timezone minutes-of-day (0..1439) for a given absolute instant.
- *
- * Used by `getNextPrayer` so "which prayer is next" is deterministic across runtimes:
- * Vercel's Node.js server runs in UTC, while the client runs in the user's local
- * timezone. Using `date.getHours()` directly diverges between the two environments,
- * producing different SSR and client markup and triggering React hydration errors.
- */
-function getMelbourneMinutesOfDay(date: Date): number {
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Australia/Melbourne",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(date);
-  const hours = Number(parts.find((p) => p.type === "hour")?.value ?? "0");
-  const minutes = Number(parts.find((p) => p.type === "minute")?.value ?? "0");
-  return hours * 60 + minutes;
-}
-
-/**
  * Get the next prayer based on current time
+ *
+ * `currentTime` is resolved via `getMelbourneMinutesOfDay` from `lib/time.ts`
+ * so the result is deterministic across runtimes — the Vercel server (UTC)
+ * and the user's browser (local tz) both read the same minutes-of-day.
  */
 export function getNextPrayer(
   date: Date = new Date(),

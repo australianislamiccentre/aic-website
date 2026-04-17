@@ -252,6 +252,74 @@ Never render FundraiseUp HTML without running it through this sanitizer first.
 
 ---
 
+## Dates and hydration
+
+The site serves a Melbourne-local audience. Vercel's Node runtime runs in UTC; users' browsers run in their own local timezone. Any code that reads timezone-local fields of `Date` (hours, minutes, calendar day) will produce different values on the server and the client — and React will throw a hydration mismatch. This is not theoretical; Sentry issue AIC-WEBSITE-1 was exactly this bug, firing 112+ times across every browser in production.
+
+**Rule 1: All timezone-sensitive operations go through `src/lib/time.ts`.**
+
+That module is the only place in the codebase allowed to use `Intl.DateTimeFormat` with a `timeZone` option, and the only place that builds Melbourne-specific calendar logic. Callers import the helpers — they do not reach for `Date` methods themselves.
+
+Helpers you should be reaching for:
+
+- `getMelbourneMinutesOfDay(date)` — "what's the minute-of-day in Melbourne right now?"
+- `getMelbourneDateString(date?)` — "what's today's Melbourne calendar date (YYYY-MM-DD)?"
+- `isSameMelbourneDay(a, b)` — "are these two instants on the same Melbourne day?"
+- `formatMelbourneDate(date, options?)` — "format this date for display in Melbourne tz"
+- `formatMelbourneTime(date, options?)` — "format this time for display in Melbourne tz"
+- `useIsMounted()` — hook that returns `false` during SSR and the first client render, then flips to `true`
+- `MELBOURNE_TZ` — the string `"Australia/Melbourne"` (import the constant, don't inline the string)
+
+**Rule 2: NEVER call these directly in component code:**
+
+```ts
+// 🔴 BANNED in components, hooks, and page.tsx files:
+date.getHours()            // returns runtime-local hours, not Melbourne
+date.getMinutes()
+date.getDate()
+date.getFullYear()
+date.setHours(...)
+date.setDate(...)
+date.toLocaleDateString()  // uses runtime locale and timezone
+date.toLocaleTimeString()
+date.toLocaleString()
+Date.parse(s)              // parses with runtime-local assumptions
+new Date(y, m, d, ...)     // constructs in runtime-local tz
+```
+
+These are allowed **only inside `src/lib/time.ts`** (and its tests), which wraps them with the right `Intl.DateTimeFormat` options.
+
+Also banned: the `new Date(date.toLocaleString("en-US", { timeZone: ... }))` round-trip pattern as a "timezone conversion trick". It silently drops milliseconds and doesn't handle DST boundaries. Use `Intl.DateTimeFormat.formatToParts` instead (already done inside `lib/time.ts`).
+
+**Rule 3: Anything that reads `Date.now()` during render must be gated.**
+
+Countdowns, "X minutes ago" timestamps, relative time displays — the server renders at T and the client hydrates at T + ~300ms, so the minute/second value can differ and trip hydration. Gate these behind `useIsMounted()`:
+
+```tsx
+import { useIsMounted } from "@/lib/time";
+
+function RecentDonation({ at }: { at: string }) {
+  const isMounted = useIsMounted();
+  // Empty string on SSR and first client render → identical HTML.
+  // Real text appears after mount. No hydration mismatch.
+  return <span>{isMounted ? formatRelativeTime(at) : ""}</span>;
+}
+```
+
+**Rule 4: Prefer string-based comparisons for date-only data.**
+
+Sanity `type: "date"` fields store `"YYYY-MM-DD"`. Compare them as strings (`>=`, `<=`, `===`) — do not round-trip through `new Date(...)` unless you specifically need Melbourne-aware calendar math, in which case use `getMelbourneDateString()`.
+
+GROQ queries that filter by date already do this correctly with `string::split(string(now()), "T")[0]`. Follow that pattern for any new date filter.
+
+**Rule 5: Tests run with `TZ=Australia/Melbourne`.**
+
+`vitest.config.ts` pins `process.env.TZ = "Australia/Melbourne"` before the worker pool starts. This means tests run in the same tz your devs use locally, and tests that assert specific date/time strings are deterministic. Do not remove this.
+
+**Why this section exists:** on 2026-04-15 we shipped a prayer widget that called `date.getHours()` during render. The server computed the "next prayer" based on UTC hours, the client computed it based on Melbourne hours, and React hydration errored on every page load for every visitor. Root cause was a single call to a seemingly-innocent stdlib method. The rules above are the minimum discipline needed to stop this class of bug from recurring.
+
+---
+
 ## Environment
 
 - Local dev: npm run dev at localhost:3000
@@ -561,3 +629,5 @@ Never push without running `npm run validate` first. Never create a branch from 
 3. **Revalidation webhook only busted page cache, not data cache (2026-04-01):** The `/api/revalidate` webhook called `revalidatePath()` but not `revalidateTag()`. In Next.js App Router, these bust separate caches — `revalidatePath` busts the rendered HTML cache, but `revalidateTag` busts the fetch data cache. Without both, pages would re-render using stale cached Sanity data. **Fix:** Added `revalidateTag("sanity")` and `revalidateTag(documentType)` calls to the webhook handler. Both are required for Sanity content changes to reflect immediately.
 
 4. **Framer Motion dynamic values cause hydration mismatch (2026-04-14):** `ScrollProgress` component used `motion.div` with `style={{ scaleX }}` where `scaleX` came from `useSpring(useScroll().scrollYProgress)`. On the server, Framer Motion renders a `<div>` with static inline styles. On the client, it injects different dynamic styles during hydration. Because `ScrollProgress` was a direct child in the root layout (sibling of `<main>`), the attribute mismatch caused React to lose its place in the DOM tree — it expected `<main>` but found `<section>` (the hero), producing a "Recoverable Error: Hydration failed" warning. **Fix:** Added rule to Animation Conventions: any `motion.*` component using dynamic motion values (`useScroll`, `useSpring`, `useTransform`, `useMotionValue`) must defer rendering until after mount. The `ScrollProgress` component was later removed entirely.
+
+5. **Timezone-local `Date` APIs in render caused site-wide hydration errors (2026-04-16):** The prayer widget — mounted in the root layout and therefore rendered on every page — called `date.getHours() * 60 + date.getMinutes()` inside `getNextPrayer()`. Vercel's Node runs in UTC, users' browsers run in Melbourne, so the two environments computed a different "current minute of day" → different "next prayer" name → different SSR vs hydration HTML. Sentry issue AIC-WEBSITE-1 fired 112+ times across every browser/device/geo in 24 hours before we caught it. Secondary issues: `parsePrayerTimeToDate()` used `setHours()` with runtime-local tz, and the "in X min" countdown text was computed from `Date.now()` during render. **Fix:** (1) Added the "Dates and hydration" section above with strict rules banning timezone-local `Date` methods outside `lib/time.ts`. (2) Extracted all Melbourne-aware helpers into `src/lib/time.ts` as the single source of truth. (3) Added a `useIsMounted()` hook from the same module for gating `Date.now()`-dependent render output. (4) Pinned `process.env.TZ = "Australia/Melbourne"` in `vitest.config.ts` so tests are deterministic across dev and CI. The rule is now: if a component needs to know "what time is it", it imports a helper from `lib/time.ts` — it does not call `Date` methods directly.
