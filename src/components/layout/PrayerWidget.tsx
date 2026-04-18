@@ -509,13 +509,19 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                         "block text-xl font-mono tracking-tight " +
                         (isNext ? "text-gray-900 font-semibold" : "text-gray-900 font-medium")
                       }
-                      dateTime={toISO24Hour(row.iqamah)}
+                      dateTime={toISO24Hour(row.adhan)}
                     >
-                      {row.iqamah}
-                    </time>
-                    <time className="block text-xs text-gray-400 font-mono mt-0.5" dateTime={toISO24Hour(row.adhan)}>
                       {row.adhan}
                     </time>
+                    <div className="flex items-baseline gap-1 mt-0.5">
+                      <span className="text-[10px] uppercase tracking-wider text-gray-400">Iqamah</span>
+                      <time
+                        className="block text-xs text-gray-400 font-mono"
+                        dateTime={toISO24Hour(row.iqamah)}
+                      >
+                        {row.iqamah}
+                      </time>
+                    </div>
                   </div>
                 );
               })}

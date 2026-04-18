@@ -127,7 +127,8 @@ describe("PrayerWidget — expanded content (when forced open for layout testing
 
     expect(screen.getByText("Next Prayer")).toBeInTheDocument();
     expect(screen.getByText("Athan")).toBeInTheDocument();
-    expect(screen.getByText("Iqamah")).toBeInTheDocument();
+    // "Iqamah" now appears in both the hero block and each grid cell — use getAllByText
+    expect(screen.getAllByText("Iqamah").length).toBeGreaterThan(0);
     // 3:42 PM = athan, 3:52 PM = iqamah — appear in both pill (hidden) and widget (visible)
     expect(screen.getAllByText("3:42 PM").length).toBeGreaterThan(0);
     expect(screen.getAllByText("3:52 PM").length).toBeGreaterThan(0);
@@ -359,6 +360,50 @@ describe("PrayerWidget — scroll auto-hide", () => {
     render(<PrayerWidget prayerSettings={null} />);
     const pill = screen.getByRole("button", { name: /open prayer times/i });
     expect(pill).toHaveAttribute("data-hidden-by-scroll", "false");
+  });
+});
+
+describe("PrayerWidget — grid hierarchy", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("renders athan as the primary (large) time and iqamah as the secondary (small) time", async () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const asrCell = document.querySelector('[data-prayer="asr"]') as HTMLElement;
+    expect(asrCell).not.toBeNull();
+
+    const timeElements = asrCell.querySelectorAll("time");
+    expect(timeElements.length).toBe(2);
+
+    const primary = timeElements[0];
+    const secondary = timeElements[1];
+
+    expect(primary.textContent).toContain("3:42 PM");
+    expect(secondary.textContent).toContain("3:52 PM");
+
+    expect(primary.className).toMatch(/text-xl/);
+    expect(secondary.className).toMatch(/text-xs/);
+  });
+
+  it("renders an 'Iqamah' label next to the secondary time", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const asrCell = document.querySelector('[data-prayer="asr"]') as HTMLElement;
+    expect(asrCell.textContent).toMatch(/Iqamah/);
+  });
+
+  it("applies the 'is next' emphasis class to the athan (primary) element, not iqamah", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const asrCell = document.querySelector('[data-prayer="asr"][data-is-next="true"]') as HTMLElement;
+    expect(asrCell).not.toBeNull();
+    const [primary, secondary] = asrCell.querySelectorAll("time");
+    expect(primary.className).toMatch(/font-semibold/);
+    expect(secondary.className).not.toMatch(/font-semibold/);
   });
 });
 
