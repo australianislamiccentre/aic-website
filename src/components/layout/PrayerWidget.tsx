@@ -64,18 +64,8 @@ function parsePrayerTimeToDate(time: string, isNextDay: boolean): Date | null {
   return target;
 }
 
+/** Live countdown `in MM:SS` or `in H:MM:SS`. Ticks every second. */
 function formatCountdown(target: Date | null): string {
-  if (!target) return "";
-  const diffMs = target.getTime() - Date.now();
-  const diffMin = Math.max(0, Math.floor(diffMs / 60000));
-  if (diffMin < 60) return `in ${diffMin} min`;
-  const h = Math.floor(diffMin / 60);
-  const m = diffMin % 60;
-  return `in ${h}h ${m}m`;
-}
-
-/** Countdown with seconds, for the hero block only. Ticks every second. */
-function formatCountdownWithSeconds(target: Date | null): string {
   if (!target) return "";
   const diffMs = target.getTime() - Date.now();
   const totalSec = Math.max(0, Math.floor(diffMs / 1000));
@@ -278,10 +268,11 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
     : parsePrayerTimeToDate(nextPrayer.adhan, nextPrayer.isNextDay);
   // Empty string on SSR and first client render keeps the `{countdown && ...}` block
   // hidden identically on both sides; real text appears after mount effect flips isMounted.
-  // Pill uses minute precision (glanceable, stable aria-live announcements).
-  // Hero uses second precision (live countdown, visual only).
+  // Live seconds countdown, rendered in both the pill and the hero.
+  // Marked aria-hidden wherever it appears — ticking every second would spam
+  // screen readers. The prayer name and time in the same block carry the
+  // semantic information.
   const countdown = isMounted ? formatCountdown(countdownTarget) : "";
-  const heroCountdown = isMounted ? formatCountdownWithSeconds(countdownTarget) : "";
 
   const jumuahArabic = prayerSettings?.jumuahArabicTime;
   const jumuahEnglish = prayerSettings?.jumuahEnglishTime;
@@ -328,7 +319,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                    max-[440px]:rounded-2xl max-[440px]:justify-between"
         style={{
           background: "linear-gradient(135deg, #01476b 0%, #01365c 100%)",
-          width: "360px",
+          width: "400px",
           bottom: "20px",
           transform: isOpen
             ? "translateX(-50%) translateY(120px) scale(0.9)"
@@ -356,7 +347,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         </span>
         <span className="flex items-center gap-2">
           {countdown && (
-            <span className="text-white/55 text-xs" aria-live="polite" aria-atomic="true">
+            <span className="text-white/55 text-xs tabular-nums" aria-hidden="true">
               {countdown}
             </span>
           )}
@@ -460,7 +451,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             {/* Hero block — Next prayer OR current prayer in its iqamah window */}
             <div
               className="relative mb-8 p-5 pl-6 rounded-2xl overflow-hidden"
-              style={{ background: "rgba(0, 173, 76, 0.06)" }}
+              style={{ background: "rgba(0, 173, 76, 0.12)" }}
             >
               <span
                 className="absolute left-0 top-0 bottom-0 w-1 bg-green-600"
@@ -471,14 +462,14 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 <span className="text-[10px] font-semibold text-green-700 uppercase tracking-[0.18em]">
                   {isInIqamahWindow ? "Iqamah" : "Next Prayer"}
                 </span>
-                {heroCountdown && (
+                {countdown && (
                   <>
                     <span className="text-green-300" aria-hidden="true">·</span>
                     <span
                       className="text-xs font-semibold text-green-700 tabular-nums"
                       aria-hidden="true"
                     >
-                      {heroCountdown}
+                      {countdown}
                     </span>
                   </>
                 )}
@@ -522,7 +513,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             </div>
 
             {/* Prayer grid — flat, no borders */}
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-x-4 gap-y-5 pb-6 border-b border-gray-100">
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-3 pb-6 border-b border-gray-100">
               {PRAYER_ORDER.map(({ key, displayName }) => {
                 const row = viewedPrayers[key];
                 const isNext = isViewingToday && nextPrayer.name === key;
@@ -542,7 +533,13 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                     data-prayer={key}
                     data-is-next={isNext ? "true" : undefined}
                     data-is-passed={isPassed ? "true" : undefined}
-                    className={isPassed ? "opacity-40" : undefined}
+                    className={
+                      "rounded-xl px-3 py-2.5 border transition-shadow " +
+                      (isPassed ? "opacity-40 " : "") +
+                      (isNext
+                        ? "bg-green-50 border-green-200 shadow-md"
+                        : "bg-white border-gray-100 shadow-sm")
+                    }
                   >
                     <div className="flex items-center gap-1.5 mb-1.5">
                       {isNext && <span className="w-1 h-1 rounded-full bg-green-600" aria-hidden="true" />}
@@ -552,8 +549,8 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                     </div>
                     <time
                       className={
-                        "block text-xl font-mono tracking-tight " +
-                        (isNext ? "text-gray-900 font-semibold" : "text-gray-900 font-medium")
+                        "block text-xl font-mono tracking-tight text-gray-900 " +
+                        (isNext ? "font-semibold" : "font-medium")
                       }
                       dateTime={toISO24Hour(row.adhan)}
                     >

@@ -62,8 +62,8 @@ describe("PrayerWidget — pill skeleton", () => {
 
   it("shows a countdown to the next prayer", () => {
     render(<PrayerWidget prayerSettings={null} />);
-    // Countdown appears in both the pill and the (hidden) widget body — 23 min before Asr
-    expect(screen.getAllByText(/in 23 min/i).length).toBeGreaterThan(0);
+    // Countdown is now "in MM:SS" — 23 min before Asr renders as "in 23:00"
+    expect(screen.getAllByText(/in 23:00/).length).toBeGreaterThan(0);
   });
 
   it("widget content is not visible by default", () => {
