@@ -526,15 +526,12 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                     >
                       {row.adhan}
                     </time>
-                    <div className="flex items-baseline gap-1 mt-0.5">
-                      <span className="text-[10px] uppercase tracking-wider text-gray-400">Iqamah</span>
-                      <time
-                        className="block text-xs text-gray-400 font-mono"
-                        dateTime={toISO24Hour(row.iqamah)}
-                      >
-                        {row.iqamah}
-                      </time>
-                    </div>
+                    <time
+                      className="block text-xs text-gray-400 font-mono whitespace-nowrap mt-0.5"
+                      dateTime={toISO24Hour(row.iqamah)}
+                    >
+                      {row.iqamah}
+                    </time>
                   </div>
                 );
               })}
@@ -543,16 +540,26 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             {/* Special prayers — flat list, no chips */}
             {(jumuahArabic || jumuahEnglish || (taraweehEnabled && taraweehTime) || (eidFitrActive && eidFitrTime) || (eidAdhaActive && eidAdhaTime)) && (
               <dl className="pt-5 divide-y divide-gray-100">
-                {jumuahArabic && (
+                {(jumuahArabic || jumuahEnglish) && (
                   <div className="flex items-baseline justify-between gap-4 py-2.5 text-sm">
-                    <dt className="text-gray-600">Jumu&apos;ah Arabic</dt>
-                    <dd className="text-gray-900 font-mono font-medium">{jumuahArabic}</dd>
-                  </div>
-                )}
-                {jumuahEnglish && (
-                  <div className="flex items-baseline justify-between gap-4 py-2.5 text-sm">
-                    <dt className="text-gray-600">Jumu&apos;ah English</dt>
-                    <dd className="text-gray-900 font-mono font-medium">{jumuahEnglish}</dd>
+                    <dt className="text-gray-600">Jumu&apos;ah</dt>
+                    <dd className="flex items-baseline gap-3 text-gray-900 font-medium">
+                      {jumuahArabic && (
+                        <span className="flex items-baseline gap-1.5">
+                          <span className="text-xs text-gray-500">Arabic</span>
+                          <span className="font-mono">{jumuahArabic}</span>
+                        </span>
+                      )}
+                      {jumuahArabic && jumuahEnglish && (
+                        <span className="h-3 w-px bg-gray-300" aria-hidden="true" />
+                      )}
+                      {jumuahEnglish && (
+                        <span className="flex items-baseline gap-1.5">
+                          <span className="text-xs text-gray-500">English</span>
+                          <span className="font-mono">{jumuahEnglish}</span>
+                        </span>
+                      )}
+                    </dd>
                   </div>
                 )}
                 {taraweehEnabled && taraweehTime && (

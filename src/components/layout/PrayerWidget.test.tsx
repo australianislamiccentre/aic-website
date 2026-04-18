@@ -141,17 +141,27 @@ describe("PrayerWidget — expanded content (when forced open for layout testing
     expect(screen.getAllByText("3:52 PM").length).toBeGreaterThan(0);
   });
 
-  it("renders Jumu'ah chips from Sanity when provided", () => {
+  it("renders Jumu'ah Arabic and English on one row with a divider", () => {
     const settings = {
       jumuahArabicTime: "1:00 PM",
       jumuahEnglishTime: "2:15 PM",
     } as unknown as import("@/types/sanity").SanityPrayerSettings;
 
-    render(<PrayerWidget prayerSettings={settings} testOpenInitially />);
-    expect(screen.getByText(/Jumu'ah Arabic/i)).toBeInTheDocument();
-    expect(screen.getByText("1:00 PM")).toBeInTheDocument();
-    expect(screen.getByText(/Jumu'ah English/i)).toBeInTheDocument();
-    expect(screen.getByText("2:15 PM")).toBeInTheDocument();
+    const { container } = render(<PrayerWidget prayerSettings={settings} testOpenInitially />);
+
+    // Single row labelled "Jumu'ah" with both times + language tags
+    const jumuahRow = Array.from(container.querySelectorAll("dt")).find(
+      (el) => el.textContent === "Jumu'ah"
+    ) as HTMLElement | undefined;
+    expect(jumuahRow).toBeDefined();
+
+    const dd = jumuahRow!.nextElementSibling as HTMLElement;
+    expect(dd.textContent).toContain("Arabic");
+    expect(dd.textContent).toContain("1:00 PM");
+    expect(dd.textContent).toContain("English");
+    expect(dd.textContent).toContain("2:15 PM");
+    // Vertical divider between the two times
+    expect(dd.querySelector('[aria-hidden="true"]')).not.toBeNull();
   });
 
   it("renders Taraweeh chip only when enabled in Sanity", () => {
@@ -398,10 +408,13 @@ describe("PrayerWidget — grid hierarchy", () => {
     expect(secondary.className).toMatch(/text-xs/);
   });
 
-  it("renders an 'Iqamah' label next to the secondary time", () => {
+  it("renders the secondary iqamah time on a single line (no wrap, no label)", () => {
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
     const asrCell = document.querySelector('[data-prayer="asr"]') as HTMLElement;
-    expect(asrCell.textContent).toMatch(/Iqamah/);
+    const [, secondary] = asrCell.querySelectorAll("time");
+    expect(secondary.className).toMatch(/whitespace-nowrap/);
+    // Cell text must not contain the word "Iqamah" (cleanup pass)
+    expect(asrCell.textContent).not.toMatch(/Iqamah/);
   });
 
   it("applies the 'is next' emphasis class to the athan (primary) element, not iqamah", () => {
