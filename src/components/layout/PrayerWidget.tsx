@@ -397,12 +397,14 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
       </button>
 
       {/* Screen-reader live region — announces next-prayer info once per
-          minute so SR users get the countdown without being spammed. */}
-      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {isMounted && countdownForSR
-          ? `Next prayer ${nextPrayer.displayName} at ${nextPrayer.adhan}, ${countdownForSR}`
-          : ""}
-      </span>
+          minute. Rendered only after mount to avoid any SSR/CSR drift;
+          nothing meaningful to announce before `isMounted` flips anyway. */}
+      {isMounted && (
+        <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          Next prayer {nextPrayer.displayName} at {nextPrayer.adhan}
+          {countdownForSR ? `, ${countdownForSR}` : ""}
+        </span>
+      )}
 
       {/* Expanded widget — always rendered, hidden via CSS when collapsed */}
       <div
