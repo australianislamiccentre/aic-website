@@ -518,57 +518,51 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               </div>
             </div>
 
-            {/* Prayer list — single column on mobile, two columns on desktop.
-                Each column is its own subgrid so name/athan/iqamah align
-                independently per column. */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 pb-5 mb-5 border-b border-white/10">
-              {[PRAYER_ORDER.slice(0, 3), PRAYER_ORDER.slice(3)].map((group, groupIdx) => (
-                <div key={groupIdx} className="grid grid-cols-[auto_1fr_auto] gap-x-6">
-                  {group.map(({ key, displayName }) => {
-                    const row = viewedPrayers[key];
-                    const isNext = isViewingToday && nextPrayer.name === key;
-                    const [iqH, iqM] = toISO24Hour(row.iqamah).split(":").map(Number);
-                    const iqamahMinutes = iqH * 60 + iqM;
-                    const isPassed =
-                      isViewingToday &&
-                      currentMelbMinutes !== null &&
-                      currentMelbMinutes >= iqamahMinutes &&
-                      !isNext;
-                    return (
-                      <div
-                        key={key}
-                        data-prayer={key}
-                        data-is-next={isNext ? "true" : undefined}
-                        data-is-passed={isPassed ? "true" : undefined}
-                        className={
-                          "grid grid-cols-subgrid col-span-3 items-baseline px-3 py-2.5 rounded-lg transition-colors " +
-                          (isPassed ? "opacity-40 " : "") +
-                          (isNext ? "bg-white/[0.08]" : "")
-                        }
-                      >
-                        <div className="flex items-center gap-2">
-                          {isNext && <span className="w-1.5 h-1.5 rounded-full bg-white flex-shrink-0" aria-hidden="true" />}
-                          <span className={"text-xs uppercase tracking-wider font-medium " + (isNext ? "text-white" : "text-white/50")}>
-                            {displayName}
-                          </span>
-                        </div>
-                        <time
-                          className="block text-base font-mono tracking-tight text-white whitespace-nowrap justify-self-end"
-                          dateTime={toISO24Hour(row.adhan)}
-                        >
-                          {row.adhan}
-                        </time>
-                        <time
-                          className="block text-sm font-mono text-white/40 whitespace-nowrap justify-self-end"
-                          dateTime={toISO24Hour(row.iqamah)}
-                        >
-                          {row.iqamah}
-                        </time>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+            {/* Prayer list — single column, columns aligned via subgrid */}
+            <div className="grid grid-cols-[auto_1fr_auto] gap-x-8 pb-5 mb-5 border-b border-white/10">
+              {PRAYER_ORDER.map(({ key, displayName }) => {
+                const row = viewedPrayers[key];
+                const isNext = isViewingToday && nextPrayer.name === key;
+                const [iqH, iqM] = toISO24Hour(row.iqamah).split(":").map(Number);
+                const iqamahMinutes = iqH * 60 + iqM;
+                const isPassed =
+                  isViewingToday &&
+                  currentMelbMinutes !== null &&
+                  currentMelbMinutes >= iqamahMinutes &&
+                  !isNext;
+                return (
+                  <div
+                    key={key}
+                    data-prayer={key}
+                    data-is-next={isNext ? "true" : undefined}
+                    data-is-passed={isPassed ? "true" : undefined}
+                    className={
+                      "grid grid-cols-subgrid col-span-3 items-baseline px-3 py-2.5 rounded-lg transition-colors " +
+                      (isPassed ? "opacity-40 " : "") +
+                      (isNext ? "bg-white/[0.08]" : "")
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      {isNext && <span className="w-1.5 h-1.5 rounded-full bg-white flex-shrink-0" aria-hidden="true" />}
+                      <span className={"text-xs uppercase tracking-wider font-medium " + (isNext ? "text-white" : "text-white/50")}>
+                        {displayName}
+                      </span>
+                    </div>
+                    <time
+                      className="block text-base font-mono tracking-tight text-white whitespace-nowrap justify-self-end"
+                      dateTime={toISO24Hour(row.adhan)}
+                    >
+                      {row.adhan}
+                    </time>
+                    <time
+                      className="block text-sm font-mono text-white/40 whitespace-nowrap justify-self-end"
+                      dateTime={toISO24Hour(row.iqamah)}
+                    >
+                      {row.iqamah}
+                    </time>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Special prayers — flat list, no chips */}
