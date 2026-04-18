@@ -15,6 +15,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { formatDate } from "@/lib/utils";
+import { formatMelbourneDate } from "@/lib/time";
 import { urlFor } from "@/sanity/lib/image";
 import { SanityEvent, SanityImage, SanitySimplePageSettings } from "@/types/sanity";
 import {
@@ -286,10 +287,10 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
             ) : isValidDate(event.date) ? (
               <>
                 <p className="text-2xl font-bold text-green-600">
-                  {new Date(event.date!).getDate()}
+                  {formatMelbourneDate(new Date(event.date!), { day: "numeric" })}
                 </p>
                 <p className="text-xs text-gray-500 uppercase">
-                  {new Date(event.date!).toLocaleDateString("en-US", { month: "short" })}
+                  {formatMelbourneDate(new Date(event.date!), { month: "short" })}
                 </p>
               </>
             ) : (
