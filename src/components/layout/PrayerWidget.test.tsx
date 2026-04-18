@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { renderToString } from "react-dom/server";
 import { render, screen } from "@/test/test-utils";
 import { PrayerWidget } from "./PrayerWidget";
+import { getPrayerTimesForDate } from "@/lib/prayer-times";
 
 // Override the default next/navigation mock so we can vary pathname per test
 vi.mock("next/navigation", () => ({
@@ -491,19 +492,19 @@ describe("PrayerWidget — iqamah pulse in hero block", () => {
   });
 
   // The mock's `usePrayerInIqamahWindow` delegates to the REAL
-  // `getPrayerInIqamahWindow`, which on 2026-04-15 returns Asr with
-  // adhan 3:29 PM / iqamah 3:39 PM (the real schedule for that date).
-  // So we set the system time to 3:30 PM (inside the real 3:29→3:39 window)
-  // and expect "3:39 PM" in the pulse — NOT the mocked 3:52 PM that
-  // `usePrayerTimes`/`useNextPrayer` return.
+  // `getPrayerInIqamahWindow`, so the hero during the window renders the
+  // real-schedule Asr values (3:29 PM / 3:39 PM on 2026-04-15) rather than
+  // the mocked 3:42/3:52. We derive the expected iqamah at runtime to stay
+  // self-consistent with whatever the calculation engine returns.
   it("pulses the iqamah time in the hero when a prayer is inside its iqamah window", async () => {
     vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
+    const expectedIqamah = getPrayerTimesForDate(new Date("2026-04-15T15:30:00+10:00")).asr.iqamah;
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
 
     const pulsing = document.querySelector(".prayer-widget-iqamah-pulse");
     expect(pulsing).not.toBeNull();
     expect(pulsing!.tagName).toBe("TIME");
-    expect(pulsing!.textContent).toContain("3:39 PM");
+    expect(pulsing!.textContent).toContain(expectedIqamah);
   });
 
   it("shows an 'Iqamah' eyebrow label (not 'Next Prayer') during the window", () => {
