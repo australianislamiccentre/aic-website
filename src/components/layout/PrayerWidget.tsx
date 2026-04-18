@@ -17,6 +17,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { ChevronUp } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { usePrayerTimes, useNextPrayer, usePrayerInIqamahWindow } from "@/hooks/usePrayerTimes";
 import { usePrayerWidgetScroll } from "@/hooks/usePrayerWidgetScroll";
@@ -345,13 +346,24 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           <span className="font-semibold text-base">{nextPrayer.displayName}</span>
           <span className="text-lime-300 font-bold font-mono text-base">{nextPrayer.adhan}</span>
         </span>
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-2.5">
           {countdown && (
             <span className="text-white/60 text-sm tabular-nums" aria-hidden="true">
               {countdown}
             </span>
           )}
-          <span className="text-white/40 text-xs" aria-hidden="true">▴</span>
+          <span
+            className="flex items-center gap-1 text-white/50 text-[10px] uppercase tracking-wider font-medium max-[440px]:hidden"
+            aria-hidden="true"
+          >
+            Tap
+            <ChevronUp className="w-3.5 h-3.5" strokeWidth={2.5} />
+          </span>
+          <ChevronUp
+            className="w-4 h-4 text-white/50 min-[441px]:hidden"
+            aria-hidden="true"
+            strokeWidth={2.5}
+          />
         </span>
       </button>
 
