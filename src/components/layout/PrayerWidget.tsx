@@ -368,7 +368,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                    shadow-[0_-24px_64px_rgba(0,0,0,0.45),0_-4px_16px_rgba(0,0,0,0.2)]
                    max-[440px]:w-[calc(100vw-24px)]"
         style={{
-          background: "linear-gradient(135deg, #01476b 0%, #01365c 100%)",
+          background: "#171717",
           width: "min(720px, calc(100vw - 24px))",
           height: "min(540px, calc(100vh - 40px))",
           transform: isOpen
