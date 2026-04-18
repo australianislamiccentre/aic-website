@@ -749,9 +749,9 @@ export function getPrayerInIqamahWindow(
   const times = getPrayerTimesForDate(date, prayerSettings);
   const currentMinutes = getMelbourneMinutesOfDay(date);
 
+  // Sunrise excluded — no congregational iqamah.
   const prayers: PrayerTime[] = [
     times.fajr,
-    times.sunrise,
     times.dhuhr,
     times.asr,
     times.maghrib,
@@ -759,8 +759,6 @@ export function getPrayerInIqamahWindow(
   ];
 
   for (const prayer of prayers) {
-    if (prayer.name === "sunrise") continue;
-
     const adhan24 = to24Hour(prayer.adhan);
     const iqamah24 = to24Hour(prayer.iqamah);
     const [adhanH, adhanM] = adhan24.split(":").map(Number);
