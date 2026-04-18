@@ -12,7 +12,7 @@
  * the same minute-of-day count, regardless of the executing environment's tz.
  */
 import { describe, it, expect } from "vitest";
-import { getNextPrayer } from "./prayer-times";
+import { getNextPrayer, addMinutesToTime } from "./prayer-times";
 
 describe("getNextPrayer — timezone determinism (hydration-mismatch regression)", () => {
   it("returns the same prayer for a UTC-midday instant regardless of caller's tz intent", () => {
@@ -47,5 +47,55 @@ describe("getNextPrayer — timezone determinism (hydration-mismatch regression)
 
     expect(result.isNextDay).toBe(true);
     expect(result.name).toBe("fajr");
+  });
+});
+
+describe("addMinutesToTime — pure string math (no Date involved)", () => {
+  it("adds a positive delay within the same hour", () => {
+    expect(addMinutesToTime("5:30 AM", 15)).toBe("5:45 AM");
+    expect(addMinutesToTime("1:15 PM", 10)).toBe("1:25 PM");
+  });
+
+  it("carries over to the next hour", () => {
+    expect(addMinutesToTime("5:55 AM", 10)).toBe("6:05 AM");
+    expect(addMinutesToTime("8:45 PM", 20)).toBe("9:05 PM");
+  });
+
+  it("handles AM→PM boundary at noon", () => {
+    expect(addMinutesToTime("11:50 AM", 15)).toBe("12:05 PM");
+    expect(addMinutesToTime("12:00 PM", 0)).toBe("12:00 PM");
+  });
+
+  it("handles PM→AM boundary at midnight (wraps to next day)", () => {
+    expect(addMinutesToTime("11:50 PM", 20)).toBe("12:10 AM");
+    expect(addMinutesToTime("11:59 PM", 1)).toBe("12:00 AM");
+  });
+
+  it("handles negative offsets (subtraction)", () => {
+    expect(addMinutesToTime("5:30 AM", -15)).toBe("5:15 AM");
+    expect(addMinutesToTime("12:05 AM", -10)).toBe("11:55 PM");
+  });
+
+  it("handles zero delta", () => {
+    expect(addMinutesToTime("9:00 AM", 0)).toBe("9:00 AM");
+    expect(addMinutesToTime("12:00 AM", 0)).toBe("12:00 AM");
+  });
+
+  it("pads single-digit minutes to two digits", () => {
+    expect(addMinutesToTime("5:00 AM", 5)).toBe("5:05 AM");
+    expect(addMinutesToTime("5:55 AM", 5)).toBe("6:00 AM");
+  });
+
+  it("returns the same output regardless of runtime timezone", () => {
+    // Pure string math — this is a compile-time guarantee, but assert it anyway
+    // as a regression guard in case someone reintroduces a Date dependency.
+    const cases: Array<[string, number, string]> = [
+      ["5:30 AM", 15, "5:45 AM"],
+      ["1:30 PM", 10, "1:40 PM"],
+      ["11:50 PM", 20, "12:10 AM"],
+    ];
+    for (const [input, delta, expected] of cases) {
+      expect(addMinutesToTime(input, delta)).toBe(expected);
+    }
   });
 });

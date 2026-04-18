@@ -12,65 +12,85 @@
 import { useState } from "react";
 import { CalendarPlus, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { melbourneInstant } from "@/lib/time";
 import { SanityEvent } from "@/types/sanity";
 
 interface AddToCalendarButtonProps {
   event: SanityEvent;
 }
 
+/** Format a UTC Date as a compact ISO string suitable for ICS/Google Calendar. */
+function formatCalendarInstant(instant: Date): string {
+  return instant.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+}
+
+/** Parse a time string like "9:00 AM" / "14:30" to 24-hour components. */
+function parseTime(timeStr: string): { hours: number; minutes: number } {
+  const match = timeStr.match(/(\d{1,2}):?(\d{2})?\s*(AM|PM)?/i);
+  if (!match) return { hours: 9, minutes: 0 };
+
+  let hours = parseInt(match[1]);
+  const minutes = parseInt(match[2] || "0");
+  const period = match[3]?.toUpperCase();
+
+  if (period === "PM" && hours < 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+
+  return { hours, minutes };
+}
+
+/** Parse event.date ("YYYY-MM-DD" from Sanity) into numeric components. */
+function parseEventDate(dateStr: string): { year: number; month: number; day: number } {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return { year, month, day };
+}
+
+/**
+ * Build the start/end UTC instants for an event, anchored to Melbourne wall-clock.
+ * Handles end-times that cross midnight by rolling to the next calendar day.
+ *
+ * This is the load-bearing correctness bit: the previous implementation used
+ * `new Date(event.date)` + `setHours(...)`, which interpreted hours in the
+ * *browser's* local timezone. For Melbourne visitors that worked by accident;
+ * for anyone overseas the exported calendar entry landed at the wrong absolute
+ * time. `melbourneInstant` pins the construction to Melbourne's wall-clock
+ * regardless of where the user's browser is.
+ */
+function getEventInstants(event: SanityEvent): { start: Date; end: Date } | null {
+  if (!event.date) return null;
+  const { year, month, day } = parseEventDate(event.date);
+
+  const { hours: startH, minutes: startM } = parseTime(event.time || "9:00 AM");
+  const start = melbourneInstant(year, month, day, startH, startM);
+
+  let end: Date;
+  if (event.endTime) {
+    const { hours: endH, minutes: endM } = parseTime(event.endTime);
+    end = melbourneInstant(year, month, day, endH, endM);
+    // If end <= start, the event crosses midnight Melbourne — roll to next day
+    if (end.getTime() <= start.getTime()) {
+      end = melbourneInstant(year, month, day + 1, endH, endM);
+    }
+  } else {
+    // Default: 2 hours after start
+    end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  }
+
+  return { start, end };
+}
+
 export function AddToCalendarButton({ event }: AddToCalendarButtonProps) {
   const [showModal, setShowModal] = useState(false);
 
-  // Format date for calendar (YYYYMMDD format)
-  const formatCalendarDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-  };
-
-  // Parse time string to get hours and minutes
-  const parseTime = (timeStr: string) => {
-    const match = timeStr.match(/(\d{1,2}):?(\d{2})?\s*(AM|PM)?/i);
-    if (!match) return { hours: 9, minutes: 0 };
-
-    let hours = parseInt(match[1]);
-    const minutes = parseInt(match[2] || "0");
-    const period = match[3]?.toUpperCase();
-
-    if (period === "PM" && hours < 12) hours += 12;
-    if (period === "AM" && hours === 12) hours = 0;
-
-    return { hours, minutes };
-  };
-
-  // Calculate end date from endTime if available, otherwise default to 2 hours
-  const getEndDate = (startDate: Date) => {
-    if (event.endTime) {
-      const { hours, minutes } = parseTime(event.endTime);
-      const end = new Date(startDate);
-      end.setHours(hours, minutes, 0, 0);
-      // If end is before start (e.g. crosses midnight), add a day
-      if (end <= startDate) end.setDate(end.getDate() + 1);
-      return end;
-    }
-    const end = new Date(startDate);
-    end.setHours(end.getHours() + 2);
-    return end;
-  };
-
   // Create calendar event URL for Google Calendar
   const getGoogleCalendarUrl = () => {
-    if (!event.date) return "#";
-
-    const { hours, minutes } = parseTime(event.time || "9:00 AM");
-    const startDate = new Date(event.date);
-    startDate.setHours(hours, minutes, 0, 0);
-
-    const endDate = getEndDate(startDate);
+    const instants = getEventInstants(event);
+    if (!instants) return "#";
 
     const params = new URLSearchParams({
       action: "TEMPLATE",
       text: event.title,
-      dates: `${formatCalendarDate(startDate.toISOString())}/${formatCalendarDate(endDate.toISOString())}`,
+      dates: `${formatCalendarInstant(instants.start)}/${formatCalendarInstant(instants.end)}`,
       details: event.description || "",
       location: `${event.location}, Australian Islamic Centre, 23-27 Blenheim Rd, Newport VIC 3015`,
     });
@@ -80,26 +100,17 @@ export function AddToCalendarButton({ event }: AddToCalendarButtonProps) {
 
   // Create iCal file content
   const generateICalContent = () => {
-    if (!event.date) return "";
-
-    const { hours, minutes } = parseTime(event.time || "9:00 AM");
-    const startDate = new Date(event.date);
-    startDate.setHours(hours, minutes, 0, 0);
-
-    const endDate = getEndDate(startDate);
-
-    const formatICalDate = (date: Date) => {
-      return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-    };
+    const instants = getEventInstants(event);
+    if (!instants) return "";
 
     const icalContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Australian Islamic Centre//Events//EN
 BEGIN:VEVENT
 UID:${event._id}@australianislamiccentre.org
-DTSTAMP:${formatICalDate(new Date())}
-DTSTART:${formatICalDate(startDate)}
-DTEND:${formatICalDate(endDate)}
+DTSTAMP:${formatCalendarInstant(new Date())}
+DTSTART:${formatCalendarInstant(instants.start)}
+DTEND:${formatCalendarInstant(instants.end)}
 SUMMARY:${event.title}
 DESCRIPTION:${(event.description || "").replace(/\n/g, "\\n")}
 LOCATION:${event.location}, Australian Islamic Centre, 23-27 Blenheim Rd, Newport VIC 3015
@@ -126,20 +137,15 @@ END:VCALENDAR`;
 
   // Create Outlook Web calendar URL
   const getOutlookUrl = () => {
-    if (!event.date) return "#";
-
-    const { hours, minutes } = parseTime(event.time || "9:00 AM");
-    const startDate = new Date(event.date);
-    startDate.setHours(hours, minutes, 0, 0);
-
-    const endDate = getEndDate(startDate);
+    const instants = getEventInstants(event);
+    if (!instants) return "#";
 
     const params = new URLSearchParams({
       path: "/calendar/action/compose",
       rru: "addevent",
       subject: event.title,
-      startdt: startDate.toISOString(),
-      enddt: endDate.toISOString(),
+      startdt: instants.start.toISOString(),
+      enddt: instants.end.toISOString(),
       body: event.description || "",
       location: `${event.location}, Australian Islamic Centre`,
     });

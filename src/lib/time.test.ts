@@ -14,6 +14,7 @@ import {
   getMelbourneMinutesOfDay,
   getMelbourneDateString,
   isSameMelbourneDay,
+  melbourneInstant,
   formatMelbourneDate,
   formatMelbourneTime,
 } from "./time";
@@ -132,5 +133,38 @@ describe("formatMelbourneTime", () => {
       hour12: false,
     });
     expect(result).toBe("15:19");
+  });
+});
+
+describe("melbourneInstant", () => {
+  it("converts Melbourne AEST wall-clock (winter) to the correct UTC instant", () => {
+    // 9 AM Melbourne on 2026-04-20 → AEST (UTC+10, post-DST) → 23:00 UTC previous day
+    const instant = melbourneInstant(2026, 4, 20, 9, 0);
+    expect(instant.toISOString()).toBe("2026-04-19T23:00:00.000Z");
+  });
+
+  it("converts Melbourne AEDT wall-clock (summer DST) to the correct UTC instant", () => {
+    // 9 AM Melbourne on 2026-01-15 → AEDT (UTC+11) → 22:00 UTC previous day
+    const instant = melbourneInstant(2026, 1, 15, 9, 0);
+    expect(instant.toISOString()).toBe("2026-01-14T22:00:00.000Z");
+  });
+
+  it("round-trips through Melbourne formatters: instant → Melbourne components → same instant", () => {
+    const original = melbourneInstant(2026, 4, 20, 14, 30);
+    expect(getMelbourneDateString(original)).toBe("2026-04-20");
+    expect(getMelbourneMinutesOfDay(original)).toBe(14 * 60 + 30);
+    expect(formatMelbourneTime(original, { hour: "2-digit", minute: "2-digit", hour12: false })).toBe("14:30");
+  });
+
+  it("handles midnight Melbourne correctly", () => {
+    const instant = melbourneInstant(2026, 4, 20, 0, 0);
+    // 00:00 Melbourne 2026-04-20 (AEST) = 14:00 UTC on 2026-04-19
+    expect(instant.toISOString()).toBe("2026-04-19T14:00:00.000Z");
+  });
+
+  it("handles 11:59 PM Melbourne correctly", () => {
+    const instant = melbourneInstant(2026, 4, 20, 23, 59);
+    // 23:59 Melbourne 2026-04-20 (AEST) = 13:59 UTC on 2026-04-20
+    expect(instant.toISOString()).toBe("2026-04-20T13:59:00.000Z");
   });
 });
