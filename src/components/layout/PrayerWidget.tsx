@@ -18,7 +18,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
-import { usePrayerTimes, useNextPrayer } from "@/hooks/usePrayerTimes";
+import { usePrayerTimes, useNextPrayer, usePrayerInIqamahWindow } from "@/hooks/usePrayerTimes";
 import { usePrayerWidgetScroll } from "@/hooks/usePrayerWidgetScroll";
 import { getPrayerTimesForDate, type PrayerName, type TodaysPrayerTimes } from "@/lib/prayer-times";
 import {
@@ -117,6 +117,9 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
   const pathname = usePathname();
   const todaysPrayers = usePrayerTimes(prayerSettings);
   const nextPrayer = useNextPrayer(prayerSettings);
+  const inIqamahWindow = usePrayerInIqamahWindow(prayerSettings);
+  const heroPrayer = inIqamahWindow ?? nextPrayer;
+  const isInIqamahWindow = inIqamahWindow !== null;
   const [isOpen, setIsOpen] = useState(testOpenInitially);
   const pillRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -251,7 +254,9 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
 
   if (pathname?.startsWith("/studio")) return null;
 
-  const countdownTarget = parsePrayerTimeToDate(nextPrayer.adhan, nextPrayer.isNextDay);
+  const countdownTarget = isInIqamahWindow
+    ? parsePrayerTimeToDate(heroPrayer.iqamah, false)
+    : parsePrayerTimeToDate(nextPrayer.adhan, nextPrayer.isNextDay);
   // Empty string on SSR and first client render keeps the `{countdown && ...}` block
   // hidden identically on both sides; real text appears after mount effect flips isMounted.
   const countdown = isMounted ? formatCountdown(countdownTarget) : "";
@@ -430,7 +435,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           </div>
 
           <div className="px-6 pt-6 pb-6 overflow-y-auto flex-1">
-            {/* Next prayer — hero block with subtle green wash + accent bar */}
+            {/* Hero block — Next prayer OR current prayer in its iqamah window */}
             <div
               className="relative mb-8 p-5 pl-6 rounded-2xl overflow-hidden"
               style={{ background: "rgba(0, 173, 76, 0.06)" }}
@@ -442,7 +447,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
 
               <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <span className="text-[10px] font-semibold text-green-700 uppercase tracking-[0.18em]">
-                  Next Prayer
+                  {isInIqamahWindow ? "Iqamah" : "Next Prayer"}
                 </span>
                 {countdown && (
                   <>
@@ -460,28 +465,36 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
 
               <div className="flex items-baseline justify-between gap-4 flex-wrap mb-3">
                 <div className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight leading-none">
-                  {nextPrayer.displayName}
+                  {heroPrayer.displayName}
                 </div>
                 <time
                   className="text-4xl md:text-5xl font-mono font-semibold text-gray-900 tracking-tight leading-none"
-                  dateTime={toISO24Hour(nextPrayer.adhan)}
+                  dateTime={toISO24Hour(heroPrayer.adhan)}
                 >
-                  {nextPrayer.adhan}
+                  {heroPrayer.adhan}
                 </time>
               </div>
 
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <span>
                   Athan{" "}
-                  <time className="text-gray-700 font-mono" dateTime={toISO24Hour(nextPrayer.adhan)}>
-                    {nextPrayer.adhan}
+                  <time className="text-gray-700 font-mono" dateTime={toISO24Hour(heroPrayer.adhan)}>
+                    {heroPrayer.adhan}
                   </time>
                 </span>
                 <span className="text-green-300" aria-hidden="true">·</span>
                 <span>
                   Iqamah{" "}
-                  <time className="text-green-700 font-mono font-semibold" dateTime={toISO24Hour(nextPrayer.iqamah)}>
-                    {nextPrayer.iqamah}
+                  <time
+                    className={
+                      "font-mono font-semibold " +
+                      (isInIqamahWindow
+                        ? "prayer-widget-iqamah-pulse"
+                        : "text-green-700")
+                    }
+                    dateTime={toISO24Hour(heroPrayer.iqamah)}
+                  >
+                    {heroPrayer.iqamah}
                   </time>
                 </span>
               </div>

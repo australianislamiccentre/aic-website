@@ -12,19 +12,25 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Mock the prayer hooks
-vi.mock("@/hooks/usePrayerTimes", () => ({
-  usePrayerTimes: () => ({
-    fajr:    { name: "fajr",    displayName: "Fajr",    adhan: "4:58 AM", iqamah: "5:15 AM" },
-    sunrise: { name: "sunrise", displayName: "Sunrise", adhan: "6:31 AM", iqamah: "6:46 AM" },
-    dhuhr:   { name: "dhuhr",   displayName: "Dhuhr",   adhan: "1:15 PM", iqamah: "1:25 PM" },
-    asr:     { name: "asr",     displayName: "Asr",     adhan: "3:42 PM", iqamah: "3:52 PM" },
-    maghrib: { name: "maghrib", displayName: "Maghrib", adhan: "5:51 PM", iqamah: "5:56 PM" },
-    isha:    { name: "isha",    displayName: "Isha",    adhan: "7:14 PM", iqamah: "7:24 PM" },
-  }),
-  useNextPrayer: () => ({
-    name: "asr", displayName: "Asr", adhan: "3:42 PM", iqamah: "3:52 PM", isNextDay: false,
-  }),
-}));
+vi.mock("@/hooks/usePrayerTimes", async () => {
+  const real = await vi.importActual<typeof import("@/lib/prayer-times")>(
+    "@/lib/prayer-times"
+  );
+  return {
+    usePrayerTimes: () => ({
+      fajr:    { name: "fajr",    displayName: "Fajr",    adhan: "4:58 AM", iqamah: "5:15 AM" },
+      sunrise: { name: "sunrise", displayName: "Sunrise", adhan: "6:31 AM", iqamah: "6:46 AM" },
+      dhuhr:   { name: "dhuhr",   displayName: "Dhuhr",   adhan: "1:15 PM", iqamah: "1:25 PM" },
+      asr:     { name: "asr",     displayName: "Asr",     adhan: "3:42 PM", iqamah: "3:52 PM" },
+      maghrib: { name: "maghrib", displayName: "Maghrib", adhan: "5:51 PM", iqamah: "5:56 PM" },
+      isha:    { name: "isha",    displayName: "Isha",    adhan: "7:14 PM", iqamah: "7:24 PM" },
+    }),
+    useNextPrayer: () => ({
+      name: "asr", displayName: "Asr", adhan: "3:42 PM", iqamah: "3:52 PM", isNextDay: false,
+    }),
+    usePrayerInIqamahWindow: () => real.getPrayerInIqamahWindow(new Date()),
+  };
+});
 
 // Mock the scroll hook so we don't deal with scroll events in component tests.
 // Using vi.fn() lets Task 6's tests override the return value per-test with mockReturnValue.
@@ -473,5 +479,45 @@ describe("PrayerWidget — Melbourne label", () => {
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
     const label = screen.getByTestId("widget-date-label");
     expect(label.textContent).toMatch(/^Melbourne · /);
+  });
+});
+
+describe("PrayerWidget — iqamah pulse in hero block", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // The mock's `usePrayerInIqamahWindow` delegates to the REAL
+  // `getPrayerInIqamahWindow`, which on 2026-04-15 returns Asr with
+  // adhan 3:29 PM / iqamah 3:39 PM (the real schedule for that date).
+  // So we set the system time to 3:30 PM (inside the real 3:29→3:39 window)
+  // and expect "3:39 PM" in the pulse — NOT the mocked 3:52 PM that
+  // `usePrayerTimes`/`useNextPrayer` return.
+  it("pulses the iqamah time in the hero when a prayer is inside its iqamah window", async () => {
+    vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const pulsing = document.querySelector(".prayer-widget-iqamah-pulse");
+    expect(pulsing).not.toBeNull();
+    expect(pulsing!.tagName).toBe("TIME");
+    expect(pulsing!.textContent).toContain("3:39 PM");
+  });
+
+  it("shows an 'Iqamah' eyebrow label (not 'Next Prayer') during the window", () => {
+    vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.textContent).toMatch(/Iqamah/);
+  });
+
+  it("does not apply the pulse class outside any iqamah window", () => {
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    expect(document.querySelector(".prayer-widget-iqamah-pulse")).toBeNull();
   });
 });
