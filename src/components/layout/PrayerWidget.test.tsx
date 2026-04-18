@@ -133,7 +133,8 @@ describe("PrayerWidget — expanded content (when forced open for layout testing
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
 
     expect(screen.getByText("Next Prayer")).toBeInTheDocument();
-    expect(screen.getByText("Athan")).toBeInTheDocument();
+    // "Athan" appears in both the hero block and the list column header
+    expect(screen.getAllByText("Athan").length).toBeGreaterThan(0);
     // "Iqamah" now appears in both the hero block and each grid cell — use getAllByText
     expect(screen.getAllByText("Iqamah").length).toBeGreaterThan(0);
     // 3:42 PM = athan, 3:52 PM = iqamah — appear in both pill (hidden) and widget (visible)
