@@ -336,14 +336,14 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         }}
       >
         <span className="flex items-center gap-3 flex-1 max-[440px]:flex-initial">
-          <span className="relative w-2 h-2 rounded-full bg-lime-400 flex-shrink-0">
-            <span className="absolute inset-0 rounded-full bg-lime-400 prayer-widget-pulse-ring" aria-hidden="true" />
+          <span className="relative w-2 h-2 rounded-full bg-white flex-shrink-0">
+            <span className="absolute inset-0 rounded-full bg-white prayer-widget-pulse-ring" aria-hidden="true" />
           </span>
           <span className="text-white/65 text-[11px] uppercase tracking-wider font-medium max-[440px]:text-[10px]">
             Next prayer
           </span>
           <span className="font-semibold">{nextPrayer.displayName}</span>
-          <span className="text-lime-300 font-bold font-mono">{nextPrayer.adhan}</span>
+          <span className="text-white font-bold font-mono">{nextPrayer.adhan}</span>
         </span>
         <span className="flex items-center gap-2">
           {countdown && (
@@ -452,22 +452,22 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             {/* Hero block — Next prayer OR current prayer in its iqamah window */}
             <div
               className="relative mb-8 p-5 pl-6 rounded-2xl overflow-hidden border border-white/10"
-              style={{ background: "rgba(132, 204, 22, 0.08)" }}
+              style={{ background: "rgba(255, 255, 255, 0.06)" }}
             >
               <span
-                className="absolute left-0 top-0 bottom-0 w-1 bg-lime-400"
+                className="absolute left-0 top-0 bottom-0 w-1 bg-white"
                 aria-hidden="true"
               />
 
               <div className="flex items-center gap-3 mb-4 flex-wrap">
-                <span className="text-[10px] font-semibold text-lime-300 uppercase tracking-[0.18em]">
+                <span className="text-[10px] font-semibold text-white uppercase tracking-[0.18em]">
                   {isInIqamahWindow ? "Iqamah" : "Next Prayer"}
                 </span>
                 {countdown && (
                   <>
-                    <span className="text-lime-300/40" aria-hidden="true">·</span>
+                    <span className="text-white/30" aria-hidden="true">·</span>
                     <span
-                      className="text-xs font-semibold text-lime-300 tabular-nums"
+                      className="text-xs font-semibold text-white tabular-nums"
                       aria-hidden="true"
                     >
                       {countdown}
@@ -481,7 +481,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                   {heroPrayer.displayName}
                 </div>
                 <time
-                  className="text-4xl md:text-5xl font-mono font-semibold text-lime-300 tracking-tight leading-none whitespace-nowrap"
+                  className="text-4xl md:text-5xl font-mono font-semibold text-white tracking-tight leading-none whitespace-nowrap"
                   dateTime={toISO24Hour(heroPrayer.adhan)}
                 >
                   {heroPrayer.adhan}
@@ -495,7 +495,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                     {heroPrayer.adhan}
                   </time>
                 </span>
-                <span className="text-lime-300/40" aria-hidden="true">·</span>
+                <span className="text-white/30" aria-hidden="true">·</span>
                 <span>
                   Iqamah{" "}
                   <time
@@ -503,7 +503,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                       "font-mono font-semibold " +
                       (isInIqamahWindow
                         ? "prayer-widget-iqamah-pulse"
-                        : "text-lime-300")
+                        : "text-white")
                     }
                     dateTime={toISO24Hour(heroPrayer.iqamah)}
                   >
@@ -538,13 +538,13 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                       "rounded-xl px-3 py-2.5 border transition-shadow " +
                       (isPassed ? "opacity-40 " : "") +
                       (isNext
-                        ? "bg-lime-400/15 border-lime-400/40 shadow-[0_4px_16px_rgba(132,204,22,0.2)]"
+                        ? "bg-white/15 border-white/40 shadow-[0_4px_16px_rgba(255,255,255,0.15)]"
                         : "bg-white/[0.06] border-white/10")
                     }
                   >
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      {isNext && <span className="w-1 h-1 rounded-full bg-lime-400" aria-hidden="true" />}
-                      <div className={"text-[10px] font-semibold uppercase tracking-[0.12em] " + (isNext ? "text-lime-300" : "text-white/50")}>
+                      {isNext && <span className="w-1 h-1 rounded-full bg-white" aria-hidden="true" />}
+                      <div className={"text-[10px] font-semibold uppercase tracking-[0.12em] " + (isNext ? "text-white" : "text-white/50")}>
                         {displayName}
                       </div>
                     </div>
