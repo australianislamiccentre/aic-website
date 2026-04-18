@@ -459,3 +459,19 @@ describe("PrayerWidget — accessibility & edge cases", () => {
     expect(pulseRing).toHaveAttribute("aria-hidden", "true");
   });
 });
+
+describe("PrayerWidget — Melbourne label", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("prefixes the date label with 'Melbourne · '", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const label = screen.getByTestId("widget-date-label");
+    expect(label.textContent).toMatch(/^Melbourne · /);
+  });
+});

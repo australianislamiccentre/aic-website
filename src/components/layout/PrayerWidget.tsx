@@ -369,7 +369,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             <div>
               <h2 className="text-base font-semibold text-gray-900 tracking-tight">Prayer Times</h2>
               <div className="text-xs text-gray-500 mt-0.5" data-testid="widget-date-label">
-                {formatMelbourneDate(selectedDate)}
+                Melbourne · {formatMelbourneDate(selectedDate)}
               </div>
             </div>
             <div className="flex items-center gap-0.5 -mr-2">
