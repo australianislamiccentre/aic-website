@@ -2,20 +2,23 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, userEvent } from "@/test/test-utils";
 import { Footer } from "./Footer";
 
-// Mock the aicInfo data
-vi.mock("@/data/content", () => ({
-  aicInfo: {
+// Mock SiteSettings context
+vi.mock("@/contexts/SiteSettingsContext", () => ({
+  useSiteSettings: () => ({
     name: "Australian Islamic Centre",
+    shortName: "AIC",
     tagline: "A beacon of faith and knowledge",
+    parentOrganization: "Newport Islamic Society",
+    phone: "(03) 9391 9303",
+    email: "contact@australianislamiccentre.org",
     address: {
       street: "15 Corporate Crescent",
       suburb: "Newport",
       state: "VIC",
       postcode: "3015",
       country: "Australia",
+      full: "15 Corporate Crescent, Newport VIC 3015",
     },
-    phone: "(03) 9391 9303",
-    email: "contact@australianislamiccentre.org",
     socialMedia: {
       facebook: "https://facebook.com/aic",
       instagram: "https://instagram.com/aic",
@@ -26,7 +29,13 @@ vi.mock("@/data/content", () => ({
       bookstore: "https://aicbookstore.com.au",
       newportStorm: "https://newportstorm.com.au",
     },
-  },
+    operatingHours: "Open Daily from Fajr to Isha",
+    customNavPages: [],
+    headerSettings: null,
+    footerSettings: null,
+  }),
+  SiteSettingsProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 describe("Footer", () => {
@@ -101,16 +110,6 @@ describe("Footer", () => {
     const facebookLink = screen.getByLabelText("Facebook");
     expect(facebookLink).toHaveAttribute("target", "_blank");
     expect(facebookLink).toHaveAttribute("rel", "noopener noreferrer");
-  });
-
-  it("renders affiliate links", () => {
-    render(<Footer />);
-
-    expect(screen.getByText("Affiliates")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /AIC College/i })).toHaveAttribute(
-      "href",
-      "https://aicollege.edu.au"
-    );
   });
 
   it("renders donate CTA section", () => {
@@ -201,6 +200,28 @@ describe("Footer", () => {
   it("renders Quranic verse", () => {
     render(<Footer />);
 
-    expect(screen.getByText(/Qur'an 2:261/)).toBeInTheDocument();
+    expect(screen.getByText(/Qur[\u2019']an 2:261/)).toBeInTheDocument();
+  });
+
+  /* ---------- Footer settings wiring ---------- */
+
+  describe("Footer settings wiring", () => {
+    it("renders operating hours from site settings", () => {
+      render(<Footer />);
+      expect(screen.getByText("Open Daily from Fajr to Isha")).toBeInTheDocument();
+    });
+
+    it("renders fallback bottom bar links when footerSettings is null", () => {
+      render(<Footer />);
+      expect(screen.getByRole("link", { name: /Privacy Policy/i })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /Terms of Use/i })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /Accessibility/i })).toBeInTheDocument();
+    });
+
+    it("renders fallback donate card when footerSettings is null", () => {
+      render(<Footer />);
+      expect(screen.getByText("Support Us")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /Donate Now/i })).toBeInTheDocument();
+    });
   });
 });

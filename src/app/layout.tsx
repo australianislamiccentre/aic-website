@@ -2,8 +2,9 @@
  * Root Layout
  *
  * Top-level layout wrapping every page in the application. Fetches siteSettings,
- * donationSettings, and formSettings from Sanity, then provides them via context.
- * Renders the Header, Footer, ScrollToTop, and FundraiseUpScript.
+ * donationSettings, formSettings, header/footer settings, and prayerSettings from
+ * Sanity, then provides them via context. Renders the Header, Footer, ScrollToTop,
+ * FundraiseUpScript, and the site-wide PrayerWidget.
  *
  * @module app/layout
  */
@@ -16,7 +17,17 @@ import { HeaderB } from "@/components/layout/HeaderB";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { PreviewBanner } from "@/components/PreviewBanner";
-import { getSiteSettings, getDonationSettings, getContactFormSettings, getServiceInquiryFormSettings, getNewsletterSettings, getNavigationPages, getPrayerSettings } from "@/sanity/lib/fetch";
+import {
+  getSiteSettings,
+  getDonationSettings,
+  getContactFormSettings,
+  getServiceInquiryFormSettings,
+  getNewsletterSettings,
+  getNavigationPages,
+  getHeaderSettings,
+  getFooterSettings,
+  getPrayerSettings,
+} from "@/sanity/lib/fetch";
 import { PrayerWidget } from "@/components/layout/PrayerWidget";
 import { FundraiseUpScript } from "@/components/FundraiseUpScript";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
@@ -108,6 +119,8 @@ export default async function RootLayout({
     newsletterSettingsRaw,
     liveStream,
     navigationPages,
+    headerSettings,
+    footerSettings,
     prayerSettings,
   ] = await Promise.all([
     draftMode(),
@@ -118,6 +131,8 @@ export default async function RootLayout({
     getNewsletterSettings(),
     getYouTubeLiveStream(),
     getNavigationPages(),
+    getHeaderSettings(),
+    getFooterSettings(),
     getPrayerSettings(),
   ]);
 
@@ -166,7 +181,7 @@ export default async function RootLayout({
             }),
           }}
         />
-        <SiteSettingsProvider siteSettings={siteSettings} customNavPages={navigationPages.map(p => ({ title: p.title, slug: p.slug, navLabel: p.navLabel }))}>
+        <SiteSettingsProvider siteSettings={siteSettings} customNavPages={navigationPages.map(p => ({ title: p.title, slug: p.slug, navLabel: p.navLabel }))} headerSettings={headerSettings} footerSettings={footerSettings}>
           <FormSettingsProvider
             contactFormSettings={contactFormSettingsRaw}
             serviceInquiryFormSettings={serviceInquiryFormSettingsRaw}

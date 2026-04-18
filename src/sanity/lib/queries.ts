@@ -687,7 +687,6 @@ export const partnersQuery = groq`
     name,
     "slug": slug.current,
     shortDescription,
-    logo,
     coverImage,
     icon,
     color,
@@ -703,10 +702,16 @@ export const partnerBySlugQuery = groq`
     "slug": slug.current,
     shortDescription,
     fullDescription,
-    logo,
     coverImage,
     icon,
     color,
+    heroTheme,
+    highlights[]{ _key, icon, title, description },
+    aboutHeading,
+    location,
+    ctaHeading,
+    ctaDescription,
+    ctaButtonLabel,
     website,
     email,
     phone,
@@ -867,6 +872,38 @@ export const newsletterSettingsQuery = groq`
     newsletterEnabled, newsletterRecipientEmail,
     newsletterHeading, newsletterDescription,
     newsletterButtonText, newsletterSuccessMessage
+  }
+`;
+
+// ── Navigation Settings queries ──
+
+export const headerSettingsQuery = groq`
+  *[_id == "headerSettings"][0]{
+    announcementBar,
+    topBar,
+    ctaButton,
+    menuDonateCard,
+    showSearch,
+    contactLink,
+    navGroups[]{
+      _key, label, description, icon, visible,
+      links[]{ _key, label, linkType, page, customUrl, url, visible }
+    }
+  }
+`;
+
+export const footerSettingsQuery = groq`
+  *[_id == "footerSettings"][0]{
+    newsletter,
+    brandDescription,
+    donateCard,
+    quranVerse,
+    bottomBarLinks[]{ _key, label, linkType, page, customUrl, url },
+    copyrightText,
+    navGroups[]{
+      _key, label, visible,
+      links[]{ _key, label, linkType, page, customUrl, url, visible }
+    }
   }
 `;
 

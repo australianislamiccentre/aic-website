@@ -87,6 +87,8 @@ import {
   serviceInquiryFormSettingsQuery,
   eventInquiryFormSettingsQuery,
   newsletterSettingsQuery,
+  headerSettingsQuery,
+  footerSettingsQuery,
 } from "./queries";
 import {
   SanityEvent,
@@ -119,6 +121,8 @@ import {
   SanityServiceInquiryFormSettings,
   SanityEventInquiryFormSettings,
   SanityNewsletterSettings,
+  SanityHeaderSettings,
+  SanityFooterSettings,
 } from "@/types/sanity";
 
 // Donation Settings type (Fundraise Up config)
@@ -828,6 +832,24 @@ export async function getEventInquiryFormSettings(): Promise<SanityEventInquiryF
 export async function getNewsletterSettings(): Promise<SanityNewsletterSettings | null> {
   try {
     return await sanityFetch<SanityNewsletterSettings>(newsletterSettingsQuery, {}, ["newsletterSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+// ── Navigation Settings ──
+
+export async function getHeaderSettings(): Promise<SanityHeaderSettings | null> {
+  try {
+    return await sanityFetch<SanityHeaderSettings | null>(headerSettingsQuery, {}, ["headerSettings"], { skipCdn: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function getFooterSettings(): Promise<SanityFooterSettings | null> {
+  try {
+    return await sanityFetch<SanityFooterSettings | null>(footerSettingsQuery, {}, ["footerSettings"], { skipCdn: true });
   } catch {
     return null;
   }

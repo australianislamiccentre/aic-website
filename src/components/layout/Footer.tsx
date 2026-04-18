@@ -34,20 +34,44 @@ import {
   Youtube,
   Heart,
   ArrowRight,
-  ExternalLink,
   CheckCircle2,
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { buildFooterNavGroups, buildAffiliateLinks } from "@/data/navigation";
+import { footerNavGroups } from "@/data/navigation";
+import { resolveLink } from "@/lib/resolve-link";
 
 /** Renders the site-wide footer. Consumes SiteSettings and FormSettings contexts. */
 export function Footer() {
   const info = useSiteSettings();
   const forms = useFormSettings();
 
-  const navGroups = buildFooterNavGroups(info.customNavPages);
-  const affiliateLinks = buildAffiliateLinks(info.externalLinks);
+  const fs = info.footerSettings;
+
+  // Merge nav groups from settings or fallback
+  const footerNavData = (fs?.navGroups && fs.navGroups.length > 0)
+    ? fs.navGroups
+      .filter(g => g.visible !== false)
+      .map(g => ({
+        label: g.label || "",
+        links: (g.links || [])
+          .filter(l => l.visible !== false)
+          .map(l => ({ name: l.label || "", href: resolveLink(l, "#") })),
+      }))
+    : footerNavGroups;
+
+  // Append custom pages if using Sanity groups
+  const customPageGroup = (fs?.navGroups && fs.navGroups.length > 0 && info.customNavPages && info.customNavPages.length > 0)
+    ? [{
+        label: "Pages",
+        links: info.customNavPages.map(p => ({
+          name: p.navLabel || p.title,
+          href: `/${p.slug}`,
+        })),
+      }]
+    : [];
+
+  const navGroups = [...footerNavData, ...customPageGroup];
 
   const socialLinks = [
     { name: "Facebook", icon: Facebook, href: info.socialMedia.facebook },
@@ -103,6 +127,7 @@ export function Footer() {
       </div>
 
       {/* Newsletter Section */}
+      {(fs?.newsletter?.visible !== false) && (
       <div className="relative border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -199,6 +224,7 @@ export function Footer() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Main Footer Content */}
       <div className="relative max-w-7xl mx-auto px-6 py-16">
@@ -216,7 +242,7 @@ export function Footer() {
             </Link>
 
             <p className="text-white/80 mb-6 leading-relaxed">
-              {info.tagline}. A centre for prayer, education, and community building, welcoming all who seek knowledge and spiritual growth.
+              {fs?.brandDescription ?? `${info.tagline}. A centre for prayer, education, and community building, welcoming all who seek knowledge and spiritual growth.`}
             </p>
 
             <div className="space-y-4">
@@ -242,10 +268,7 @@ export function Footer() {
               </div>
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
-                <p className="text-white/80">
-                  Open Daily<br />
-                  From Fajr to Isha
-                </p>
+                <p className="text-white/80">{info.operatingHours}</p>
               </div>
             </div>
 
@@ -271,9 +294,9 @@ export function Footer() {
           {/* About + What's On */}
           <div>
             {navGroups.slice(0, 2).map((group, groupIndex) => (
-              <div key={group.label} className={groupIndex > 0 ? "mt-8" : ""}>
-                <h4 className="font-semibold text-lg mb-6">{group.label}</h4>
-                <ul className="space-y-3">
+              <div key={group.label} className={groupIndex > 0 ? "mt-10" : ""}>
+                <h4 className="font-semibold text-lg mb-4">{group.label}</h4>
+                <ul className="space-y-2">
                   {group.links.map((link) => (
                     <li key={link.name}>
                       <Link
@@ -293,9 +316,9 @@ export function Footer() {
           {/* Our Mosque + Media & Resources */}
           <div>
             {navGroups.slice(2, 4).map((group, groupIndex) => (
-              <div key={group.label} className={groupIndex > 0 ? "mt-8" : ""}>
-                <h4 className="font-semibold text-lg mb-6">{group.label}</h4>
-                <ul className="space-y-3">
+              <div key={group.label} className={groupIndex > 0 ? "mt-10" : ""}>
+                <h4 className="font-semibold text-lg mb-4">{group.label}</h4>
+                <ul className="space-y-2">
                   {group.links.map((link) => (
                     <li key={link.name}>
                       <Link
@@ -314,10 +337,10 @@ export function Footer() {
 
           {/* Get Involved + Affiliates */}
           <div>
-            {navGroups.slice(4).map((group) => (
-              <div key={group.label}>
-                <h4 className="font-semibold text-lg mb-6">{group.label}</h4>
-                <ul className="space-y-3">
+            {navGroups.slice(4).map((group, groupIndex) => (
+              <div key={group.label} className={groupIndex > 0 ? "mt-10" : ""}>
+                <h4 className="font-semibold text-lg mb-4">{group.label}</h4>
+                <ul className="space-y-2">
                   {group.links.map((link) => (
                     <li key={link.name}>
                       <Link
@@ -333,43 +356,37 @@ export function Footer() {
               </div>
             ))}
 
-            {/* Affiliate Links */}
-            <h4 className="font-semibold text-lg mt-8 mb-4">Affiliates</h4>
-            <ul className="space-y-3">
-              {affiliateLinks.map((link) => (
-                <li key={link.name}>
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-teal-400 hover:text-teal-300 transition-colors inline-flex items-center gap-2 group"
-                  >
-                    <span>{link.name}</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </li>
-              ))}
-            </ul>
           </div>
 
           {/* Donate CTA */}
           <div>
-            <h4 className="font-semibold text-lg mb-6">Support Us</h4>
-            <div className="p-4 rounded-xl bg-gradient-to-br from-gold-500/20 to-gold-600/10 border border-gold-500/30">
-              <p className="text-sm text-white/80 mb-3">
-                Support our community programs, services, and the maintenance of our centre.
-              </p>
-              <Button href="/donate" variant="gold" size="sm" icon={<Heart className="w-4 h-4" />}>
-                Donate Now
-              </Button>
-            </div>
+            {(fs?.donateCard?.visible !== false) && (
+              <>
+                <h4 className="font-semibold text-lg mb-6">{fs?.donateCard?.heading ?? "Support Us"}</h4>
+                <div className="p-4 rounded-xl bg-gradient-to-br from-gold-500/20 to-gold-600/10 border border-gold-500/30">
+                  <p className="text-sm text-white/80 mb-3">
+                    {fs?.donateCard?.description ?? "Support our community programs, services, and the maintenance of our centre."}
+                  </p>
+                  <Button href={resolveLink(fs?.donateCard, "/donate")} variant="gold" size="sm" icon={<Heart className="w-4 h-4" />}>
+                    {fs?.donateCard?.buttonText ?? "Donate Now"}
+                  </Button>
+                </div>
+              </>
+            )}
 
-            <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
-              <p className="text-white/70 text-sm font-arabic text-center leading-relaxed">
-                &ldquo;مَثَلُ الَّذِينَ يُنْفِقُونَ أَمْوَالَهُمْ فِي سَبِيلِ اللَّهِ كَمَثَلِ حَبَّةٍ أَنْبَتَتْ سَبْعَ سَنَابِلَ&rdquo;
-              </p>
-              <p className="text-white/60 text-xs text-center mt-2">Qur&apos;an 2:261</p>
-            </div>
+            {(fs?.quranVerse?.visible !== false) && (
+              <div className={`${fs?.donateCard?.visible !== false ? "mt-6" : ""} p-4 rounded-xl bg-white/5 border border-white/10`}>
+                <p className="text-white/70 text-sm font-arabic text-center leading-relaxed">
+                  &ldquo;{fs?.quranVerse?.arabicText ?? "مَثَلُ الَّذِينَ يُنْفِقُونَ أَمْوَالَهُمْ فِي سَبِيلِ اللَّهِ كَمَثَلِ حَبَّةٍ أَنْبَتَتْ سَبْعَ سَنَابِلَ"}&rdquo;
+                </p>
+                {fs?.quranVerse?.translation && (
+                  <p className="text-white/50 text-xs text-center mt-2 italic">
+                    {fs.quranVerse.translation}
+                  </p>
+                )}
+                <p className="text-white/60 text-xs text-center mt-2">{fs?.quranVerse?.reference ?? "Qur\u2019an 2:261"}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -378,17 +395,28 @@ export function Footer() {
       <div className="relative border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/50">
-            <p>&copy; {currentYear} {info.name}. All rights reserved.</p>
+            <p>{fs?.copyrightText ?? `\u00A9 ${currentYear} ${info.name}. All rights reserved.`}</p>
             <div className="flex items-center gap-6">
-              <Link href="/privacy" className="hover:text-teal-400 transition-colors">
-                Privacy Policy
-              </Link>
-              <Link href="/terms" className="hover:text-teal-400 transition-colors">
-                Terms of Use
-              </Link>
-              <Link href="/accessibility" className="hover:text-teal-400 transition-colors">
-                Accessibility
-              </Link>
+              {(fs?.bottomBarLinks && fs.bottomBarLinks.length > 0)
+                ? fs.bottomBarLinks.map((link) => (
+                    <Link key={link._key} href={resolveLink(link, "#")} className="hover:text-teal-400 transition-colors">
+                      {link.label}
+                    </Link>
+                  ))
+                : (
+                  <>
+                    <Link href="/privacy" className="hover:text-teal-400 transition-colors">
+                      Privacy Policy
+                    </Link>
+                    <Link href="/terms" className="hover:text-teal-400 transition-colors">
+                      Terms of Use
+                    </Link>
+                    <Link href="/accessibility" className="hover:text-teal-400 transition-colors">
+                      Accessibility
+                    </Link>
+                  </>
+                )
+              }
             </div>
           </div>
         </div>

@@ -262,10 +262,21 @@ export interface SanityPartner {
   slug: string;
   shortDescription?: string;
   fullDescription?: PortableTextBlock[];
-  logo?: SanityImage;
   coverImage?: SanityImage;
   icon?: string;
   color?: string;
+  heroTheme?: "teal" | "blue" | "green" | "purple" | "orange";
+  highlights?: Array<{
+    _key?: string;
+    icon: string;
+    title: string;
+    description: string;
+  }>;
+  aboutHeading?: string;
+  location?: string;
+  ctaHeading?: string;
+  ctaDescription?: string;
+  ctaButtonLabel?: string;
   website?: string;
   email?: string;
   phone?: string;
@@ -293,11 +304,7 @@ export interface SanitySiteSettings {
   phone: string;
   email: string;
   googleMapsUrl?: string;
-  operatingHours?: {
-    weekdays?: string;
-    weekends?: string;
-    notes?: string;
-  };
+  operatingHours?: string;
   socialMedia?: {
     facebook?: string;
     instagram?: string;
@@ -591,7 +598,6 @@ export interface SanityContactPageSettings {
   heroHeadingAccent?: string;
   heroDescription?: string;
   sidebarVisible?: boolean;
-  operatingHours?: string;
   seo?: SanitySeoFields;
 }
 
@@ -745,4 +751,110 @@ export interface SanityPrayerSettings {
   // Eid al-Adha
   eidAdhaActive?: boolean;
   eidAdhaTime?: string;
+}
+
+/** Header settings singleton — announcement bar, CTA, nav groups, etc. */
+export interface SanityHeaderSettings {
+  announcementBar?: {
+    enabled?: boolean;
+    message?: string;
+    link?: string;
+    linkText?: string;
+    backgroundColor?: "teal" | "gold" | "lime" | "red";
+    dismissable?: boolean;
+  };
+  topBar?: {
+    desktopWelcome?: string;
+    mobileWelcome?: string;
+    visible?: boolean;
+  };
+  ctaButton?: {
+    label?: string;
+    linkType?: "page" | "custom";
+    page?: string;
+    customUrl?: string;
+    url?: string; // legacy fallback
+    icon?: string;
+    accentColor?: "lime" | "gold" | "teal";
+  };
+  menuDonateCard?: {
+    heading?: string;
+    description?: string;
+    buttonText?: string;
+    linkType?: "page" | "custom";
+    page?: string;
+    customUrl?: string;
+    url?: string; // legacy fallback
+    visible?: boolean;
+  };
+  showSearch?: boolean;
+  contactLink?: {
+    label?: string;
+    linkType?: "page" | "custom";
+    page?: string;
+    customUrl?: string;
+    url?: string; // legacy fallback
+    visible?: boolean;
+  };
+  navGroups?: SanityNavGroup[];
+}
+
+/** A navigation group with orderable links. Shared between header and footer. */
+export interface SanityNavGroup {
+  _key: string;
+  label?: string;
+  description?: string;
+  icon?: string;
+  visible?: boolean;
+  links?: SanityNavLink[];
+}
+
+/** A single navigation link within a group. */
+export interface SanityNavLink {
+  _key: string;
+  label?: string;
+  linkType?: "page" | "custom";
+  page?: string;
+  customUrl?: string;
+  url?: string; // legacy fallback
+  visible?: boolean;
+}
+
+/** Footer settings singleton — donate card, Qur'an verse, bottom links, etc. */
+export interface SanityFooterSettings {
+  newsletter?: {
+    visible?: boolean;
+  };
+  brandDescription?: string;
+  donateCard?: {
+    heading?: string;
+    description?: string;
+    buttonText?: string;
+    linkType?: "page" | "custom";
+    page?: string;
+    customUrl?: string;
+    url?: string; // legacy fallback
+    visible?: boolean;
+  };
+  quranVerse?: {
+    arabicText?: string;
+    translation?: string;
+    reference?: string;
+    visible?: boolean;
+  };
+  bottomBarLinks?: Array<{
+    _key: string;
+    label?: string;
+    linkType?: "page" | "custom";
+    page?: string;
+    customUrl?: string;
+    url?: string; // legacy fallback
+  }>;
+  copyrightText?: string;
+  navGroups?: Array<{
+    _key: string;
+    label?: string;
+    visible?: boolean;
+    links?: SanityNavLink[];
+  }>;
 }

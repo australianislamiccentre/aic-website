@@ -13,8 +13,6 @@ export default defineType({
 
     // ── Sidebar ──
     defineField({ name: "sidebarVisible", title: "Show Contact Sidebar", type: "boolean", initialValue: true, description: "Toggle to show/hide the contact sidebar" }),
-    defineField({ name: "operatingHours", title: "Operating Hours", type: "string", description: "Hours shown in sidebar (e.g. '4:30 AM – 10:30 PM Daily')" }),
-
     // ── SEO ──
     ...seoFields,
   ],
