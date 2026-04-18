@@ -317,11 +317,10 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                    rounded-full text-white text-base border border-white/10 z-[1000]
                    cursor-pointer shadow-[0_12px_32px_rgba(1,71,107,0.35),0_4px_12px_rgba(0,0,0,0.1)]
                    hover:shadow-[0_18px_42px_rgba(1,71,107,0.45),0_6px_16px_rgba(0,0,0,0.12)]
-                   max-[480px]:gap-2 max-[480px]:px-4 max-[480px]:py-3
-                   max-[440px]:justify-between"
+                   max-[480px]:gap-2 max-[480px]:px-4 max-[480px]:py-3"
         style={{
           background: "linear-gradient(135deg, #01476b 0%, #01365c 100%)",
-          width: "min(480px, calc(100vw - 24px))",
+          maxWidth: "calc(100vw - 24px)",
           bottom: "20px",
           transform: isOpen
             ? "translateX(-50%) translateY(120px) scale(0.9)"
@@ -337,35 +336,31 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               "box-shadow 300ms ease",
         }}
       >
-        <span className="flex items-center gap-3 flex-1 min-w-0 max-[480px]:gap-2">
-          <span className="relative w-2.5 h-2.5 rounded-full bg-lime-400 flex-shrink-0">
-            <span className="absolute inset-0 rounded-full bg-lime-400 prayer-widget-pulse-ring" aria-hidden="true" />
-          </span>
-          <span className="text-white/65 text-xs uppercase tracking-wider font-medium whitespace-nowrap max-[480px]:hidden">
-            Next prayer
-          </span>
-          <span className="font-semibold text-base whitespace-nowrap">{nextPrayer.displayName}</span>
-          <span className="text-lime-300 font-bold font-mono text-base whitespace-nowrap">{nextPrayer.adhan}</span>
+        <span className="relative w-2.5 h-2.5 rounded-full bg-lime-400 flex-shrink-0">
+          <span className="absolute inset-0 rounded-full bg-lime-400 prayer-widget-pulse-ring" aria-hidden="true" />
         </span>
-        <span className="flex items-center gap-2 flex-shrink-0">
-          {countdown && (
-            <span className="text-white/60 text-sm tabular-nums whitespace-nowrap max-[380px]:hidden" aria-hidden="true">
-              {countdown}
-            </span>
-          )}
-          <span
-            className="flex items-center gap-1 text-white/50 text-[10px] uppercase tracking-wider font-medium whitespace-nowrap max-[520px]:hidden"
-            aria-hidden="true"
-          >
-            Tap
-            <ChevronUp className="w-3.5 h-3.5" strokeWidth={2.5} />
-          </span>
-          <ChevronUp
-            className="w-4 h-4 text-white/50 min-[521px]:hidden"
-            aria-hidden="true"
-            strokeWidth={2.5}
-          />
+        <span className="text-white/65 text-xs uppercase tracking-wider font-medium whitespace-nowrap max-[480px]:hidden">
+          Next prayer
         </span>
+        <span className="font-semibold text-base whitespace-nowrap">{nextPrayer.displayName}</span>
+        <span className="text-lime-300 font-bold font-mono text-base whitespace-nowrap">{nextPrayer.adhan}</span>
+        {countdown && (
+          <span className="text-white/60 text-sm tabular-nums whitespace-nowrap -ml-1 max-[380px]:hidden" aria-hidden="true">
+            {countdown}
+          </span>
+        )}
+        <span
+          className="flex items-center gap-1 text-white/50 text-[10px] uppercase tracking-wider font-medium whitespace-nowrap ml-1 max-[520px]:hidden"
+          aria-hidden="true"
+        >
+          Tap
+          <ChevronUp className="w-3.5 h-3.5" strokeWidth={2.5} />
+        </span>
+        <ChevronUp
+          className="w-4 h-4 text-white/50 ml-1 min-[521px]:hidden"
+          aria-hidden="true"
+          strokeWidth={2.5}
+        />
       </button>
 
       {/* Expanded widget — always rendered, hidden via CSS when collapsed */}
