@@ -451,14 +451,9 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           <div className="px-6 pt-6 pb-6 overflow-y-auto flex-1">
             {/* Hero block — Next prayer OR current prayer in its iqamah window */}
             <div
-              className="relative mb-8 p-5 pl-6 rounded-2xl overflow-hidden border border-white/10"
+              className="relative mb-8 p-5 rounded-2xl overflow-hidden border border-white/10"
               style={{ background: "rgba(255, 255, 255, 0.06)" }}
             >
-              <span
-                className="absolute left-0 top-0 bottom-0 w-1 bg-white"
-                aria-hidden="true"
-              />
-
               <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <span className="text-[10px] font-semibold text-white uppercase tracking-[0.18em]">
                   {isInIqamahWindow ? "Iqamah" : "Next Prayer"}
