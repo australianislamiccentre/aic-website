@@ -480,7 +480,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                   {heroPrayer.displayName}
                 </div>
                 <time
-                  className="text-4xl md:text-5xl font-mono font-semibold text-gray-900 tracking-tight leading-none"
+                  className="text-4xl md:text-5xl font-mono font-semibold text-gray-900 tracking-tight leading-none whitespace-nowrap"
                   dateTime={toISO24Hour(heroPrayer.adhan)}
                 >
                   {heroPrayer.adhan}
@@ -513,7 +513,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             </div>
 
             {/* Prayer grid — flat, no borders */}
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-3 pb-6 border-b border-gray-100">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pb-6 border-b border-gray-100">
               {PRAYER_ORDER.map(({ key, displayName }) => {
                 const row = viewedPrayers[key];
                 const isNext = isViewingToday && nextPrayer.name === key;
@@ -549,7 +549,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                     </div>
                     <time
                       className={
-                        "block text-xl font-mono tracking-tight text-gray-900 " +
+                        "block text-lg md:text-xl font-mono tracking-tight text-gray-900 whitespace-nowrap " +
                         (isNext ? "font-semibold" : "font-medium")
                       }
                       dateTime={toISO24Hour(row.adhan)}
