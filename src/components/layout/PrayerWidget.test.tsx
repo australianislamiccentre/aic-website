@@ -404,26 +404,26 @@ describe("PrayerWidget — grid hierarchy", () => {
     expect(primary.textContent).toContain("3:42 PM");
     expect(secondary.textContent).toContain("3:52 PM");
 
-    expect(primary.className).toMatch(/text-xl/);
-    expect(secondary.className).toMatch(/text-xs/);
+    expect(primary.className).toMatch(/text-base/);
+    expect(secondary.className).toMatch(/text-sm/);
   });
 
-  it("renders the secondary iqamah time on a single line (no wrap, no label)", () => {
+  it("renders the secondary iqamah time on a single line (no label)", () => {
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
     const asrCell = document.querySelector('[data-prayer="asr"]') as HTMLElement;
     const [, secondary] = asrCell.querySelectorAll("time");
     expect(secondary.className).toMatch(/whitespace-nowrap/);
-    // Cell text must not contain the word "Iqamah" (cleanup pass)
     expect(asrCell.textContent).not.toMatch(/Iqamah/);
   });
 
-  it("applies the 'is next' emphasis class to the athan (primary) element, not iqamah", () => {
+  it("highlights the 'next' row with a background and a dot indicator", () => {
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
-    const asrCell = document.querySelector('[data-prayer="asr"][data-is-next="true"]') as HTMLElement;
-    expect(asrCell).not.toBeNull();
-    const [primary, secondary] = asrCell.querySelectorAll("time");
-    expect(primary.className).toMatch(/font-semibold/);
-    expect(secondary.className).not.toMatch(/font-semibold/);
+    const asrRow = document.querySelector('[data-prayer="asr"][data-is-next="true"]') as HTMLElement;
+    expect(asrRow).not.toBeNull();
+    // Whole row gets a subtle white background
+    expect(asrRow.className).toMatch(/bg-white/);
+    // Row contains a small dot before the prayer name
+    expect(asrRow.querySelector(".rounded-full")).not.toBeNull();
   });
 });
 

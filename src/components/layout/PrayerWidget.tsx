@@ -518,59 +518,57 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               </div>
             </div>
 
-            {/* Prayer grid — flat, no borders */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pb-6 border-b border-white/10">
-              {PRAYER_ORDER.map(({ key, displayName }) => {
-                const row = viewedPrayers[key];
-                const isNext = isViewingToday && nextPrayer.name === key;
-                // A prayer is "passed" once the current Melbourne minute-of-day
-                // is at or after its iqamah time, for today only. Muted visually
-                // so upcoming prayers read more prominently.
-                const [iqH, iqM] = toISO24Hour(row.iqamah).split(":").map(Number);
-                const iqamahMinutes = iqH * 60 + iqM;
-                const isPassed =
-                  isViewingToday &&
-                  currentMelbMinutes !== null &&
-                  currentMelbMinutes >= iqamahMinutes &&
-                  !isNext;
-                return (
-                  <div
-                    key={key}
-                    data-prayer={key}
-                    data-is-next={isNext ? "true" : undefined}
-                    data-is-passed={isPassed ? "true" : undefined}
-                    className={
-                      "rounded-xl px-3 py-2.5 border transition-shadow " +
-                      (isPassed ? "opacity-40 " : "") +
-                      (isNext
-                        ? "bg-white/15 border-white/40 shadow-[0_4px_16px_rgba(255,255,255,0.15)]"
-                        : "bg-white/[0.06] border-white/10")
-                    }
-                  >
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      {isNext && <span className="w-1 h-1 rounded-full bg-white" aria-hidden="true" />}
-                      <div className={"text-[10px] font-semibold uppercase tracking-[0.12em] " + (isNext ? "text-white" : "text-white/50")}>
-                        {displayName}
+            {/* Prayer list — single column on mobile, two columns on desktop.
+                Each column is its own subgrid so name/athan/iqamah align
+                independently per column. */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 pb-5 mb-5 border-b border-white/10">
+              {[PRAYER_ORDER.slice(0, 3), PRAYER_ORDER.slice(3)].map((group, groupIdx) => (
+                <div key={groupIdx} className="grid grid-cols-[auto_1fr_auto] gap-x-6">
+                  {group.map(({ key, displayName }) => {
+                    const row = viewedPrayers[key];
+                    const isNext = isViewingToday && nextPrayer.name === key;
+                    const [iqH, iqM] = toISO24Hour(row.iqamah).split(":").map(Number);
+                    const iqamahMinutes = iqH * 60 + iqM;
+                    const isPassed =
+                      isViewingToday &&
+                      currentMelbMinutes !== null &&
+                      currentMelbMinutes >= iqamahMinutes &&
+                      !isNext;
+                    return (
+                      <div
+                        key={key}
+                        data-prayer={key}
+                        data-is-next={isNext ? "true" : undefined}
+                        data-is-passed={isPassed ? "true" : undefined}
+                        className={
+                          "grid grid-cols-subgrid col-span-3 items-baseline px-3 py-2.5 rounded-lg transition-colors " +
+                          (isPassed ? "opacity-40 " : "") +
+                          (isNext ? "bg-white/[0.08]" : "")
+                        }
+                      >
+                        <div className="flex items-center gap-2">
+                          {isNext && <span className="w-1.5 h-1.5 rounded-full bg-white flex-shrink-0" aria-hidden="true" />}
+                          <span className={"text-xs uppercase tracking-wider font-medium " + (isNext ? "text-white" : "text-white/50")}>
+                            {displayName}
+                          </span>
+                        </div>
+                        <time
+                          className="block text-base font-mono tracking-tight text-white whitespace-nowrap justify-self-end"
+                          dateTime={toISO24Hour(row.adhan)}
+                        >
+                          {row.adhan}
+                        </time>
+                        <time
+                          className="block text-sm font-mono text-white/40 whitespace-nowrap justify-self-end"
+                          dateTime={toISO24Hour(row.iqamah)}
+                        >
+                          {row.iqamah}
+                        </time>
                       </div>
-                    </div>
-                    <time
-                      className={
-                        "block text-lg md:text-xl font-mono tracking-tight text-white whitespace-nowrap " +
-                        (isNext ? "font-semibold" : "font-medium")
-                      }
-                      dateTime={toISO24Hour(row.adhan)}
-                    >
-                      {row.adhan}
-                    </time>
-                    <time
-                      className="block text-xs text-white/40 font-mono whitespace-nowrap mt-0.5"
-                      dateTime={toISO24Hour(row.iqamah)}
-                    >
-                      {row.iqamah}
-                    </time>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              ))}
             </div>
 
             {/* Special prayers — flat list, no chips */}
