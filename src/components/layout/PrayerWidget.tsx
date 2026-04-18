@@ -461,10 +461,10 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           <div className="px-6 pt-4 pb-6 overflow-y-auto flex-1">
             {/* Hero block — Next prayer OR current prayer in its iqamah window */}
             <div
-              className="relative mb-5 p-5 rounded-2xl overflow-hidden border border-white/10"
+              className="relative mb-4 p-4 sm:p-5 rounded-2xl overflow-hidden border border-white/10"
               style={{ background: "rgba(255, 255, 255, 0.06)" }}
             >
-              <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <div className="flex items-center gap-3 mb-3 sm:mb-4 flex-wrap">
                 <span className="text-[10px] font-semibold text-white uppercase tracking-[0.18em]">
                   {isInIqamahWindow ? "Iqamah" : "Next Prayer"}
                 </span>
@@ -481,12 +481,12 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 )}
               </div>
 
-              <div className="flex items-baseline justify-between gap-4 flex-wrap mb-3">
-                <div className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-none">
+              <div className="flex items-baseline justify-between gap-3 mb-3">
+                <div className="text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-none whitespace-nowrap min-w-0 truncate">
                   {heroPrayer.displayName}
                 </div>
                 <time
-                  className="text-4xl md:text-5xl font-mono font-semibold text-white tracking-tight leading-none whitespace-nowrap"
+                  className="text-2xl sm:text-4xl md:text-5xl font-mono font-semibold text-white tracking-tight leading-none whitespace-nowrap"
                   dateTime={toISO24Hour(heroPrayer.adhan)}
                 >
                   {heroPrayer.adhan}
@@ -519,9 +519,9 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             </div>
 
             {/* Prayer list — single column, columns aligned via subgrid */}
-            <div className="grid grid-cols-[auto_1fr_auto] gap-x-8 pb-5 mb-5 border-b border-white/10">
+            <div className="grid grid-cols-[auto_1fr_auto] gap-x-6 sm:gap-x-8 pb-4 mb-4 border-b border-white/10">
               {/* Column headers */}
-              <div className="grid grid-cols-subgrid col-span-3 items-baseline px-3 pb-2.5 mb-1 border-b border-white/10">
+              <div className="grid grid-cols-subgrid col-span-3 items-baseline px-3 pb-2 mb-1 border-b border-white/10">
                 <span aria-hidden="true" />
                 <span className="text-xs uppercase tracking-wider text-white/40 font-medium justify-self-end">
                   Athan
@@ -547,7 +547,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                     data-is-next={isNext ? "true" : undefined}
                     data-is-passed={isPassed ? "true" : undefined}
                     className={
-                      "grid grid-cols-subgrid col-span-3 items-baseline px-3 py-3.5 rounded-lg transition-colors " +
+                      "grid grid-cols-subgrid col-span-3 items-baseline px-3 py-2.5 sm:py-3.5 rounded-lg transition-colors " +
                       (isPassed ? "opacity-40 " : "") +
                       (isNext ? "bg-white/[0.08]" : "")
                     }
