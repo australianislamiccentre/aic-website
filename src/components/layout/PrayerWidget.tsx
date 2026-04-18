@@ -384,71 +384,73 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
       >
           <div className="w-8 h-1 bg-white/20 rounded-full mx-auto mt-2.5 flex-shrink-0" aria-hidden="true" />
 
-          <div className="px-6 pt-3 pb-4 border-b border-white/10 flex items-start justify-between gap-4 flex-shrink-0">
-            <div>
+          <div className="px-6 pt-3 pb-3 border-b border-white/10 flex-shrink-0">
+            <div className="flex items-center justify-between gap-4">
               <h2 className="text-base font-semibold text-white tracking-tight">Prayer Times</h2>
-              <div className="text-xs text-white/60 mt-0.5" data-testid="widget-date-label">
-                Melbourne · {formatMelbourneDate(selectedDate)}
-              </div>
-            </div>
-            <div className="flex items-center gap-0.5 -mr-2">
-              <button
-                type="button"
-                aria-label="Previous day"
-                onClick={() => shiftDate(-1)}
-                className="h-11 w-11 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-xl font-light transition-colors flex items-center justify-center"
-              >
-                <span aria-hidden="true">‹</span>
-              </button>
-              <div className="relative">
-                <button
-                  type="button"
-                  aria-label={isViewingToday ? "Open date picker" : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`}
-                  onClick={openNativeDatePicker}
-                  className="h-11 px-3 text-xs font-medium text-white hover:bg-white/10 rounded-md transition-colors"
-                >
-                  {isViewingToday ? "Today" : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
-                </button>
-                <input
-                  ref={dateInputRef}
-                  type="date"
-                  aria-label="Pick a date"
-                  value={getMelbourneDateString(selectedDate)}
-                  onChange={handleDateInputChange}
-                  tabIndex={-1}
-                  className="sr-only"
-                />
-              </div>
-              <button
-                type="button"
-                aria-label="Next day"
-                onClick={() => shiftDate(1)}
-                className="h-11 w-11 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-xl font-light transition-colors flex items-center justify-center"
-              >
-                <span aria-hidden="true">›</span>
-              </button>
-              {!isViewingToday && (
-                <button
-                  type="button"
-                  aria-label="Back to today"
-                  onClick={goToToday}
-                  className="h-11 px-2.5 text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-colors"
-                >
-                  Reset
-                </button>
-              )}
               <button
                 type="button"
                 aria-label="Close prayer times"
                 onClick={closeWidget}
-                className="h-11 w-11 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-2xl font-light leading-none transition-colors flex items-center justify-center"
+                className="h-10 w-10 -mr-2 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-2xl font-light leading-none transition-colors flex items-center justify-center"
               >
                 <span aria-hidden="true">×</span>
               </button>
             </div>
+            <div className="text-xs text-white/60 mt-1" data-testid="widget-date-label">
+              Melbourne · {formatMelbourneDate(selectedDate)}
+            </div>
           </div>
 
-          <div className="px-6 pt-6 pb-6 overflow-y-auto flex-1">
+          {/* Date navigation — centred, sits above the hero card */}
+          <div className="px-6 pt-4 pb-1 flex items-center justify-center gap-1 flex-shrink-0">
+            <button
+              type="button"
+              aria-label="Previous day"
+              onClick={() => shiftDate(-1)}
+              className="h-10 w-10 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-xl font-light transition-colors flex items-center justify-center"
+            >
+              <span aria-hidden="true">‹</span>
+            </button>
+            <div className="relative">
+              <button
+                type="button"
+                aria-label={isViewingToday ? "Open date picker" : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`}
+                onClick={openNativeDatePicker}
+                className="h-10 px-4 text-sm font-medium text-white hover:bg-white/10 rounded-md transition-colors"
+              >
+                {isViewingToday ? "Today" : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
+              </button>
+              <input
+                ref={dateInputRef}
+                type="date"
+                aria-label="Pick a date"
+                value={getMelbourneDateString(selectedDate)}
+                onChange={handleDateInputChange}
+                tabIndex={-1}
+                className="sr-only"
+              />
+            </div>
+            <button
+              type="button"
+              aria-label="Next day"
+              onClick={() => shiftDate(1)}
+              className="h-10 w-10 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-xl font-light transition-colors flex items-center justify-center"
+            >
+              <span aria-hidden="true">›</span>
+            </button>
+            {!isViewingToday && (
+              <button
+                type="button"
+                aria-label="Back to today"
+                onClick={goToToday}
+                className="h-10 px-3 ml-1 text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+
+          <div className="px-6 pt-4 pb-6 overflow-y-auto flex-1">
             {/* Hero block — Next prayer OR current prayer in its iqamah window */}
             <div
               className="relative mb-8 p-5 rounded-2xl overflow-hidden border border-white/10"
