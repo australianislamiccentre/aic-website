@@ -520,6 +520,16 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
 
             {/* Prayer list — single column, columns aligned via subgrid */}
             <div className="grid grid-cols-[auto_1fr_auto] gap-x-8 pb-5 mb-5 border-b border-white/10">
+              {/* Column headers */}
+              <div className="grid grid-cols-subgrid col-span-3 items-baseline px-3 pb-2 mb-1 border-b border-white/10">
+                <span aria-hidden="true" />
+                <span className="text-[10px] uppercase tracking-wider text-white/40 font-medium justify-self-end">
+                  Athan
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-white/40 font-medium justify-self-end">
+                  Iqamah
+                </span>
+              </div>
               {PRAYER_ORDER.map(({ key, displayName }) => {
                 const row = viewedPrayers[key];
                 const isNext = isViewingToday && nextPrayer.name === key;
