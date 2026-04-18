@@ -405,8 +405,8 @@ describe("PrayerWidget — grid hierarchy", () => {
     expect(primary.textContent).toContain("3:42 PM");
     expect(secondary.textContent).toContain("3:52 PM");
 
-    expect(primary.className).toMatch(/text-base/);
-    expect(secondary.className).toMatch(/text-sm/);
+    expect(primary.className).toMatch(/text-xl/);
+    expect(secondary.className).toMatch(/text-base/);
   });
 
   it("renders the secondary iqamah time on a single line (no label)", () => {
