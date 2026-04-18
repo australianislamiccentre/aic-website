@@ -12,7 +12,7 @@
  * the same minute-of-day count, regardless of the executing environment's tz.
  */
 import { describe, it, expect } from "vitest";
-import { getNextPrayer, addMinutesToTime } from "./prayer-times";
+import { getNextPrayer, addMinutesToTime, getPrayerTimesForDate, getPrayerInIqamahWindow } from "./prayer-times";
 
 describe("getNextPrayer — timezone determinism (hydration-mismatch regression)", () => {
   it("returns the same prayer for a UTC-midday instant regardless of caller's tz intent", () => {
@@ -97,5 +97,58 @@ describe("addMinutesToTime — pure string math (no Date involved)", () => {
     for (const [input, delta, expected] of cases) {
       expect(addMinutesToTime(input, delta)).toBe(expected);
     }
+  });
+});
+
+describe("getPrayerInIqamahWindow", () => {
+  const baseDate = new Date("2026-04-15T12:00:00+10:00");
+  const schedule = getPrayerTimesForDate(baseDate);
+  const asrAthan = schedule.asr.adhan;
+  const asrIqamah = schedule.asr.iqamah;
+
+  function timeOnDate(time: string, dayISO: string): Date {
+    const match = time.match(/^(\d{1,2}):(\d{2})\s+(AM|PM)$/i)!;
+    let h = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+    if (match[3].toUpperCase() === "PM" && h !== 12) h += 12;
+    if (match[3].toUpperCase() === "AM" && h === 12) h = 0;
+    return new Date(`${dayISO}T${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`);
+  }
+
+  it("returns null one minute before athan", () => {
+    const oneMinBefore = new Date(timeOnDate(asrAthan, "2026-04-15").getTime() - 60_000);
+    expect(getPrayerInIqamahWindow(oneMinBefore)).toBeNull();
+  });
+
+  it("returns the prayer exactly at athan time", () => {
+    const atAthan = timeOnDate(asrAthan, "2026-04-15");
+    const result = getPrayerInIqamahWindow(atAthan);
+    expect(result).not.toBeNull();
+    expect(result!.name).toBe("asr");
+    expect(result!.adhan).toBe(asrAthan);
+    expect(result!.iqamah).toBe(asrIqamah);
+  });
+
+  it("returns the prayer one minute before iqamah", () => {
+    const oneMinBeforeIqamah = new Date(timeOnDate(asrIqamah, "2026-04-15").getTime() - 60_000);
+    const result = getPrayerInIqamahWindow(oneMinBeforeIqamah);
+    expect(result).not.toBeNull();
+    expect(result!.name).toBe("asr");
+  });
+
+  it("returns null exactly at iqamah time (window is closed-open)", () => {
+    const atIqamah = timeOnDate(asrIqamah, "2026-04-15");
+    expect(getPrayerInIqamahWindow(atIqamah)).toBeNull();
+  });
+
+  it("returns null well after iqamah", () => {
+    const wellAfter = new Date(timeOnDate(asrIqamah, "2026-04-15").getTime() + 30 * 60_000);
+    expect(getPrayerInIqamahWindow(wellAfter)).toBeNull();
+  });
+
+  it("skips sunrise (no congregational iqamah)", () => {
+    const sunriseAthan = schedule.sunrise.adhan;
+    const atSunrise = timeOnDate(sunriseAthan, "2026-04-15");
+    expect(getPrayerInIqamahWindow(atSunrise)).toBeNull();
   });
 });

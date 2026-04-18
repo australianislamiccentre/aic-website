@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { renderToString } from "react-dom/server";
 import { render, screen } from "@/test/test-utils";
 import { PrayerWidget } from "./PrayerWidget";
+import { getPrayerTimesForDate } from "@/lib/prayer-times";
 
 // Override the default next/navigation mock so we can vary pathname per test
 vi.mock("next/navigation", () => ({
@@ -12,19 +13,25 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Mock the prayer hooks
-vi.mock("@/hooks/usePrayerTimes", () => ({
-  usePrayerTimes: () => ({
-    fajr:    { name: "fajr",    displayName: "Fajr",    adhan: "4:58 AM", iqamah: "5:15 AM" },
-    sunrise: { name: "sunrise", displayName: "Sunrise", adhan: "6:31 AM", iqamah: "6:46 AM" },
-    dhuhr:   { name: "dhuhr",   displayName: "Dhuhr",   adhan: "1:15 PM", iqamah: "1:25 PM" },
-    asr:     { name: "asr",     displayName: "Asr",     adhan: "3:42 PM", iqamah: "3:52 PM" },
-    maghrib: { name: "maghrib", displayName: "Maghrib", adhan: "5:51 PM", iqamah: "5:56 PM" },
-    isha:    { name: "isha",    displayName: "Isha",    adhan: "7:14 PM", iqamah: "7:24 PM" },
-  }),
-  useNextPrayer: () => ({
-    name: "asr", displayName: "Asr", adhan: "3:42 PM", iqamah: "3:52 PM", isNextDay: false,
-  }),
-}));
+vi.mock("@/hooks/usePrayerTimes", async () => {
+  const real = await vi.importActual<typeof import("@/lib/prayer-times")>(
+    "@/lib/prayer-times"
+  );
+  return {
+    usePrayerTimes: () => ({
+      fajr:    { name: "fajr",    displayName: "Fajr",    adhan: "4:58 AM", iqamah: "5:15 AM" },
+      sunrise: { name: "sunrise", displayName: "Sunrise", adhan: "6:31 AM", iqamah: "6:46 AM" },
+      dhuhr:   { name: "dhuhr",   displayName: "Dhuhr",   adhan: "1:15 PM", iqamah: "1:25 PM" },
+      asr:     { name: "asr",     displayName: "Asr",     adhan: "3:42 PM", iqamah: "3:52 PM" },
+      maghrib: { name: "maghrib", displayName: "Maghrib", adhan: "5:51 PM", iqamah: "5:56 PM" },
+      isha:    { name: "isha",    displayName: "Isha",    adhan: "7:14 PM", iqamah: "7:24 PM" },
+    }),
+    useNextPrayer: () => ({
+      name: "asr", displayName: "Asr", adhan: "3:42 PM", iqamah: "3:52 PM", isNextDay: false,
+    }),
+    usePrayerInIqamahWindow: () => real.getPrayerInIqamahWindow(new Date()),
+  };
+});
 
 // Mock the scroll hook so we don't deal with scroll events in component tests.
 // Using vi.fn() lets Task 6's tests override the return value per-test with mockReturnValue.
@@ -55,8 +62,8 @@ describe("PrayerWidget — pill skeleton", () => {
 
   it("shows a countdown to the next prayer", () => {
     render(<PrayerWidget prayerSettings={null} />);
-    // Countdown appears in both the pill and the (hidden) widget body — 23 min before Asr
-    expect(screen.getAllByText(/in 23 min/i).length).toBeGreaterThan(0);
+    // Countdown is now "in MM:SS" — 23 min before Asr renders as "in 23:00"
+    expect(screen.getAllByText(/in 23:00/).length).toBeGreaterThan(0);
   });
 
   it("widget content is not visible by default", () => {
@@ -126,24 +133,36 @@ describe("PrayerWidget — expanded content (when forced open for layout testing
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
 
     expect(screen.getByText("Next Prayer")).toBeInTheDocument();
-    expect(screen.getByText("Athan")).toBeInTheDocument();
-    expect(screen.getByText("Iqamah")).toBeInTheDocument();
+    // "Athan" appears in both the hero block and the list column header
+    expect(screen.getAllByText("Athan").length).toBeGreaterThan(0);
+    // "Iqamah" now appears in both the hero block and each grid cell — use getAllByText
+    expect(screen.getAllByText("Iqamah").length).toBeGreaterThan(0);
     // 3:42 PM = athan, 3:52 PM = iqamah — appear in both pill (hidden) and widget (visible)
     expect(screen.getAllByText("3:42 PM").length).toBeGreaterThan(0);
     expect(screen.getAllByText("3:52 PM").length).toBeGreaterThan(0);
   });
 
-  it("renders Jumu'ah chips from Sanity when provided", () => {
+  it("renders Jumu'ah Arabic and English on one row with a divider", () => {
     const settings = {
       jumuahArabicTime: "1:00 PM",
       jumuahEnglishTime: "2:15 PM",
     } as unknown as import("@/types/sanity").SanityPrayerSettings;
 
-    render(<PrayerWidget prayerSettings={settings} testOpenInitially />);
-    expect(screen.getByText(/Jumu'ah Arabic/i)).toBeInTheDocument();
-    expect(screen.getByText("1:00 PM")).toBeInTheDocument();
-    expect(screen.getByText(/Jumu'ah English/i)).toBeInTheDocument();
-    expect(screen.getByText("2:15 PM")).toBeInTheDocument();
+    const { container } = render(<PrayerWidget prayerSettings={settings} testOpenInitially />);
+
+    // Single row labelled "Jumu'ah" with both times + language tags
+    const jumuahRow = Array.from(container.querySelectorAll("dt")).find(
+      (el) => el.textContent === "Jumu'ah"
+    ) as HTMLElement | undefined;
+    expect(jumuahRow).toBeDefined();
+
+    const dd = jumuahRow!.nextElementSibling as HTMLElement;
+    expect(dd.textContent).toContain("Arabic");
+    expect(dd.textContent).toContain("1:00 PM");
+    expect(dd.textContent).toContain("English");
+    expect(dd.textContent).toContain("2:15 PM");
+    // Vertical divider between the two times
+    expect(dd.querySelector('[aria-hidden="true"]')).not.toBeNull();
   });
 
   it("renders Taraweeh chip only when enabled in Sanity", () => {
@@ -362,6 +381,53 @@ describe("PrayerWidget — scroll auto-hide", () => {
   });
 });
 
+describe("PrayerWidget — grid hierarchy", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("renders athan as the primary (large) time and iqamah as the secondary (small) time", async () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const asrCell = document.querySelector('[data-prayer="asr"]') as HTMLElement;
+    expect(asrCell).not.toBeNull();
+
+    const timeElements = asrCell.querySelectorAll("time");
+    expect(timeElements.length).toBe(2);
+
+    const primary = timeElements[0];
+    const secondary = timeElements[1];
+
+    expect(primary.textContent).toContain("3:42 PM");
+    expect(secondary.textContent).toContain("3:52 PM");
+
+    expect(primary.className).toMatch(/text-xl/);
+    expect(secondary.className).toMatch(/text-base/);
+  });
+
+  it("renders the secondary iqamah time on a single line (no label)", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const asrCell = document.querySelector('[data-prayer="asr"]') as HTMLElement;
+    const [, secondary] = asrCell.querySelectorAll("time");
+    expect(secondary.className).toMatch(/whitespace-nowrap/);
+    expect(asrCell.textContent).not.toMatch(/Iqamah/);
+  });
+
+  it("highlights the 'next' row with a background and a dot indicator", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const asrRow = document.querySelector('[data-prayer="asr"][data-is-next="true"]') as HTMLElement;
+    expect(asrRow).not.toBeNull();
+    // Whole row gets a subtle white background
+    expect(asrRow.className).toMatch(/bg-white/);
+    // Row contains a small dot before the prayer name
+    expect(asrRow.querySelector(".rounded-full")).not.toBeNull();
+  });
+});
+
 describe("PrayerWidget — accessibility & edge cases", () => {
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
@@ -412,5 +478,156 @@ describe("PrayerWidget — accessibility & edge cases", () => {
     const { container } = render(<PrayerWidget prayerSettings={null} />);
     const pulseRing = container.querySelector(".prayer-widget-pulse-ring");
     expect(pulseRing).toHaveAttribute("aria-hidden", "true");
+  });
+});
+
+describe("PrayerWidget — Melbourne label", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("prefixes the date label with 'Melbourne · '", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const label = screen.getByTestId("widget-date-label");
+    expect(label.textContent).toMatch(/^Melbourne · /);
+  });
+});
+
+describe("PrayerWidget — iqamah pulse in hero block", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // The mock's `usePrayerInIqamahWindow` delegates to the REAL
+  // `getPrayerInIqamahWindow`, so the hero during the window renders the
+  // real-schedule Asr values (3:29 PM / 3:39 PM on 2026-04-15) rather than
+  // the mocked 3:42/3:52. We derive the expected iqamah at runtime to stay
+  // self-consistent with whatever the calculation engine returns.
+  it("pulses the iqamah time in the hero when a prayer is inside its iqamah window", async () => {
+    vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
+    const expectedIqamah = getPrayerTimesForDate(new Date("2026-04-15T15:30:00+10:00")).asr.iqamah;
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const pulsing = document.querySelector(".prayer-widget-iqamah-pulse");
+    expect(pulsing).not.toBeNull();
+    expect(pulsing!.tagName).toBe("TIME");
+    expect(pulsing!.textContent).toContain(expectedIqamah);
+  });
+
+  it("shows an 'Iqamah' eyebrow label (not 'Next Prayer') during the window", () => {
+    vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.textContent).toMatch(/Iqamah/);
+  });
+
+  it("does not apply the pulse class outside any iqamah window", () => {
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    expect(document.querySelector(".prayer-widget-iqamah-pulse")).toBeNull();
+  });
+});
+
+describe("PrayerWidget — passed prayers dimmed", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("marks prayers whose iqamah has passed as passed (today)", () => {
+    // 9:00 PM Melbourne — past Isha iqamah (real schedule ~7:12 PM), so all
+    // prayers today have passed. Fajr/Dhuhr/Asr/Maghrib/Isha cells should
+    // be flagged as passed; sunrise does too (its "iqamah" equals its adhan).
+    vi.setSystemTime(new Date("2026-04-15T21:00:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const fajrCell = document.querySelector('[data-prayer="fajr"]') as HTMLElement;
+    expect(fajrCell.dataset.isPassed).toBe("true");
+    expect(fajrCell.className).toMatch(/opacity-40/);
+  });
+
+  it("does not mark the 'next' prayer as passed", () => {
+    // 3:19 PM — Asr is next. Earlier prayers (Fajr, Sunrise, Dhuhr) should be
+    // passed; Asr itself must NOT be passed even if its state flips later.
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const asrCell = document.querySelector('[data-prayer="asr"]') as HTMLElement;
+    expect(asrCell.dataset.isPassed).toBeUndefined();
+    const fajrCell = document.querySelector('[data-prayer="fajr"]') as HTMLElement;
+    expect(fajrCell.dataset.isPassed).toBe("true");
+  });
+});
+
+describe("PrayerWidget — hero countdown with seconds", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00")); // 23 min before Asr
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("renders the hero countdown in MM:SS format when under an hour", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const dialog = screen.getByRole("dialog");
+    // The hero countdown appears as "in M:SS" or "in MM:SS"; at 23 min to Asr
+    // (3:42 PM), the initial render is "in 23:00".
+    expect(dialog.textContent).toMatch(/in \d{1,2}:\d{2}/);
+  });
+});
+
+describe("PrayerWidget — screen reader countdown", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00")); // 23 min to Asr
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("renders a polite live region announcing the next prayer at minute precision", () => {
+    const { container } = render(<PrayerWidget prayerSettings={null} />);
+    const status = container.querySelector('[role="status"][aria-live="polite"]');
+    expect(status).not.toBeNull();
+    // At 3:19 PM the next prayer Asr is in 23 minutes — minute precision, no seconds
+    expect(status!.textContent).toMatch(/Next prayer Asr at 3:42 PM, in 23 minutes/);
+    // No seconds-precision countdown string like "in 23:00" in the SR live region
+    expect(status!.textContent).not.toMatch(/in \d+:\d{2}/);
+  });
+});
+
+describe("PrayerWidget — body scroll lock", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+    document.body.style.overflow = "";
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    document.body.style.overflow = "";
+  });
+
+  it("locks body scroll while the modal is open and restores it on close", () => {
+    const { unmount } = render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    expect(document.body.style.overflow).toBe("hidden");
+    unmount();
+    expect(document.body.style.overflow).toBe("");
+  });
+
+  it("does not lock body scroll when the widget is collapsed", () => {
+    render(<PrayerWidget prayerSettings={null} />);
+    expect(document.body.style.overflow).toBe("");
   });
 });

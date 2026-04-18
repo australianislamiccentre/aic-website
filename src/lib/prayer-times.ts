@@ -732,6 +732,49 @@ export function getNextPrayer(
 }
 
 /**
+ * Returns the prayer currently inside its athan→iqamah congregational window,
+ * or `null` if no prayer is in that window right now.
+ *
+ * The window is closed-open: `[adhan, iqamah)`. At the exact iqamah minute the
+ * window closes and this returns `null` — the widget hero then advances to the
+ * next prayer.
+ *
+ * Sunrise is skipped because there is no congregational iqamah.
+ * All comparisons are in Melbourne minute-of-day via `getMelbourneMinutesOfDay`.
+ */
+export function getPrayerInIqamahWindow(
+  date: Date = new Date(),
+  prayerSettings?: SanityPrayerSettings | null,
+): (PrayerTime & { isNextDay: false }) | null {
+  const times = getPrayerTimesForDate(date, prayerSettings);
+  const currentMinutes = getMelbourneMinutesOfDay(date);
+
+  // Sunrise excluded — no congregational iqamah.
+  const prayers: PrayerTime[] = [
+    times.fajr,
+    times.dhuhr,
+    times.asr,
+    times.maghrib,
+    times.isha,
+  ];
+
+  for (const prayer of prayers) {
+    const adhan24 = to24Hour(prayer.adhan);
+    const iqamah24 = to24Hour(prayer.iqamah);
+    const [adhanH, adhanM] = adhan24.split(":").map(Number);
+    const [iqamahH, iqamahM] = iqamah24.split(":").map(Number);
+    const adhanMinutes = adhanH * 60 + adhanM;
+    const iqamahMinutes = iqamahH * 60 + iqamahM;
+
+    if (currentMinutes >= adhanMinutes && currentMinutes < iqamahMinutes) {
+      return { ...prayer, isNextDay: false };
+    }
+  }
+
+  return null;
+}
+
+/**
  * Get prayer times as a simple object (for backward compatibility)
  */
 export function getPrayerTimesSimple(date: Date = new Date()): {

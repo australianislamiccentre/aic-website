@@ -19,6 +19,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   getPrayerTimesForDate,
   getNextPrayer,
+  getPrayerInIqamahWindow,
   type TodaysPrayerTimes,
   type PrayerTime,
 } from "@/lib/prayer-times";
@@ -92,4 +93,31 @@ export function useNextPrayer(
   }, [bumpTick]);
 
   return nextPrayer;
+}
+
+/**
+ * Returns the prayer currently inside its athan→iqamah congregational window,
+ * or `null` if no prayer is in that window right now.
+ *
+ * Re-computes every 15 seconds so the window closes promptly (within 15s of
+ * the iqamah minute) and the widget's pulse ends at the right moment.
+ */
+export function usePrayerInIqamahWindow(
+  prayerSettings?: SanityPrayerSettings | null,
+): ReturnType<typeof getPrayerInIqamahWindow> {
+  const [tick, setTick] = useState(0);
+  const bumpTick = useCallback(() => setTick((t) => t + 1), []);
+
+  const inWindow = useMemo(
+    () => getPrayerInIqamahWindow(new Date(), prayerSettings),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [prayerSettings, tick],
+  );
+
+  useEffect(() => {
+    const interval = setInterval(bumpTick, 15 * 1000);
+    return () => clearInterval(interval);
+  }, [bumpTick]);
+
+  return inWindow;
 }
