@@ -587,3 +587,47 @@ describe("PrayerWidget — hero countdown with seconds", () => {
     expect(dialog.textContent).toMatch(/in \d{1,2}:\d{2}/);
   });
 });
+
+describe("PrayerWidget — screen reader countdown", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00")); // 23 min to Asr
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("renders a polite live region announcing the next prayer at minute precision", () => {
+    const { container } = render(<PrayerWidget prayerSettings={null} />);
+    const status = container.querySelector('[role="status"][aria-live="polite"]');
+    expect(status).not.toBeNull();
+    // At 3:19 PM the next prayer Asr is in 23 minutes — minute precision, no seconds
+    expect(status!.textContent).toMatch(/Next prayer Asr at 3:42 PM, in 23 minutes/);
+    // No seconds-precision countdown string like "in 23:00" in the SR live region
+    expect(status!.textContent).not.toMatch(/in \d+:\d{2}/);
+  });
+});
+
+describe("PrayerWidget — body scroll lock", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+    document.body.style.overflow = "";
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    document.body.style.overflow = "";
+  });
+
+  it("locks body scroll while the modal is open and restores it on close", () => {
+    const { unmount } = render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    expect(document.body.style.overflow).toBe("hidden");
+    unmount();
+    expect(document.body.style.overflow).toBe("");
+  });
+
+  it("does not lock body scroll when the widget is collapsed", () => {
+    render(<PrayerWidget prayerSettings={null} />);
+    expect(document.body.style.overflow).toBe("");
+  });
+});

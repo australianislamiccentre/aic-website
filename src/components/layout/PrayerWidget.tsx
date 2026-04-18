@@ -78,6 +78,22 @@ function formatCountdown(target: Date | null): string {
   return `in ${m}:${pad(s)}`;
 }
 
+/**
+ * Minute-precision countdown for the screen-reader live region.
+ * Re-renders every second but the string only changes once per minute,
+ * so the aria-live region stays quiet between announcements.
+ */
+function formatCountdownForSR(target: Date | null): string {
+  if (!target) return "";
+  const diffMs = target.getTime() - Date.now();
+  const diffMin = Math.max(0, Math.floor(diffMs / 60000));
+  if (diffMin === 0) return "less than a minute";
+  if (diffMin < 60) return `in ${diffMin} minute${diffMin === 1 ? "" : "s"}`;
+  const h = Math.floor(diffMin / 60);
+  const m = diffMin % 60;
+  return `in ${h} hour${h === 1 ? "" : "s"} ${m} minute${m === 1 ? "" : "s"}`;
+}
+
 /** Parse "3:42 PM" → "15:42" for a <time datetime="..."> attribute. */
 function toISO24Hour(time: string): string {
   const match = time.match(/^(\d{1,2}):(\d{2})\s+(AM|PM)$/i);
@@ -177,16 +193,30 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
     input.click();
   };
 
-  // Tick every second so the hero's seconds-precision countdown updates live.
+  // Tick every second so the seconds-precision countdown updates live.
   // `isMounted` gates the `Date.now()`-dependent countdown text so server and
-  // first-client render produce identical HTML.
+  // first-client render produce identical HTML. The tick is paused when
+  // nothing is visible (pill hidden by scroll AND modal closed) to avoid
+  // ~60 wasted re-renders per minute per page.
   const [now, setNow] = useState(() => Date.now());
   const isMounted = useIsMounted();
   useEffect(() => {
+    if (isHiddenByScroll && !isOpen) return;
     const id = setInterval(() => setNow(Date.now()), 1_000);
     return () => clearInterval(id);
-  }, []);
+  }, [isHiddenByScroll, isOpen]);
   void now;
+
+  // Body scroll lock while the modal is open so the page doesn't move under
+  // the user's finger when they scroll over the backdrop.
+  useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [isOpen]);
 
   // Current Melbourne minute-of-day, used to dim prayers that have already
   // passed today. Null on SSR/first render to avoid hydration mismatch.
@@ -274,6 +304,9 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
   // screen readers. The prayer name and time in the same block carry the
   // semantic information.
   const countdown = isMounted ? formatCountdown(countdownTarget) : "";
+  // Separate minute-precision string for the aria-live region so SR announces
+  // only once per minute instead of every second.
+  const countdownForSR = isMounted ? formatCountdownForSR(countdownTarget) : "";
 
   const jumuahArabic = prayerSettings?.jumuahArabicTime;
   const jumuahEnglish = prayerSettings?.jumuahEnglishTime;
@@ -362,6 +395,14 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           strokeWidth={2.5}
         />
       </button>
+
+      {/* Screen-reader live region — announces next-prayer info once per
+          minute so SR users get the countdown without being spammed. */}
+      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {isMounted && countdownForSR
+          ? `Next prayer ${nextPrayer.displayName} at ${nextPrayer.adhan}, ${countdownForSR}`
+          : ""}
+      </span>
 
       {/* Expanded widget — always rendered, hidden via CSS when collapsed */}
       <div
