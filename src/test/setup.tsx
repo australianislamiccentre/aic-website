@@ -31,6 +31,13 @@ vi.mock("next/headers", () => ({
   headers: () => new Headers(),
 }));
 
+// Mock Sentry (used in error boundaries)
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  init: vi.fn(),
+  replayIntegration: vi.fn(),
+}));
+
 // Mock Sanity fetch functions - return empty arrays so fallback content is used
 vi.mock("@/sanity/lib/fetch", () => ({
   getEvents: vi.fn().mockResolvedValue([]),

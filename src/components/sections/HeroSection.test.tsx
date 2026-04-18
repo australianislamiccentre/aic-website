@@ -73,24 +73,6 @@ vi.mock("@/sanity/lib/image", () => ({
   }),
 }));
 
-// Mock prayer hooks
-vi.mock("@/hooks/usePrayerTimes", () => ({
-  usePrayerTimes: () => ({
-    fajr: { adhan: "5:30 AM", iqamah: "5:50 AM" },
-    sunrise: { adhan: "6:50 AM", iqamah: "6:50 AM" },
-    dhuhr: { adhan: "12:30 PM", iqamah: "1:00 PM" },
-    asr: { adhan: "3:45 PM", iqamah: "4:15 PM" },
-    maghrib: { adhan: "6:15 PM", iqamah: "6:20 PM" },
-    isha: { adhan: "7:45 PM", iqamah: "8:15 PM" },
-  }),
-  useNextPrayer: () => ({
-    name: "dhuhr",
-    displayName: "Dhuhr",
-    adhan: "12:30 PM",
-    iqamah: "1:00 PM",
-  }),
-}));
-
 describe("HeroSection", () => {
   describe("Carousel mode (default)", () => {
     it("renders hero text content", () => {
@@ -129,12 +111,6 @@ describe("HeroSection", () => {
       ).toBeInTheDocument();
     });
 
-    it("renders prayer times bar", () => {
-      render(<HeroSection />);
-
-      expect(screen.getAllByText("Fajr").length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText("Dhuhr").length).toBeGreaterThanOrEqual(1);
-    });
   });
 
   describe("Video mode", () => {

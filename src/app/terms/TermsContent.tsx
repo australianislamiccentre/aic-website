@@ -2,6 +2,7 @@
 
 import { PortableText } from "@portabletext/react";
 import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
+import { formatMelbourneDate } from "@/lib/time";
 import type { SanityLegalPageSettings } from "@/types/sanity";
 
 const portableTextComponents = {
@@ -32,12 +33,14 @@ interface TermsContentProps {
 export default function TermsContent({ settings }: TermsContentProps) {
   const heading = settings?.heading ?? "Terms of Use";
 
+  // Format via `formatMelbourneDate` (lib/time.ts) so SSR and hydration agree
+  // and the month label reflects Melbourne's calendar (not the runtime's).
   let lastUpdatedDisplay = "March 2026";
   if (settings?.lastUpdated) {
-    lastUpdatedDisplay = new Date(settings.lastUpdated).toLocaleDateString(
-      "en-AU",
-      { month: "long", year: "numeric" },
-    );
+    lastUpdatedDisplay = formatMelbourneDate(new Date(settings.lastUpdated), {
+      month: "long",
+      year: "numeric",
+    });
   }
 
   return (

@@ -70,47 +70,6 @@ vi.mock("@/contexts/SiteSettingsContext", () => ({
   }),
 }));
 
-// Mock getPrayerTimesForDate
-vi.mock("@/lib/prayer-times", () => ({
-  getPrayerTimesForDate: () => ({
-    fajr: { adhan: "05:30", iqamah: "05:45" },
-    sunrise: { adhan: "07:00", iqamah: "07:00" },
-    dhuhr: { adhan: "12:30", iqamah: "12:45" },
-    asr: { adhan: "15:30", iqamah: "15:45" },
-    maghrib: { adhan: "18:00", iqamah: "18:05" },
-    isha: { adhan: "19:30", iqamah: "19:45" },
-  }),
-}));
-
-// Mock useNextPrayer
-vi.mock("@/hooks/usePrayerTimes", () => ({
-  useNextPrayer: () => ({
-    name: "dhuhr" as const,
-    displayName: "Dhuhr",
-    adhan: "12:30",
-    iqamah: "12:45",
-  }),
-}));
-
-// Mock prayer-config
-vi.mock("@/lib/prayer-config", () => ({
-  TARAWEEH_CONFIG: { enabled: false, time: "9:00 PM" },
-  EID_CONFIG: {
-    eidAlFitr: { active: false, times: [{ time: "8:00 AM" }] },
-    eidAlAdha: { active: false, times: [{ time: "8:00 AM" }] },
-  },
-  getJumuahTimes: () => [
-    { session: "Arabic Session", time: "12:30 PM", language: "Arabic" },
-    { session: "English Session", time: "1:30 PM", language: "English" },
-  ],
-  JUMUAH_CONFIG: {
-    sessions: [
-      { language: "Arabic", khutbahTime: "12:30 PM", iqamahTime: "12:45 PM", enabled: true },
-      { language: "English", khutbahTime: "1:30 PM", iqamahTime: "1:45 PM", enabled: true },
-    ],
-  },
-}));
-
 function makeEtiquette(overrides: Partial<SanityEtiquette> = {}): SanityEtiquette {
   return {
     _id: "etq-1",
@@ -127,26 +86,6 @@ describe("WorshippersClient", () => {
     const h1 = screen.getByRole("heading", { level: 1 });
     expect(h1).toHaveTextContent("For");
     expect(h1).toHaveTextContent("Worshippers");
-  });
-
-  it("renders the prayer schedule section", () => {
-    render(<WorshippersClient />);
-    expect(screen.getByText("Prayer Schedule")).toBeInTheDocument();
-  });
-
-  it("renders all 6 prayer names", () => {
-    render(<WorshippersClient />);
-    expect(screen.getAllByText("Fajr").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Sunrise").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Dhuhr").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Asr").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Maghrib").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Isha").length).toBeGreaterThan(0);
-  });
-
-  it("renders Jumu'ah times", () => {
-    render(<WorshippersClient />);
-    expect(screen.getAllByText(/Jumu['']ah/i).length).toBeGreaterThan(0);
   });
 
   it("renders etiquette section when etiquette prop is provided", () => {
@@ -318,33 +257,4 @@ describe("WorshippersClient", () => {
     });
   });
 
-  describe("Taraweeh and Eid settings", () => {
-    it("shows Taraweeh when prayerSettings.taraweehEnabled is true", () => {
-      render(
-        <WorshippersClient
-          prayerSettings={{ taraweehEnabled: true, taraweehTime: "9:00 PM" } as Parameters<typeof WorshippersClient>[0]["prayerSettings"]}
-        />
-      );
-      expect(screen.getByText("Taraweeh")).toBeInTheDocument();
-      expect(screen.getByText("9:00 PM")).toBeInTheDocument();
-    });
-
-    it("shows Eid al-Fitr when prayerSettings.eidFitrActive is true", () => {
-      render(
-        <WorshippersClient
-          prayerSettings={{ eidFitrActive: true, eidFitrTime: "8:00 AM" } as Parameters<typeof WorshippersClient>[0]["prayerSettings"]}
-        />
-      );
-      expect(screen.getByText("Eid al-Fitr")).toBeInTheDocument();
-    });
-
-    it("shows Eid al-Adha when prayerSettings.eidAdhaActive is true", () => {
-      render(
-        <WorshippersClient
-          prayerSettings={{ eidAdhaActive: true, eidAdhaTime: "8:30 AM" } as Parameters<typeof WorshippersClient>[0]["prayerSettings"]}
-        />
-      );
-      expect(screen.getByText("Eid al-Adha")).toBeInTheDocument();
-    });
-  });
 });

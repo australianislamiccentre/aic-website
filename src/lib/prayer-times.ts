@@ -8,6 +8,7 @@
  */
 
 import { getIqamahConfig } from "./prayer-config";
+import { getMelbourneMinutesOfDay } from "./time";
 import type { SanityPrayerSettings } from "@/types/sanity";
 
 // Prayer times data for each day of the year
@@ -674,13 +675,17 @@ function getDefaultPrayerTimes(date: Date): TodaysPrayerTimes {
 
 /**
  * Get the next prayer based on current time
+ *
+ * `currentTime` is resolved via `getMelbourneMinutesOfDay` from `lib/time.ts`
+ * so the result is deterministic across runtimes — the Vercel server (UTC)
+ * and the user's browser (local tz) both read the same minutes-of-day.
  */
 export function getNextPrayer(
   date: Date = new Date(),
   prayerSettings?: SanityPrayerSettings | null
 ): PrayerTime & { isNextDay: boolean } {
   const times = getPrayerTimesForDate(date, prayerSettings);
-  const currentTime = date.getHours() * 60 + date.getMinutes();
+  const currentTime = getMelbourneMinutesOfDay(date);
 
   const prayers: PrayerTime[] = [
     times.fajr,

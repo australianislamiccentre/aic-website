@@ -2,8 +2,9 @@
  * Root Layout
  *
  * Top-level layout wrapping every page in the application. Fetches siteSettings,
- * donationSettings, and formSettings from Sanity, then provides them via context.
- * Renders the Header, Footer, ScrollToTop, ScrollProgress, and FundraiseUpScript.
+ * donationSettings, formSettings, header/footer settings, and prayerSettings from
+ * Sanity, then provides them via context. Renders the Header, Footer, ScrollToTop,
+ * FundraiseUpScript, and the site-wide PrayerWidget.
  *
  * @module app/layout
  */
@@ -14,15 +15,26 @@ import { VisualEditing } from "next-sanity";
 import "./globals.css";
 import { HeaderB } from "@/components/layout/HeaderB";
 import { Footer } from "@/components/layout/Footer";
-import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { PreviewBanner } from "@/components/PreviewBanner";
-import { getSiteSettings, getDonationSettings, getContactFormSettings, getServiceInquiryFormSettings, getNewsletterSettings, getNavigationPages, getHeaderSettings, getFooterSettings } from "@/sanity/lib/fetch";
+import {
+  getSiteSettings,
+  getDonationSettings,
+  getContactFormSettings,
+  getServiceInquiryFormSettings,
+  getNewsletterSettings,
+  getNavigationPages,
+  getHeaderSettings,
+  getFooterSettings,
+  getPrayerSettings,
+} from "@/sanity/lib/fetch";
+import { PrayerWidget } from "@/components/layout/PrayerWidget";
 import { FundraiseUpScript } from "@/components/FundraiseUpScript";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import { getYouTubeLiveStream } from "@/lib/youtube";
 import { LiveBanner } from "@/components/LiveBanner";
 import { FormSettingsProvider } from "@/contexts/FormSettingsContext";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -98,7 +110,19 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [{ isEnabled: isDraftMode }, siteSettings, donationSettings, contactFormSettingsRaw, serviceInquiryFormSettingsRaw, newsletterSettingsRaw, liveStream, navigationPages, headerSettings, footerSettings] = await Promise.all([
+  const [
+    { isEnabled: isDraftMode },
+    siteSettings,
+    donationSettings,
+    contactFormSettingsRaw,
+    serviceInquiryFormSettingsRaw,
+    newsletterSettingsRaw,
+    liveStream,
+    navigationPages,
+    headerSettings,
+    footerSettings,
+    prayerSettings,
+  ] = await Promise.all([
     draftMode(),
     getSiteSettings(),
     getDonationSettings(),
@@ -109,6 +133,7 @@ export default async function RootLayout({
     getNavigationPages(),
     getHeaderSettings(),
     getFooterSettings(),
+    getPrayerSettings(),
   ]);
 
   return (
@@ -162,13 +187,14 @@ export default async function RootLayout({
             serviceInquiryFormSettings={serviceInquiryFormSettingsRaw}
             newsletterSettings={newsletterSettingsRaw}
           >
+            <GoogleAnalytics />
             <FundraiseUpScript settings={donationSettings} />
             <ScrollToTop />
-            <ScrollProgress />
             <LiveBanner liveStream={liveStream} />
             <HeaderB />
             <main id="main-content" className="overflow-x-hidden">{children}</main>
             <Footer />
+            <PrayerWidget prayerSettings={prayerSettings} />
           </FormSettingsProvider>
         </SiteSettingsProvider>
         {isDraftMode && (
@@ -177,6 +203,7 @@ export default async function RootLayout({
             <VisualEditing />
           </>
         )}
+
       </body>
     </html>
   );

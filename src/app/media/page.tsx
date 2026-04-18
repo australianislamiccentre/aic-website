@@ -21,6 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: settings?.seo?.title ?? "Media Gallery | Australian Islamic Centre",
     description: settings?.seo?.description ?? "Photos and videos from the Australian Islamic Centre community.",
+    alternates: { canonical: "/media" },
   };
 }
 

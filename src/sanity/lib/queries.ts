@@ -5,12 +5,29 @@
  * Each query is a tagged template literal that fetches documents with specific
  * projections (field selections) optimised for the consuming page/component.
  *
- * Date filtering uses `string::split(string(now()), "T")[0]` to extract just
- * the date portion for fair date-to-date comparison (avoids timezone issues
- * where `now()` includes time and could exclude today's events).
+ * ## Date filtering
+ *
+ * Queries that filter by calendar date (event.date, event.endDate,
+ * event.recurringEndDate) accept a `$today` parameter instead of reading
+ * `now()` directly. `$today` is supplied by the fetch layer as a YYYY-MM-DD
+ * string representing **today in Australia/Melbourne** (see
+ * `getMelbourneDateString()` in `src/lib/time.ts`).
+ *
+ * This is necessary because GROQ's `now()` returns UTC. For the ~10-hour
+ * window each day between Melbourne midnight (00:00 AEST/AEDT) and UTC
+ * midnight, `$today` returns *yesterday's*
+ * date in Melbourne terms, which means an admin-expired event keeps
+ * showing until UTC catches up. Passing Melbourne-today as a parameter
+ * closes that skew.
+ *
+ * Queries that compare absolute timestamps (e.g. `expiresAt > now()` on
+ * announcements) continue to use `now()` directly — the `datetime` field
+ * is already stored as UTC by Sanity Studio, so a tz-neutral comparison
+ * is correct.
  *
  * @module sanity/lib/queries
  * @see src/sanity/lib/fetch.ts for the getter functions that execute these queries
+ * @see src/lib/time.ts for `getMelbourneDateString()`
  */
 import { groq } from "next-sanity";
 
@@ -48,13 +65,14 @@ export const eventBySlugQuery = groq`
 `;
 
 // Events - active events only, recurring always show, non-recurring only if not past
-// Also filter recurring events by recurringEndDate if set
-// Uses string comparison for dates to avoid timezone issues with now()
+// Also filter recurring events by recurringEndDate if set.
+// `$today` is the Melbourne-local YYYY-MM-DD supplied by the fetch layer — see
+// the header comment for why this is a parameter rather than inline `now()`.
 export const eventsQuery = groq`
   *[_type == "event" && active != false && (
-    (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
-    date >= string::split(string(now()), "T")[0] ||
-    endDate >= string::split(string(now()), "T")[0]
+    (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= $today)) ||
+    date >= $today ||
+    endDate >= $today
   )] | order(eventType asc, featured desc, date asc) {
     _id,
     title,
@@ -84,9 +102,9 @@ export const eventsQuery = groq`
 // Featured events for homepage — only events with featured == true
 export const featuredEventsQuery = groq`
   *[_type == "event" && active != false && featured == true && (
-    (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
-    date >= string::split(string(now()), "T")[0] ||
-    endDate >= string::split(string(now()), "T")[0]
+    (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= $today)) ||
+    date >= $today ||
+    endDate >= $today
   )] | order(eventType asc, date asc) [0...6] {
     _id,
     title,
@@ -165,7 +183,7 @@ export const programsQuery = groq`
     "Youth" in categories ||
     "Sports" in categories ||
     "Women" in categories
-  ) && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])] | order(title asc) {
+  ) && (recurringEndDate == null || recurringEndDate >= $today)] | order(title asc) {
     _id,
     title,
     "slug": slug.current,
