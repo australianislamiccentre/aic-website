@@ -24,6 +24,7 @@ import { getPrayerTimesForDate, type PrayerName, type TodaysPrayerTimes } from "
 import {
   formatMelbourneDate,
   getMelbourneDateString,
+  getMelbourneMinutesOfDay,
   isSameMelbourneDay,
 } from "@/lib/time";
 import { useIsMounted } from "@/hooks/useIsMounted";
@@ -71,6 +72,19 @@ function formatCountdown(target: Date | null): string {
   const h = Math.floor(diffMin / 60);
   const m = diffMin % 60;
   return `in ${h}h ${m}m`;
+}
+
+/** Countdown with seconds, for the hero block only. Ticks every second. */
+function formatCountdownWithSeconds(target: Date | null): string {
+  if (!target) return "";
+  const diffMs = target.getTime() - Date.now();
+  const totalSec = Math.max(0, Math.floor(diffMs / 1000));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  if (h > 0) return `in ${h}:${pad(m)}:${pad(s)}`;
+  return `in ${m}:${pad(s)}`;
 }
 
 /** Parse "3:42 PM" → "15:42" for a <time datetime="..."> attribute. */
@@ -172,15 +186,20 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
     input.click();
   };
 
-  // Tick countdown every 30s. `isMounted` gates the `Date.now()`-dependent
-  // countdown text so server and first-client render produce identical HTML.
+  // Tick every second so the hero's seconds-precision countdown updates live.
+  // `isMounted` gates the `Date.now()`-dependent countdown text so server and
+  // first-client render produce identical HTML.
   const [now, setNow] = useState(() => Date.now());
   const isMounted = useIsMounted();
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 30_000);
+    const id = setInterval(() => setNow(Date.now()), 1_000);
     return () => clearInterval(id);
   }, []);
   void now;
+
+  // Current Melbourne minute-of-day, used to dim prayers that have already
+  // passed today. Null on SSR/first render to avoid hydration mismatch.
+  const currentMelbMinutes = isMounted ? getMelbourneMinutesOfDay(new Date()) : null;
 
   // Close on Esc
   useEffect(() => {
@@ -259,7 +278,10 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
     : parsePrayerTimeToDate(nextPrayer.adhan, nextPrayer.isNextDay);
   // Empty string on SSR and first client render keeps the `{countdown && ...}` block
   // hidden identically on both sides; real text appears after mount effect flips isMounted.
+  // Pill uses minute precision (glanceable, stable aria-live announcements).
+  // Hero uses second precision (live countdown, visual only).
   const countdown = isMounted ? formatCountdown(countdownTarget) : "";
+  const heroCountdown = isMounted ? formatCountdownWithSeconds(countdownTarget) : "";
 
   const jumuahArabic = prayerSettings?.jumuahArabicTime;
   const jumuahEnglish = prayerSettings?.jumuahEnglishTime;
@@ -449,15 +471,14 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 <span className="text-[10px] font-semibold text-green-700 uppercase tracking-[0.18em]">
                   {isInIqamahWindow ? "Iqamah" : "Next Prayer"}
                 </span>
-                {countdown && (
+                {heroCountdown && (
                   <>
                     <span className="text-green-300" aria-hidden="true">·</span>
                     <span
-                      className="text-xs font-semibold text-green-700"
-                      aria-live="polite"
-                      aria-atomic="true"
+                      className="text-xs font-semibold text-green-700 tabular-nums"
+                      aria-hidden="true"
                     >
-                      {countdown}
+                      {heroCountdown}
                     </span>
                   </>
                 )}
@@ -505,11 +526,23 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               {PRAYER_ORDER.map(({ key, displayName }) => {
                 const row = viewedPrayers[key];
                 const isNext = isViewingToday && nextPrayer.name === key;
+                // A prayer is "passed" once the current Melbourne minute-of-day
+                // is at or after its iqamah time, for today only. Muted visually
+                // so upcoming prayers read more prominently.
+                const [iqH, iqM] = toISO24Hour(row.iqamah).split(":").map(Number);
+                const iqamahMinutes = iqH * 60 + iqM;
+                const isPassed =
+                  isViewingToday &&
+                  currentMelbMinutes !== null &&
+                  currentMelbMinutes >= iqamahMinutes &&
+                  !isNext;
                 return (
                   <div
                     key={key}
                     data-prayer={key}
                     data-is-next={isNext ? "true" : undefined}
+                    data-is-passed={isPassed ? "true" : undefined}
+                    className={isPassed ? "opacity-40" : undefined}
                   >
                     <div className="flex items-center gap-1.5 mb-1.5">
                       {isNext && <span className="w-1 h-1 rounded-full bg-green-600" aria-hidden="true" />}

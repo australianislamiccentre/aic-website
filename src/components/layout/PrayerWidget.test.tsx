@@ -535,3 +535,54 @@ describe("PrayerWidget — iqamah pulse in hero block", () => {
     expect(document.querySelector(".prayer-widget-iqamah-pulse")).toBeNull();
   });
 });
+
+describe("PrayerWidget — passed prayers dimmed", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("marks prayers whose iqamah has passed as passed (today)", () => {
+    // 9:00 PM Melbourne — past Isha iqamah (real schedule ~7:12 PM), so all
+    // prayers today have passed. Fajr/Dhuhr/Asr/Maghrib/Isha cells should
+    // be flagged as passed; sunrise does too (its "iqamah" equals its adhan).
+    vi.setSystemTime(new Date("2026-04-15T21:00:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const fajrCell = document.querySelector('[data-prayer="fajr"]') as HTMLElement;
+    expect(fajrCell.dataset.isPassed).toBe("true");
+    expect(fajrCell.className).toMatch(/opacity-40/);
+  });
+
+  it("does not mark the 'next' prayer as passed", () => {
+    // 3:19 PM — Asr is next. Earlier prayers (Fajr, Sunrise, Dhuhr) should be
+    // passed; Asr itself must NOT be passed even if its state flips later.
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const asrCell = document.querySelector('[data-prayer="asr"]') as HTMLElement;
+    expect(asrCell.dataset.isPassed).toBeUndefined();
+    const fajrCell = document.querySelector('[data-prayer="fajr"]') as HTMLElement;
+    expect(fajrCell.dataset.isPassed).toBe("true");
+  });
+});
+
+describe("PrayerWidget — hero countdown with seconds", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00")); // 23 min before Asr
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("renders the hero countdown in MM:SS format when under an hour", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const dialog = screen.getByRole("dialog");
+    // The hero countdown appears as "in M:SS" or "in MM:SS"; at 23 min to Asr
+    // (3:42 PM), the initial render is "in 23:00".
+    expect(dialog.textContent).toMatch(/in \d{1,2}:\d{2}/);
+  });
+});
