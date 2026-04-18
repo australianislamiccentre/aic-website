@@ -92,6 +92,59 @@ export function isSameMelbourneDay(a: Date, b: Date): boolean {
 }
 
 /**
+ * Returns the UTC `Date` that corresponds to the given **Melbourne wall-clock**
+ * components (year, month 1-12, day, hours 0-23, minutes 0-59).
+ *
+ * Correctly accounts for Australian Eastern Standard Time (AEST, UTC+10) in
+ * winter and Australian Eastern Daylight Time (AEDT, UTC+11) during DST. Use
+ * this when you need to convert "this wall-clock moment in Melbourne" to an
+ * absolute instant suitable for passing to calendar exports, ICS files,
+ * Google Calendar URLs, or any system that expects UTC.
+ *
+ * @example
+ *   // "9 AM Melbourne on 2026-04-20" (AEST, UTC+10)
+ *   melbourneInstant(2026, 4, 20, 9, 0).toISOString();
+ *   // → "2026-04-19T23:00:00.000Z"
+ *
+ *   // "9 AM Melbourne on 2026-01-15" (AEDT, UTC+11)
+ *   melbourneInstant(2026, 1, 15, 9, 0).toISOString();
+ *   // → "2026-01-14T22:00:00.000Z"
+ */
+export function melbourneInstant(
+  year: number,
+  month: number,
+  day: number,
+  hours: number,
+  minutes: number,
+): Date {
+  const naiveUtcMs = Date.UTC(year, month - 1, day, hours, minutes, 0, 0);
+  const offsetMinutes = melbourneOffsetMinutes(new Date(naiveUtcMs));
+  return new Date(naiveUtcMs - offsetMinutes * 60_000);
+}
+
+/**
+ * Internal: returns the Melbourne-tz UTC offset in minutes for the given
+ * absolute instant. Positive during DST (+660 = UTC+11), otherwise +600.
+ */
+function melbourneOffsetMinutes(instant: Date): number {
+  const asMsInTz = (tz: string) => {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(instant);
+    const get = (t: Intl.DateTimeFormatPartTypes) =>
+      Number(parts.find((p) => p.type === t)?.value ?? "0");
+    return Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"));
+  };
+  return (asMsInTz("Australia/Melbourne") - asMsInTz("UTC")) / 60_000;
+}
+
+/**
  * Formats a Date for display using Melbourne timezone and `en-AU` locale.
  *
  * Accepts the same options object as `Intl.DateTimeFormat` / `toLocaleDateString`;

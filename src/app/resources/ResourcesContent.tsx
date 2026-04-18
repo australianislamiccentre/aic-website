@@ -17,6 +17,7 @@ import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { SanityResource, SanitySimplePageSettings } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
 import { cn } from "@/lib/utils";
+import { formatMelbourneDate } from "@/lib/time";
 import {
   BookOpen,
   Download,
@@ -112,8 +113,7 @@ function getResourceTypeConfig(type: string): ResourceTypeConfig {
 }
 
 function formatResourceDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-AU", {
+  return formatMelbourneDate(new Date(dateStr), {
     day: "numeric",
     month: "short",
     year: "numeric",

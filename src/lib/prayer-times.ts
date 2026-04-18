@@ -549,18 +549,33 @@ function to24Hour(timeStr: string): string {
 }
 
 /**
- * Add minutes to a time string and return formatted result
+ * Add minutes to a time-of-day string and return the formatted result.
+ *
+ * Pure string math — no `Date` objects involved. The previous implementation
+ * relied on constructing a Date from a naive ISO string and letting `setMinutes`
+ * + `toLocaleTimeString` handle the math; that worked by accident-of-symmetry
+ * (both construction and formatting used the same runtime-local tz) but would
+ * break silently if either step were ever migrated to an explicit timezone.
+ * This version sidesteps the problem entirely.
+ *
+ * Handles negative offsets and wrap-around past midnight.
+ *
+ * @example
+ *   addMinutesToTime("5:30 AM", 15) // "5:45 AM"
+ *   addMinutesToTime("11:50 PM", 20) // "12:10 AM"
+ *   addMinutesToTime("12:05 AM", -10) // "11:55 PM"
  */
-function addMinutesToTime(timeStr: string, minutes: number): string {
+export function addMinutesToTime(timeStr: string, minutes: number): string {
   const time24 = to24Hour(timeStr);
-  const date = new Date(`1970-01-01T${time24}:00`);
-  date.setMinutes(date.getMinutes() + minutes);
-
-  return date.toLocaleTimeString("en-AU", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  }).toUpperCase();
+  const [h, m] = time24.split(":").map(Number);
+  const MINS_PER_DAY = 24 * 60;
+  // Wrap with (x % n + n) % n to handle negative inputs (e.g. subtracting an offset)
+  const totalMins = (((h * 60 + m + minutes) % MINS_PER_DAY) + MINS_PER_DAY) % MINS_PER_DAY;
+  const hours24 = Math.floor(totalMins / 60);
+  const finalMins = totalMins % 60;
+  const period = hours24 >= 12 ? "PM" : "AM";
+  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+  return `${hours12}:${String(finalMins).padStart(2, "0")} ${period}`;
 }
 
 /**

@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { SanityService, SanityEvent, SanityProgram, SanityImage } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
+import { formatMelbourneDate } from "@/lib/time";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -63,10 +64,9 @@ function getImageUrl(image: SanityImage | undefined, w = 400, h = 300): string |
   }
 }
 
-// Format date for display
+// Format date for display (Melbourne timezone — see CLAUDE.md "Dates and hydration")
 function formatEventDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-AU", {
+  return formatMelbourneDate(new Date(dateStr), {
     weekday: "short",
     month: "short",
     day: "numeric",
