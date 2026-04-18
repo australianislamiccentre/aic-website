@@ -22,6 +22,7 @@
 import "server-only";
 
 import { draftMode } from "next/headers";
+import { getMelbourneDateString } from "@/lib/time";
 import { client, noCdnClient, previewClient } from "./client";
 import {
   eventBySlugQuery,
@@ -163,7 +164,13 @@ async function sanityFetch<T>(
 // Events
 export async function getEvents(): Promise<SanityEvent[]> {
   try {
-    const result = await sanityFetch<SanityEvent[]>(eventsQuery, {}, ["events"]);
+    // `today` anchored to Melbourne so that an event expires from the query
+    // the moment the Melbourne calendar rolls over, not when UTC does.
+    const result = await sanityFetch<SanityEvent[]>(
+      eventsQuery,
+      { today: getMelbourneDateString() },
+      ["events"],
+    );
     return result ?? [];
   } catch (error) {
     console.error("Failed to fetch events from Sanity:", error);
@@ -174,12 +181,16 @@ export async function getEvents(): Promise<SanityEvent[]> {
 // For static generation (no draft mode check - used in generateStaticParams)
 export async function getEventsForStaticGeneration(): Promise<SanityEvent[]> {
   try {
-    const result = await client.fetch<SanityEvent[]>(eventsQuery, {}, {
-      next: {
-        revalidate: REVALIDATE_TIME,
-        tags: ["sanity", "events"],
+    const result = await client.fetch<SanityEvent[]>(
+      eventsQuery,
+      { today: getMelbourneDateString() },
+      {
+        next: {
+          revalidate: REVALIDATE_TIME,
+          tags: ["sanity", "events"],
+        },
       },
-    });
+    );
     return result ?? [];
   } catch (error) {
     console.error("Failed to fetch events for static generation:", error);
@@ -199,7 +210,11 @@ export async function getEventBySlug(slug: string): Promise<SanityEvent | null> 
 // Featured events for homepage
 export async function getFeaturedEvents(): Promise<SanityEvent[]> {
   try {
-    const result = await sanityFetch<SanityEvent[]>(featuredEventsQuery, {}, ["events"]);
+    const result = await sanityFetch<SanityEvent[]>(
+      featuredEventsQuery,
+      { today: getMelbourneDateString() },
+      ["events"],
+    );
     return result ?? [];
   } catch (error) {
     console.error("Failed to fetch featured events from Sanity:", error);
@@ -256,7 +271,11 @@ export async function getUrgentAnnouncements(): Promise<SanityAnnouncement[]> {
 // Programs
 export async function getPrograms(): Promise<SanityProgram[]> {
   try {
-    const result = await sanityFetch<SanityProgram[]>(programsQuery, {}, ["programs"]);
+    const result = await sanityFetch<SanityProgram[]>(
+      programsQuery,
+      { today: getMelbourneDateString() },
+      ["programs"],
+    );
     return result ?? [];
   } catch (error) {
     console.error("Failed to fetch programs from Sanity:", error);

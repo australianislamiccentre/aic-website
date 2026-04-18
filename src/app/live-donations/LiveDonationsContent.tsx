@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import { Moon, Star, User, Trophy, Clock } from "lucide-react";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 const POLL_INTERVAL = 5_000; // 5 seconds
 const CAMPAIGN_GOAL = 360_000; // $360,000 AUD
@@ -126,6 +127,10 @@ export default function LiveDonationsContent() {
   const prevTotalRef = useRef(0);
   const fetchCountRef = useRef(0);
   const lastFetchRef = useRef(0);
+  // `timeAgo` below reads `Date.now()` — gate its output so SSR and first client
+  // render emit the same placeholder, avoiding hydration mismatch. See CLAUDE.md
+  // "Dates and hydration" and Sentry AIC-WEBSITE-1.
+  const isMounted = useIsMounted();
 
   const fetchData = useCallback(async () => {
     try {
@@ -322,7 +327,7 @@ export default function LiveDonationsContent() {
                       </p>
                       <p className="text-white/40 text-[11px]">
                         {don.city ? `${don.city} · ` : ""}
-                        {timeAgo(don.time)}
+                        {isMounted ? timeAgo(don.time) : ""}
                       </p>
                     </div>
                     <p className="text-[#00ad4c] font-bold text-sm shrink-0">
