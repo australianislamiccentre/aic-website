@@ -109,7 +109,9 @@
       "Bash(npx eslint:*)",
       "Bash(ls /Users/rashidelhouli/australian-islamic-centre/src/lib/icon-map*)",
       "Bash(npm ls:*)",
-      "Bash(npm info:*)"
+      "Bash(npm info:*)",
+      "Bash(git stash *)",
+      "Bash(git rebase *)"
     ],
     "additionalDirectories": [
       "/Users/rashidelhouli/australian-islamic-centre/src/components/sections",
