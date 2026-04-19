@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
-import { usePrayerInIqamahWindow } from "./usePrayerTimes";
+import { usePrayerInIqamahWindow, useNextPrayer } from "./usePrayerTimes";
 import { getPrayerTimesForDate } from "@/lib/prayer-times";
 
 describe("usePrayerInIqamahWindow", () => {
@@ -75,5 +75,43 @@ describe("usePrayerInIqamahWindow", () => {
     const html = renderToString(<ProbeSSR />);
     expect(html).toContain(">null<");
     expect(html).not.toContain(">asr<");
+  });
+});
+
+describe("useNextPrayer", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns null during SSR (hydration-mismatch regression)", () => {
+    // Same class of bug as PR #58: `getNextPrayer(new Date())` is tz-safe
+    // but non-deterministic across the HTTP round-trip. At ~6 adhan minute
+    // boundaries per day, the SSR + first-client-render `new Date()` straddle
+    // the boundary and return different `name`/`adhan`/`displayName`, which
+    // mismatches when the widget's pill / prayer-list / SR live region render.
+    // Fix: hook returns null on SSR and first client render; real value
+    // appears only after mount.
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00")); // 23 min before Asr
+
+    function ProbeSSR() {
+      const value = useNextPrayer(null);
+      return <span data-testid="probe">{value === null ? "null" : value.name}</span>;
+    }
+
+    const html = renderToString(<ProbeSSR />);
+    expect(html).toContain(">null<");
+    // The real next prayer at this time would be Asr. SSR must NOT leak it.
+    expect(html).not.toContain(">asr<");
+  });
+
+  it("returns the real next prayer after mount", () => {
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+    const { result } = renderHook(() => useNextPrayer(null));
+    expect(result.current).not.toBeNull();
+    expect(result.current!.name).toBe("asr");
   });
 });

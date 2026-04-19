@@ -68,14 +68,29 @@ export function usePrayerTimes(
 }
 
 /**
- * Returns the next upcoming prayer (name, time, and whether it's tomorrow).
+ * Returns the next upcoming prayer (name, time, and whether it's tomorrow),
+ * or `null` during SSR and the first client render.
+ *
  * Re-computes every 60 seconds for countdown displays.
+ *
+ * **Hydration safety:** returns `null` until `useIsMounted` flips to true.
+ * The underlying `getNextPrayer` is timezone-deterministic (routes through
+ * `getMelbourneMinutesOfDay`), but the `new Date()` it's called with on the
+ * server vs the client differs by the HTTP round-trip (~200–500ms). When
+ * that delay straddles one of the 6 daily adhan minute boundaries, the hook
+ * would otherwise return a different `name` / `adhan` / `displayName` on SSR
+ * than on first client render, and any consumer that renders those strings
+ * (the pill, prayer list, SR live region) would throw a hydration mismatch.
+ *
+ * Mirrors the pattern `usePrayerInIqamahWindow` uses (PR #58). Callers must
+ * handle `null` gracefully — render a placeholder or skip dependent content.
  *
  * @param prayerSettings - Optional Sanity overrides for iqamah offsets / fixed times.
  */
 export function useNextPrayer(
   prayerSettings?: SanityPrayerSettings | null
-): PrayerTime & { isNextDay: boolean } {
+): (PrayerTime & { isNextDay: boolean }) | null {
+  const isMounted = useIsMounted();
   // Tick counter triggers re-computation every minute
   const [tick, setTick] = useState(0);
   const bumpTick = useCallback(() => setTick((t) => t + 1), []);
@@ -93,7 +108,7 @@ export function useNextPrayer(
     return () => clearInterval(interval);
   }, [bumpTick]);
 
-  return nextPrayer;
+  return isMounted ? nextPrayer : null;
 }
 
 /**

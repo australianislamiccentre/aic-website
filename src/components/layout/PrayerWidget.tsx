@@ -295,8 +295,10 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
   if (pathname?.startsWith("/studio")) return null;
 
   const countdownTarget = isInIqamahWindow
-    ? parsePrayerTimeToDate(heroPrayer.iqamah, false)
-    : parsePrayerTimeToDate(nextPrayer.adhan, nextPrayer.isNextDay);
+    ? parsePrayerTimeToDate(heroPrayer!.iqamah, false)
+    : nextPrayer
+      ? parsePrayerTimeToDate(nextPrayer.adhan, nextPrayer.isNextDay)
+      : null;
   // Empty string on SSR and first client render keeps the `{countdown && ...}` block
   // hidden identically on both sides; real text appears after mount effect flips isMounted.
   // Live seconds countdown, rendered in both the pill and the hero.
@@ -375,8 +377,8 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         <span className="text-white/65 text-xs uppercase tracking-wider font-medium whitespace-nowrap max-[480px]:hidden">
           Next prayer
         </span>
-        <span className="font-semibold text-base whitespace-nowrap">{nextPrayer.displayName}</span>
-        <span className="text-lime-300 font-bold font-mono text-base whitespace-nowrap">{nextPrayer.adhan}</span>
+        <span className="font-semibold text-base whitespace-nowrap">{nextPrayer?.displayName ?? ""}</span>
+        <span className="text-lime-300 font-bold font-mono text-base whitespace-nowrap">{nextPrayer?.adhan ?? ""}</span>
         {countdown && (
           <span className="text-white/60 text-sm tabular-nums whitespace-nowrap -ml-1 max-[380px]:hidden" aria-hidden="true">
             {countdown}
@@ -399,7 +401,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
       {/* Screen-reader live region — announces next-prayer info once per
           minute. Rendered only after mount to avoid any SSR/CSR drift;
           nothing meaningful to announce before `isMounted` flips anyway. */}
-      {isMounted && (
+      {isMounted && nextPrayer && (
         <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
           Next prayer {nextPrayer.displayName} at {nextPrayer.adhan}
           {countdownForSR ? `, ${countdownForSR}` : ""}
@@ -502,64 +504,68 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           </div>
 
           <div className="px-6 pt-4 pb-6 overflow-y-auto flex-1">
-            {/* Hero block — Next prayer OR current prayer in its iqamah window */}
-            <div
-              className="relative mb-4 p-4 sm:p-5 rounded-2xl overflow-hidden border border-white/10"
-              style={{ background: "rgba(255, 255, 255, 0.06)" }}
-            >
-              <div className="flex items-center gap-3 mb-3 sm:mb-4 flex-wrap">
-                <span className="text-[10px] font-semibold text-white uppercase tracking-[0.18em]">
-                  {isInIqamahWindow ? "Iqamah" : "Next Prayer"}
-                </span>
-                {countdown && (
-                  <>
-                    <span className="text-white/30" aria-hidden="true">·</span>
-                    <span
-                      className="text-xs font-semibold text-white tabular-nums"
-                      aria-hidden="true"
-                    >
-                      {countdown}
-                    </span>
-                  </>
-                )}
-              </div>
-
-              <div className="flex items-baseline justify-between gap-3 mb-3">
-                <div className="text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-none whitespace-nowrap min-w-0 truncate">
-                  {heroPrayer.displayName}
+            {/* Hero block — Next prayer OR current prayer in its iqamah window.
+                Rendered only when heroPrayer is non-null (post-mount); SSR and
+                first client render show no hero content to keep HTML identical. */}
+            {heroPrayer && (
+              <div
+                className="relative mb-4 p-4 sm:p-5 rounded-2xl overflow-hidden border border-white/10"
+                style={{ background: "rgba(255, 255, 255, 0.06)" }}
+              >
+                <div className="flex items-center gap-3 mb-3 sm:mb-4 flex-wrap">
+                  <span className="text-[10px] font-semibold text-white uppercase tracking-[0.18em]">
+                    {isInIqamahWindow ? "Iqamah" : "Next Prayer"}
+                  </span>
+                  {countdown && (
+                    <>
+                      <span className="text-white/30" aria-hidden="true">·</span>
+                      <span
+                        className="text-xs font-semibold text-white tabular-nums"
+                        aria-hidden="true"
+                      >
+                        {countdown}
+                      </span>
+                    </>
+                  )}
                 </div>
-                <time
-                  className="text-2xl sm:text-4xl md:text-5xl font-mono font-semibold text-white tracking-tight leading-none whitespace-nowrap"
-                  dateTime={toISO24Hour(heroPrayer.adhan)}
-                >
-                  {heroPrayer.adhan}
-                </time>
-              </div>
 
-              <div className="flex items-center gap-3 text-sm text-white/70">
-                <span>
-                  Athan{" "}
-                  <time className="text-white font-mono" dateTime={toISO24Hour(heroPrayer.adhan)}>
+                <div className="flex items-baseline justify-between gap-3 mb-3">
+                  <div className="text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-none whitespace-nowrap min-w-0 truncate">
+                    {heroPrayer.displayName}
+                  </div>
+                  <time
+                    className="text-2xl sm:text-4xl md:text-5xl font-mono font-semibold text-white tracking-tight leading-none whitespace-nowrap"
+                    dateTime={toISO24Hour(heroPrayer.adhan)}
+                  >
                     {heroPrayer.adhan}
                   </time>
-                </span>
-                <span className="text-white/30" aria-hidden="true">·</span>
-                <span>
-                  Iqamah{" "}
-                  <time
-                    className={
-                      "font-mono font-semibold " +
-                      (isInIqamahWindow
-                        ? "prayer-widget-iqamah-pulse"
-                        : "text-white")
-                    }
-                    dateTime={toISO24Hour(heroPrayer.iqamah)}
-                  >
-                    {heroPrayer.iqamah}
-                  </time>
-                </span>
+                </div>
+
+                <div className="flex items-center gap-3 text-sm text-white/70">
+                  <span>
+                    Athan{" "}
+                    <time className="text-white font-mono" dateTime={toISO24Hour(heroPrayer.adhan)}>
+                      {heroPrayer.adhan}
+                    </time>
+                  </span>
+                  <span className="text-white/30" aria-hidden="true">·</span>
+                  <span>
+                    Iqamah{" "}
+                    <time
+                      className={
+                        "font-mono font-semibold " +
+                        (isInIqamahWindow
+                          ? "prayer-widget-iqamah-pulse"
+                          : "text-white")
+                      }
+                      dateTime={toISO24Hour(heroPrayer.iqamah)}
+                    >
+                      {heroPrayer.iqamah}
+                    </time>
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Prayer list — single column, columns aligned via subgrid */}
             <div className="grid grid-cols-[auto_1fr_auto] gap-x-6 sm:gap-x-8 pb-4 mb-4 border-b border-white/10">
@@ -575,7 +581,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               </div>
               {PRAYER_ORDER.map(({ key, displayName }) => {
                 const row = viewedPrayers[key];
-                const isNext = isViewingToday && nextPrayer.name === key;
+                const isNext = isViewingToday && nextPrayer !== null && nextPrayer.name === key;
                 const [iqH, iqM] = toISO24Hour(row.iqamah).split(":").map(Number);
                 const iqamahMinutes = iqH * 60 + iqM;
                 const isPassed =
