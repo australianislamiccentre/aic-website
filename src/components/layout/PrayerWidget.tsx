@@ -451,21 +451,30 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             aria-hidden="true"
           />
 
-          {/* Single-row header: [date + datepicker] on the left · close on the right */}
-          <div className="px-6 pt-4 pb-3 border-b border-white/10 flex-shrink-0 flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-3 min-w-0 flex-wrap">
+          {/* Single-row header: [date + datepicker] on the left · close on the right.
+              Compact format on mobile so the whole row fits on ~320px viewports. */}
+          <div className="px-4 sm:px-6 pt-4 pb-3 border-b border-white/10 flex-shrink-0 flex items-center justify-between gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
               <div
                 className="text-sm sm:text-base font-semibold text-white whitespace-nowrap overflow-hidden text-ellipsis min-w-0"
                 data-testid="widget-date-label"
               >
-                Melbourne · {formatMelbourneDate(selectedDate)}
+                <span className="hidden sm:inline">Melbourne · {formatMelbourneDate(selectedDate)}</span>
+                <span className="sm:hidden">
+                  {formatMelbourneDate(selectedDate, {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
               <button
                 type="button"
                 aria-label="Previous day"
                 onClick={() => shiftDate(-1)}
-                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md text-xl font-light transition-all duration-150 flex items-center justify-center"
+                className="h-9 w-8 sm:w-9 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md text-xl font-light transition-all duration-150 flex items-center justify-center"
               >
                 <span aria-hidden="true">‹</span>
               </button>
@@ -478,10 +487,12 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                       : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`
                   }
                   onClick={openNativeDatePicker}
-                  className="h-9 px-3 text-xs font-medium text-white/85 hover:text-white hover:bg-white/20 bg-white/10 border border-white/10 active:scale-95 rounded-full transition-all duration-150 flex items-center gap-1.5 whitespace-nowrap"
+                  className="h-9 w-9 sm:w-auto sm:px-3 text-xs font-medium text-white/85 hover:text-white hover:bg-white/20 bg-white/10 border border-white/10 active:scale-95 rounded-full transition-all duration-150 flex items-center justify-center sm:gap-1.5 whitespace-nowrap"
                 >
                   <CalendarDays className="w-3.5 h-3.5 opacity-70" aria-hidden="true" />
-                  {isViewingToday ? "Today" : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
+                  <span className="hidden sm:inline">
+                    {isViewingToday ? "Today" : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
+                  </span>
                 </button>
                 <input
                   ref={dateInputRef}
@@ -497,7 +508,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 type="button"
                 aria-label="Next day"
                 onClick={() => shiftDate(1)}
-                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md text-xl font-light transition-all duration-150 flex items-center justify-center"
+                className="h-9 w-8 sm:w-9 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md text-xl font-light transition-all duration-150 flex items-center justify-center"
               >
                 <span aria-hidden="true">›</span>
               </button>
@@ -506,7 +517,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                   type="button"
                   aria-label="Back to today"
                   onClick={goToToday}
-                  className="h-9 px-2.5 ml-1 text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md transition-all duration-150"
+                  className="h-9 px-2 sm:px-2.5 ml-0.5 sm:ml-1 text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md transition-all duration-150"
                 >
                   Reset
                 </button>
