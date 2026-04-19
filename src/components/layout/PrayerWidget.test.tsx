@@ -791,3 +791,83 @@ describe("PrayerWidget — prayer list iqamah-mode transitions", () => {
     expect(asrRow.dataset.isNext).toBe("true");
   });
 });
+
+describe("PrayerWidget — swipe-to-dismiss grab handle", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // jsdom doesn't implement setPointerCapture; stub it so the handler doesn't throw
+  function patchPointerCapture() {
+    const proto = HTMLElement.prototype as unknown as {
+      setPointerCapture?: (id: number) => void;
+      releasePointerCapture?: (id: number) => void;
+    };
+    if (typeof proto.setPointerCapture !== "function") {
+      proto.setPointerCapture = () => {};
+    }
+    if (typeof proto.releasePointerCapture !== "function") {
+      proto.releasePointerCapture = () => {};
+    }
+  }
+
+  async function dispatchPointer(target: HTMLElement, type: string, clientY: number) {
+    const { act } = await import("react");
+    // jsdom lacks PointerEvent constructor in older versions; fall back to Event with props
+    const PointerEventCtor = (globalThis as unknown as { PointerEvent?: typeof Event }).PointerEvent;
+    const evt = PointerEventCtor
+      ? new PointerEventCtor(type, { bubbles: true, clientY, pointerId: 1 } as PointerEventInit)
+      : Object.assign(new Event(type, { bubbles: true }), { clientY, pointerId: 1 });
+    await act(async () => {
+      target.dispatchEvent(evt);
+    });
+  }
+
+  it("renders a grab handle with the documented testid", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    expect(screen.getByTestId("prayer-widget-grab-handle")).toBeInTheDocument();
+  });
+
+  it("dragging the grab handle past the dismiss threshold closes the widget", async () => {
+    patchPointerCapture();
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    const handle = screen.getByTestId("prayer-widget-grab-handle");
+    await dispatchPointer(handle, "pointerdown", 100);
+    await dispatchPointer(handle, "pointermove", 250); // 150px down — past 120px threshold
+    await dispatchPointer(handle, "pointerup", 250);
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("dragging below the threshold snaps back without closing", async () => {
+    patchPointerCapture();
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const handle = screen.getByTestId("prayer-widget-grab-handle");
+    await dispatchPointer(handle, "pointerdown", 100);
+    await dispatchPointer(handle, "pointermove", 180); // 80px down — below 120px threshold
+    await dispatchPointer(handle, "pointerup", 180);
+
+    // Modal still open
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("upward drag does not close the widget", async () => {
+    patchPointerCapture();
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const handle = screen.getByTestId("prayer-widget-grab-handle");
+    await dispatchPointer(handle, "pointerdown", 200);
+    await dispatchPointer(handle, "pointermove", 50); // -150px (upward)
+    await dispatchPointer(handle, "pointerup", 50);
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+});

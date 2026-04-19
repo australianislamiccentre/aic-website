@@ -154,6 +154,13 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
 
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
 
+  // Swipe-to-dismiss state for the bottom-sheet on mobile.
+  // Tracked on the grab handle only — the prayer list scrolls normally.
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartYRef = useRef<number | null>(null);
+  const SWIPE_DISMISS_THRESHOLD_PX = 120;
+
   const currentDate = new Date();
   const isViewingToday = isSameMelbourneDay(selectedDate, currentDate);
   const viewedPrayers: TodaysPrayerTimes = isViewingToday
@@ -291,6 +298,36 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
   const closeWidget = () => {
     setIsOpen(false);
     setSelectedDate(new Date());
+    setDragOffset(0);
+    setIsDragging(false);
+    dragStartYRef.current = null;
+  };
+
+  // Pointer-driven swipe-to-dismiss on the grab handle.
+  // Only downward movement counts; upward drag stays at offset 0 so the
+  // sheet doesn't lift off the bottom edge.
+  const onHandlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    dragStartYRef.current = e.clientY;
+    setIsDragging(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onHandlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (dragStartYRef.current === null) return;
+    const delta = e.clientY - dragStartYRef.current;
+    setDragOffset(Math.max(0, delta));
+  };
+
+  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (dragStartYRef.current === null) return;
+    const delta = e.clientY - dragStartYRef.current;
+    dragStartYRef.current = null;
+    setIsDragging(false);
+    if (delta > SWIPE_DISMISS_THRESHOLD_PX) {
+      closeWidget();
+      return;
+    }
+    setDragOffset(0);
   };
 
   if (pathname?.startsWith("/studio")) return null;
@@ -435,33 +472,53 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           width: "min(720px, calc(100vw - 24px))",
           maxHeight: "calc(100vh - 40px)",
           transform: isOpen
-            ? "translateX(-50%) translateY(0)"
+            ? `translateX(-50%) translateY(${dragOffset}px)`
             : "translateX(-50%) translateY(100%)",
           opacity: isOpen ? 1 : 0,
           pointerEvents: isOpen ? "auto" : "none",
-          transition: prefersReducedMotion
+          transition: isDragging
+            ? "none"
+            : prefersReducedMotion
             ? "opacity 150ms ease"
             : "opacity 320ms cubic-bezier(0.33, 1, 0.68, 1), " +
               "transform 520ms cubic-bezier(0.34, 1.12, 0.64, 1)",
         }}
       >
-          {/* Grab handle — bottom-sheet convention, only shown on mobile */}
+          {/* Grab handle — functional swipe-to-dismiss strip on mobile.
+              Larger touch target than the visible bar so it's easy to grab.
+              touch-none stops the browser from intercepting the drag for native
+              page-pan, which would prevent the swipe gesture from registering. */}
           <div
-            className="w-8 h-1 bg-white/20 rounded-full mx-auto mt-2.5 flex-shrink-0 md:hidden"
+            data-testid="prayer-widget-grab-handle"
+            className="flex justify-center items-center pt-2.5 pb-1.5 cursor-grab active:cursor-grabbing touch-none flex-shrink-0 sm:hidden"
+            onPointerDown={onHandlePointerDown}
+            onPointerMove={onHandlePointerMove}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
             aria-hidden="true"
-          />
+          >
+            <div className="w-10 h-1 bg-white/20 rounded-full" />
+          </div>
 
-          {/* Single-row header: [date + datepicker] on the left · close on the right.
-              Compact format on mobile so the whole row fits on ~320px viewports. */}
-          <div className="px-4 sm:px-6 pt-4 pb-3 border-b border-white/10 flex-shrink-0 flex items-center justify-between gap-2 sm:gap-3">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          {/* Header: centered date label + datepicker controls. On desktop the
+              X close button is absolutely positioned in the top-right; on mobile
+              the X is gone entirely — users dismiss via the grab handle, the
+              backdrop, or Esc.
+
+              Mobile sizing budget: at 390px viewport the modal is 366px wide and
+              its content area is ~334px after px-4 padding. The label, three
+              datepicker buttons, and the conditional Reset button must all fit
+              on one line — text-xs label + h-8/w-7 buttons + tight gaps keeps
+              the row under 320px so it never wraps. */}
+          <div className="relative px-3 sm:px-6 pt-3 sm:pt-4 pb-3 border-b border-white/10 flex-shrink-0">
+            <div className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-3 flex-nowrap sm:pr-12">
               <div
-                className="text-sm sm:text-base font-semibold text-white whitespace-nowrap overflow-hidden text-ellipsis min-w-0"
+                className="text-xs sm:text-base font-semibold text-white whitespace-nowrap"
                 data-testid="widget-date-label"
               >
                 <span className="hidden sm:inline">Melbourne · {formatMelbourneDate(selectedDate)}</span>
                 <span className="sm:hidden">
-                  {formatMelbourneDate(selectedDate, {
+                  Melbourne · {formatMelbourneDate(selectedDate, {
                     weekday: "short",
                     day: "numeric",
                     month: "short",
@@ -470,66 +527,67 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 </span>
               </div>
               <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
-              <button
-                type="button"
-                aria-label="Previous day"
-                onClick={() => shiftDate(-1)}
-                className="h-9 w-8 sm:w-9 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md text-xl font-light transition-all duration-150 flex items-center justify-center"
-              >
-                <span aria-hidden="true">‹</span>
-              </button>
-              <div className="relative">
                 <button
                   type="button"
-                  aria-label={
-                    isViewingToday
-                      ? "Open date picker"
-                      : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`
-                  }
-                  onClick={openNativeDatePicker}
-                  className="h-9 w-9 sm:w-auto sm:px-3 text-xs font-medium text-white/85 hover:text-white hover:bg-white/20 bg-white/10 border border-white/10 active:scale-95 rounded-full transition-all duration-150 flex items-center justify-center sm:gap-1.5 whitespace-nowrap"
+                  aria-label="Previous day"
+                  onClick={() => shiftDate(-1)}
+                  className="h-8 w-7 sm:h-9 sm:w-9 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md text-xl font-light transition-all duration-150 flex items-center justify-center"
                 >
-                  <CalendarDays className="w-3.5 h-3.5 opacity-70" aria-hidden="true" />
-                  <span className="hidden sm:inline">
-                    {isViewingToday ? "Today" : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
-                  </span>
+                  <span aria-hidden="true">‹</span>
                 </button>
-                <input
-                  ref={dateInputRef}
-                  type="date"
-                  aria-label="Pick a date"
-                  value={getMelbourneDateString(selectedDate)}
-                  onChange={handleDateInputChange}
-                  tabIndex={-1}
-                  className="sr-only"
-                />
-              </div>
-              <button
-                type="button"
-                aria-label="Next day"
-                onClick={() => shiftDate(1)}
-                className="h-9 w-8 sm:w-9 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md text-xl font-light transition-all duration-150 flex items-center justify-center"
-              >
-                <span aria-hidden="true">›</span>
-              </button>
-              {!isViewingToday && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    aria-label={
+                      isViewingToday
+                        ? "Open date picker"
+                        : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`
+                    }
+                    onClick={openNativeDatePicker}
+                    className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3 text-xs font-medium text-white/85 hover:text-white hover:bg-white/20 bg-white/10 border border-white/10 active:scale-95 rounded-full transition-all duration-150 flex items-center justify-center sm:gap-1.5 whitespace-nowrap"
+                  >
+                    <CalendarDays className="w-3.5 h-3.5 opacity-70" aria-hidden="true" />
+                    <span className="hidden sm:inline">
+                      {isViewingToday ? "Today" : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
+                    </span>
+                  </button>
+                  <input
+                    ref={dateInputRef}
+                    type="date"
+                    aria-label="Pick a date"
+                    value={getMelbourneDateString(selectedDate)}
+                    onChange={handleDateInputChange}
+                    tabIndex={-1}
+                    className="sr-only"
+                  />
+                </div>
                 <button
                   type="button"
-                  aria-label="Back to today"
-                  onClick={goToToday}
-                  className="h-9 px-2 sm:px-2.5 ml-0.5 sm:ml-1 text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md transition-all duration-150"
+                  aria-label="Next day"
+                  onClick={() => shiftDate(1)}
+                  className="h-8 w-7 sm:h-9 sm:w-9 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md text-xl font-light transition-all duration-150 flex items-center justify-center"
                 >
-                  Reset
+                  <span aria-hidden="true">›</span>
                 </button>
-              )}
+                {!isViewingToday && (
+                  <button
+                    type="button"
+                    aria-label="Back to today"
+                    onClick={goToToday}
+                    className="h-8 px-1.5 sm:h-9 sm:px-2.5 ml-0.5 sm:ml-1 text-[11px] sm:text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md transition-all duration-150"
+                  >
+                    Reset
+                  </button>
+                )}
               </div>
             </div>
 
+            {/* Desktop-only X. On mobile users swipe down or tap the backdrop. */}
             <button
               type="button"
               aria-label="Close prayer times"
               onClick={closeWidget}
-              className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 hover:rotate-90 active:scale-90 rounded-md text-2xl font-light leading-none transition-all duration-200 ease-out flex items-center justify-center flex-shrink-0"
+              className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 hover:rotate-90 active:scale-90 rounded-md text-2xl font-light leading-none transition-all duration-200 ease-out items-center justify-center"
             >
               <span aria-hidden="true">×</span>
             </button>
