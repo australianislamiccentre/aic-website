@@ -54,16 +54,9 @@ describe("PrayerWidget — pill skeleton", () => {
     render(<PrayerWidget prayerSettings={null} />);
     const pill = screen.getByRole("button", { name: /open prayer times/i });
     expect(pill).toBeInTheDocument();
-    expect(screen.getByText("Next prayer")).toBeInTheDocument();
     // "Asr" and "3:42 PM" appear in both the pill and the always-rendered (hidden) widget
     expect(screen.getAllByText("Asr").length).toBeGreaterThan(0);
     expect(screen.getAllByText("3:42 PM").length).toBeGreaterThan(0);
-  });
-
-  it("shows a countdown to the next prayer", () => {
-    render(<PrayerWidget prayerSettings={null} />);
-    // Countdown is now "in MM:SS" — 23 min before Asr renders as "in 23:00"
-    expect(screen.getAllByText(/in 23:00/).length).toBeGreaterThan(0);
   });
 
   it("widget content is not visible by default", () => {
@@ -129,14 +122,15 @@ describe("PrayerWidget — expanded content (when forced open for layout testing
     expect(screen.getByText("Isha")).toBeInTheDocument();
   });
 
-  it("renders the next-prayer highlight card with athan and iqamah", () => {
+  it("renders the next-prayer highlight inline in the list (no hero in normal state)", () => {
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
 
-    expect(screen.getByText("Next Prayer")).toBeInTheDocument();
-    // "Athan" appears in both the hero block and the list column header
+    // In normal state the hero is NOT rendered — the list row highlight does the job.
+    const hero = document.querySelector('[data-testid="prayer-widget-hero"]');
+    expect(hero).toBeNull();
+    // "Athan" / "Iqamah" column headers still appear in the list
     expect(screen.getAllByText("Athan").length).toBeGreaterThan(0);
-    // "Iqamah" now appears in both the hero block and each grid cell — use getAllByText
-    expect(screen.getAllByText("Iqamah").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Iqamah/i).length).toBeGreaterThan(0);
     // 3:42 PM = athan, 3:52 PM = iqamah — appear in both pill (hidden) and widget (visible)
     expect(screen.getAllByText("3:42 PM").length).toBeGreaterThan(0);
     expect(screen.getAllByText("3:52 PM").length).toBeGreaterThan(0);
@@ -512,13 +506,13 @@ describe("PrayerWidget — iqamah pulse in hero block", () => {
   // self-consistent with whatever the calculation engine returns.
   it("pulses the iqamah time in the hero when a prayer is inside its iqamah window", async () => {
     vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
-    const expectedIqamah = getPrayerTimesForDate(new Date("2026-04-15T15:30:00+10:00")).asr.iqamah;
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
 
     const pulsing = document.querySelector(".prayer-widget-iqamah-pulse");
     expect(pulsing).not.toBeNull();
     expect(pulsing!.tagName).toBe("TIME");
-    expect(pulsing!.textContent).toContain(expectedIqamah);
+    // v2: the pulsing <time> contains "Iqamah in M:SS" (combined phrase), not just the bare iqamah time
+    expect(pulsing!.textContent).toMatch(/Iqamah\s+in\s+\d/i);
   });
 
   it("shows an 'Iqamah' eyebrow label (not 'Next Prayer') during the window", () => {
@@ -573,18 +567,19 @@ describe("PrayerWidget — passed prayers dimmed", () => {
 describe("PrayerWidget — hero countdown with seconds", () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00")); // 23 min before Asr
   });
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it("renders the hero countdown in MM:SS format when under an hour", () => {
+  it("renders 'Iqamah in MM:SS' in the hero during the iqamah window", () => {
+    // v2: the hero no longer shows a countdown in normal state — countdown only
+    // appears inside the iqamah phrase "Iqamah in M:SS" during the iqamah window.
+    vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00")); // inside Asr iqamah window
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
     const dialog = screen.getByRole("dialog");
-    // The hero countdown appears as "in M:SS" or "in MM:SS"; at 23 min to Asr
-    // (3:42 PM), the initial render is "in 23:00".
-    expect(dialog.textContent).toMatch(/in \d{1,2}:\d{2}/);
+    // "Iqamah in M:SS" appears in the hero during the iqamah window
+    expect(dialog.textContent).toMatch(/Iqamah\s+in\s+\d{1,2}:\d{2}/i);
   });
 });
 
@@ -629,5 +624,170 @@ describe("PrayerWidget — body scroll lock", () => {
   it("does not lock body scroll when the widget is collapsed", () => {
     render(<PrayerWidget prayerSettings={null} />);
     expect(document.body.style.overflow).toBe("");
+  });
+});
+
+describe("PrayerWidget — pill v2", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00")); // 23 min before Asr
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("does NOT render an Upcoming badge on the pill (dropped in v2.1)", () => {
+    render(<PrayerWidget prayerSettings={null} />);
+    const pill = screen.getByRole("button", { name: /open prayer times/i });
+    expect(pill.textContent).not.toMatch(/UPCOMING/i);
+    expect(pill.textContent).not.toMatch(/Next prayer/i);
+  });
+
+  it("does not render a countdown on the pill in normal state", () => {
+    render(<PrayerWidget prayerSettings={null} />);
+    const pill = screen.getByRole("button", { name: /open prayer times/i });
+    expect(pill.textContent).not.toMatch(/\bin \d+:\d{2}\b/);
+    expect(pill.textContent).not.toMatch(/\bin \d+ min\b/);
+  });
+
+  it("pulses during an iqamah window", () => {
+    // 1 minute after Asr athan on 2026-04-15 — inside the iqamah window
+    // (real schedule: Asr adhan 3:29 PM, iqamah 3:39 PM on 2026-04-15).
+    vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} />);
+    const pill = screen.getByRole("button", { name: /open prayer times/i });
+    expect(pill.className).toMatch(/prayer-widget-pill-pulse/);
+  });
+});
+
+describe("PrayerWidget — modal header v2", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("does not render a 'Prayer Times' title", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    // No <h2>Prayer Times</h2> in the dialog. The dialog itself still has
+    // aria-label="Prayer Times" for SR users — that's fine (accessible name,
+    // not visible text). Scope the check to the visible title region.
+    const dialog = screen.getByRole("dialog");
+    const visibleTitle = dialog.querySelector("h2");
+    expect(visibleTitle).toBeNull();
+  });
+
+  it("renders the Melbourne date subtitle with data-testid=widget-date-label", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const label = screen.getByTestId("widget-date-label");
+    expect(label.textContent).toMatch(/^Melbourne · /);
+  });
+
+  it("renders the Today chip with a calendar icon", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const todayButton = screen.getByRole("button", { name: /open date picker/i });
+    const svg = todayButton.querySelector("svg");
+    expect(svg).not.toBeNull();
+    expect(todayButton.textContent).toMatch(/Today/);
+  });
+});
+
+describe("PrayerWidget — hero v2 (normal state)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00")); // 23 min before Asr
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("does NOT render the hero block in normal state", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    // The list row highlight (bg + dot on Asr) carries the next-prayer signal;
+    // no separate hero card appears in normal state.
+    const hero = document.querySelector('[data-testid="prayer-widget-hero"]');
+    expect(hero).toBeNull();
+  });
+
+  it("does NOT render a countdown or 'Next Prayer' eyebrow in the hero", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.textContent).not.toMatch(/\bin \d+:\d{2}\b/);
+    expect(dialog.textContent).not.toMatch(/\bin \d+ min\b/);
+    expect(dialog.textContent).not.toMatch(/Next Prayer/);
+  });
+});
+
+describe("PrayerWidget — hero v2 (iqamah state)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("renders the hero with '<prayer> Iqamah in M:SS' during an iqamah window", () => {
+    // 3:30 PM Melbourne — inside the real-schedule Asr iqamah window
+    // (adhan 3:29, iqamah 3:39 on 2026-04-15)
+    vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const hero = document.querySelector('[data-testid="prayer-widget-hero"]');
+    expect(hero).not.toBeNull();
+    // The hero contains the active prayer name (Asr in this scenario)
+    expect(hero!.textContent).toMatch(/Asr/i);
+    // And the iqamah phrase with countdown, e.g. "Iqamah in 6:23"
+    expect(hero!.textContent).toMatch(/Iqamah\s+in\s+\d/i);
+  });
+});
+
+describe("PrayerWidget — prayer list iqamah-mode transitions", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("inside iqamah window: active prayer row has the pulse class, dot animates", () => {
+    // 3:30 PM Melbourne — inside real Asr iqamah window on 2026-04-15
+    vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    // Look up the row whose data-prayer attr matches the in-window prayer.
+    // On the real schedule for 2026-04-15, the active prayer is Asr.
+    const asrRow = document.querySelector('[data-prayer="asr"]') as HTMLElement;
+    expect(asrRow).not.toBeNull();
+    expect(asrRow.className).toMatch(/prayer-widget-row-active/);
+    // The dot inside the row animates
+    const dot = asrRow.querySelector(".prayer-widget-row-dot");
+    expect(dot).not.toBeNull();
+    // data attribute flips so CSS / tests can observe the state
+    expect(asrRow.dataset.isActive).toBe("true");
+  });
+
+  it("inside iqamah window: 'next' highlight is suppressed (Maghrib is no longer highlighted)", () => {
+    vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const maghribRow = document.querySelector('[data-prayer="maghrib"]') as HTMLElement;
+    expect(maghribRow).not.toBeNull();
+    // In v2, when another prayer is active, the "next" bg and dot are suppressed.
+    expect(maghribRow.className).not.toMatch(/bg-white\/\[0\.08\]/);
+    expect(maghribRow.dataset.isNext).toBeUndefined();
+  });
+
+  it("outside iqamah window: next prayer is highlighted normally", () => {
+    // 3:19 PM — 10 min before real-schedule Asr adhan (3:29 PM)
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const asrRow = document.querySelector('[data-prayer="asr"]') as HTMLElement;
+    expect(asrRow).not.toBeNull();
+    // No active-row pulse
+    expect(asrRow.className).not.toMatch(/prayer-widget-row-active/);
+    // But the next-highlight is on (bg, data attr)
+    expect(asrRow.dataset.isNext).toBe("true");
   });
 });

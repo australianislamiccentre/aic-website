@@ -17,7 +17,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { ChevronUp } from "lucide-react";
+import { ChevronUp, CalendarDays } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { usePrayerTimes, useNextPrayer, usePrayerInIqamahWindow } from "@/hooks/usePrayerTimes";
 import { usePrayerWidgetScroll } from "@/hooks/usePrayerWidgetScroll";
@@ -29,6 +29,7 @@ import {
   isSameMelbourneDay,
 } from "@/lib/time";
 import { useIsMounted } from "@/hooks/useIsMounted";
+import { cn } from "@/lib/utils";
 import type { SanityPrayerSettings } from "@/types/sanity";
 
 interface PrayerWidgetProps {
@@ -348,11 +349,15 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         tabIndex={isOpen ? -1 : 0}
         onClick={() => setIsOpen(true)}
         data-hidden-by-scroll={isHiddenByScroll ? "true" : "false"}
-        className="fixed left-1/2 flex items-center gap-3 px-5 py-3.5
-                   rounded-full text-white text-base border border-white/10 z-[1000]
-                   cursor-pointer shadow-[0_12px_32px_rgba(1,71,107,0.35),0_4px_12px_rgba(0,0,0,0.1)]
-                   hover:shadow-[0_18px_42px_rgba(1,71,107,0.45),0_6px_16px_rgba(0,0,0,0.12)]
-                   max-[480px]:gap-2 max-[480px]:px-4 max-[480px]:py-3"
+        className={cn(
+          "fixed left-1/2 flex items-center gap-3 px-5 py-3.5",
+          "rounded-full text-white text-base border border-white/10 z-[1000]",
+          "cursor-pointer shadow-[0_12px_32px_rgba(1,71,107,0.35),0_4px_12px_rgba(0,0,0,0.1)]",
+          "hover:shadow-[0_18px_42px_rgba(1,71,107,0.45),0_6px_16px_rgba(0,0,0,0.12)]",
+          "active:scale-[0.96]",
+          "max-[480px]:gap-2 max-[480px]:px-4 max-[480px]:py-3",
+          isInIqamahWindow && "prayer-widget-pill-pulse",
+        )}
         style={{
           background: "linear-gradient(135deg, #01476b 0%, #01365c 100%)",
           maxWidth: "calc(100vw - 24px)",
@@ -374,15 +379,20 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         <span className="relative w-2.5 h-2.5 rounded-full bg-lime-400 flex-shrink-0">
           <span className="absolute inset-0 rounded-full bg-lime-400 prayer-widget-pulse-ring" aria-hidden="true" />
         </span>
-        <span className="text-white/65 text-xs uppercase tracking-wider font-medium whitespace-nowrap max-[480px]:hidden">
-          Next prayer
+        <span className="font-semibold text-base uppercase tracking-wide whitespace-nowrap">
+          {isInIqamahWindow ? heroPrayer!.displayName : (nextPrayer?.displayName ?? "")}
         </span>
-        <span className="font-semibold text-base whitespace-nowrap">{nextPrayer?.displayName ?? ""}</span>
-        <span className="text-lime-300 font-bold font-mono text-base whitespace-nowrap">{nextPrayer?.adhan ?? ""}</span>
-        {countdown && (
-          <span className="text-white/60 text-sm tabular-nums whitespace-nowrap -ml-1 max-[380px]:hidden" aria-hidden="true">
-            {countdown}
+        {isInIqamahWindow ? (
+          <span className="text-lime-300 font-semibold text-base uppercase tracking-wide whitespace-nowrap tabular-nums">
+            {`Iqamah ${countdown}`}
           </span>
+        ) : (
+          <time
+            className="text-lime-300 font-bold font-mono text-base whitespace-nowrap"
+            dateTime={nextPrayer ? toISO24Hour(nextPrayer.adhan) : ""}
+          >
+            {nextPrayer?.adhan ?? ""}
+          </time>
         )}
         <span
           className="flex items-center gap-1 text-white/50 text-[10px] uppercase tracking-wider font-medium whitespace-nowrap ml-1 max-[520px]:hidden"
@@ -432,137 +442,108 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           transition: prefersReducedMotion
             ? "opacity 150ms ease"
             : "opacity 320ms cubic-bezier(0.33, 1, 0.68, 1), " +
-              "transform 520ms cubic-bezier(0.33, 1, 0.68, 1)",
+              "transform 520ms cubic-bezier(0.34, 1.12, 0.64, 1)",
         }}
       >
-          <div className="w-8 h-1 bg-white/20 rounded-full mx-auto mt-2.5 flex-shrink-0" aria-hidden="true" />
+          {/* Grab handle — bottom-sheet convention, only shown on mobile */}
+          <div
+            className="w-8 h-1 bg-white/20 rounded-full mx-auto mt-2.5 flex-shrink-0 md:hidden"
+            aria-hidden="true"
+          />
 
-          <div className="px-6 pt-3 pb-3 border-b border-white/10 flex-shrink-0">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-base font-semibold text-white tracking-tight">Prayer Times</h2>
+          {/* Single-row header: [date + datepicker] on the left · close on the right */}
+          <div className="px-6 pt-4 pb-3 border-b border-white/10 flex-shrink-0 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3 min-w-0 flex-wrap">
+              <div
+                className="text-xs text-white/60 whitespace-nowrap overflow-hidden text-ellipsis min-w-0"
+                data-testid="widget-date-label"
+              >
+                Melbourne · {formatMelbourneDate(selectedDate)}
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 type="button"
-                aria-label="Close prayer times"
-                onClick={closeWidget}
-                className="h-10 w-10 -mr-2 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-2xl font-light leading-none transition-colors flex items-center justify-center"
+                aria-label="Previous day"
+                onClick={() => shiftDate(-1)}
+                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md text-xl font-light transition-all duration-150 flex items-center justify-center"
               >
-                <span aria-hidden="true">×</span>
+                <span aria-hidden="true">‹</span>
               </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  aria-label={
+                    isViewingToday
+                      ? "Open date picker"
+                      : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`
+                  }
+                  onClick={openNativeDatePicker}
+                  className="h-9 px-3 text-xs font-medium text-white/85 hover:text-white hover:bg-white/20 bg-white/10 border border-white/10 active:scale-95 rounded-full transition-all duration-150 flex items-center gap-1.5 whitespace-nowrap"
+                >
+                  <CalendarDays className="w-3.5 h-3.5 opacity-70" aria-hidden="true" />
+                  {isViewingToday ? "Today" : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
+                </button>
+                <input
+                  ref={dateInputRef}
+                  type="date"
+                  aria-label="Pick a date"
+                  value={getMelbourneDateString(selectedDate)}
+                  onChange={handleDateInputChange}
+                  tabIndex={-1}
+                  className="sr-only"
+                />
+              </div>
+              <button
+                type="button"
+                aria-label="Next day"
+                onClick={() => shiftDate(1)}
+                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md text-xl font-light transition-all duration-150 flex items-center justify-center"
+              >
+                <span aria-hidden="true">›</span>
+              </button>
+              {!isViewingToday && (
+                <button
+                  type="button"
+                  aria-label="Back to today"
+                  onClick={goToToday}
+                  className="h-9 px-2.5 ml-1 text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md transition-all duration-150"
+                >
+                  Reset
+                </button>
+              )}
+              </div>
             </div>
-            <div className="text-xs text-white/60 mt-1" data-testid="widget-date-label">
-              Melbourne · {formatMelbourneDate(selectedDate)}
-            </div>
-          </div>
 
-          {/* Date navigation — centred, sits above the hero card */}
-          <div className="px-6 pt-4 pb-1 flex items-center justify-center gap-1 flex-shrink-0">
             <button
               type="button"
-              aria-label="Previous day"
-              onClick={() => shiftDate(-1)}
-              className="h-10 w-10 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-xl font-light transition-colors flex items-center justify-center"
+              aria-label="Close prayer times"
+              onClick={closeWidget}
+              className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 hover:rotate-90 active:scale-90 rounded-md text-2xl font-light leading-none transition-all duration-200 ease-out flex items-center justify-center flex-shrink-0"
             >
-              <span aria-hidden="true">‹</span>
+              <span aria-hidden="true">×</span>
             </button>
-            <div className="relative">
-              <button
-                type="button"
-                aria-label={isViewingToday ? "Open date picker" : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`}
-                onClick={openNativeDatePicker}
-                className="h-10 px-4 text-sm font-medium text-white hover:bg-white/10 rounded-md transition-colors"
-              >
-                {isViewingToday ? "Today" : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
-              </button>
-              <input
-                ref={dateInputRef}
-                type="date"
-                aria-label="Pick a date"
-                value={getMelbourneDateString(selectedDate)}
-                onChange={handleDateInputChange}
-                tabIndex={-1}
-                className="sr-only"
-              />
-            </div>
-            <button
-              type="button"
-              aria-label="Next day"
-              onClick={() => shiftDate(1)}
-              className="h-10 w-10 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-xl font-light transition-colors flex items-center justify-center"
-            >
-              <span aria-hidden="true">›</span>
-            </button>
-            {!isViewingToday && (
-              <button
-                type="button"
-                aria-label="Back to today"
-                onClick={goToToday}
-                className="h-10 px-3 ml-1 text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-colors"
-              >
-                Reset
-              </button>
-            )}
           </div>
 
           <div className="px-6 pt-4 pb-6 overflow-y-auto flex-1">
-            {/* Hero block — Next prayer OR current prayer in its iqamah window.
-                Rendered only when heroPrayer is non-null (post-mount); SSR and
-                first client render show no hero content to keep HTML identical. */}
-            {heroPrayer && (
+            {/* Hero block — only rendered during an iqamah window. In normal state
+                the next prayer is already highlighted inline in the prayer list. */}
+            {isInIqamahWindow && (
               <div
-                className="relative mb-4 p-4 sm:p-5 rounded-2xl overflow-hidden border border-white/10"
-                style={{ background: "rgba(255, 255, 255, 0.06)" }}
+                data-testid="prayer-widget-hero"
+                data-iqamah="true"
+                className="relative mb-4 px-4 py-4 sm:px-5 rounded-2xl overflow-hidden border border-lime-400/30"
+                style={{ background: "rgba(163, 230, 53, 0.1)" }}
               >
-                <div className="flex items-center gap-3 mb-3 sm:mb-4 flex-wrap">
-                  <span className="text-[10px] font-semibold text-white uppercase tracking-[0.18em]">
-                    {isInIqamahWindow ? "Iqamah" : "Next Prayer"}
+                <div className="flex items-baseline justify-between gap-3 flex-nowrap">
+                  <span className="font-bold text-2xl sm:text-3xl md:text-4xl uppercase tracking-wide text-white whitespace-nowrap">
+                    {heroPrayer!.displayName}
                   </span>
-                  {countdown && (
-                    <>
-                      <span className="text-white/30" aria-hidden="true">·</span>
-                      <span
-                        className="text-xs font-semibold text-white tabular-nums"
-                        aria-hidden="true"
-                      >
-                        {countdown}
-                      </span>
-                    </>
-                  )}
-                </div>
-
-                <div className="flex items-baseline justify-between gap-3 mb-3">
-                  <div className="text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-none whitespace-nowrap min-w-0 truncate">
-                    {heroPrayer.displayName}
-                  </div>
                   <time
-                    className="text-2xl sm:text-4xl md:text-5xl font-mono font-semibold text-white tracking-tight leading-none whitespace-nowrap"
-                    dateTime={toISO24Hour(heroPrayer.adhan)}
+                    className="font-mono font-bold text-2xl sm:text-3xl md:text-4xl uppercase tracking-wide whitespace-nowrap tabular-nums prayer-widget-iqamah-pulse"
+                    dateTime={toISO24Hour(heroPrayer!.iqamah)}
                   >
-                    {heroPrayer.adhan}
+                    {`Iqamah ${countdown}`}
                   </time>
-                </div>
-
-                <div className="flex items-center gap-3 text-sm text-white/70">
-                  <span>
-                    Athan{" "}
-                    <time className="text-white font-mono" dateTime={toISO24Hour(heroPrayer.adhan)}>
-                      {heroPrayer.adhan}
-                    </time>
-                  </span>
-                  <span className="text-white/30" aria-hidden="true">·</span>
-                  <span>
-                    Iqamah{" "}
-                    <time
-                      className={
-                        "font-mono font-semibold " +
-                        (isInIqamahWindow
-                          ? "prayer-widget-iqamah-pulse"
-                          : "text-white")
-                      }
-                      dateTime={toISO24Hour(heroPrayer.iqamah)}
-                    >
-                      {heroPrayer.iqamah}
-                    </time>
-                  </span>
                 </div>
               </div>
             )}
@@ -581,29 +562,52 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               </div>
               {PRAYER_ORDER.map(({ key, displayName }) => {
                 const row = viewedPrayers[key];
-                const isNext = isViewingToday && nextPrayer !== null && nextPrayer.name === key;
+                const isActive =
+                  isViewingToday &&
+                  isInIqamahWindow &&
+                  inIqamahWindow !== null &&
+                  inIqamahWindow.name === key;
+                const isNext =
+                  isViewingToday &&
+                  !isInIqamahWindow &&
+                  nextPrayer !== null &&
+                  nextPrayer.name === key;
                 const [iqH, iqM] = toISO24Hour(row.iqamah).split(":").map(Number);
                 const iqamahMinutes = iqH * 60 + iqM;
                 const isPassed =
                   isViewingToday &&
                   currentMelbMinutes !== null &&
                   currentMelbMinutes >= iqamahMinutes &&
-                  !isNext;
+                  !isNext &&
+                  !isActive;
                 return (
                   <div
                     key={key}
                     data-prayer={key}
                     data-is-next={isNext ? "true" : undefined}
+                    data-is-active={isActive ? "true" : undefined}
                     data-is-passed={isPassed ? "true" : undefined}
-                    className={
-                      "grid grid-cols-subgrid col-span-3 items-baseline px-3 py-2.5 sm:py-3.5 rounded-lg transition-colors " +
-                      (isPassed ? "opacity-40 " : "") +
-                      (isNext ? "bg-white/[0.08]" : "")
-                    }
+                    className={cn(
+                      "grid grid-cols-subgrid col-span-3 items-baseline px-3 py-2.5 sm:py-3.5 rounded-lg transition-colors",
+                      isPassed && "opacity-40",
+                      isActive && "prayer-widget-row-active",
+                      isNext && "bg-white/[0.08]",
+                    )}
                   >
                     <div className="flex items-center gap-2.5">
                       {isNext && <span className="w-2 h-2 rounded-full bg-white flex-shrink-0" aria-hidden="true" />}
-                      <span className={"text-sm uppercase tracking-wider font-semibold " + (isNext ? "text-white" : "text-white/60")}>
+                      {isActive && (
+                        <span
+                          className="w-2 h-2 rounded-full bg-lime-300 flex-shrink-0 prayer-widget-row-dot"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span
+                        className={cn(
+                          "text-sm uppercase tracking-wider font-semibold",
+                          isActive ? "text-lime-300" : isNext ? "text-white" : "text-white/60",
+                        )}
+                      >
                         {displayName}
                       </span>
                     </div>

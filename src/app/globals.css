@@ -374,3 +374,53 @@ body {
     color: #ffffff;
   }
 }
+
+/* ===== Prayer Widget — whole-pill pulse (iqamah mode) ===== */
+@keyframes prayer-widget-pill-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 18px var(--pill-pulse-glow, rgba(163, 230, 53, 0.55)));
+    transform: translateX(-50%) scale(1.015);
+  }
+}
+.prayer-widget-pill-pulse {
+  --pill-pulse-glow: rgba(163, 230, 53, 0.55);
+  animation: prayer-widget-pill-pulse 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .prayer-widget-pill-pulse {
+    animation: none;
+    filter: drop-shadow(0 0 12px var(--pill-pulse-glow, rgba(163, 230, 53, 0.55)));
+  }
+}
+
+/* ===== Prayer Widget — active prayer row (iqamah mode) ===== */
+@keyframes prayer-widget-row-active {
+  0%, 100% { background-color: transparent; }
+  50%      { background-color: var(--row-pulse-bg, rgba(163, 230, 53, 0.18)); }
+}
+.prayer-widget-row-active {
+  --row-pulse-bg: rgba(163, 230, 53, 0.18);
+  animation: prayer-widget-row-active 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .prayer-widget-row-active {
+    animation: none;
+    background-color: var(--row-pulse-bg, rgba(163, 230, 53, 0.18));
+  }
+}
+
+/* ===== Prayer Widget — active row dot pulse ===== */
+@keyframes prayer-widget-row-dot {
+  0%, 100% { transform: scale(1);   opacity: 1;   }
+  50%      { transform: scale(1.3); opacity: 0.8; }
+}
+.prayer-widget-row-dot {
+  animation: prayer-widget-row-dot 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .prayer-widget-row-dot { animation: none; }
+}
