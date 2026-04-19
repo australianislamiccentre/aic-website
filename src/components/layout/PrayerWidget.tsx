@@ -530,63 +530,59 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           </div>
 
           <div className="px-6 pt-4 pb-6 overflow-y-auto flex-1">
-            {/* Hero block — Next prayer OR current prayer in its iqamah window */}
+            {/* Hero block — single-line v2 layout */}
             <div
-              className="relative mb-4 p-4 sm:p-5 rounded-2xl overflow-hidden border border-white/10"
-              style={{ background: "rgba(255, 255, 255, 0.06)" }}
+              data-testid="prayer-widget-hero"
+              data-iqamah={isInIqamahWindow ? "true" : undefined}
+              className={cn(
+                "relative mb-4 px-4 py-4 sm:px-5 rounded-2xl overflow-hidden border flex items-baseline gap-2.5 flex-nowrap",
+                isInIqamahWindow ? "border-lime-400/30" : "border-white/10",
+              )}
+              style={{
+                background: isInIqamahWindow
+                  ? "rgba(163, 230, 53, 0.1)"
+                  : "rgba(255, 255, 255, 0.06)",
+              }}
             >
-              <div className="flex items-center gap-3 mb-3 sm:mb-4 flex-wrap">
-                <span className="text-[10px] font-semibold text-white uppercase tracking-[0.18em]">
-                  {isInIqamahWindow ? "Iqamah" : "Next Prayer"}
-                </span>
-                {countdown && (
-                  <>
-                    <span className="text-white/30" aria-hidden="true">·</span>
-                    <span
-                      className="text-xs font-semibold text-white tabular-nums"
-                      aria-hidden="true"
-                    >
-                      {countdown}
-                    </span>
-                  </>
-                )}
-              </div>
-
-              <div className="flex items-baseline justify-between gap-3 mb-3">
-                <div className="text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-none whitespace-nowrap min-w-0 truncate">
-                  {heroPrayer.displayName}
-                </div>
-                <time
-                  className="text-2xl sm:text-4xl md:text-5xl font-mono font-semibold text-white tracking-tight leading-none whitespace-nowrap"
-                  dateTime={toISO24Hour(heroPrayer.adhan)}
+              {!isInIqamahWindow && (
+                <span
+                  className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/75
+                             bg-white/10 border border-white/15 rounded-full px-2 py-1 flex-shrink-0
+                             self-start mt-1 whitespace-nowrap"
                 >
-                  {heroPrayer.adhan}
+                  Upcoming
+                </span>
+              )}
+              <span className="font-bold text-xl sm:text-2xl md:text-[28px] uppercase tracking-wide text-white whitespace-nowrap">
+                {heroPrayer.displayName}
+              </span>
+              {isInIqamahWindow ? (
+                <time
+                  className="font-mono font-bold text-xl sm:text-2xl md:text-[28px] uppercase tracking-wide whitespace-nowrap tabular-nums prayer-widget-iqamah-pulse"
+                  dateTime={toISO24Hour(heroPrayer.iqamah)}
+                >
+                  {`Iqamah ${countdown}`}
                 </time>
-              </div>
-
-              <div className="flex items-center gap-3 text-sm text-white/70">
-                <span>
-                  Athan{" "}
-                  <time className="text-white font-mono" dateTime={toISO24Hour(heroPrayer.adhan)}>
+              ) : (
+                <>
+                  <time
+                    className="font-mono font-bold text-xl sm:text-2xl md:text-[28px] uppercase tracking-wide text-white whitespace-nowrap"
+                    dateTime={toISO24Hour(heroPrayer.adhan)}
+                  >
                     {heroPrayer.adhan}
                   </time>
-                </span>
-                <span className="text-white/30" aria-hidden="true">·</span>
-                <span>
-                  Iqamah{" "}
+                  <span className="text-white/25 text-sm self-center" aria-hidden="true">·</span>
+                  <span className="font-medium text-sm sm:text-base uppercase tracking-wide text-white/55 whitespace-nowrap">
+                    IQAMAH
+                  </span>
                   <time
-                    className={
-                      "font-mono font-semibold " +
-                      (isInIqamahWindow
-                        ? "prayer-widget-iqamah-pulse"
-                        : "text-white")
-                    }
+                    className="font-mono font-medium text-sm sm:text-base uppercase tracking-wide text-white/55 whitespace-nowrap"
                     dateTime={toISO24Hour(heroPrayer.iqamah)}
                   >
                     {heroPrayer.iqamah}
                   </time>
-                </span>
-              </div>
+                </>
+              )}
             </div>
 
             {/* Prayer list — single column, columns aligned via subgrid */}
