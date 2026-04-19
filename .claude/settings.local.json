@@ -109,7 +109,19 @@
       "Bash(npx eslint:*)",
       "Bash(ls /Users/rashidelhouli/australian-islamic-centre/src/lib/icon-map*)",
       "Bash(npm ls:*)",
-      "Bash(npm info:*)"
+      "Bash(npm info:*)",
+      "mcp__89a5c42c-092c-4cf4-8d05-519fe2c85987__search_issue_events",
+      "mcp__89a5c42c-092c-4cf4-8d05-519fe2c85987__update_issue",
+      "Bash(/Users/rashidelhouli/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh --project-dir /Users/rashidelhouli/australian-islamic-centre)",
+      "Bash(git reset *)",
+      "Bash(node -e ' *)",
+      "Bash(git rebase *)",
+      "Bash(git stash *)",
+      "mcp__89a5c42c-092c-4cf4-8d05-519fe2c85987__search_issues",
+      "mcp__89a5c42c-092c-4cf4-8d05-519fe2c85987__get_sentry_resource",
+      "mcp__89a5c42c-092c-4cf4-8d05-519fe2c85987__find_releases",
+      "mcp__89a5c42c-092c-4cf4-8d05-519fe2c85987__search_events",
+      "mcp__89a5c42c-092c-4cf4-8d05-519fe2c85987__get_replay_details"
     ],
     "additionalDirectories": [
       "/Users/rashidelhouli/australian-islamic-centre/src/components/sections",
