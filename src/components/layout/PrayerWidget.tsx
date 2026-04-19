@@ -346,11 +346,14 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         tabIndex={isOpen ? -1 : 0}
         onClick={() => setIsOpen(true)}
         data-hidden-by-scroll={isHiddenByScroll ? "true" : "false"}
-        className="fixed left-1/2 flex items-center gap-3 px-5 py-3.5
-                   rounded-full text-white text-base border border-white/10 z-[1000]
-                   cursor-pointer shadow-[0_12px_32px_rgba(1,71,107,0.35),0_4px_12px_rgba(0,0,0,0.1)]
-                   hover:shadow-[0_18px_42px_rgba(1,71,107,0.45),0_6px_16px_rgba(0,0,0,0.12)]
-                   max-[480px]:gap-2 max-[480px]:px-4 max-[480px]:py-3"
+        className={
+          "fixed left-1/2 flex items-center gap-3 px-5 py-3.5 " +
+          "rounded-full text-white text-base border border-white/10 z-[1000] " +
+          "cursor-pointer shadow-[0_12px_32px_rgba(1,71,107,0.35),0_4px_12px_rgba(0,0,0,0.1)] " +
+          "hover:shadow-[0_18px_42px_rgba(1,71,107,0.45),0_6px_16px_rgba(0,0,0,0.12)] " +
+          "max-[480px]:gap-2 max-[480px]:px-4 max-[480px]:py-3" +
+          (isInIqamahWindow ? " prayer-widget-pill-pulse" : "")
+        }
         style={{
           background: "linear-gradient(135deg, #01476b 0%, #01365c 100%)",
           maxWidth: "calc(100vw - 24px)",
@@ -372,15 +375,29 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         <span className="relative w-2.5 h-2.5 rounded-full bg-lime-400 flex-shrink-0">
           <span className="absolute inset-0 rounded-full bg-lime-400 prayer-widget-pulse-ring" aria-hidden="true" />
         </span>
-        <span className="text-white/65 text-xs uppercase tracking-wider font-medium whitespace-nowrap max-[480px]:hidden">
-          Next prayer
-        </span>
-        <span className="font-semibold text-base whitespace-nowrap">{nextPrayer.displayName}</span>
-        <span className="text-lime-300 font-bold font-mono text-base whitespace-nowrap">{nextPrayer.adhan}</span>
-        {countdown && (
-          <span className="text-white/60 text-sm tabular-nums whitespace-nowrap -ml-1 max-[380px]:hidden" aria-hidden="true">
-            {countdown}
+        {!isInIqamahWindow && (
+          <span
+            className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/75
+                       bg-white/10 border border-white/15 rounded-full px-2 py-1
+                       whitespace-nowrap flex-shrink-0"
+          >
+            Upcoming
           </span>
+        )}
+        <span className="font-semibold text-base uppercase tracking-wide whitespace-nowrap">
+          {isInIqamahWindow ? heroPrayer.displayName : nextPrayer.displayName}
+        </span>
+        {isInIqamahWindow ? (
+          <span className="text-lime-300 font-semibold text-base uppercase tracking-wide whitespace-nowrap tabular-nums">
+            {`Iqamah ${countdown}`}
+          </span>
+        ) : (
+          <time
+            className="text-lime-300 font-bold font-mono text-base whitespace-nowrap"
+            dateTime={toISO24Hour(nextPrayer.adhan)}
+          >
+            {nextPrayer.adhan}
+          </time>
         )}
         <span
           className="flex items-center gap-1 text-white/50 text-[10px] uppercase tracking-wider font-medium whitespace-nowrap ml-1 max-[520px]:hidden"

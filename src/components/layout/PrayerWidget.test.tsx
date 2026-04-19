@@ -54,16 +54,10 @@ describe("PrayerWidget — pill skeleton", () => {
     render(<PrayerWidget prayerSettings={null} />);
     const pill = screen.getByRole("button", { name: /open prayer times/i });
     expect(pill).toBeInTheDocument();
-    expect(screen.getByText("Next prayer")).toBeInTheDocument();
+    expect(screen.getByText(/UPCOMING/i)).toBeInTheDocument();
     // "Asr" and "3:42 PM" appear in both the pill and the always-rendered (hidden) widget
     expect(screen.getAllByText("Asr").length).toBeGreaterThan(0);
     expect(screen.getAllByText("3:42 PM").length).toBeGreaterThan(0);
-  });
-
-  it("shows a countdown to the next prayer", () => {
-    render(<PrayerWidget prayerSettings={null} />);
-    // Countdown is now "in MM:SS" — 23 min before Asr renders as "in 23:00"
-    expect(screen.getAllByText(/in 23:00/).length).toBeGreaterThan(0);
   });
 
   it("widget content is not visible by default", () => {
@@ -629,5 +623,39 @@ describe("PrayerWidget — body scroll lock", () => {
   it("does not lock body scroll when the widget is collapsed", () => {
     render(<PrayerWidget prayerSettings={null} />);
     expect(document.body.style.overflow).toBe("");
+  });
+});
+
+describe("PrayerWidget — pill v2", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00")); // 23 min before Asr
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("renders the UPCOMING badge on the pill (not 'Next prayer')", () => {
+    render(<PrayerWidget prayerSettings={null} />);
+    const pill = screen.getByRole("button", { name: /open prayer times/i });
+    expect(pill.textContent).toMatch(/UPCOMING/i);
+    expect(pill.textContent).not.toMatch(/Next prayer/i);
+  });
+
+  it("does not render a countdown on the pill in normal state", () => {
+    render(<PrayerWidget prayerSettings={null} />);
+    const pill = screen.getByRole("button", { name: /open prayer times/i });
+    expect(pill.textContent).not.toMatch(/\bin \d+:\d{2}\b/);
+    expect(pill.textContent).not.toMatch(/\bin \d+ min\b/);
+  });
+
+  it("UPCOMING badge is hidden when a prayer is inside its iqamah window", () => {
+    // 1 minute after Asr athan on 2026-04-15 — inside the iqamah window
+    // (real schedule: Asr adhan 3:29 PM, iqamah 3:39 PM on 2026-04-15).
+    vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} />);
+    const pill = screen.getByRole("button", { name: /open prayer times/i });
+    expect(pill.textContent).not.toMatch(/UPCOMING/i);
+    expect(pill.className).toMatch(/prayer-widget-pill-pulse/);
   });
 });
