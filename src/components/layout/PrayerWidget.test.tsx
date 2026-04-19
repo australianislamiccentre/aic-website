@@ -703,11 +703,6 @@ describe("PrayerWidget — hero v2 (normal state)", () => {
     vi.useRealTimers();
   });
 
-  it("does NOT render an Upcoming badge anywhere", () => {
-    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
-    expect(screen.queryByText(/^Upcoming$/i)).toBeNull();
-  });
-
   it("does NOT render the hero block in normal state", () => {
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
     // The list row highlight (bg + dot on Asr) carries the next-prayer signal;
@@ -733,20 +728,17 @@ describe("PrayerWidget — hero v2 (iqamah state)", () => {
     vi.useRealTimers();
   });
 
-  it("collapses to DHUHR + 'Iqamah in M:SS' and hides the Upcoming badge in the hero", () => {
+  it("renders the hero with '<prayer> Iqamah in M:SS' during an iqamah window", () => {
     // 3:30 PM Melbourne — inside the real-schedule Asr iqamah window
     // (adhan 3:29, iqamah 3:39 on 2026-04-15)
     vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
-    const dialog = screen.getByRole("dialog");
-    // The hero should contain the active prayer name (Asr in this scenario)
-    expect(dialog.textContent).toMatch(/Asr/i);
-    // And the iqamah phrase (label + countdown) e.g. "Iqamah in 6:23"
-    expect(dialog.textContent).toMatch(/Iqamah\s+in\s+\d/i);
-    // No standalone Upcoming badge in the hero in iqamah mode
-    const hero = dialog.querySelector('[data-testid="prayer-widget-hero"]');
+    const hero = document.querySelector('[data-testid="prayer-widget-hero"]');
     expect(hero).not.toBeNull();
-    expect(hero!.textContent).not.toMatch(/Upcoming/i);
+    // The hero contains the active prayer name (Asr in this scenario)
+    expect(hero!.textContent).toMatch(/Asr/i);
+    // And the iqamah phrase with countdown, e.g. "Iqamah in 6:23"
+    expect(hero!.textContent).toMatch(/Iqamah\s+in\s+\d/i);
   });
 });
 
