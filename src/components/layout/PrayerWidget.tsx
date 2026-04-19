@@ -599,29 +599,51 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               </div>
               {PRAYER_ORDER.map(({ key, displayName }) => {
                 const row = viewedPrayers[key];
-                const isNext = isViewingToday && nextPrayer.name === key;
+                const isActive =
+                  isViewingToday &&
+                  isInIqamahWindow &&
+                  inIqamahWindow !== null &&
+                  inIqamahWindow.name === key;
+                const isNext =
+                  isViewingToday &&
+                  !isInIqamahWindow &&
+                  nextPrayer.name === key;
                 const [iqH, iqM] = toISO24Hour(row.iqamah).split(":").map(Number);
                 const iqamahMinutes = iqH * 60 + iqM;
                 const isPassed =
                   isViewingToday &&
                   currentMelbMinutes !== null &&
                   currentMelbMinutes >= iqamahMinutes &&
-                  !isNext;
+                  !isNext &&
+                  !isActive;
                 return (
                   <div
                     key={key}
                     data-prayer={key}
                     data-is-next={isNext ? "true" : undefined}
+                    data-is-active={isActive ? "true" : undefined}
                     data-is-passed={isPassed ? "true" : undefined}
-                    className={
-                      "grid grid-cols-subgrid col-span-3 items-baseline px-3 py-2.5 sm:py-3.5 rounded-lg transition-colors " +
-                      (isPassed ? "opacity-40 " : "") +
-                      (isNext ? "bg-white/[0.08]" : "")
-                    }
+                    className={cn(
+                      "grid grid-cols-subgrid col-span-3 items-baseline px-3 py-2.5 sm:py-3.5 rounded-lg transition-colors",
+                      isPassed && "opacity-40",
+                      isActive && "prayer-widget-row-active",
+                      isNext && "bg-white/[0.08]",
+                    )}
                   >
                     <div className="flex items-center gap-2.5">
                       {isNext && <span className="w-2 h-2 rounded-full bg-white flex-shrink-0" aria-hidden="true" />}
-                      <span className={"text-sm uppercase tracking-wider font-semibold " + (isNext ? "text-white" : "text-white/60")}>
+                      {isActive && (
+                        <span
+                          className="w-2 h-2 rounded-full bg-lime-300 flex-shrink-0 prayer-widget-row-dot"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span
+                        className={cn(
+                          "text-sm uppercase tracking-wider font-semibold",
+                          isActive ? "text-lime-300" : isNext ? "text-white" : "text-white/60",
+                        )}
+                      >
                         {displayName}
                       </span>
                     </div>

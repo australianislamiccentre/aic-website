@@ -756,3 +756,53 @@ describe("PrayerWidget — hero v2 (iqamah state)", () => {
     expect(hero!.textContent).not.toMatch(/Upcoming/i);
   });
 });
+
+describe("PrayerWidget — prayer list iqamah-mode transitions", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("inside iqamah window: active prayer row has the pulse class, dot animates", () => {
+    // 3:30 PM Melbourne — inside real Asr iqamah window on 2026-04-15
+    vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    // Look up the row whose data-prayer attr matches the in-window prayer.
+    // On the real schedule for 2026-04-15, the active prayer is Asr.
+    const asrRow = document.querySelector('[data-prayer="asr"]') as HTMLElement;
+    expect(asrRow).not.toBeNull();
+    expect(asrRow.className).toMatch(/prayer-widget-row-active/);
+    // The dot inside the row animates
+    const dot = asrRow.querySelector(".prayer-widget-row-dot");
+    expect(dot).not.toBeNull();
+    // data attribute flips so CSS / tests can observe the state
+    expect(asrRow.dataset.isActive).toBe("true");
+  });
+
+  it("inside iqamah window: 'next' highlight is suppressed (Maghrib is no longer highlighted)", () => {
+    vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const maghribRow = document.querySelector('[data-prayer="maghrib"]') as HTMLElement;
+    expect(maghribRow).not.toBeNull();
+    // In v2, when another prayer is active, the "next" bg and dot are suppressed.
+    expect(maghribRow.className).not.toMatch(/bg-white\/\[0\.08\]/);
+    expect(maghribRow.dataset.isNext).toBeUndefined();
+  });
+
+  it("outside iqamah window: next prayer is highlighted normally", () => {
+    // 3:19 PM — 10 min before real-schedule Asr adhan (3:29 PM)
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+
+    const asrRow = document.querySelector('[data-prayer="asr"]') as HTMLElement;
+    expect(asrRow).not.toBeNull();
+    // No active-row pulse
+    expect(asrRow.className).not.toMatch(/prayer-widget-row-active/);
+    // But the next-highlight is on (bg, data attr)
+    expect(asrRow.dataset.isNext).toBe("true");
+  });
+});
