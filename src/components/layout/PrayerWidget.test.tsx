@@ -54,7 +54,6 @@ describe("PrayerWidget — pill skeleton", () => {
     render(<PrayerWidget prayerSettings={null} />);
     const pill = screen.getByRole("button", { name: /open prayer times/i });
     expect(pill).toBeInTheDocument();
-    expect(screen.getAllByText(/UPCOMING/i).length).toBeGreaterThan(0);
     // "Asr" and "3:42 PM" appear in both the pill and the always-rendered (hidden) widget
     expect(screen.getAllByText("Asr").length).toBeGreaterThan(0);
     expect(screen.getAllByText("3:42 PM").length).toBeGreaterThan(0);
@@ -123,16 +122,14 @@ describe("PrayerWidget — expanded content (when forced open for layout testing
     expect(screen.getByText("Isha")).toBeInTheDocument();
   });
 
-  it("renders the next-prayer highlight card with athan and iqamah", () => {
+  it("renders the next-prayer highlight inline in the list (no hero in normal state)", () => {
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
 
-    // v2 hero: no "Next Prayer" text — replaced by the "Upcoming" badge
+    // In normal state the hero is NOT rendered — the list row highlight does the job.
     const hero = document.querySelector('[data-testid="prayer-widget-hero"]');
-    expect(hero).not.toBeNull();
-    expect(hero!.textContent).toMatch(/Upcoming/i);
-    // "Athan" appears in the list column header
+    expect(hero).toBeNull();
+    // "Athan" / "Iqamah" column headers still appear in the list
     expect(screen.getAllByText("Athan").length).toBeGreaterThan(0);
-    // "IQAMAH" appears in the hero block; "Iqamah" label appears in the grid column header
     expect(screen.getAllByText(/Iqamah/i).length).toBeGreaterThan(0);
     // 3:42 PM = athan, 3:52 PM = iqamah — appear in both pill (hidden) and widget (visible)
     expect(screen.getAllByText("3:42 PM").length).toBeGreaterThan(0);
@@ -639,10 +636,10 @@ describe("PrayerWidget — pill v2", () => {
     vi.useRealTimers();
   });
 
-  it("renders the UPCOMING badge on the pill (not 'Next prayer')", () => {
+  it("does NOT render an Upcoming badge on the pill (dropped in v2.1)", () => {
     render(<PrayerWidget prayerSettings={null} />);
     const pill = screen.getByRole("button", { name: /open prayer times/i });
-    expect(pill.textContent).toMatch(/UPCOMING/i);
+    expect(pill.textContent).not.toMatch(/UPCOMING/i);
     expect(pill.textContent).not.toMatch(/Next prayer/i);
   });
 
@@ -653,13 +650,12 @@ describe("PrayerWidget — pill v2", () => {
     expect(pill.textContent).not.toMatch(/\bin \d+ min\b/);
   });
 
-  it("UPCOMING badge is hidden when a prayer is inside its iqamah window", () => {
+  it("pulses during an iqamah window", () => {
     // 1 minute after Asr athan on 2026-04-15 — inside the iqamah window
     // (real schedule: Asr adhan 3:29 PM, iqamah 3:39 PM on 2026-04-15).
     vi.setSystemTime(new Date("2026-04-15T15:30:00+10:00"));
     render(<PrayerWidget prayerSettings={null} />);
     const pill = screen.getByRole("button", { name: /open prayer times/i });
-    expect(pill.textContent).not.toMatch(/UPCOMING/i);
     expect(pill.className).toMatch(/prayer-widget-pill-pulse/);
   });
 });
@@ -707,20 +703,17 @@ describe("PrayerWidget — hero v2 (normal state)", () => {
     vi.useRealTimers();
   });
 
-  it("renders UPCOMING badge in the hero", () => {
+  it("does NOT render an Upcoming badge anywhere", () => {
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
-    // Two Upcoming badges appear — one in the pill, one in the hero
-    const badges = screen.getAllByText(/^Upcoming$/i);
-    expect(badges.length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/^Upcoming$/i)).toBeNull();
   });
 
-  it("renders hero as single-line with the key content", () => {
+  it("does NOT render the hero block in normal state", () => {
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
-    const dialog = screen.getByRole("dialog");
-    expect(dialog.textContent).toMatch(/Asr/i);
-    expect(dialog.textContent).toMatch(/3:42 PM/);
-    expect(dialog.textContent).toMatch(/3:52 PM/);
-    expect(dialog.textContent).toMatch(/IQAMAH/);
+    // The list row highlight (bg + dot on Asr) carries the next-prayer signal;
+    // no separate hero card appears in normal state.
+    const hero = document.querySelector('[data-testid="prayer-widget-hero"]');
+    expect(hero).toBeNull();
   });
 
   it("does NOT render a countdown or 'Next Prayer' eyebrow in the hero", () => {
