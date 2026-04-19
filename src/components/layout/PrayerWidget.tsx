@@ -29,6 +29,7 @@ import {
   isSameMelbourneDay,
 } from "@/lib/time";
 import { useIsMounted } from "@/hooks/useIsMounted";
+import { cn } from "@/lib/utils";
 import type { SanityPrayerSettings } from "@/types/sanity";
 
 interface PrayerWidgetProps {
@@ -346,14 +347,14 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         tabIndex={isOpen ? -1 : 0}
         onClick={() => setIsOpen(true)}
         data-hidden-by-scroll={isHiddenByScroll ? "true" : "false"}
-        className={
-          "fixed left-1/2 flex items-center gap-3 px-5 py-3.5 " +
-          "rounded-full text-white text-base border border-white/10 z-[1000] " +
-          "cursor-pointer shadow-[0_12px_32px_rgba(1,71,107,0.35),0_4px_12px_rgba(0,0,0,0.1)] " +
-          "hover:shadow-[0_18px_42px_rgba(1,71,107,0.45),0_6px_16px_rgba(0,0,0,0.12)] " +
-          "max-[480px]:gap-2 max-[480px]:px-4 max-[480px]:py-3" +
-          (isInIqamahWindow ? " prayer-widget-pill-pulse" : "")
-        }
+        className={cn(
+          "fixed left-1/2 flex items-center gap-3 px-5 py-3.5",
+          "rounded-full text-white text-base border border-white/10 z-[1000]",
+          "cursor-pointer shadow-[0_12px_32px_rgba(1,71,107,0.35),0_4px_12px_rgba(0,0,0,0.1)]",
+          "hover:shadow-[0_18px_42px_rgba(1,71,107,0.45),0_6px_16px_rgba(0,0,0,0.12)]",
+          "max-[480px]:gap-2 max-[480px]:px-4 max-[480px]:py-3",
+          isInIqamahWindow && "prayer-widget-pill-pulse",
+        )}
         style={{
           background: "linear-gradient(135deg, #01476b 0%, #01365c 100%)",
           maxWidth: "calc(100vw - 24px)",
