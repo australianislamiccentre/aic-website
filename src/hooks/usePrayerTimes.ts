@@ -23,6 +23,7 @@ import {
   type TodaysPrayerTimes,
   type PrayerTime,
 } from "@/lib/prayer-times";
+import { useIsMounted } from "@/hooks/useIsMounted";
 import type { SanityPrayerSettings } from "@/types/sanity";
 
 /**
@@ -101,10 +102,20 @@ export function useNextPrayer(
  *
  * Re-computes every 15 seconds so the window closes promptly (within 15s of
  * the iqamah minute) and the widget's pulse ends at the right moment.
+ *
+ * **Hydration safety:** returns `null` during SSR and the first client render,
+ * then reports the real value after mount. The underlying library function is
+ * already timezone-deterministic (uses `getMelbourneMinutesOfDay`), but the
+ * `new Date()` it's called with differs between server and client by ~200-500ms
+ * of render latency. That 500ms can straddle an athan/iqamah minute boundary,
+ * flipping the return value and causing a hydration mismatch in the hero block
+ * that consumes this hook's output. Gating on `useIsMounted` guarantees SSR
+ * and first-client render see the same (null) value.
  */
 export function usePrayerInIqamahWindow(
   prayerSettings?: SanityPrayerSettings | null,
 ): ReturnType<typeof getPrayerInIqamahWindow> {
+  const isMounted = useIsMounted();
   const [tick, setTick] = useState(0);
   const bumpTick = useCallback(() => setTick((t) => t + 1), []);
 
@@ -119,5 +130,5 @@ export function usePrayerInIqamahWindow(
     return () => clearInterval(interval);
   }, [bumpTick]);
 
-  return inWindow;
+  return isMounted ? inWindow : null;
 }
