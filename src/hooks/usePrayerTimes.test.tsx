@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import { usePrayerInIqamahWindow } from "./usePrayerTimes";
 import { getPrayerTimesForDate } from "@/lib/prayer-times";
 
@@ -53,5 +54,26 @@ describe("usePrayerInIqamahWindow", () => {
     });
 
     expect(result.current).toBeNull();
+  });
+
+  it("returns null during SSR even when the clock is inside a window (hydration-mismatch regression)", () => {
+    // The bug this guards: `usePrayerInIqamahWindow` previously returned the
+    // real "in-window" value during SSR. If the client hydrated ~500ms later
+    // and that delay straddled an athan/iqamah minute boundary, server and
+    // client rendered different `heroPrayer` values → hydration mismatch.
+    // Sentry issue AIC-WEBSITE-1 regressed because of this (2026-04-19).
+    // The fix: hook returns null on SSR + first client render; real value
+    // appears only after mount.
+    const atAthan = parseTimeOnDay(schedule.asr.adhan, "2026-04-15");
+    vi.setSystemTime(new Date(atAthan.getTime() + 60_000)); // deep in the window
+
+    function ProbeSSR() {
+      const value = usePrayerInIqamahWindow(null);
+      return <span data-testid="probe">{value === null ? "null" : value.name}</span>;
+    }
+
+    const html = renderToString(<ProbeSSR />);
+    expect(html).toContain(">null<");
+    expect(html).not.toContain(">asr<");
   });
 });
