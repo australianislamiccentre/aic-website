@@ -352,6 +352,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           "rounded-full text-white text-base border border-white/10 z-[1000]",
           "cursor-pointer shadow-[0_12px_32px_rgba(1,71,107,0.35),0_4px_12px_rgba(0,0,0,0.1)]",
           "hover:shadow-[0_18px_42px_rgba(1,71,107,0.45),0_6px_16px_rgba(0,0,0,0.12)]",
+          "active:scale-[0.96]",
           "max-[480px]:gap-2 max-[480px]:px-4 max-[480px]:py-3",
           isInIqamahWindow && "prayer-widget-pill-pulse",
         )}
@@ -448,7 +449,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           transition: prefersReducedMotion
             ? "opacity 150ms ease"
             : "opacity 320ms cubic-bezier(0.33, 1, 0.68, 1), " +
-              "transform 520ms cubic-bezier(0.33, 1, 0.68, 1)",
+              "transform 520ms cubic-bezier(0.34, 1.12, 0.64, 1)",
         }}
       >
           {/* Grab handle — bottom-sheet convention, only shown on mobile */}
@@ -471,7 +472,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 type="button"
                 aria-label="Previous day"
                 onClick={() => shiftDate(-1)}
-                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-xl font-light transition-colors flex items-center justify-center"
+                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md text-xl font-light transition-all duration-150 flex items-center justify-center"
               >
                 <span aria-hidden="true">‹</span>
               </button>
@@ -484,7 +485,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                       : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`
                   }
                   onClick={openNativeDatePicker}
-                  className="h-9 px-3 text-xs font-medium text-white/85 hover:text-white hover:bg-white/20 bg-white/10 border border-white/10 rounded-full transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                  className="h-9 px-3 text-xs font-medium text-white/85 hover:text-white hover:bg-white/20 bg-white/10 border border-white/10 active:scale-95 rounded-full transition-all duration-150 flex items-center gap-1.5 whitespace-nowrap"
                 >
                   <CalendarDays className="w-3.5 h-3.5 opacity-70" aria-hidden="true" />
                   {isViewingToday ? "Today" : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
@@ -503,7 +504,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 type="button"
                 aria-label="Next day"
                 onClick={() => shiftDate(1)}
-                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-xl font-light transition-colors flex items-center justify-center"
+                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md text-xl font-light transition-all duration-150 flex items-center justify-center"
               >
                 <span aria-hidden="true">›</span>
               </button>
@@ -512,7 +513,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                   type="button"
                   aria-label="Back to today"
                   onClick={goToToday}
-                  className="h-9 px-2.5 ml-1 text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+                  className="h-9 px-2.5 ml-1 text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-md transition-all duration-150"
                 >
                   Reset
                 </button>
@@ -523,7 +524,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               type="button"
               aria-label="Close prayer times"
               onClick={closeWidget}
-              className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-2xl font-light leading-none transition-colors flex items-center justify-center flex-shrink-0"
+              className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 hover:rotate-90 active:scale-90 rounded-md text-2xl font-light leading-none transition-all duration-200 ease-out flex items-center justify-center flex-shrink-0"
             >
               <span aria-hidden="true">×</span>
             </button>
