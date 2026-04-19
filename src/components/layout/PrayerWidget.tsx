@@ -17,7 +17,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { ChevronUp } from "lucide-react";
+import { ChevronUp, CalendarDays } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { usePrayerTimes, useNextPrayer, usePrayerInIqamahWindow } from "@/hooks/usePrayerTimes";
 import { usePrayerWidgetScroll } from "@/hooks/usePrayerWidgetScroll";
@@ -451,72 +451,82 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               "transform 520ms cubic-bezier(0.33, 1, 0.68, 1)",
         }}
       >
-          <div className="w-8 h-1 bg-white/20 rounded-full mx-auto mt-2.5 flex-shrink-0" aria-hidden="true" />
+          {/* Grab handle — bottom-sheet convention, only shown on mobile */}
+          <div
+            className="w-8 h-1 bg-white/20 rounded-full mx-auto mt-2.5 flex-shrink-0 md:hidden"
+            aria-hidden="true"
+          />
 
-          <div className="px-6 pt-3 pb-3 border-b border-white/10 flex-shrink-0">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-base font-semibold text-white tracking-tight">Prayer Times</h2>
-              <button
-                type="button"
-                aria-label="Close prayer times"
-                onClick={closeWidget}
-                className="h-10 w-10 -mr-2 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-2xl font-light leading-none transition-colors flex items-center justify-center"
-              >
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>
-            <div className="text-xs text-white/60 mt-1" data-testid="widget-date-label">
+          {/* Single-row header: date · nav · close */}
+          <div className="px-6 pt-4 pb-3 border-b border-white/10 flex-shrink-0 flex items-center justify-between gap-3 flex-wrap">
+            <div
+              className="text-xs text-white/60 flex-1 min-w-0 whitespace-nowrap overflow-hidden text-ellipsis"
+              data-testid="widget-date-label"
+            >
               Melbourne · {formatMelbourneDate(selectedDate)}
             </div>
-          </div>
 
-          {/* Date navigation — centred, sits above the hero card */}
-          <div className="px-6 pt-4 pb-1 flex items-center justify-center gap-1 flex-shrink-0">
-            <button
-              type="button"
-              aria-label="Previous day"
-              onClick={() => shiftDate(-1)}
-              className="h-10 w-10 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-xl font-light transition-colors flex items-center justify-center"
-            >
-              <span aria-hidden="true">‹</span>
-            </button>
-            <div className="relative">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 type="button"
-                aria-label={isViewingToday ? "Open date picker" : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`}
-                onClick={openNativeDatePicker}
-                className="h-10 px-4 text-sm font-medium text-white hover:bg-white/10 rounded-md transition-colors"
+                aria-label="Previous day"
+                onClick={() => shiftDate(-1)}
+                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-xl font-light transition-colors flex items-center justify-center"
               >
-                {isViewingToday ? "Today" : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
+                <span aria-hidden="true">‹</span>
               </button>
-              <input
-                ref={dateInputRef}
-                type="date"
-                aria-label="Pick a date"
-                value={getMelbourneDateString(selectedDate)}
-                onChange={handleDateInputChange}
-                tabIndex={-1}
-                className="sr-only"
-              />
+              <div className="relative">
+                <button
+                  type="button"
+                  aria-label={
+                    isViewingToday
+                      ? "Open date picker"
+                      : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`
+                  }
+                  onClick={openNativeDatePicker}
+                  className="h-9 px-3 text-xs font-medium text-white/85 hover:text-white hover:bg-white/20 bg-white/10 border border-white/10 rounded-full transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                >
+                  <CalendarDays className="w-3.5 h-3.5 opacity-70" aria-hidden="true" />
+                  {isViewingToday ? "Today" : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
+                </button>
+                <input
+                  ref={dateInputRef}
+                  type="date"
+                  aria-label="Pick a date"
+                  value={getMelbourneDateString(selectedDate)}
+                  onChange={handleDateInputChange}
+                  tabIndex={-1}
+                  className="sr-only"
+                />
+              </div>
+              <button
+                type="button"
+                aria-label="Next day"
+                onClick={() => shiftDate(1)}
+                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-xl font-light transition-colors flex items-center justify-center"
+              >
+                <span aria-hidden="true">›</span>
+              </button>
+              {!isViewingToday && (
+                <button
+                  type="button"
+                  aria-label="Back to today"
+                  onClick={goToToday}
+                  className="h-9 px-2.5 ml-1 text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+                >
+                  Reset
+                </button>
+              )}
             </div>
+
             <button
               type="button"
-              aria-label="Next day"
-              onClick={() => shiftDate(1)}
-              className="h-10 w-10 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-xl font-light transition-colors flex items-center justify-center"
+              aria-label="Close prayer times"
+              onClick={closeWidget}
+              className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10 rounded-md text-2xl font-light leading-none transition-colors flex items-center justify-center flex-shrink-0"
             >
-              <span aria-hidden="true">›</span>
+              <span aria-hidden="true">×</span>
             </button>
-            {!isViewingToday && (
-              <button
-                type="button"
-                aria-label="Back to today"
-                onClick={goToToday}
-                className="h-10 px-3 ml-1 text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-colors"
-              >
-                Reset
-              </button>
-            )}
           </div>
 
           <div className="px-6 pt-4 pb-6 overflow-y-auto flex-1">

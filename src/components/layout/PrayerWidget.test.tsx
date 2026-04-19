@@ -659,3 +659,37 @@ describe("PrayerWidget — pill v2", () => {
     expect(pill.className).toMatch(/prayer-widget-pill-pulse/);
   });
 });
+
+describe("PrayerWidget — modal header v2", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T15:19:00+10:00"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("does not render a 'Prayer Times' title", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    // No <h2>Prayer Times</h2> in the dialog. The dialog itself still has
+    // aria-label="Prayer Times" for SR users — that's fine (accessible name,
+    // not visible text). Scope the check to the visible title region.
+    const dialog = screen.getByRole("dialog");
+    const visibleTitle = dialog.querySelector("h2");
+    expect(visibleTitle).toBeNull();
+  });
+
+  it("renders the Melbourne date subtitle with data-testid=widget-date-label", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const label = screen.getByTestId("widget-date-label");
+    expect(label.textContent).toMatch(/^Melbourne · /);
+  });
+
+  it("renders the Today chip with a calendar icon", () => {
+    render(<PrayerWidget prayerSettings={null} testOpenInitially />);
+    const todayButton = screen.getByRole("button", { name: /open date picker/i });
+    const svg = todayButton.querySelector("svg");
+    expect(svg).not.toBeNull();
+    expect(todayButton.textContent).toMatch(/Today/);
+  });
+});
