@@ -109,7 +109,14 @@
       "Bash(npx eslint:*)",
       "Bash(ls /Users/rashidelhouli/australian-islamic-centre/src/lib/icon-map*)",
       "Bash(npm ls:*)",
-      "Bash(npm info:*)"
+      "Bash(npm info:*)",
+      "Bash(git rebase *)",
+      "Bash(git reset *)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(git stash *)",
+      "mcp__89a5c42c-092c-4cf4-8d05-519fe2c85987__find_organizations",
+      "mcp__89a5c42c-092c-4cf4-8d05-519fe2c85987__find_projects",
+      "mcp__89a5c42c-092c-4cf4-8d05-519fe2c85987__search_issues"
     ],
     "additionalDirectories": [
       "/Users/rashidelhouli/australian-islamic-centre/src/components/sections",
