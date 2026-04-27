@@ -9,7 +9,7 @@
  * @module app/layout
  */
 import type { Metadata } from "next";
-import { Inter, Playfair_Display, Amiri } from "next/font/google";
+import { Inter, Playfair_Display, Amiri, Spectral, Figtree } from "next/font/google";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity";
 import "./globals.css";
@@ -52,6 +52,22 @@ const amiri = Amiri({
   variable: "--font-amiri",
   weight: ["400", "700"],
   subsets: ["arabic"],
+  display: "swap",
+});
+
+// Prayer widget V4 Geometric — scoped via --font-spectral / --font-figtree.
+// Only the prayer widget uses these; the rest of the site keeps Inter + Playfair.
+const spectral = Spectral({
+  variable: "--font-spectral",
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const figtree = Figtree({
+  variable: "--font-figtree",
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
   display: "swap",
 });
 
@@ -139,7 +155,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${inter.variable} ${playfair.variable} ${amiri.variable} antialiased bg-neutral-50 text-gray-900 overflow-x-hidden`}
+        className={`${inter.variable} ${playfair.variable} ${amiri.variable} ${spectral.variable} ${figtree.variable} antialiased bg-neutral-50 text-gray-900 overflow-x-hidden`}
       >
         <a
           href="#main-content"

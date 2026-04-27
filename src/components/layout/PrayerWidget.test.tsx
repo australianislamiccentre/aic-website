@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { renderToString } from "react-dom/server";
 import { render, screen } from "@/test/test-utils";
 import { PrayerWidget } from "./PrayerWidget";
-import { getPrayerTimesForDate } from "@/lib/prayer-times";
 
 // Override the default next/navigation mock so we can vary pathname per test
 vi.mock("next/navigation", () => ({
@@ -411,14 +410,15 @@ describe("PrayerWidget — grid hierarchy", () => {
     expect(asrCell.textContent).not.toMatch(/Iqamah/);
   });
 
-  it("highlights the 'next' row with a background and a dot indicator", () => {
+  it("highlights the 'next' row with a tile background and a visual indicator", () => {
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
     const asrRow = document.querySelector('[data-prayer="asr"][data-is-next="true"]') as HTMLElement;
     expect(asrRow).not.toBeNull();
-    // Whole row gets a subtle white background
-    expect(asrRow.className).toMatch(/bg-white/);
-    // Row contains a small dot before the prayer name
-    expect(asrRow.querySelector(".rounded-full")).not.toBeNull();
+    // V4 uses inline CSS var `--v4-tile` for the highlighted background.
+    expect(asrRow.style.background).toContain("var(--v4-tile)");
+    // Row contains either a V4Ornament SVG or a dot before the prayer name —
+    // any left-gutter indicator is acceptable.
+    expect(asrRow.querySelector("svg, .rounded-full")).not.toBeNull();
   });
 });
 
