@@ -193,3 +193,34 @@ export function formatMelbourneTime(
   });
 }
 
+/**
+ * Formats a Date as an Islamic-civil (Hijri) calendar string in Melbourne
+ * timezone, e.g. `"5 Dhul Qa'dah 1447"`. Uses the tabular Islamic civil
+ * calendar — slightly less accurate than Umm al-Qura but deterministic and
+ * supported in every modern Intl runtime.
+ *
+ * Returns `""` if the runtime does not support Islamic calendars (older Node
+ * without ICU, very old browsers). Callers should gate the return value on
+ * `useIsMounted()` if used in a client component to avoid hydration drift.
+ *
+ * @example
+ *   formatMelbourneHijri(new Date("2026-04-23T12:00:00Z"))
+ *   // → "5 Dhul Qa'dah 1447"
+ */
+export function formatMelbourneHijri(date: Date = new Date()): string {
+  try {
+    return new Intl.DateTimeFormat("en-u-ca-islamic-civil", {
+      timeZone: MELBOURNE_TZ,
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
+      .format(date)
+      // Strip the trailing " AH" era suffix that some ICU builds append.
+      .replace(/\s*AH\s*$/, "")
+      .trim();
+  } catch {
+    return "";
+  }
+}
+
