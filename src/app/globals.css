@@ -352,8 +352,14 @@ body {
   --v4-rule: rgba(232, 223, 203, 0.12);
   --v4-tile: rgba(127, 181, 57, 0.12);
   --v4-tile-strong: rgba(127, 181, 57, 0.2);
-  --v4-serif: var(--font-spectral), "Playfair Display", Georgia, serif;
-  --v4-sans: var(--font-figtree), "Inter", system-ui, sans-serif;
+  /* Prayer widget V4 typography — unified on Inter (the site-wide body
+     font) so every text element in the widget — brand strip, date label,
+     prayer names, prayer times, Jumu'ah row — reads as the same family.
+     Both `--v4-serif` and `--v4-sans` resolve to Inter; the names are
+     kept so consumers don't need to be touched if the family ever
+     changes again. */
+  --v4-serif: var(--font-inter), "Inter", system-ui, sans-serif;
+  --v4-sans: var(--font-inter), "Inter", system-ui, sans-serif;
 }
 
 /* ===== Prayer Widget — pill discoverability ===== */

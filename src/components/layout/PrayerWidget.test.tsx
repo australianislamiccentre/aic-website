@@ -127,9 +127,10 @@ describe("PrayerWidget — expanded content (when forced open for layout testing
     // In normal state the hero is NOT rendered — the list row highlight does the job.
     const hero = document.querySelector('[data-testid="prayer-widget-hero"]');
     expect(hero).toBeNull();
-    // "Athan" / "Iqamah" column headers still appear in the list
-    expect(screen.getAllByText("Athan").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Iqamah/i).length).toBeGreaterThan(0);
+    // Each prayer cell has an inline "Iqama" label next to its iqamah
+    // time (the shared "PRAYER ATHAN IQAMAH" column header was removed
+    // because each cell now self-labels via the inline "Iqama" prefix).
+    expect(screen.getAllByText(/Iqama/i).length).toBeGreaterThan(0);
     // 3:42 PM = athan, 3:52 PM = iqamah — appear in both pill (hidden) and widget (visible)
     expect(screen.getAllByText("3:42 PM").length).toBeGreaterThan(0);
     expect(screen.getAllByText("3:52 PM").length).toBeGreaterThan(0);
@@ -273,7 +274,10 @@ describe("PrayerWidget — date picker", () => {
   it("clicking the next-day button shifts to tomorrow", async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
-    const nextBtn = screen.getByRole("button", { name: /next day/i });
+    // Two date-nav clusters render in the DOM (mobile/tablet in the top
+    // bar, desktop inside the schedule column). At runtime CSS hides one
+    // by breakpoint, but jsdom renders both — pick the first match.
+    const nextBtn = screen.getAllByRole("button", { name: /next day/i })[0];
     await user.click(nextBtn);
     const dateLabel = screen.getByTestId("widget-date-label");
     expect(dateLabel.textContent).toContain("16 April 2026");
@@ -282,7 +286,7 @@ describe("PrayerWidget — date picker", () => {
   it("clicking the previous-day button shifts to yesterday", async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
-    const prevBtn = screen.getByRole("button", { name: /previous day/i });
+    const prevBtn = screen.getAllByRole("button", { name: /previous day/i })[0];
     await user.click(prevBtn);
     const dateLabel = screen.getByTestId("widget-date-label");
     expect(dateLabel.textContent).toContain("14 April 2026");
@@ -291,16 +295,16 @@ describe("PrayerWidget — date picker", () => {
   it("shows 'Back to today' button when viewing a non-today date, hidden when today", async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
-    expect(screen.queryByRole("button", { name: /back to today/i })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /next day/i }));
-    expect(screen.getByRole("button", { name: /back to today/i })).toBeInTheDocument();
+    expect(screen.queryAllByRole("button", { name: /back to today/i })).toHaveLength(0);
+    await user.click(screen.getAllByRole("button", { name: /next day/i })[0]);
+    expect(screen.getAllByRole("button", { name: /back to today/i }).length).toBeGreaterThan(0);
   });
 
   it("clicking 'Back to today' returns to today's prayer times", async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
-    await user.click(screen.getByRole("button", { name: /next day/i }));
-    await user.click(screen.getByRole("button", { name: /back to today/i }));
+    await user.click(screen.getAllByRole("button", { name: /next day/i })[0]);
+    await user.click(screen.getAllByRole("button", { name: /back to today/i })[0]);
     const dateLabel = screen.getByTestId("widget-date-label");
     expect(dateLabel.textContent).toContain("15 April 2026");
   });
@@ -311,7 +315,7 @@ describe("PrayerWidget — date picker", () => {
     // Today: Asr card should have data-is-next="true"
     expect(container.querySelector('[data-prayer="asr"]')).toHaveAttribute("data-is-next", "true");
     // Move to tomorrow
-    await user.click(screen.getByRole("button", { name: /next day/i }));
+    await user.click(screen.getAllByRole("button", { name: /next day/i })[0]);
     // No prayer should be marked as "next" on a non-today view
     expect(container.querySelectorAll('[data-is-next="true"]').length).toBe(0);
   });
@@ -330,7 +334,7 @@ describe("PrayerWidget — date picker", () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
     // Navigate to a different day
-    await user.click(screen.getByRole("button", { name: /next day/i }));
+    await user.click(screen.getAllByRole("button", { name: /next day/i })[0]);
     expect(screen.getByTestId("widget-date-label").textContent).toContain("16 April 2026");
     // Close via X button
     await user.click(screen.getByRole("button", { name: /close prayer times/i }));
@@ -398,16 +402,22 @@ describe("PrayerWidget — grid hierarchy", () => {
     expect(primary.textContent).toContain("3:42 PM");
     expect(secondary.textContent).toContain("3:52 PM");
 
-    expect(primary.className).toMatch(/text-xl/);
-    expect(secondary.className).toMatch(/text-base/);
+    // Athan is rendered larger than iqamah at every breakpoint to
+    // preserve the primary/secondary hierarchy. The 2-col 6-cell grid
+    // sizes them down at lg so both fit each cell — athan keeps a
+    // "text-base"+ weight on every breakpoint, iqamah uses "text-xs"
+    // at lg.
+    expect(primary.className).toMatch(/text-base/);
+    expect(secondary.className).toMatch(/text-xs/);
   });
 
-  it("renders the secondary iqamah time on a single line (no label)", () => {
+  it("renders the secondary iqamah time inline with an 'Iqama' label", () => {
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
     const asrCell = document.querySelector('[data-prayer="asr"]') as HTMLElement;
     const [, secondary] = asrCell.querySelectorAll("time");
     expect(secondary.className).toMatch(/whitespace-nowrap/);
-    expect(asrCell.textContent).not.toMatch(/Iqamah/);
+    // The "Iqama" label sits next to the iqamah time inside each cell.
+    expect(asrCell.textContent).toMatch(/Iqama/);
   });
 
   it("highlights the 'next' row with a tile background and a visual indicator", () => {
@@ -687,7 +697,7 @@ describe("PrayerWidget — modal header v2", () => {
 
   it("renders the Today chip with a calendar icon", () => {
     render(<PrayerWidget prayerSettings={null} testOpenInitially />);
-    const todayButton = screen.getByRole("button", { name: /open date picker/i });
+    const todayButton = screen.getAllByRole("button", { name: /open date picker/i })[0];
     const svg = todayButton.querySelector("svg");
     expect(svg).not.toBeNull();
     expect(todayButton.textContent).toMatch(/Today/);
