@@ -10,7 +10,7 @@
  *
  * Visual language matches the "V4 Geometric" handoff: dark charcoal surfaces
  * (#0F1114 / #15181C), cream foreground (#E8DFCB), leaf-green accent
- * (#7FB539), Spectral serif + Figtree sans typography, star-pattern ornament
+ * (#7FB539), Inter typography across the widget, star-pattern ornament
  * backdrops. Scoped to this widget via the `pw-v4` class — the rest of the
  * site keeps the existing brand tokens.
  *
@@ -24,7 +24,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
-import { CalendarDays, ChevronUp } from "lucide-react";
+import { CalendarDays, ChevronUp, RotateCcw } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { usePrayerTimes, useNextPrayer, usePrayerInIqamahWindow } from "@/hooks/usePrayerTimes";
 import { usePrayerWidgetScroll } from "@/hooks/usePrayerWidgetScroll";
@@ -461,8 +461,8 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           "--v4-rule": "rgba(232, 223, 203, 0.12)",
           "--v4-tile": "rgba(127, 181, 57, 0.12)",
           "--v4-tile-strong": "rgba(127, 181, 57, 0.2)",
-          "--v4-serif": 'var(--font-spectral), "Playfair Display", Georgia, serif',
-          "--v4-sans": 'var(--font-figtree), "Inter", system-ui, sans-serif',
+          "--v4-serif": 'var(--font-inter), "Inter", system-ui, sans-serif',
+          "--v4-sans": 'var(--font-inter), "Inter", system-ui, sans-serif',
         } as React.CSSProperties
       }
     >
@@ -660,7 +660,8 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         aria-hidden={isOpen ? undefined : "true"}
         aria-modal={isOpen ? "true" : undefined}
         tabIndex={isOpen ? undefined : -1}
-        className="fixed inset-0 z-[950] flex flex-col"
+        className="fixed inset-0 z-[950] flex flex-col
+                   lg:inset-y-[25vh] lg:inset-x-[10vw] lg:rounded-2xl lg:overflow-hidden lg:shadow-[0_30px_80px_rgba(0,0,0,0.5)] lg:border lg:border-[var(--v4-rule)]"
         style={{
           background: "var(--v4-bg)",
           color: "var(--v4-fg)",
@@ -684,23 +685,35 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         }}
       >
         {/* =============================================================
-            Top bar — uses the SAME 1.1fr/1fr grid as the body so the
-            divider between cells lines up exactly with the divider between
-            the hero column and the schedule column underneath. The close
-            button is positioned absolutely at the top-right of the modal
-            on every breakpoint, sitting on top of whichever cell happens
-            to be at the right edge. Each cell reserves right-padding to
-            keep its content clear of the close button. */}
+            Top bar — single unified row containing the date label
+            (Gregorian + Hijri stacked) and the prev/today/next picker
+            buttons. The previous brand line ("Australian Islamic
+            Centre · Prayer Times") was removed; the modal's title
+            attribute on the dialog wrapper still carries the brand for
+            screen readers, and the date+picker now occupies the prime
+            top-of-modal real estate at every breakpoint.
+
+            Mobile portrait: stacks (date stack centered on top, picker
+            buttons centered below) so the row fits in narrow widths.
+            md+: horizontal — date stack left, picker buttons right.
+            Close button stays absolute top-right; the row reserves
+            right padding so picker buttons don't collide with it. */}
         <div
-          className="relative grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] flex-shrink-0"
+          className="relative grid grid-cols-1 justify-items-center md:grid-cols-[1fr_auto_1fr]
+                     md:items-center md:justify-items-stretch
+                     gap-y-3 md:gap-y-0 md:gap-x-5
+                     px-5 sm:px-8 md:px-10
+                     pt-14 pb-4 sm:py-3 md:py-3 lg:py-4
+                     pr-5 sm:pr-8 md:pr-16 lg:pr-20
+                     flex-shrink-0"
           style={{ borderBottom: "1px solid var(--v4-rule)" }}
         >
-          {/* Close button — absolute top-right, single instance for all breakpoints */}
+          {/* Close button — absolute top-right */}
           <button
             type="button"
             aria-label="Close prayer times"
             onClick={closeWidget}
-            className="absolute top-3 right-4 lg:top-4 lg:right-6 h-9 w-9 lg:h-10 lg:w-10 flex items-center justify-center flex-shrink-0 transition-colors z-10"
+            className="absolute top-3 right-4 md:top-4 md:right-6 h-9 w-9 md:h-10 md:w-10 flex items-center justify-center flex-shrink-0 transition-colors z-10"
             style={{
               border: "1px solid rgba(232, 223, 203, 0.28)",
               borderRadius: "999px",
@@ -718,139 +731,125 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             </svg>
           </button>
 
-          {/* Brand cell (col 1) — aligns with hero column underneath */}
-          <div className="flex items-center gap-3 min-w-0 px-5 sm:px-8 lg:px-10 py-3 lg:py-4 pr-14 lg:pr-10">
-            <V4Ornament size={18} color="var(--v4-accent)" />
-            <span
-              className="text-[11px] uppercase font-bold whitespace-nowrap"
-              style={{
-                letterSpacing: "0.24em",
-                color: "var(--v4-fg)",
-              }}
+          {/* Date stack: Gregorian on top, Hijri muted below.
+              Centered on mobile portrait, left-aligned on md+. */}
+          <div className="flex flex-col items-center md:items-start md:justify-self-start min-w-0">
+            <div
+              className="text-sm md:text-base lg:text-xl font-semibold whitespace-nowrap overflow-hidden text-ellipsis"
+              data-testid="widget-date-label"
+              style={{ color: "var(--v4-fg)", letterSpacing: "-0.01em" }}
             >
-              <span className="hidden sm:inline">Australian Islamic Centre</span>
-              <span className="sm:hidden">AIC</span>
-              <span
-                className="mx-2.5"
-                aria-hidden="true"
-                style={{ color: "var(--v4-mute)", opacity: 0.6 }}
+              Melbourne · {formatMelbourneDate(selectedDate)}
+            </div>
+            {hijriLabel && (
+              <div
+                className="text-[10px] lg:text-[11px] uppercase font-bold whitespace-nowrap mt-0.5"
+                style={{
+                  letterSpacing: "0.2em",
+                  color: "var(--v4-mute)",
+                }}
               >
-                ·
-              </span>
-              <span style={{ color: "var(--v4-mute)" }}>Prayer Times</span>
-            </span>
+                {hijriLabel}
+              </div>
+            )}
           </div>
 
-          {/* Date + picker cell (col 2) — aligns with schedule column.
-              On mobile: stacked + centered (date label, hijri, picker buttons).
-              On desktop: inline row with date label on left and picker
-              sitting right next to it (no flex-1 between them). */}
-          <div
-            className="px-5 sm:px-8 lg:px-10 py-3 lg:py-4 lg:pr-20
-                       flex flex-col items-center gap-y-2
-                       lg:flex-row lg:items-center lg:gap-x-5
-                       min-w-0"
-          >
-            {/* Date stack: Gregorian on top, Hijri muted below */}
-            <div className="flex flex-col items-center lg:items-start min-w-0">
-              <div
-                className="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis"
-                data-testid="widget-date-label"
-                style={{ color: "var(--v4-fg)" }}
-              >
-                Melbourne · {formatMelbourneDate(selectedDate)}
-              </div>
-              {hijriLabel && (
-                <div
-                  className="text-[10px] uppercase font-bold whitespace-nowrap mt-0.5"
-                  style={{
-                    letterSpacing: "0.18em",
-                    color: "var(--v4-mute)",
-                  }}
-                >
-                  {hijriLabel}
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-2 flex-wrap justify-center lg:justify-end">
+          {/* Picker buttons — prev / today / next, plus an optional
+              "Reset" pill when viewing a non-today date.
+              md+: justify-self-center positions the picker in the
+              middle of the remaining (1fr) grid column so it doesn't
+              hug the absolutely-positioned close button on the right. */}
+          <div className="flex items-center gap-2 flex-shrink-0 md:justify-self-center">
+            <button
+              type="button"
+              aria-label="Previous day"
+              onClick={() => shiftDate(-1)}
+              className="h-9 w-9 text-xl font-light transition-colors flex items-center justify-center"
+              style={{
+                color: "var(--v4-mute-strong)",
+                border: "1px solid var(--v4-rule)",
+                background: "transparent",
+              }}
+            >
+              <span aria-hidden="true">‹</span>
+            </button>
+            {/* "Today" / selected-date pill — wraps the hidden native
+                <input type="date"> so showPicker() opens the calendar
+                next to this button instead of at the modal-panel root
+                where it used to sit. */}
+            <div className="relative">
               <button
                 type="button"
-                aria-label="Previous day"
-                onClick={() => shiftDate(-1)}
-                className="h-9 w-9 text-xl font-light transition-colors flex items-center justify-center"
+                aria-label={
+                  isViewingToday
+                    ? "Open date picker"
+                    : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`
+                }
+                onClick={openNativeDatePicker}
+                className="h-9 min-w-[88px] px-3 text-[11px] uppercase font-semibold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap"
                 style={{
-                  color: "var(--v4-mute-strong)",
-                  border: "1px solid var(--v4-rule)",
+                  letterSpacing: "0.14em",
+                  color: "var(--v4-fg)",
                   background: "transparent",
+                  border: "1px solid var(--v4-rule)",
                 }}
               >
-                <span aria-hidden="true">‹</span>
-              </button>
-              <div className="relative">
-                <button
-                  type="button"
-                  aria-label={
-                    isViewingToday
-                      ? "Open date picker"
-                      : `Selected date ${formatMelbourneDate(selectedDate)}, open date picker`
-                  }
-                  onClick={openNativeDatePicker}
-                  className="h-9 px-3 text-[11px] uppercase font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap"
-                  style={{
-                    letterSpacing: "0.14em",
-                    color: "var(--v4-fg)",
-                    background: "transparent",
-                    border: "1px solid var(--v4-rule)",
-                  }}
-                >
-                  <CalendarDays
-                    className="w-3.5 h-3.5"
-                    aria-hidden="true"
-                    style={{ color: "var(--v4-accent)" }}
-                  />
-                  {isViewingToday
-                    ? "Today"
-                    : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
-                </button>
-                <input
-                  ref={dateInputRef}
-                  type="date"
-                  aria-label="Pick a date"
-                  value={getMelbourneDateString(selectedDate)}
-                  onChange={handleDateInputChange}
-                  tabIndex={-1}
-                  className="sr-only"
+                <CalendarDays
+                  className="w-3.5 h-3.5"
+                  aria-hidden="true"
+                  style={{ color: "var(--v4-accent)" }}
                 />
-              </div>
-              <button
-                type="button"
-                aria-label="Next day"
-                onClick={() => shiftDate(1)}
-                className="h-9 w-9 text-xl font-light transition-colors flex items-center justify-center"
-                style={{
-                  color: "var(--v4-mute-strong)",
-                  border: "1px solid var(--v4-rule)",
-                  background: "transparent",
-                }}
-              >
-                <span aria-hidden="true">›</span>
+                {isViewingToday
+                  ? "Today"
+                  : formatMelbourneDate(selectedDate, { month: "short", day: "numeric" })}
               </button>
-              {!isViewingToday && (
-                <button
-                  type="button"
-                  aria-label="Back to today"
-                  onClick={goToToday}
-                  className="h-9 px-2.5 text-[11px] uppercase font-semibold transition-colors"
-                  style={{
-                    letterSpacing: "0.14em",
-                    color: "var(--v4-accent)",
-                    background: "transparent",
-                  }}
-                >
-                  Reset
-                </button>
-              )}
+              <input
+                ref={dateInputRef}
+                type="date"
+                aria-label="Pick a date"
+                value={getMelbourneDateString(selectedDate)}
+                onChange={handleDateInputChange}
+                tabIndex={-1}
+                className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
+              />
             </div>
+            <button
+              type="button"
+              aria-label="Next day"
+              onClick={() => shiftDate(1)}
+              className="h-9 w-9 text-xl font-light transition-colors flex items-center justify-center"
+              style={{
+                color: "var(--v4-mute-strong)",
+                border: "1px solid var(--v4-rule)",
+                background: "transparent",
+              }}
+            >
+              <span aria-hidden="true">›</span>
+            </button>
+            {/* Reset button — always rendered so its slot is reserved in
+                the flex layout (using `invisible` when on today). This
+                prevents the prev/today/next buttons from shifting when
+                the user navigates to a non-today date. Uses a circular
+                rotate-ccw icon (with an aria-label for screen readers)
+                to keep the cluster visually compact. */}
+            <button
+              type="button"
+              aria-label="Back to today"
+              onClick={goToToday}
+              tabIndex={isViewingToday ? -1 : undefined}
+              aria-hidden={isViewingToday ? true : undefined}
+              className={cn(
+                "h-9 w-9 flex items-center justify-center transition-colors",
+                isViewingToday && "invisible",
+              )}
+              style={{
+                color: "var(--v4-accent)",
+                background: "transparent",
+                border: "1px solid var(--v4-rule)",
+              }}
+            >
+              <RotateCcw className="w-4 h-4" aria-hidden="true" />
+            </button>
           </div>
         </div>
 
@@ -858,15 +857,14 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             Body — split on lg, stacked below.
             Left column: hero (big Next or Iqamah countdown).
             Right column: schedule + Jumu'ah + specials + footer (scrollable). */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] overflow-hidden">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_1.3fr] lg:grid-cols-[1.1fr_1fr] overflow-hidden">
           {/* ===== HERO COLUMN ===== */}
           <div
-            className="relative flex flex-col justify-center items-stretch overflow-hidden"
+            className="relative flex flex-col justify-center items-stretch overflow-hidden py-[clamp(14px,3vh,28px)] sm:py-[clamp(20px,4vh,40px)] lg:py-[min(6vh,56px)] px-[clamp(20px,5vw,56px)]"
             style={{
               background: "var(--v4-surface)",
               borderBottom: "1px solid var(--v4-rule)",
               borderRight: "1px solid var(--v4-rule)",
-              padding: "min(6vh, 56px) clamp(20px, 5vw, 56px)",
             }}
           >
             <V4StarPattern opacity={0.08} size={80} color="var(--v4-accent)" />
@@ -925,90 +923,124 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
               </div>
             ) : (
               <div className="relative text-center">
-                <V4Ornament size={36} color="var(--v4-accent)" />
-                <div
-                  className="mt-5 text-5xl sm:text-6xl lg:text-[88px]"
-                  style={{
-                    fontFamily: "var(--v4-serif)",
-                    fontWeight: 500,
-                    letterSpacing: "-0.02em",
-                    lineHeight: 1,
-                  }}
-                >
-                  {isViewingToday
-                    ? nextPrayer?.displayName ?? "—"
-                    : formatMelbourneDate(selectedDate, {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long",
-                      })}
+                <div className="hidden lg:block">
+                  <V4Ornament size={36} color="var(--v4-accent)" />
                 </div>
-                {isViewingToday && nextPrayer && (
-                  <time
-                    className="block mt-4 text-4xl sm:text-5xl lg:text-7xl font-light tabular-nums"
+                {/* Mobile: name + time inline on one baseline row to save
+                    vertical space so all six daily prayers + Jumu'ah fit
+                    in the 844px viewport without scrolling.
+                    sm+: original V4 stacked layout (large prayer name
+                    above big time). */}
+                <div className="flex items-baseline justify-center gap-x-3 flex-wrap sm:block">
+                  {/* Hero name: short prayer names ("Dhuhr") and long
+                      date strings ("Wednesday 29 April 2026") share the
+                      same slot. lg+ uses a fluid clamp() so the font
+                      shrinks for longer text and never overflows the
+                      hero column at narrower desktop widths. */}
+                  <div
+                    className="text-3xl sm:mt-5 sm:text-4xl lg:text-[clamp(2.5rem,5vw,7rem)]"
                     style={{
-                      fontFamily: "var(--v4-sans)",
-                      letterSpacing: "-0.02em",
-                      color: "var(--v4-accent)",
+                      fontFamily: "var(--v4-serif)",
+                      fontWeight: 600,
+                      letterSpacing: "-0.03em",
                       lineHeight: 1,
                     }}
-                    dateTime={toISO24Hour(nextPrayer.adhan)}
                   >
-                    {nextPrayer.adhan}
-                  </time>
-                )}
-                {/* "Next · in 2h 57m 03s" eyebrow under the time, with a
-                    live seconds ticker (component re-renders every second
-                    via the existing countdown interval). The Gregorian +
-                    Hijri date that used to live here has moved to the top
-                    bar, beside the date picker. */}
+                    {isViewingToday
+                      ? nextPrayer?.displayName ?? "—"
+                      : formatMelbourneDate(selectedDate, {
+                          weekday: "long",
+                          day: "numeric",
+                          month: "long",
+                        })}
+                  </div>
+                  {isViewingToday && nextPrayer && (
+                    <time
+                      className="text-2xl sm:block sm:mt-6 sm:text-3xl lg:text-[clamp(2rem,4vw,5.5rem)] font-light sm:font-light lg:font-medium tabular-nums"
+                      style={{
+                        fontFamily: "var(--v4-sans)",
+                        letterSpacing: "-0.03em",
+                        color: "var(--v4-accent)",
+                        lineHeight: 1,
+                      }}
+                      dateTime={toISO24Hour(nextPrayer.adhan)}
+                    >
+                      {nextPrayer.adhan}
+                    </time>
+                  )}
+                </div>
+                {/* "Next · in 2h 57m 03s" countdown line under the time,
+                    with a live seconds ticker (component re-renders every
+                    second via the existing countdown interval). Sized up
+                    on every breakpoint so the live counter reads as a
+                    primary part of the hero, not an afterthought. */}
                 <div
-                  className="mt-6 pt-5 text-[11px] uppercase font-bold tabular-nums"
+                  className="mt-3 pt-3 sm:mt-6 sm:pt-5 text-xs sm:text-sm lg:text-xl uppercase font-bold tabular-nums"
                   style={{
-                    letterSpacing: "0.3em",
+                    letterSpacing: "0.28em",
                     color: "var(--v4-accent)",
                     borderTop: "1px solid var(--v4-rule)",
                   }}
                 >
-                  {isViewingToday
-                    ? heroChip
-                      ? `Next · in ${heroChip}`
-                      : "Next"
-                    : "Schedule"}
+                  {isViewingToday ? (
+                    heroChip ? (
+                      <>
+                        <span style={{ color: "var(--v4-fg)" }}>In</span>
+                        {` ${heroChip}`}
+                      </>
+                    ) : (
+                      <span style={{ color: "var(--v4-fg)" }}>In</span>
+                    )
+                  ) : (
+                    "Schedule"
+                  )}
                 </div>
               </div>
             )}
           </div>
 
-          {/* ===== SCHEDULE COLUMN ===== */}
+          {/* ===== SCHEDULE COLUMN =====
+              Layout: scrollable area for date cluster + prayer list +
+              special bands sits at the top (flex-1 min-h-0 so it shrinks
+              correctly when the pinned Jumu'ah row takes its share).
+              The Jumu'ah row is rendered as its own flex-shrink-0 block
+              outside the scroll wrapper so it stays visible at the
+              bottom of the column regardless of how far the prayer
+              list has been scrolled. */}
           <div className="relative flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto px-5 sm:px-8 lg:px-10 pt-6 pb-4">
-              <div
-                className="text-[11px] uppercase font-bold mb-4"
-                style={{
-                  letterSpacing: "0.24em",
-                  color: "var(--v4-mute)",
-                }}
-              >
-                Today&apos;s schedule
-              </div>
+            <div className="flex-1 min-h-0 overflow-y-auto px-5 sm:px-8 md:px-3 lg:px-4 pt-3 pb-3 sm:pt-6 sm:pb-4">
+              {/* Prayer list — column headers ("Prayer / Athan / Iqamah")
+                  serve as the section heading; the explicit "Today's
+                  schedule" eyebrow was removed earlier and the
+                  date+picker cluster that briefly lived here at md+ has
+                  been moved to the top bar.
 
-              {/* Prayer list */}
-              <div className="grid grid-cols-[24px_1fr_auto_auto] gap-x-4 sm:gap-x-6 mb-5">
-                {/* Column headers */}
-                <div
-                  className="grid grid-cols-subgrid col-span-4 items-baseline px-1 pb-2 text-[10px] uppercase font-bold"
-                  style={{
-                    letterSpacing: "0.22em",
-                    color: "var(--v4-mute)",
-                    borderBottom: "1px solid var(--v4-rule)",
-                  }}
-                >
-                  <span aria-hidden="true" />
-                  <span>Prayer</span>
-                  <span className="justify-self-end">Athan</span>
-                  <span className="justify-self-end">Iqamah</span>
-                </div>
+                  Layout per breakpoint:
+                  - Mobile + sm portrait: 1-column subgrid, full-width
+                    rows (dot, name, athan, iqamah on one line).
+                  - md (landscape phone, tablet): 2-column grid where
+                    each prayer is a self-contained card with its own
+                    [16px_1fr_auto_auto] internal grid. Header row is
+                    hidden so each card stands alone.
+                  - lg+ (desktop): back to the V4 1-column subgrid with
+                    the visible header row. */}
+              {/* Each prayer renders as a self-contained "cell" with the
+                  prayer name on the left and a stacked time block on
+                  the right (athan time as the primary big number, with
+                  an "Iqama [time]" secondary line directly underneath).
+
+                  Parent grid: 1 column on mobile portrait + sm-only
+                  (each cell full width), 2 columns at md+ (landscape
+                  phones, tablets, desktops) so cells pair up. The
+                  shared "PRAYER ATHAN IQAMAH" column-header row was
+                  removed because the inline "Iqama" label inside each
+                  cell self-labels the secondary time. */}
+              <div
+                className="grid grid-cols-1 md:grid-cols-2
+                           gap-x-3 sm:gap-x-6 md:gap-x-3 lg:gap-x-3
+                           gap-y-0
+                           mb-3 sm:mb-5"
+              >
                 {PRAYER_ORDER.map(({ key, displayName }) => {
                   const row = viewedPrayers[key];
                   const isActive =
@@ -1039,7 +1071,16 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                       data-is-active={isActive ? "true" : undefined}
                       data-is-passed={isPassed ? "true" : undefined}
                       className={cn(
-                        "grid grid-cols-subgrid col-span-4 items-baseline px-1 py-3 sm:py-3.5 transition-colors",
+                        "grid grid-cols-[1fr_auto] items-baseline gap-x-2 sm:gap-x-4 md:gap-x-2 lg:gap-x-3",
+                        // Internal padding mirrors Jumu'ah at each
+                        // breakpoint so the highlighted-row tile and
+                        // the Jumu'ah bordered tile have the same
+                        // breathing room. md (landscape phone) and lg
+                        // (desktop 2-col grid) both keep tight padding
+                        // so each card still fits with name + time
+                        // stack inside the narrow column.
+                        "px-4 py-3 sm:px-5 sm:py-4 md:px-3 md:py-2.5 lg:px-3 lg:py-3",
+                        "transition-colors",
                         isPassed && "opacity-40",
                         isActive && "prayer-widget-row-active",
                         isInformational && !highlight && "opacity-60",
@@ -1049,98 +1090,132 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                         borderBottom: "1px solid var(--v4-rule)",
                       }}
                     >
-                      <span className="inline-flex justify-center items-center">
-                        {isActive ? (
-                          <span className="prayer-widget-row-dot inline-flex">
-                            <V4Ornament size={14} color="var(--v4-accent)" />
-                          </span>
-                        ) : isNext ? (
-                          <V4Ornament size={14} color="var(--v4-accent)" />
-                        ) : (
+                      {/* Left: prayer name (with star ornament prefix
+                          when active or next) */}
+                      <span className="flex items-baseline gap-2 min-w-0">
+                        {(isActive || isNext) && (
                           <span
                             aria-hidden="true"
-                            className="inline-block w-1 h-1 rounded-full"
-                            style={{ background: "var(--v4-mute)" }}
-                          />
+                            className={cn(
+                              "inline-flex flex-shrink-0",
+                              isActive && "prayer-widget-row-dot",
+                            )}
+                          >
+                            <V4Ornament size={14} color="var(--v4-accent)" />
+                          </span>
                         )}
+                        <span
+                          className="text-base sm:text-lg md:text-sm lg:text-base"
+                          style={{
+                            fontFamily: "var(--v4-serif)",
+                            fontWeight: highlight ? 600 : 500,
+                            color: isActive ? "var(--v4-accent)" : "var(--v4-fg)",
+                          }}
+                        >
+                          {displayName}
+                        </span>
                       </span>
-                      <span
-                        className="text-lg sm:text-[22px]"
-                        style={{
-                          fontFamily: "var(--v4-serif)",
-                          fontWeight: highlight ? 600 : 500,
-                          color: isActive ? "var(--v4-accent)" : "var(--v4-fg)",
-                        }}
-                      >
-                        {displayName}
-                      </span>
-                      <time
-                        className="block text-xl sm:text-[22px] tabular-nums whitespace-nowrap justify-self-end"
-                        style={{
-                          fontFamily: "var(--v4-sans)",
-                          fontWeight: 500,
-                          color: "var(--v4-fg)",
-                        }}
-                        dateTime={toISO24Hour(row.adhan)}
-                      >
-                        {row.adhan}
-                      </time>
-                      <time
-                        className="block text-base sm:text-lg tabular-nums whitespace-nowrap justify-self-end"
-                        style={{
-                          fontFamily: "var(--v4-sans)",
-                          fontWeight: isActive ? 700 : 400,
-                          opacity: isActive ? 1 : 0.7,
-                          color: isActive ? "var(--v4-accent)" : "var(--v4-fg)",
-                        }}
-                        dateTime={toISO24Hour(row.iqamah)}
-                      >
-                        {row.iqamah}
-                      </time>
+
+                      {/* Right: athan time (large, primary) above
+                          "Iqama [time]" (smaller, secondary). */}
+                      <div className="flex flex-col items-end">
+                        <time
+                          className="block text-lg sm:text-xl md:text-base lg:text-base tabular-nums whitespace-nowrap"
+                          style={{
+                            fontFamily: "var(--v4-sans)",
+                            fontWeight: 600,
+                            color: isActive ? "var(--v4-accent)" : "var(--v4-fg)",
+                          }}
+                          dateTime={toISO24Hour(row.adhan)}
+                        >
+                          {row.adhan}
+                        </time>
+                        <div className="flex items-baseline gap-1.5 mt-0.5">
+                          <span
+                            className="text-[9px] sm:text-[10px] md:text-[9px] lg:text-xs uppercase font-bold"
+                            style={{
+                              letterSpacing: "0.14em",
+                              color: "var(--v4-mute)",
+                            }}
+                          >
+                            Iqama
+                          </span>
+                          <time
+                            className="block text-xs sm:text-sm md:text-[10px] lg:text-xs tabular-nums whitespace-nowrap"
+                            style={{
+                              fontFamily: "var(--v4-sans)",
+                              fontWeight: isActive ? 600 : 500,
+                              opacity: isActive ? 1 : 0.75,
+                              color: "var(--v4-mute-strong)",
+                            }}
+                            dateTime={toISO24Hour(row.iqamah)}
+                          >
+                            {row.iqamah}
+                          </time>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
               </div>
 
               {/* Jumu'ah — V4 bordered tile.
-                  Uses <dl>/<dt>/<dd> so the <dt>Jumu'ah</dt> and <dd> stay direct
-                  siblings (the existing Jumu'ah test walks via nextElementSibling). */}
+                  Sits directly under the regular prayer list with a top
+                  border that visually divides it from the Isha row above.
+
+                  Uses <dl>/<dt>/<dd> so the <dt>Jumu'ah</dt> and <dd>
+                  stay direct siblings (the existing Jumu'ah test walks
+                  via nextElementSibling).
+
+                  Always renders inline on a single row at every breakpoint.
+                  Mobile uses smaller text so the row fits comfortably
+                  down to ~320px viewports — the trailing "PM" used to
+                  clip on narrow phones. */}
               {(jumuahArabic || jumuahEnglish) && (
                 <dl
-                  className="relative overflow-hidden grid items-center gap-x-3 gap-y-2 px-4 py-4 sm:px-5 sm:py-4 m-0"
+                  className="relative overflow-hidden grid items-center
+                             grid-cols-[auto_1fr_auto]
+                             gap-x-2 sm:gap-x-3
+                             px-4 py-3 sm:px-5 sm:py-4 md:px-3 md:py-2.5 lg:px-3 lg:py-3 m-0
+                             mt-3 sm:mt-4"
                   style={{
                     background: "var(--v4-surface)",
                     border: "1px solid rgba(127, 181, 57, 0.2)",
-                    gridTemplateColumns: "auto 1fr auto",
                   }}
                 >
                   <V4StarPattern opacity={0.04} size={40} color="var(--v4-accent)" />
                   <V4Ornament size={18} color="var(--v4-accent)" />
                   <dt
-                    className="relative text-[11px] uppercase font-bold m-0"
+                    className="relative text-sm sm:text-base lg:text-lg uppercase m-0 whitespace-nowrap"
                     style={{
-                      letterSpacing: "0.22em",
+                      fontFamily: "var(--v4-serif)",
+                      fontWeight: 500,
                       color: "var(--v4-accent)",
                     }}
                   >
                     Jumu&apos;ah
                   </dt>
-                  {/* Times on a single line. AR/EN visible (compact),
-                      full "Arabic"/"English" remain in the DOM for screen
-                      readers and existing tests via sr-only spans. */}
-                  <dd className="relative flex items-baseline gap-2 sm:gap-3 m-0 justify-self-end whitespace-nowrap">
+                  {/* Times on a single row at every breakpoint. The
+                      compact AR/EN visible labels are used at every
+                      breakpoint so the row never overflows the dl's
+                      right padding on lg+ — the previous "full
+                      Arabic/English on desktop" was making the trailing
+                      "PM" clip against the border. An sr-only span
+                      preserves the full "Arabic"/"English" word for
+                      screen readers and the existing Jumu'ah tests. */}
+                  <dd className="relative flex items-baseline gap-1.5 sm:gap-2 lg:gap-2.5 m-0 justify-self-end whitespace-nowrap">
                     {jumuahArabic && (
-                      <span className="flex items-baseline gap-1.5">
+                      <span className="flex items-baseline gap-1 sm:gap-1.5">
                         <span
                           aria-hidden="true"
-                          className="text-[9px] uppercase font-bold"
+                          className="text-[9px] sm:text-[10px] uppercase font-bold"
                           style={{ letterSpacing: "0.16em", color: "var(--v4-mute)" }}
                         >
                           AR
                         </span>
                         <span className="sr-only">Arabic</span>
                         <span
-                          className="text-base font-semibold tabular-nums"
+                          className="text-sm sm:text-base lg:text-base font-semibold tabular-nums"
                           style={{ fontFamily: "var(--v4-sans)", color: "var(--v4-fg)" }}
                         >
                           {jumuahArabic}
@@ -1155,17 +1230,17 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                       />
                     )}
                     {jumuahEnglish && (
-                      <span className="flex items-baseline gap-1.5">
+                      <span className="flex items-baseline gap-1 sm:gap-1.5">
                         <span
                           aria-hidden="true"
-                          className="text-[9px] uppercase font-bold"
+                          className="text-[9px] sm:text-[10px] uppercase font-bold"
                           style={{ letterSpacing: "0.16em", color: "var(--v4-mute)" }}
                         >
                           EN
                         </span>
                         <span className="sr-only">English</span>
                         <span
-                          className="text-base font-semibold tabular-nums"
+                          className="text-sm sm:text-base lg:text-base font-semibold tabular-nums"
                           style={{ fontFamily: "var(--v4-sans)", color: "var(--v4-fg)" }}
                         >
                           {jumuahEnglish}
@@ -1206,10 +1281,13 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
 
             {/* Footer strip — reserved slot for future action buttons
                 (e.g. Monthly Timetable, Notify me, Get directions). Kept
-                visually intact (border + min-height) so the layout doesn't
-                jump when buttons are added later. */}
+                visually intact (border + min-height) on sm+ so the desktop
+                layout doesn't jump when buttons are added later. Mobile
+                collapses the slot to zero so the schedule column can use
+                the recovered ~64px to fit Maghrib, Isha, and Jumu'ah on
+                screen without scrolling. */}
             <div
-              className="px-5 sm:px-8 lg:px-10 py-4 flex justify-between items-center flex-shrink-0 min-h-[64px]"
+              className="hidden sm:flex px-5 sm:px-8 lg:px-10 py-4 justify-between items-center flex-shrink-0 min-h-[64px]"
               style={{ borderTop: "1px solid var(--v4-rule)" }}
             >
               {/* Buttons go here */}
