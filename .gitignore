@@ -44,3 +44,7 @@ next-env.d.ts
 # generated docs
 /docs/api
 .superpowers/
+
+# Claude Code tooling (worktrees, local launch config)
+.claude/worktrees/
+.claude/launch.json
