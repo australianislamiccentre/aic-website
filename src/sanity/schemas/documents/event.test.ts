@@ -76,4 +76,41 @@ describe("Event Schema", () => {
     // validation in Studio. Phase 3 (separate follow-up commit) tightens it.
     expect(displayAs?.validation).toBeUndefined();
   });
+
+  // The preview prepare() function lives inside the schema export, not in fields.
+  // We access it via the default-exported schema object.
+  it("preview prepare() prefixes subtitle with display badge", () => {
+    const prepare = (schema as unknown as {
+      preview: {
+        prepare: (selection: Record<string, unknown>) => { title: string; subtitle: string };
+      };
+    }).preview.prepare;
+
+    const program = prepare({
+      title: "Quran Class",
+      eventType: "recurring",
+      recurringDay: "Mondays",
+      displayAs: "program",
+      active: true,
+    });
+    expect(program.subtitle).toContain("📋 Program");
+
+    const event = prepare({
+      title: "Eid Dinner",
+      eventType: "single",
+      date: "2026-05-20",
+      displayAs: "event",
+      active: true,
+    });
+    expect(event.subtitle).toContain("📅 Event");
+
+    const both = prepare({
+      title: "Open Day",
+      eventType: "single",
+      date: "2026-06-01",
+      displayAs: "both",
+      active: true,
+    });
+    expect(both.subtitle).toContain("⚡ Program & Event");
+  });
 });

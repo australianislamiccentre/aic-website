@@ -453,19 +453,29 @@ export default defineType({
       endDate: "endDate",
       recurringDay: "recurringDay",
       eventType: "eventType",
+      displayAs: "displayAs",
       active: "active",
       media: "image",
     },
-    prepare({ title, date, endDate, recurringDay, eventType, active, media }) {
-      let subtitle = date || "";
+    prepare({ title, date, endDate, recurringDay, eventType, displayAs, active, media }) {
+      // Display badge — shows admin where this doc appears at a glance.
+      const badge =
+        displayAs === "both"
+          ? "⚡ Program & Event"
+          : displayAs === "program"
+            ? "📋 Program"
+            : "📅 Event";
+
+      let scheduleSummary = (date as string | undefined) || "";
       if (eventType === "recurring") {
-        subtitle = `📋 Program — ${recurringDay || "Recurring"}`;
+        scheduleSummary = (recurringDay as string | undefined) || "Recurring";
       } else if (eventType === "multi" && date && endDate) {
-        subtitle = `${date} → ${endDate}`;
+        scheduleSummary = `${date} → ${endDate}`;
       }
+
       return {
         title: `${title}${active === false ? " (Inactive)" : ""}`,
-        subtitle,
+        subtitle: scheduleSummary ? `${badge} — ${scheduleSummary}` : badge,
         media,
       };
     },
