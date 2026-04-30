@@ -152,7 +152,7 @@ export default defineType({
       name: "categories",
       title: "Categories",
       type: "array",
-      description: 'Shown as coloured badges on the event page. IMPORTANT: Recurring events with Education, Youth, Sports, or Women categories are automatically treated as Programs and displayed in the "Weekly Programs" section on the Events page and homepage.',
+      description: "Shown as coloured badges on the event page. Use any combination — categories no longer control whether something is treated as a Program (use the 'Display As' field above for that).",
       of: [{ type: "string" }],
       options: {
         list: [
@@ -196,7 +196,7 @@ export default defineType({
       title: "Event Type",
       type: "string",
       initialValue: "single",
-      description: 'How is this event scheduled? To create a PROGRAM (e.g. weekly Quran class), select "Recurring" and choose Education, Youth, Sports, or Women as the category — it will automatically appear in the Programs section on the Events page.',
+      description: 'How is this scheduled? "Single" = one date, "Multi" = date range, "Recurring" = weekly. To control where this appears (Programs section, Events page, or both), use the "Display As" field above — eventType only affects the schedule.',
       options: {
         list: [
           {
