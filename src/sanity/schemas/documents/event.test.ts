@@ -62,4 +62,18 @@ describe("Event Schema", () => {
     expect(values).toContain("multi");
     expect(values).toContain("recurring");
   });
+
+  it("has displayAs field with program, event, and both options", () => {
+    const displayAs = getField("displayAs");
+    expect(displayAs).toBeDefined();
+    const values = displayAs?.options?.list?.map((o) => o.value);
+    expect(values).toEqual(["program", "event", "both"]);
+  });
+
+  it("does NOT mark displayAs as required in phase 1 (migration sequencing)", () => {
+    const displayAs = getField("displayAs");
+    // Phase 1 ships without Rule.required() so unmigrated docs don't fail
+    // validation in Studio. Phase 3 (separate follow-up commit) tightens it.
+    expect(displayAs?.validation).toBeUndefined();
+  });
 });

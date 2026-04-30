@@ -91,6 +91,33 @@ export default defineType({
           return true;
         }),
     }),
+    defineField({
+      name: "displayAs",
+      title: "Display As",
+      type: "string",
+      initialValue: "event",
+      description:
+        'Controls where this item appears on the website. "Program" shows in the homepage Programs section only. "Event" shows on the Events page only. "Both" shows in both places.',
+      options: {
+        list: [
+          {
+            title: "Program — only show in Programs sections (homepage Programs strip)",
+            value: "program",
+          },
+          {
+            title: "Event — only show on the Events page (and homepage Events sections)",
+            value: "event",
+          },
+          {
+            title: "Both — show as a Program and an Event across the site",
+            value: "both",
+          },
+        ],
+        layout: "radio",
+      },
+      // Phase 3 (follow-up commit, after migration runs): tighten with
+      // validation: (Rule) => Rule.required().error("Please select where this should be displayed"),
+    }),
 
     // ── 1. Hero Image (banner at the top of the page) ──
     defineField({
