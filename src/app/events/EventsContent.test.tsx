@@ -76,6 +76,7 @@ function makeEvent(overrides: Partial<SanityEvent> = {}): SanityEvent {
     time: "10:00 AM",
     location: "Main Hall",
     eventType: "single",
+    displayAs: "event",
     ...overrides,
   };
 }
@@ -198,5 +199,53 @@ describe("EventsContent", () => {
     const events = [makeEvent({ location: "Community Hall", locationDetails: "Building B, Room 3" })];
     render(<EventsContent events={events} />);
     expect(screen.getByText("Building B, Room 3")).toBeInTheDocument();
+  });
+
+  it("splits 'both' recurring items into the Weekly Programs section", () => {
+    const events = [
+      makeEvent({
+        _id: "evt-single",
+        title: "Eid Dinner",
+        slug: "eid-dinner",
+        eventType: "single",
+        displayAs: "event",
+        date: "2026-05-20",
+      }),
+      makeEvent({
+        _id: "evt-both-recurring",
+        title: "Weekly Open House",
+        slug: "open-house",
+        eventType: "recurring",
+        displayAs: "both",
+        recurringDay: "Saturdays",
+        date: undefined,
+      }),
+    ];
+
+    render(<EventsContent events={events} />);
+
+    // Single-day event lands in the upcoming events grid
+    expect(screen.getByText("Eid Dinner")).toBeInTheDocument();
+
+    // Recurring "both" item lands in the Weekly Programs section
+    expect(screen.getByRole("heading", { name: "Weekly Programs" })).toBeInTheDocument();
+    expect(screen.getByText("Weekly Open House")).toBeInTheDocument();
+  });
+
+  it("hides Weekly Programs section when no recurring items present", () => {
+    const events = [
+      makeEvent({
+        _id: "evt-single",
+        title: "Eid Dinner",
+        slug: "eid-dinner",
+        eventType: "single",
+        displayAs: "event",
+      }),
+    ];
+
+    render(<EventsContent events={events} />);
+
+    // Section heading should not appear when there are no recurring items
+    expect(screen.queryByRole("heading", { name: "Weekly Programs" })).not.toBeInTheDocument();
   });
 });
