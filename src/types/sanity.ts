@@ -35,6 +35,8 @@ export interface SanityEvent {
   ageGroup?: string;
   externalLink?: string;
   featured?: boolean;
+  /** Controls placement: "program" → homepage Programs strip only; "event" → Events page only; "both" → both. */
+  displayAs?: "program" | "event" | "both";
   active?: boolean;
   registrationUrl?: string;
   contactEmail?: string;
