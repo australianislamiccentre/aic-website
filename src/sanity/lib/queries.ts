@@ -64,12 +64,11 @@ export const eventBySlugQuery = groq`
   }
 `;
 
-// Events - active events only, recurring always show, non-recurring only if not past
-// Also filter recurring events by recurringEndDate if set.
-// `$today` is the Melbourne-local YYYY-MM-DD supplied by the fetch layer — see
-// the header comment for why this is a parameter rather than inline `now()`.
+// Events - items the admin has explicitly flagged for the Events page.
+// Recurring events with displayAs == "both" still appear in the page's
+// "Weekly Programs" section (split locally in EventsContent).
 export const eventsQuery = groq`
-  *[_type == "event" && active != false && (
+  *[_type == "event" && active != false && displayAs in ["event", "both"] && (
     (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= $today)) ||
     date >= $today ||
     endDate >= $today
@@ -78,6 +77,7 @@ export const eventsQuery = groq`
     title,
     "slug": slug.current,
     eventType,
+    displayAs,
     date,
     endDate,
     recurringDay,
