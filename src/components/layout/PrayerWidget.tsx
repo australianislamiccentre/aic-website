@@ -661,7 +661,10 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         aria-modal={isOpen ? "true" : undefined}
         tabIndex={isOpen ? undefined : -1}
         className="fixed inset-0 z-[950] flex flex-col
-                   lg:inset-y-[25vh] lg:inset-x-[10vw] lg:rounded-2xl lg:overflow-hidden lg:shadow-[0_30px_80px_rgba(0,0,0,0.5)] lg:border lg:border-[var(--v4-rule)]"
+                   md:inset-y-[10vh] md:inset-x-[6vw] md:rounded-2xl md:overflow-hidden md:shadow-[0_24px_60px_rgba(0,0,0,0.45)] md:border md:border-[var(--v4-rule)]
+                   lg:inset-y-[12.5vh] lg:inset-x-[10vw] lg:shadow-[0_30px_80px_rgba(0,0,0,0.5)]
+                   xl:inset-x-[12vw]
+                   2xl:inset-x-[18vw] 2xl:max-w-[1400px] 2xl:left-1/2 2xl:-translate-x-1/2 2xl:right-auto 2xl:w-[calc(100vw-36vw)]"
         style={{
           background: "var(--v4-bg)",
           color: "var(--v4-fg)",
@@ -685,26 +688,27 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
         }}
       >
         {/* =============================================================
-            Top bar — single unified row containing the date label
-            (Gregorian + Hijri stacked) and the prev/today/next picker
-            buttons. The previous brand line ("Australian Islamic
-            Centre · Prayer Times") was removed; the modal's title
-            attribute on the dialog wrapper still carries the brand for
-            screen readers, and the date+picker now occupies the prime
-            top-of-modal real estate at every breakpoint.
-
-            Mobile portrait: stacks (date stack centered on top, picker
-            buttons centered below) so the row fits in narrow widths.
-            md+: horizontal — date stack left, picker buttons right.
-            Close button stays absolute top-right; the row reserves
-            right padding so picker buttons don't collide with it. */}
+            Top bar — single unified row. Uses the SAME grid template
+            as the body (`md:grid-cols-[1fr_1.3fr] lg:grid-cols-[1.1fr_1fr]`)
+            with NO horizontal padding on the grid container, so the
+            column boundary in the header lines up *exactly* with the
+            hero/schedule split in the body. Children carry their own
+            horizontal padding: the date stack mirrors a generic header
+            pad on the left, the picker mirrors the schedule column's
+            internal `md:px-3 lg:px-4` so the prev button sits at the
+            same x as the "Fajr" / "Dhuhr" labels in the prayer list
+            below.
+            Mobile (<md) collapses to a single column with date
+            centered on top, picker centered below.
+            Close button stays absolute top-right at `right-4` /
+            `md:right-6`; the picker's bounded width keeps it well
+            clear of the close button on every breakpoint. */}
         <div
-          className="relative grid grid-cols-1 justify-items-center md:grid-cols-[1fr_auto_1fr]
+          className="relative grid grid-cols-1 justify-items-center
+                     md:grid-cols-[1fr_1.3fr] lg:grid-cols-[1.1fr_1fr]
                      md:items-center md:justify-items-stretch
-                     gap-y-3 md:gap-y-0 md:gap-x-5
-                     px-5 sm:px-8 md:px-10
-                     pt-14 pb-4 sm:py-3 md:py-3 lg:py-4
-                     pr-5 sm:pr-8 md:pr-16 lg:pr-20
+                     gap-y-2 md:gap-y-0 md:gap-x-0
+                     py-3 lg:py-4
                      flex-shrink-0"
           style={{ borderBottom: "1px solid var(--v4-rule)" }}
         >
@@ -732,10 +736,17 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           </button>
 
           {/* Date stack: Gregorian on top, Hijri muted below.
-              Centered on mobile portrait, left-aligned on md+. */}
-          <div className="flex flex-col items-center md:items-start md:justify-self-start min-w-0">
+              Carries its own horizontal padding (so the grid container
+              can stay padding-free for column-alignment). Centered on
+              mobile, left-aligned on md+. `min-w-0` + `overflow-hidden`
+              on the wrapper, paired with `w-full` on the children, lets
+              the grid track shrink at cramped widths so the long
+              Gregorian date truncates with ellipsis. */}
+          <div className="flex flex-col items-stretch md:justify-self-start min-w-0 w-full overflow-hidden
+                          pl-5 pr-14 sm:pl-8 sm:pr-16 md:pl-10 md:pr-3 lg:pr-4">
             <div
-              className="text-sm md:text-base lg:text-xl font-semibold whitespace-nowrap overflow-hidden text-ellipsis"
+              className="font-semibold whitespace-nowrap overflow-hidden text-ellipsis w-full text-center md:text-left
+                         text-base min-[400px]:text-lg sm:text-xl md:text-base lg:text-xl"
               data-testid="widget-date-label"
               style={{ color: "var(--v4-fg)", letterSpacing: "-0.01em" }}
             >
@@ -743,7 +754,8 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             </div>
             {hijriLabel && (
               <div
-                className="text-[10px] lg:text-[11px] uppercase font-bold whitespace-nowrap mt-0.5"
+                className="uppercase font-bold whitespace-nowrap overflow-hidden text-ellipsis w-full text-center md:text-left mt-0.5
+                           text-[11px] sm:text-xs lg:text-[11px]"
                 style={{
                   letterSpacing: "0.2em",
                   color: "var(--v4-mute)",
@@ -754,12 +766,14 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             )}
           </div>
 
-          {/* Picker buttons — prev / today / next, plus an optional
-              "Reset" pill when viewing a non-today date.
-              md+: justify-self-center positions the picker in the
-              middle of the remaining (1fr) grid column so it doesn't
-              hug the absolutely-positioned close button on the right. */}
-          <div className="flex items-center gap-2 flex-shrink-0 md:justify-self-center">
+          {/* Picker buttons — prev / today / next + reset.
+              md+: `justify-self-start` anchors the picker to the left
+              edge of col 2, and `md:pl-3 lg:pl-4` mirrors the schedule
+              column's own internal padding so the prev button's left
+              edge lines up with the prayer-name column ("Fajr" /
+              "Dhuhr" labels) in the list below. */}
+          <div className="flex items-center gap-2 flex-shrink-0
+                          md:justify-self-start md:pl-3 lg:pl-4">
             <button
               type="button"
               aria-label="Previous day"
@@ -775,8 +789,7 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             </button>
             {/* "Today" / selected-date pill — wraps the hidden native
                 <input type="date"> so showPicker() opens the calendar
-                next to this button instead of at the modal-panel root
-                where it used to sit. */}
+                next to this button. */}
             <div className="relative">
               <button
                 type="button"
@@ -826,12 +839,10 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
             >
               <span aria-hidden="true">›</span>
             </button>
-            {/* Reset button — always rendered so its slot is reserved in
-                the flex layout (using `invisible` when on today). This
-                prevents the prev/today/next buttons from shifting when
-                the user navigates to a non-today date. Uses a circular
-                rotate-ccw icon (with an aria-label for screen readers)
-                to keep the cluster visually compact. */}
+            {/* Reset button — always rendered so its slot is reserved
+                in the flex layout (using `invisible` when on today),
+                preventing the prev/today/next buttons from shifting
+                when the user navigates to a non-today date. */}
             <button
               type="button"
               aria-label="Back to today"
@@ -893,6 +904,10 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 className="relative text-center"
               >
                 <V4Ornament size={36} color="var(--v4-accent)" />
+                {/* Eyebrow — just the prayer name. The "· Iqamah in"
+                    suffix the original eyebrow carried has been folded
+                    into the big timer line below so the eyebrow stays
+                    tight at every breakpoint. */}
                 <div
                   className="mt-3 text-[11px] lg:text-xs uppercase font-bold"
                   style={{
@@ -900,10 +915,22 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                     color: "var(--v4-accent)",
                   }}
                 >
-                  {heroPrayer!.displayName} · Iqamah in
+                  {heroPrayer!.displayName}
                 </div>
+                {/* Big "Iqamah in M:SS" line. `whitespace-nowrap`
+                    guarantees the phrase + countdown stay on a single
+                    line; the responsive font ladder shrinks the type
+                    at md (where the hero column is narrowest in the
+                    split layout) and grows it again at lg/xl as the
+                    column widens. The Athan/Iqamah secondary line
+                    that used to sit underneath was dropped per the
+                    new mobile design — that information is already
+                    repeated in the prayer list below. */}
                 <time
-                  className="block mt-3 text-6xl sm:text-7xl lg:text-8xl font-light tabular-nums prayer-widget-iqamah-pulse"
+                  className="block mt-3 whitespace-nowrap font-light tabular-nums prayer-widget-iqamah-pulse
+                             text-[clamp(2rem,11vw,3.25rem)]
+                             sm:text-6xl
+                             md:text-4xl lg:text-5xl xl:text-6xl"
                   style={{
                     fontFamily: "var(--v4-sans)",
                     letterSpacing: "-0.04em",
@@ -913,13 +940,6 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                 >
                   {`Iqamah in ${countdown || "—"}`}
                 </time>
-                <div className="mt-4 text-xs sm:text-sm" style={{ color: "var(--v4-mute)" }}>
-                  Athan{" "}
-                  <span style={{ color: "var(--v4-fg)" }}>{heroPrayer!.adhan}</span>
-                  <span className="mx-2.5" style={{ opacity: 0.4 }}>·</span>
-                  Iqamah{" "}
-                  <span style={{ color: "var(--v4-fg)" }}>{heroPrayer!.iqamah}</span>
-                </div>
               </div>
             ) : (
               <div className="relative text-center">
@@ -1000,13 +1020,12 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
           </div>
 
           {/* ===== SCHEDULE COLUMN =====
-              Layout: scrollable area for date cluster + prayer list +
-              special bands sits at the top (flex-1 min-h-0 so it shrinks
-              correctly when the pinned Jumu'ah row takes its share).
-              The Jumu'ah row is rendered as its own flex-shrink-0 block
-              outside the scroll wrapper so it stays visible at the
-              bottom of the column regardless of how far the prayer
-              list has been scrolled. */}
+              Layout: scrollable area for prayer list + Jumu'ah +
+              special bands (flex-1 min-h-0 so it shrinks correctly),
+              then a reserved footer slot. The picker lives in the
+              header (in col 2 of the header's grid, aligned with the
+              start of THIS column) so the date label has the full
+              left side of the header to itself. */}
           <div className="relative flex flex-col overflow-hidden">
             <div className="flex-1 min-h-0 overflow-y-auto px-5 sm:px-8 md:px-3 lg:px-4 pt-3 pb-3 sm:pt-6 sm:pb-4">
               {/* Prayer list — column headers ("Prayer / Athan / Iqamah")
