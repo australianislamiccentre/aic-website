@@ -388,6 +388,11 @@ export default function EventsContent({ events, pageSettings }: EventsContentPro
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // The `events` prop is already filtered by `displayAs in ["event", "both"]`
+  // at the query layer (see eventsQuery in src/sanity/lib/queries.ts). This
+  // means items the admin flagged as `displayAs: "program"` are NOT in this
+  // list — that's why a recurring "program" never appears in the Weekly
+  // Programs section below. Items flagged "both" do appear here.
   const filteredEvents = events.filter((event) => {
     const matchesCategory = selectedCategory === "All" ||
       (event.categories && event.categories.includes(selectedCategory));
