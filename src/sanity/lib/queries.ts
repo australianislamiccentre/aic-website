@@ -64,11 +64,14 @@ export const eventBySlugQuery = groq`
   }
 `;
 
-// Events - items the admin has explicitly flagged for the Events page.
-// Recurring events with displayAs == "both" still appear in the page's
-// "Weekly Programs" section (split locally in EventsContent).
+// Events page — shows all active, non-expired event documents regardless
+// of displayAs. The page splits them locally into "Upcoming Events"
+// (single/multi-day) and "Weekly Programs" (recurring) by eventType, so a
+// document flagged displayAs: "program" still appears in the Weekly
+// Programs section. The displayAs flag only gates homepage tab placement
+// (see featuredEventsQuery and programsQuery).
 export const eventsQuery = groq`
-  *[_type == "event" && active != false && displayAs in ["event", "both"] && (
+  *[_type == "event" && active != false && (
     (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= $today)) ||
     date >= $today ||
     endDate >= $today

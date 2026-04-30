@@ -108,25 +108,46 @@ describe("EventsContent", () => {
     expect(screen.getByText("Upcoming Events")).toBeInTheDocument();
   });
 
-  it("shows Weekly Programs heading for recurring events", () => {
+  it("shows Weekly Programs heading for items flagged displayAs program", () => {
     const events = [
-      makeEvent({ _id: "r1", title: "Weekly Halaqa", eventType: "recurring", recurringDay: "Wednesdays", slug: "weekly-halaqa" }),
+      makeEvent({ _id: "r1", title: "Weekly Halaqa", eventType: "recurring", displayAs: "program", recurringDay: "Wednesdays", slug: "weekly-halaqa" }),
     ];
     render(<EventsContent events={events} />);
     expect(screen.getByRole("heading", { name: "Weekly Programs" })).toBeInTheDocument();
     expect(screen.getByText("Weekly Halaqa")).toBeInTheDocument();
   });
 
-  it("separates recurring and non-recurring events into sections", () => {
+  it("separates items by displayAs flag into Upcoming Events and Weekly Programs", () => {
     const events = [
-      makeEvent({ _id: "e1", title: "One-off Event", eventType: "single", slug: "one-off" }),
-      makeEvent({ _id: "r1", title: "Recurring Class", eventType: "recurring", recurringDay: "Tuesdays", slug: "recurring-class" }),
+      makeEvent({ _id: "e1", title: "One-off Event", eventType: "single", displayAs: "event", slug: "one-off" }),
+      makeEvent({ _id: "r1", title: "Recurring Class", eventType: "recurring", displayAs: "program", recurringDay: "Tuesdays", slug: "recurring-class" }),
     ];
     render(<EventsContent events={events} />);
     expect(screen.getByText("Upcoming Events")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Weekly Programs" })).toBeInTheDocument();
     expect(screen.getByText("One-off Event")).toBeInTheDocument();
     expect(screen.getByText("Recurring Class")).toBeInTheDocument();
+  });
+
+  it("routes a recurring event flagged displayAs:event into Upcoming Events", () => {
+    // Section split is by displayAs, not eventType. A recurring item
+    // explicitly flagged "event" lands in Upcoming Events even though
+    // it has a recurringDay.
+    const events = [
+      makeEvent({
+        _id: "anchored",
+        title: "Anchored - Brothers Nights",
+        slug: "anchored",
+        eventType: "recurring",
+        displayAs: "event",
+        recurringDay: "Fridays",
+        date: undefined,
+      }),
+    ];
+    render(<EventsContent events={events} />);
+    expect(screen.getByRole("heading", { name: "Upcoming Events" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Weekly Programs" })).not.toBeInTheDocument();
+    expect(screen.getByText("Anchored - Brothers Nights")).toBeInTheDocument();
   });
 
   it("filters events by category", async () => {
@@ -201,7 +222,31 @@ describe("EventsContent", () => {
     expect(screen.getByText("Building B, Room 3")).toBeInTheDocument();
   });
 
-  it("splits 'both' recurring items into the Weekly Programs section", () => {
+  it("renders 'program'-flagged recurring items in the Weekly Programs section", () => {
+    // Once eventsQuery dropped the displayAs gate, a doc flagged
+    // displayAs: "program" reaches EventsContent and should land in
+    // Weekly Programs alongside other recurring items.
+    const events = [
+      makeEvent({
+        _id: "evt-program-only",
+        title: "Tuesday Tafsir Series",
+        slug: "tafsir-series",
+        eventType: "recurring",
+        displayAs: "program",
+        recurringDay: "Tuesdays",
+        date: undefined,
+      }),
+    ];
+
+    render(<EventsContent events={events} />);
+
+    expect(screen.getByRole("heading", { name: "Weekly Programs" })).toBeInTheDocument();
+    expect(screen.getByText("Tuesday Tafsir Series")).toBeInTheDocument();
+  });
+
+  it("renders a 'both'-flagged item in BOTH Upcoming Events and Weekly Programs", () => {
+    // displayAs: "both" means show as a Program AND an Event across the
+    // site, so it appears in both sections on the events page.
     const events = [
       makeEvent({
         _id: "evt-single",
@@ -224,12 +269,40 @@ describe("EventsContent", () => {
 
     render(<EventsContent events={events} />);
 
-    // Single-day event lands in the upcoming events grid
     expect(screen.getByText("Eid Dinner")).toBeInTheDocument();
-
-    // Recurring "both" item lands in the Weekly Programs section
+    expect(screen.getByRole("heading", { name: "Upcoming Events" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Weekly Programs" })).toBeInTheDocument();
-    expect(screen.getByText("Weekly Open House")).toBeInTheDocument();
+
+    // "both" item appears once per section — twice in total
+    expect(screen.getAllByText("Weekly Open House")).toHaveLength(2);
+  });
+
+  it("falls back to eventType routing when displayAs is missing (legacy data)", () => {
+    const events = [
+      makeEvent({
+        _id: "legacy-single",
+        title: "Legacy One-off",
+        slug: "legacy-single",
+        eventType: "single",
+        displayAs: undefined,
+      }),
+      makeEvent({
+        _id: "legacy-recurring",
+        title: "Legacy Class",
+        slug: "legacy-recurring",
+        eventType: "recurring",
+        recurringDay: "Tuesdays",
+        displayAs: undefined,
+        date: undefined,
+      }),
+    ];
+
+    render(<EventsContent events={events} />);
+
+    expect(screen.getByRole("heading", { name: "Upcoming Events" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Weekly Programs" })).toBeInTheDocument();
+    expect(screen.getByText("Legacy One-off")).toBeInTheDocument();
+    expect(screen.getByText("Legacy Class")).toBeInTheDocument();
   });
 
   it("hides Weekly Programs section when no recurring items present", () => {

@@ -84,53 +84,9 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
 
               S.divider(),
 
-              // Programs folder — items where admin chose displayAs in ["program", "both"]
-              S.listItem()
-                .title("Programs")
-                .child(
-                  S.list()
-                    .title("Programs")
-                    .items([
-                      S.listItem()
-                        .title("Live on Website")
-                        .child(
-                          S.documentList()
-                            .title("Live Programs")
-                            .filter(
-                              `_type == "event" && active == true && displayAs in ["program", "both"] && (
-                                recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0] ||
-                                date >= string::split(string(now()), "T")[0] ||
-                                endDate >= string::split(string(now()), "T")[0]
-                              )`
-                            )
-                            .initialValueTemplates([S.initialValueTemplateItem("event-as-program")])
-                        ),
-                      S.listItem()
-                        .title("Expired")
-                        .child(
-                          S.documentList()
-                            .title("Expired Programs")
-                            .filter(
-                              `_type == "event" && active == true && displayAs in ["program", "both"] && !(
-                                recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0] ||
-                                date >= string::split(string(now()), "T")[0] ||
-                                endDate >= string::split(string(now()), "T")[0]
-                              )`
-                            )
-                            .initialValueTemplates([S.initialValueTemplateItem("event-as-program")])
-                        ),
-                      S.listItem()
-                        .title("Inactive")
-                        .child(
-                          S.documentList()
-                            .title("Inactive Programs")
-                            .filter('_type == "event" && active == false && displayAs in ["program", "both"]')
-                            .initialValueTemplates([S.initialValueTemplateItem("event-as-program")])
-                        ),
-                    ])
-                ),
-
-              // Events folder — items where admin chose displayAs in ["event", "both"]
+              // Events folder — single parent for all event documents.
+              // Live on Website is split into Events vs Programs by displayAs;
+              // Expired and Inactive are unsplit (show all displayAs values).
               S.listItem()
                 .title("Events")
                 .child(
@@ -142,38 +98,58 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                       S.listItem()
                         .title("Live on Website")
                         .child(
-                          S.documentList()
-                            .title("Live Events")
-                            .filter(
-                              `_type == "event" && active == true && displayAs in ["event", "both"] && (
-                                (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
-                                date >= string::split(string(now()), "T")[0] ||
-                                endDate >= string::split(string(now()), "T")[0]
-                              )`
-                            )
-                            .initialValueTemplates([S.initialValueTemplateItem("event-as-event")])
+                          S.list()
+                            .title("Live on Website")
+                            .items([
+                              S.listItem()
+                                .title("Events")
+                                .child(
+                                  S.documentList()
+                                    .title("Live Events")
+                                    .filter(
+                                      `_type == "event" && active == true && displayAs in ["event", "both"] && (
+                                        (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
+                                        date >= string::split(string(now()), "T")[0] ||
+                                        endDate >= string::split(string(now()), "T")[0]
+                                      )`
+                                    )
+                                    .initialValueTemplates([S.initialValueTemplateItem("event-as-event")])
+                                ),
+                              S.listItem()
+                                .title("Programs")
+                                .child(
+                                  S.documentList()
+                                    .title("Live Programs")
+                                    .filter(
+                                      `_type == "event" && active == true && displayAs in ["program", "both"] && (
+                                        recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0] ||
+                                        date >= string::split(string(now()), "T")[0] ||
+                                        endDate >= string::split(string(now()), "T")[0]
+                                      )`
+                                    )
+                                    .initialValueTemplates([S.initialValueTemplateItem("event-as-program")])
+                                ),
+                            ])
                         ),
                       S.listItem()
                         .title("Expired")
                         .child(
                           S.documentList()
-                            .title("Expired Events")
+                            .title("Expired")
                             .filter(
-                              `_type == "event" && active == true && displayAs in ["event", "both"] && !(
+                              `_type == "event" && active == true && !(
                                 (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
                                 date >= string::split(string(now()), "T")[0] ||
                                 endDate >= string::split(string(now()), "T")[0]
                               )`
                             )
-                            .initialValueTemplates([S.initialValueTemplateItem("event-as-event")])
                         ),
                       S.listItem()
                         .title("Inactive")
                         .child(
                           S.documentList()
-                            .title("Inactive Events")
-                            .filter('_type == "event" && active == false && displayAs in ["event", "both"]')
-                            .initialValueTemplates([S.initialValueTemplateItem("event-as-event")])
+                            .title("Inactive")
+                            .filter('_type == "event" && active == false')
                         ),
                     ])
                 ),
