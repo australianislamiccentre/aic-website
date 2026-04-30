@@ -27,7 +27,6 @@ import {
   Grid,
   List,
   ArrowRight,
-  Sparkles,
   Ticket,
   Users,
   X,
@@ -119,14 +118,6 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
               />
             </motion.div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            {event.eventType === "recurring" && (
-              <motion.span
-                animate={{ scale: isHovered ? 1.1 : 1 }}
-                className="absolute top-4 left-4 px-3 py-1 bg-green-500 text-white text-sm font-semibold rounded-full"
-              >
-                Recurring
-              </motion.span>
-            )}
             <div className="absolute top-4 right-4 flex flex-wrap gap-1 justify-end max-w-[60%]">
               {event.categories?.slice(0, 2).map((cat, idx) => (
                 <span key={idx} className="px-2 py-1 bg-white/90 text-neutral-700 text-xs font-medium rounded-full">
@@ -246,15 +237,6 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-        {event.eventType === "recurring" && (
-          <motion.span
-            animate={{ y: isHovered ? -2 : 0, scale: isHovered ? 1.05 : 1 }}
-            className="absolute top-4 left-4 px-3 py-1 bg-green-500 text-white text-sm font-semibold rounded-full flex items-center gap-1"
-          >
-            <Sparkles className="w-3 h-3" />
-            Recurring
-          </motion.span>
-        )}
         <motion.div
           animate={{ y: isHovered ? -2 : 0 }}
           className="absolute top-4 right-4 flex flex-wrap gap-1 justify-end max-w-[60%]"
@@ -388,6 +370,14 @@ export default function EventsContent({ events, pageSettings }: EventsContentPro
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // The `events` prop contains all active non-expired event documents
+  // regardless of displayAs (see eventsQuery in src/sanity/lib/queries.ts).
+  // Local split below uses the displayAs flag to route into sections:
+  //   "event"   → Upcoming Events
+  //   "program" → Weekly Programs
+  //   "both"    → both sections
+  // Items missing displayAs (legacy data) fall back to eventType-based
+  // routing so nothing disappears from the page.
   const filteredEvents = events.filter((event) => {
     const matchesCategory = selectedCategory === "All" ||
       (event.categories && event.categories.includes(selectedCategory));
@@ -399,8 +389,16 @@ export default function EventsContent({ events, pageSettings }: EventsContentPro
     return matchesCategory && matchesSearch;
   });
 
-  const filteredUpcomingEvents = filteredEvents.filter((e) => e.eventType !== "recurring");
-  const filteredRecurringEvents = filteredEvents.filter((e) => e.eventType === "recurring");
+  const filteredUpcomingEvents = filteredEvents.filter((e) => {
+    if (e.displayAs === "event" || e.displayAs === "both") return true;
+    if (!e.displayAs) return e.eventType !== "recurring";
+    return false;
+  });
+  const filteredRecurringEvents = filteredEvents.filter((e) => {
+    if (e.displayAs === "program" || e.displayAs === "both") return true;
+    if (!e.displayAs) return e.eventType === "recurring";
+    return false;
+  });
 
   return (
     <>

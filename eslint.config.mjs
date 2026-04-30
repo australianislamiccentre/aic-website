@@ -23,6 +23,11 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Generated / non-project files:
     "docs/**",
+    // Claude Code tooling — git worktrees nest a full repo (with its own
+    // .next/ build artifacts) under here. Without this ignore, ESLint
+    // recurses into nested .next/dev/ files because the top-level
+    // ".next/**" pattern only matches the project root.
+    ".claude/**",
   ]),
 ]);
 

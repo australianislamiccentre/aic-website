@@ -62,4 +62,55 @@ describe("Event Schema", () => {
     expect(values).toContain("multi");
     expect(values).toContain("recurring");
   });
+
+  it("has displayAs field with program, event, and both options", () => {
+    const displayAs = getField("displayAs");
+    expect(displayAs).toBeDefined();
+    const values = displayAs?.options?.list?.map((o) => o.value);
+    expect(values).toEqual(["program", "event", "both"]);
+  });
+
+  it("does NOT mark displayAs as required in phase 1 (migration sequencing)", () => {
+    const displayAs = getField("displayAs");
+    // Phase 1 ships without Rule.required() so unmigrated docs don't fail
+    // validation in Studio. Phase 3 (separate follow-up commit) tightens it.
+    expect(displayAs?.validation).toBeUndefined();
+  });
+
+  // The preview prepare() function lives inside the schema export, not in fields.
+  // We access it via the default-exported schema object.
+  it("preview prepare() prefixes subtitle with display badge", () => {
+    const prepare = (schema as unknown as {
+      preview: {
+        prepare: (selection: Record<string, unknown>) => { title: string; subtitle: string };
+      };
+    }).preview.prepare;
+
+    const program = prepare({
+      title: "Quran Class",
+      eventType: "recurring",
+      recurringDay: "Mondays",
+      displayAs: "program",
+      active: true,
+    });
+    expect(program.subtitle).toContain("📋 Program");
+
+    const event = prepare({
+      title: "Eid Dinner",
+      eventType: "single",
+      date: "2026-05-20",
+      displayAs: "event",
+      active: true,
+    });
+    expect(event.subtitle).toContain("📅 Event");
+
+    const both = prepare({
+      title: "Open Day",
+      eventType: "single",
+      date: "2026-06-01",
+      displayAs: "both",
+      active: true,
+    });
+    expect(both.subtitle).toContain("⚡ Program & Event");
+  });
 });

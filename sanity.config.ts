@@ -84,7 +84,9 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
 
               S.divider(),
 
-              // Events folder
+              // Events folder — single parent for all event documents.
+              // Live on Website is split into Events vs Programs by displayAs;
+              // Expired and Inactive are unsplit (show all displayAs values).
               S.listItem()
                 .title("Events")
                 .child(
@@ -96,21 +98,44 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                       S.listItem()
                         .title("Live on Website")
                         .child(
-                          S.documentList()
-                            .title("Live Events")
-                            .filter(
-                              `_type == "event" && active == true && (
-                                (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
-                                date >= string::split(string(now()), "T")[0] ||
-                                endDate >= string::split(string(now()), "T")[0]
-                              )`
-                            )
+                          S.list()
+                            .title("Live on Website")
+                            .items([
+                              S.listItem()
+                                .title("Events")
+                                .child(
+                                  S.documentList()
+                                    .title("Live Events")
+                                    .filter(
+                                      `_type == "event" && active == true && displayAs in ["event", "both"] && (
+                                        (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
+                                        date >= string::split(string(now()), "T")[0] ||
+                                        endDate >= string::split(string(now()), "T")[0]
+                                      )`
+                                    )
+                                    .initialValueTemplates([S.initialValueTemplateItem("event-as-event")])
+                                ),
+                              S.listItem()
+                                .title("Programs")
+                                .child(
+                                  S.documentList()
+                                    .title("Live Programs")
+                                    .filter(
+                                      `_type == "event" && active == true && displayAs in ["program", "both"] && (
+                                        recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0] ||
+                                        date >= string::split(string(now()), "T")[0] ||
+                                        endDate >= string::split(string(now()), "T")[0]
+                                      )`
+                                    )
+                                    .initialValueTemplates([S.initialValueTemplateItem("event-as-program")])
+                                ),
+                            ])
                         ),
                       S.listItem()
                         .title("Expired")
                         .child(
                           S.documentList()
-                            .title("Expired Events")
+                            .title("Expired")
                             .filter(
                               `_type == "event" && active == true && !(
                                 (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
@@ -123,7 +148,7 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                         .title("Inactive")
                         .child(
                           S.documentList()
-                            .title("Inactive Events")
+                            .title("Inactive")
                             .filter('_type == "event" && active == false')
                         ),
                     ])
@@ -419,7 +444,24 @@ export default defineConfig({
     inputDateTimeFormat: "dd/MM/yyyy h:mm a",
   },
 
-  schema: { types: schemaTypes },
+  schema: {
+    types: schemaTypes,
+    templates: (prev) => [
+      ...prev,
+      {
+        id: "event-as-program",
+        title: "New Program",
+        schemaType: "event",
+        value: { displayAs: "program", eventType: "recurring", active: true },
+      },
+      {
+        id: "event-as-event",
+        title: "New Event",
+        schemaType: "event",
+        value: { displayAs: "event", eventType: "single", active: true },
+      },
+    ],
+  },
 
   document: {
     // Prevent deletion/duplication of all singleton documents

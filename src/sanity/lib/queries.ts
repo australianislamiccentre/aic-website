@@ -64,10 +64,12 @@ export const eventBySlugQuery = groq`
   }
 `;
 
-// Events - active events only, recurring always show, non-recurring only if not past
-// Also filter recurring events by recurringEndDate if set.
-// `$today` is the Melbourne-local YYYY-MM-DD supplied by the fetch layer — see
-// the header comment for why this is a parameter rather than inline `now()`.
+// Events page — shows all active, non-expired event documents regardless
+// of displayAs. The page splits them locally into "Upcoming Events"
+// (single/multi-day) and "Weekly Programs" (recurring) by eventType, so a
+// document flagged displayAs: "program" still appears in the Weekly
+// Programs section. The displayAs flag only gates homepage tab placement
+// (see featuredEventsQuery and programsQuery).
 export const eventsQuery = groq`
   *[_type == "event" && active != false && (
     (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= $today)) ||
@@ -78,6 +80,7 @@ export const eventsQuery = groq`
     title,
     "slug": slug.current,
     eventType,
+    displayAs,
     date,
     endDate,
     recurringDay,
@@ -99,9 +102,11 @@ export const eventsQuery = groq`
   }
 `;
 
-// Featured events for homepage — only events with featured == true
+// Featured events for homepage — only events with featured == true.
+// Mirrors eventsQuery's displayAs gate so a "program" item never appears
+// on the homepage events strip.
 export const featuredEventsQuery = groq`
-  *[_type == "event" && active != false && featured == true && (
+  *[_type == "event" && active != false && featured == true && displayAs in ["event", "both"] && (
     (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= $today)) ||
     date >= $today ||
     endDate >= $today
@@ -110,6 +115,7 @@ export const featuredEventsQuery = groq`
     title,
     "slug": slug.current,
     eventType,
+    displayAs,
     date,
     endDate,
     recurringDay,
@@ -176,17 +182,17 @@ export const urgentAnnouncementsQuery = groq`
   }
 `;
 
-// Programs - recurring events in Education, Youth, Sports, Women categories
+// Programs - items the admin has explicitly flagged for the Programs section.
+// Homepage strip → keeps featured == true (curated). A future /programs
+// listing page would use a separate query without that requirement.
 export const programsQuery = groq`
-  *[_type == "event" && active != false && featured == true && eventType == "recurring" && (
-    "Education" in categories ||
-    "Youth" in categories ||
-    "Sports" in categories ||
-    "Women" in categories
-  ) && (recurringEndDate == null || recurringEndDate >= $today)] | order(title asc) {
+  *[_type == "event" && active != false && featured == true && displayAs in ["program", "both"] && (
+    recurringEndDate == null || recurringEndDate >= $today
+  )] | order(title asc) {
     _id,
     title,
     "slug": slug.current,
+    displayAs,
     shortDescription,
     description,
     image,

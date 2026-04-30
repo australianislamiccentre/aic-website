@@ -91,6 +91,33 @@ export default defineType({
           return true;
         }),
     }),
+    defineField({
+      name: "displayAs",
+      title: "Display As",
+      type: "string",
+      initialValue: "event",
+      description:
+        'Controls where this item appears on the website. "Program" shows in the homepage Programs section only. "Event" shows on the Events page only. "Both" shows in both places.',
+      options: {
+        list: [
+          {
+            title: "Program — only show in Programs sections (homepage Programs strip)",
+            value: "program",
+          },
+          {
+            title: "Event — only show on the Events page (and homepage Events sections)",
+            value: "event",
+          },
+          {
+            title: "Both — show as a Program and an Event across the site",
+            value: "both",
+          },
+        ],
+        layout: "radio",
+      },
+      // Phase 3 (follow-up commit, after migration runs): tighten with
+      // validation: (Rule) => Rule.required().error("Please select where this should be displayed"),
+    }),
 
     // ── 1. Hero Image (banner at the top of the page) ──
     defineField({
@@ -125,7 +152,7 @@ export default defineType({
       name: "categories",
       title: "Categories",
       type: "array",
-      description: 'Shown as coloured badges on the event page. IMPORTANT: Recurring events with Education, Youth, Sports, or Women categories are automatically treated as Programs and displayed in the "Weekly Programs" section on the Events page and homepage.',
+      description: "Shown as coloured badges on the event page. Use any combination — categories no longer control whether something is treated as a Program (use the 'Display As' field above for that).",
       of: [{ type: "string" }],
       options: {
         list: [
@@ -169,7 +196,7 @@ export default defineType({
       title: "Event Type",
       type: "string",
       initialValue: "single",
-      description: 'How is this event scheduled? To create a PROGRAM (e.g. weekly Quran class), select "Recurring" and choose Education, Youth, Sports, or Women as the category — it will automatically appear in the Programs section on the Events page.',
+      description: 'How is this scheduled? "Single" = one date, "Multi" = date range, "Recurring" = weekly. To control where this appears (Programs section, Events page, or both), use the "Display As" field above — eventType only affects the schedule.',
       options: {
         list: [
           {
@@ -426,19 +453,29 @@ export default defineType({
       endDate: "endDate",
       recurringDay: "recurringDay",
       eventType: "eventType",
+      displayAs: "displayAs",
       active: "active",
       media: "image",
     },
-    prepare({ title, date, endDate, recurringDay, eventType, active, media }) {
-      let subtitle = date || "";
+    prepare({ title, date, endDate, recurringDay, eventType, displayAs, active, media }) {
+      // Display badge — shows admin where this doc appears at a glance.
+      const badge =
+        displayAs === "both"
+          ? "⚡ Program & Event"
+          : displayAs === "program"
+            ? "📋 Program"
+            : "📅 Event";
+
+      let scheduleSummary = (date as string | undefined) || "";
       if (eventType === "recurring") {
-        subtitle = `📋 Program — ${recurringDay || "Recurring"}`;
+        scheduleSummary = (recurringDay as string | undefined) || "Recurring";
       } else if (eventType === "multi" && date && endDate) {
-        subtitle = `${date} → ${endDate}`;
+        scheduleSummary = `${date} → ${endDate}`;
       }
+
       return {
         title: `${title}${active === false ? " (Inactive)" : ""}`,
-        subtitle,
+        subtitle: scheduleSummary ? `${badge} — ${scheduleSummary}` : badge,
         media,
       };
     },
