@@ -176,17 +176,17 @@ export const urgentAnnouncementsQuery = groq`
   }
 `;
 
-// Programs - recurring events in Education, Youth, Sports, Women categories
+// Programs - items the admin has explicitly flagged for the Programs section.
+// Homepage strip → keeps featured == true (curated). A future /programs
+// listing page would use a separate query without that requirement.
 export const programsQuery = groq`
-  *[_type == "event" && active != false && featured == true && eventType == "recurring" && (
-    "Education" in categories ||
-    "Youth" in categories ||
-    "Sports" in categories ||
-    "Women" in categories
-  ) && (recurringEndDate == null || recurringEndDate >= $today)] | order(title asc) {
+  *[_type == "event" && active != false && featured == true && displayAs in ["program", "both"] && (
+    recurringEndDate == null || recurringEndDate >= $today
+  )] | order(title asc) {
     _id,
     title,
     "slug": slug.current,
+    displayAs,
     shortDescription,
     description,
     image,
