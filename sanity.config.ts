@@ -84,7 +84,53 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
 
               S.divider(),
 
-              // Events folder
+              // Programs folder — items where admin chose displayAs in ["program", "both"]
+              S.listItem()
+                .title("Programs")
+                .child(
+                  S.list()
+                    .title("Programs")
+                    .items([
+                      S.listItem()
+                        .title("Live on Website")
+                        .child(
+                          S.documentList()
+                            .title("Live Programs")
+                            .filter(
+                              `_type == "event" && active == true && displayAs in ["program", "both"] && (
+                                recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0] ||
+                                date >= string::split(string(now()), "T")[0] ||
+                                endDate >= string::split(string(now()), "T")[0]
+                              )`
+                            )
+                            .initialValueTemplates([S.initialValueTemplateItem("event-as-program")])
+                        ),
+                      S.listItem()
+                        .title("Expired")
+                        .child(
+                          S.documentList()
+                            .title("Expired Programs")
+                            .filter(
+                              `_type == "event" && active == true && displayAs in ["program", "both"] && !(
+                                recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0] ||
+                                date >= string::split(string(now()), "T")[0] ||
+                                endDate >= string::split(string(now()), "T")[0]
+                              )`
+                            )
+                            .initialValueTemplates([S.initialValueTemplateItem("event-as-program")])
+                        ),
+                      S.listItem()
+                        .title("Inactive")
+                        .child(
+                          S.documentList()
+                            .title("Inactive Programs")
+                            .filter('_type == "event" && active == false && displayAs in ["program", "both"]')
+                            .initialValueTemplates([S.initialValueTemplateItem("event-as-program")])
+                        ),
+                    ])
+                ),
+
+              // Events folder — items where admin chose displayAs in ["event", "both"]
               S.listItem()
                 .title("Events")
                 .child(
@@ -99,12 +145,13 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                           S.documentList()
                             .title("Live Events")
                             .filter(
-                              `_type == "event" && active == true && (
+                              `_type == "event" && active == true && displayAs in ["event", "both"] && (
                                 (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
                                 date >= string::split(string(now()), "T")[0] ||
                                 endDate >= string::split(string(now()), "T")[0]
                               )`
                             )
+                            .initialValueTemplates([S.initialValueTemplateItem("event-as-event")])
                         ),
                       S.listItem()
                         .title("Expired")
@@ -112,19 +159,21 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                           S.documentList()
                             .title("Expired Events")
                             .filter(
-                              `_type == "event" && active == true && !(
+                              `_type == "event" && active == true && displayAs in ["event", "both"] && !(
                                 (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
                                 date >= string::split(string(now()), "T")[0] ||
                                 endDate >= string::split(string(now()), "T")[0]
                               )`
                             )
+                            .initialValueTemplates([S.initialValueTemplateItem("event-as-event")])
                         ),
                       S.listItem()
                         .title("Inactive")
                         .child(
                           S.documentList()
                             .title("Inactive Events")
-                            .filter('_type == "event" && active == false')
+                            .filter('_type == "event" && active == false && displayAs in ["event", "both"]')
+                            .initialValueTemplates([S.initialValueTemplateItem("event-as-event")])
                         ),
                     ])
                 ),
@@ -419,7 +468,24 @@ export default defineConfig({
     inputDateTimeFormat: "dd/MM/yyyy h:mm a",
   },
 
-  schema: { types: schemaTypes },
+  schema: {
+    types: schemaTypes,
+    templates: (prev) => [
+      ...prev,
+      {
+        id: "event-as-program",
+        title: "New Program",
+        schemaType: "event",
+        value: { displayAs: "program", eventType: "recurring", active: true },
+      },
+      {
+        id: "event-as-event",
+        title: "New Event",
+        schemaType: "event",
+        value: { displayAs: "event", eventType: "single", active: true },
+      },
+    ],
+  },
 
   document: {
     // Prevent deletion/duplication of all singleton documents
