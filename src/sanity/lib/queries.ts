@@ -99,9 +99,11 @@ export const eventsQuery = groq`
   }
 `;
 
-// Featured events for homepage — only events with featured == true
+// Featured events for homepage — only events with featured == true.
+// Mirrors eventsQuery's displayAs gate so a "program" item never appears
+// on the homepage events strip.
 export const featuredEventsQuery = groq`
-  *[_type == "event" && active != false && featured == true && (
+  *[_type == "event" && active != false && featured == true && displayAs in ["event", "both"] && (
     (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= $today)) ||
     date >= $today ||
     endDate >= $today
@@ -110,6 +112,7 @@ export const featuredEventsQuery = groq`
     title,
     "slug": slug.current,
     eventType,
+    displayAs,
     date,
     endDate,
     recurringDay,
