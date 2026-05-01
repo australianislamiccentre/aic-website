@@ -32,7 +32,7 @@ export interface SanityEvent {
   startPrayerLabel?: string;
   /** Free-text start time when startTimeMode === "custom", e.g. "TBD", "After dinner". */
   customStartTime?: string;
-  /** Same modes as startTimeMode for the end side. */
+  /** "fixed" = use existing endTime dropdown, "prayer" = relative to prayer, "custom" = free text. Defaults to "fixed". */
   endTimeMode?: "fixed" | "prayer" | "custom";
   /** Selected prayer when endTimeMode === "prayer". */
   endPrayer?: "fajr" | "dhuhr" | "asr" | "maghrib" | "isha";
