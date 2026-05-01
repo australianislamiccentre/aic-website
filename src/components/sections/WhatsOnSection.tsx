@@ -18,7 +18,8 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FadeIn } from "@/components/animations/FadeIn";
-import { SanityService, SanityEvent, SanityProgram, SanityImage } from "@/types/sanity";
+import { SanityService, SanityImage } from "@/types/sanity";
+import type { EventForDisplay } from "@/lib/event-time";
 import { urlFor } from "@/sanity/lib/image";
 import { formatMelbourneDate } from "@/lib/time";
 import Image from "next/image";
@@ -47,8 +48,8 @@ import {
 
 interface WhatsOnSectionProps {
   services?: SanityService[];
-  events?: SanityEvent[];
-  programs?: SanityProgram[];
+  events?: EventForDisplay[];
+  programs?: EventForDisplay[];
 }
 
 // Card size tier — determined by how many categories have content
@@ -131,7 +132,7 @@ function maxItems(size: CardSize): number {
 
 // ─── Card Components ───────────────────────────────────────────────
 
-function EventItem({ event, index, size = "compact" }: { event: SanityEvent; index: number; size?: CardSize }) {
+function EventItem({ event, index, size = "compact" }: { event: EventForDisplay; index: number; size?: CardSize }) {
   const imgDim = size === "expanded" ? 300 : size === "medium" ? 240 : 200;
   const imageUrl = event.image ? getImageUrl(event.image, imgDim, imgDim) : null;
 
@@ -174,10 +175,12 @@ function EventItem({ event, index, size = "compact" }: { event: SanityEvent; ind
                   {event.recurringDay}
                 </span>
               )}
-              {event.time && (
+              {event.resolvedTime.start && (
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3 text-green-500" />
-                  {event.time}
+                  {event.resolvedTime.end
+                    ? `${event.resolvedTime.start} - ${event.resolvedTime.end}`
+                    : event.resolvedTime.start}
                 </span>
               )}
               {size !== "compact" && event.location && (
@@ -195,7 +198,7 @@ function EventItem({ event, index, size = "compact" }: { event: SanityEvent; ind
   );
 }
 
-function ProgramItem({ program, index, size = "compact" }: { program: SanityProgram; index: number; size?: CardSize }) {
+function ProgramItem({ program, index, size = "compact" }: { program: EventForDisplay; index: number; size?: CardSize }) {
   const imgDim = size === "expanded" ? 300 : size === "medium" ? 240 : 200;
   const imageUrl = program.image ? getImageUrl(program.image, imgDim, imgDim) : null;
 
@@ -235,10 +238,12 @@ function ProgramItem({ program, index, size = "compact" }: { program: SanityProg
                   {program.recurringDay}
                 </span>
               )}
-              {program.time && (
+              {program.resolvedTime.start && (
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3 text-teal-500" />
-                  {program.time}
+                  {program.resolvedTime.end
+                    ? `${program.resolvedTime.start} - ${program.resolvedTime.end}`
+                    : program.resolvedTime.start}
                 </span>
               )}
               {size !== "compact" && program.location && (

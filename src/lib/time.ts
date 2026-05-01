@@ -224,3 +224,66 @@ export function formatMelbourneHijri(date: Date = new Date()): string {
   }
 }
 
+/**
+ * Map of plural weekday names (matching the `recurringDay` field values used
+ * across the events schema) to JS day-of-week indices (0 = Sunday … 6 = Saturday).
+ */
+const DAY_NAME_TO_INDEX: Record<string, number> = {
+  Sundays: 0,
+  Mondays: 1,
+  Tuesdays: 2,
+  Wednesdays: 3,
+  Thursdays: 4,
+  Fridays: 5,
+  Saturdays: 6,
+};
+
+/**
+ * Given a plural weekday name (e.g. "Fridays"), returns a `Date` anchored to
+ * **noon Melbourne** on the next calendar day matching that weekday.
+ *
+ * Today is returned if today already matches the requested weekday. Unknown
+ * day names fall back to today (defensive — should not happen for validated
+ * Sanity data).
+ *
+ * Noon-anchoring is critical: passing a date created at UTC midnight to
+ * `getPrayerTimesForDate()` can read the wrong day from the prayer-times
+ * table when Melbourne is +10/+11 ahead of UTC. Noon Melbourne is always
+ * unambiguously on the right day no matter which side of UTC midnight
+ * the absolute instant lands on.
+ *
+ * @example
+ *   // Today is Thursday 2026-04-30 — returns Friday 2026-05-01 at noon Melbourne
+ *   getNextMelbourneOccurrence("Fridays");
+ */
+export function getNextMelbourneOccurrence(dayName: string): Date {
+  const targetIndex = DAY_NAME_TO_INDEX[dayName];
+  // Get today's Melbourne wall-clock components
+  const now = new Date();
+  const todayParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: MELBOURNE_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short",
+  }).formatToParts(now);
+  const year = Number(todayParts.find((p) => p.type === "year")?.value);
+  const month = Number(todayParts.find((p) => p.type === "month")?.value);
+  const day = Number(todayParts.find((p) => p.type === "day")?.value);
+  const weekdayShort = todayParts.find((p) => p.type === "weekday")?.value ?? "";
+  const todayIndex =
+    ({ Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 } as Record<string, number>)[
+      weekdayShort
+    ] ?? 0;
+
+  if (targetIndex === undefined) {
+    // Defensive: unknown day name → return today at noon Melbourne
+    return melbourneInstant(year, month, day, 12, 0);
+  }
+
+  const offset = (targetIndex - todayIndex + 7) % 7;
+  // Add `offset` days to today's Melbourne calendar date, anchoring at noon
+  const targetUtcMs = melbourneInstant(year, month, day, 12, 0).getTime() + offset * 86_400_000;
+  return new Date(targetUtcMs);
+}
+

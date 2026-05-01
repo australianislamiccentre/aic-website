@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, userEvent } from "@/test/test-utils";
 import { WhatsOnSection } from "./WhatsOnSection";
-import { SanityService, SanityEvent, SanityProgram } from "@/types/sanity";
+import { SanityService } from "@/types/sanity";
+import type { EventForDisplay } from "@/lib/event-time";
 
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
@@ -48,7 +49,7 @@ function makeService(overrides: Partial<SanityService> = {}): SanityService {
   };
 }
 
-function makeEvent(overrides: Partial<SanityEvent> = {}): SanityEvent {
+function makeEvent(overrides: Partial<EventForDisplay> = {}): EventForDisplay {
   return {
     _id: "evt-1",
     title: "Test Event",
@@ -59,11 +60,12 @@ function makeEvent(overrides: Partial<SanityEvent> = {}): SanityEvent {
     date: "2026-03-01",
     time: "10:00 AM",
     location: "AIC",
+    resolvedTime: { start: "10:00 AM", end: "" },
     ...overrides,
   };
 }
 
-function makeProgram(overrides: Partial<SanityProgram> = {}): SanityProgram {
+function makeProgram(overrides: Partial<EventForDisplay> = {}): EventForDisplay {
   return {
     _id: "prog-1",
     title: "Test Program",
@@ -74,6 +76,7 @@ function makeProgram(overrides: Partial<SanityProgram> = {}): SanityProgram {
     date: "2026-03-01",
     time: "2:00 PM",
     location: "AIC Hall",
+    resolvedTime: { start: "2:00 PM", end: "" },
     ...overrides,
   };
 }
@@ -263,6 +266,54 @@ describe("WhatsOnSection", () => {
       if (servicesTab) {
         await user.click(servicesTab);
       }
+    });
+  });
+
+  describe("Resolved time rendering", () => {
+    it("renders resolved prayer time on EventItem", () => {
+      const events = [makeEvent({
+        _id: "evt-anchored",
+        title: "Anchored",
+        slug: "anchored",
+        resolvedTime: { start: "After Isha (7:43 PM)", end: "" },
+      })];
+      render(<WhatsOnSection events={events} programs={[]} services={[]} />);
+      // Component renders items in both mobile and desktop views — at least one match expected
+      expect(screen.getAllByText("After Isha (7:43 PM)").length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("renders start - end when both resolvedTime sides are set on EventItem", () => {
+      const events = [makeEvent({
+        _id: "evt-range",
+        title: "Range Event",
+        slug: "range-event",
+        resolvedTime: { start: "After Isha (7:43 PM)", end: "11:00 PM" },
+      })];
+      render(<WhatsOnSection events={events} programs={[]} services={[]} />);
+      expect(screen.getAllByText("After Isha (7:43 PM) - 11:00 PM").length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("renders resolved prayer time on ProgramItem", () => {
+      const programs = [makeProgram({
+        _id: "prog-anchored",
+        title: "Anchored Program",
+        slug: "anchored-program",
+        resolvedTime: { start: "After Isha (7:43 PM)", end: "" },
+      })];
+      render(<WhatsOnSection events={[]} programs={programs} services={[]} />);
+      expect(screen.getAllByText("After Isha (7:43 PM)").length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("renders no time span when resolvedTime.start is empty", () => {
+      const events = [makeEvent({
+        _id: "evt-notime",
+        title: "No Time Event",
+        slug: "no-time",
+        resolvedTime: { start: "", end: "" },
+      })];
+      render(<WhatsOnSection events={events} programs={[]} services={[]} />);
+      // No time text should appear — check "10:00 AM" (the factory default) is absent since we overrode resolvedTime
+      expect(screen.queryByText("10:00 AM")).not.toBeInTheDocument();
     });
   });
 });

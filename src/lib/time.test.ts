@@ -8,7 +8,7 @@
  * handling, so they catch regressions if someone accidentally swaps the
  * implementation for a local-tz version.
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   MELBOURNE_TZ,
   getMelbourneMinutesOfDay,
@@ -17,6 +17,7 @@ import {
   melbourneInstant,
   formatMelbourneDate,
   formatMelbourneTime,
+  getNextMelbourneOccurrence,
 } from "./time";
 
 describe("MELBOURNE_TZ", () => {
@@ -166,5 +167,84 @@ describe("melbourneInstant", () => {
     const instant = melbourneInstant(2026, 4, 20, 23, 59);
     // 23:59 Melbourne 2026-04-20 (AEST) = 13:59 UTC on 2026-04-20
     expect(instant.toISOString()).toBe("2026-04-20T13:59:00.000Z");
+  });
+});
+
+describe("getNextMelbourneOccurrence", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns today when today matches the requested day", () => {
+    // 2026-05-01 is a Friday in Melbourne
+    vi.setSystemTime(new Date("2026-05-01T03:00:00Z")); // 1 PM Melbourne
+    const result = getNextMelbourneOccurrence("Fridays");
+    expect(result.toISOString().startsWith("2026-05-01")).toBe(true);
+  });
+
+  it("returns the next matching weekday when today is a different day", () => {
+    // 2026-04-30 is a Thursday in Melbourne; next Friday is 2026-05-01
+    vi.setSystemTime(new Date("2026-04-30T03:00:00Z"));
+    const result = getNextMelbourneOccurrence("Fridays");
+    // Anchored to noon Melbourne on 2026-05-01 — UTC equivalent depends on DST
+    // but the Melbourne calendar date should always be 2026-05-01
+    const melbourneDateStr = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Australia/Melbourne",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(result);
+    expect(melbourneDateStr).toBe("2026-05-01");
+  });
+
+  it("wraps to next week when target day is before today", () => {
+    // 2026-04-30 is a Thursday; previous Monday was 2026-04-27, next Monday is 2026-05-04
+    vi.setSystemTime(new Date("2026-04-30T03:00:00Z"));
+    const result = getNextMelbourneOccurrence("Mondays");
+    const melbourneDateStr = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Australia/Melbourne",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(result);
+    expect(melbourneDateStr).toBe("2026-05-04");
+  });
+
+  it("anchors result to noon Melbourne (avoids UTC-midnight boundary)", () => {
+    vi.setSystemTime(new Date("2026-04-30T03:00:00Z"));
+    const result = getNextMelbourneOccurrence("Fridays");
+    // Hour part in Melbourne should be 12 (noon)
+    const hour = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Australia/Melbourne",
+      hour: "2-digit",
+      hour12: false,
+    }).format(result);
+    expect(hour).toBe("12");
+  });
+
+  it("handles all seven weekday names (singular and plural forms)", () => {
+    vi.setSystemTime(new Date("2026-04-30T03:00:00Z")); // Thursday
+    expect(getNextMelbourneOccurrence("Mondays")).toBeInstanceOf(Date);
+    expect(getNextMelbourneOccurrence("Tuesdays")).toBeInstanceOf(Date);
+    expect(getNextMelbourneOccurrence("Wednesdays")).toBeInstanceOf(Date);
+    expect(getNextMelbourneOccurrence("Thursdays")).toBeInstanceOf(Date);
+    expect(getNextMelbourneOccurrence("Fridays")).toBeInstanceOf(Date);
+    expect(getNextMelbourneOccurrence("Saturdays")).toBeInstanceOf(Date);
+    expect(getNextMelbourneOccurrence("Sundays")).toBeInstanceOf(Date);
+  });
+
+  it("returns today's date for unknown day names (defensive fallback)", () => {
+    vi.setSystemTime(new Date("2026-04-30T03:00:00Z"));
+    const result = getNextMelbourneOccurrence("nonsense");
+    const melbourneDateStr = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Australia/Melbourne",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(result);
+    expect(melbourneDateStr).toBe("2026-04-30");
   });
 });

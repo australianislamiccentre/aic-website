@@ -26,6 +26,7 @@ import {
   getTeamMembersByCategory,
   getFeaturedGalleryImages,
   getHomepageSettings,
+  getPrayerSettings,
 } from "@/sanity/lib/fetch";
 import type { LatestUpdateItem } from "@/sanity/lib/fetch";
 import {
@@ -36,7 +37,9 @@ import {
   SanityTeamMember,
   SanityGalleryImage,
   SanityHomepageSettings,
+  SanityPrayerSettings,
 } from "@/types/sanity";
+import { formatEventTime } from "@/lib/event-time";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -53,6 +56,7 @@ export default async function HomePage() {
     getTeamMembersByCategory("imam"),
     getFeaturedGalleryImages(),
     getHomepageSettings(),
+    getPrayerSettings(),
   ]);
 
   const allEvents = results[0].status === "fulfilled" ? (results[0].value as SanityEvent[]) : [];
@@ -63,8 +67,18 @@ export default async function HomePage() {
   const imams = results[5].status === "fulfilled" ? (results[5].value as SanityTeamMember[]) : [];
   const galleryImages = results[6].status === "fulfilled" ? (results[6].value as SanityGalleryImage[]) : [];
   const homepageSettings = results[7].status === "fulfilled" ? (results[7].value as SanityHomepageSettings | null) : null;
+  const prayerSettings = results[8].status === "fulfilled" ? (results[8].value as SanityPrayerSettings | null) : null;
 
   const urgentAnnouncement = urgentAnnouncements.length > 0 ? urgentAnnouncements[0] : null;
+
+  const eventsWithTime = allEvents.map((event) => ({
+    ...event,
+    resolvedTime: formatEventTime(event, prayerSettings),
+  }));
+  const programsWithTime = programs.map((program) => ({
+    ...program,
+    resolvedTime: formatEventTime(program, prayerSettings),
+  }));
 
   return (
     <>
@@ -85,8 +99,8 @@ export default async function HomePage() {
       />
 
       <WhatsOnSection
-        events={allEvents}
-        programs={programs}
+        events={eventsWithTime}
+        programs={programsWithTime}
         services={services}
       />
 

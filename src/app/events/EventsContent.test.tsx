@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, userEvent } from "@/test/test-utils";
 import EventsContent from "./EventsContent";
-import { SanityEvent } from "@/types/sanity";
+import type { EventForDisplay } from "./EventsContent";
 
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
@@ -64,7 +64,7 @@ vi.mock("@/components/ui/Breadcrumb", () => ({
   Breadcrumb: () => <nav aria-label="Breadcrumb">Breadcrumb</nav>,
 }));
 
-function makeEvent(overrides: Partial<SanityEvent> = {}): SanityEvent {
+function makeEvent(overrides: Partial<EventForDisplay> = {}): EventForDisplay {
   return {
     _id: "evt-1",
     title: "Test Event",
@@ -77,6 +77,7 @@ function makeEvent(overrides: Partial<SanityEvent> = {}): SanityEvent {
     location: "Main Hall",
     eventType: "single",
     displayAs: "event",
+    resolvedTime: { start: overrides.resolvedTime?.start ?? "10:00 AM", end: overrides.resolvedTime?.end ?? "" },
     ...overrides,
   };
 }
@@ -320,5 +321,50 @@ describe("EventsContent", () => {
 
     // Section heading should not appear when there are no recurring items
     expect(screen.queryByRole("heading", { name: "Weekly Programs" })).not.toBeInTheDocument();
+  });
+
+  it("renders the resolved time string from resolvedTime, not raw time field", () => {
+    const events: EventForDisplay[] = [
+      {
+        _id: "p1",
+        title: "Prayer Event",
+        slug: "prayer-event",
+        description: "x",
+        categories: ["Community"],
+        time: "",
+        location: "Main Hall",
+        eventType: "single",
+        displayAs: "event",
+        date: "2026-05-01",
+        startTimeMode: "prayer",
+        startPrayer: "isha",
+        startPrayerLabel: "After",
+        resolvedTime: { start: "After Isha (7:43 PM)", end: "" },
+      },
+    ];
+    render(<EventsContent events={events} />);
+    expect(screen.getByText("After Isha (7:43 PM)")).toBeInTheDocument();
+  });
+
+  it("renders custom typed time verbatim", () => {
+    const events: EventForDisplay[] = [
+      {
+        _id: "c1",
+        title: "Custom Event",
+        slug: "custom-event",
+        description: "x",
+        categories: ["Community"],
+        time: "",
+        location: "Main Hall",
+        eventType: "single",
+        displayAs: "event",
+        date: "2026-05-01",
+        startTimeMode: "custom",
+        customStartTime: "TBD",
+        resolvedTime: { start: "TBD", end: "" },
+      },
+    ];
+    render(<EventsContent events={events} />);
+    expect(screen.getByText("TBD")).toBeInTheDocument();
   });
 });

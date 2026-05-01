@@ -1,10 +1,12 @@
 import { describe, it, expect } from "vitest";
 import schema from "./event";
 
-// Sanity schema field with optional readOnly, validation, and options
+// Sanity schema field with optional readOnly, validation, options, hidden, and initialValue
 interface SchemaField {
   name: string;
   readOnly?: unknown;
+  hidden?: unknown;
+  initialValue?: unknown;
   options?: {
     list?: Array<{ title: string; value: string }>;
   };
@@ -112,5 +114,48 @@ describe("Event Schema", () => {
       active: true,
     });
     expect(both.subtitle).toContain("⚡ Program & Event");
+  });
+});
+
+describe("event schema — prayer-relative time fields", () => {
+  it("exposes startTimeMode with default 'fixed'", () => {
+    const field = getField("startTimeMode");
+    expect(field).toBeDefined();
+    expect(field?.initialValue).toBe("fixed");
+  });
+
+  it("exposes startPrayerLabel with default 'After'", () => {
+    expect(getField("startPrayerLabel")?.initialValue).toBe("After");
+  });
+
+  it("exposes endTimeMode with default 'fixed'", () => {
+    expect(getField("endTimeMode")?.initialValue).toBe("fixed");
+  });
+
+  it("exposes endPrayerLabel with default 'Until'", () => {
+    expect(getField("endPrayerLabel")?.initialValue).toBe("Until");
+  });
+
+  it("hides startPrayer when startTimeMode is not 'prayer'", () => {
+    const field = getField("startPrayer");
+    const hidden = field?.hidden as ((arg: { document: unknown }) => boolean) | undefined;
+    expect(hidden?.({ document: { startTimeMode: "fixed" } })).toBe(true);
+    expect(hidden?.({ document: { startTimeMode: "prayer" } })).toBe(false);
+    expect(hidden?.({ document: { startTimeMode: "custom" } })).toBe(true);
+  });
+
+  it("hides customStartTime when startTimeMode is not 'custom'", () => {
+    const field = getField("customStartTime");
+    const hidden = field?.hidden as ((arg: { document: unknown }) => boolean) | undefined;
+    expect(hidden?.({ document: { startTimeMode: "fixed" } })).toBe(true);
+    expect(hidden?.({ document: { startTimeMode: "custom" } })).toBe(false);
+  });
+
+  it("hides existing time field when startTimeMode is prayer or custom", () => {
+    const field = getField("time");
+    const hidden = field?.hidden as ((arg: { document: unknown }) => boolean) | undefined;
+    expect(hidden?.({ document: { startTimeMode: "fixed" } })).toBe(false);
+    expect(hidden?.({ document: { startTimeMode: "prayer" } })).toBe(true);
+    expect(hidden?.({ document: { startTimeMode: "custom" } })).toBe(true);
   });
 });
