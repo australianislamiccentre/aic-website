@@ -293,6 +293,78 @@ export default defineType({
       options: {
         list: timeOptions,
       },
+      hidden: ({ document }) => {
+        const mode = (document as { startTimeMode?: string } | undefined)?.startTimeMode;
+        return mode === "prayer" || mode === "custom";
+      },
+    }),
+    // ── Start time mode (fixed dropdown / prayer-relative / custom text) ──
+    defineField({
+      name: "startTimeMode",
+      title: "Start Time Mode",
+      type: "string",
+      initialValue: "fixed",
+      description: "How to express start time. Switching modes hides the other inputs.",
+      options: {
+        list: [
+          { title: "Fixed time (use the dropdown)", value: "fixed" },
+          { title: "After / Before / Around a prayer", value: "prayer" },
+          { title: "Custom text (e.g. TBD, After dinner)", value: "custom" },
+        ],
+        layout: "radio",
+      },
+    }),
+    defineField({
+      name: "startPrayer",
+      title: "Start Prayer",
+      type: "string",
+      description: "Which prayer this event starts relative to.",
+      options: {
+        list: [
+          { title: "Fajr", value: "fajr" },
+          { title: "Dhuhr", value: "dhuhr" },
+          { title: "Asr", value: "asr" },
+          { title: "Maghrib", value: "maghrib" },
+          { title: "Isha", value: "isha" },
+        ],
+        layout: "radio",
+      },
+      hidden: ({ document }) =>
+        (document as { startTimeMode?: string } | undefined)?.startTimeMode !== "prayer",
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const doc = context.document as { startTimeMode?: string } | undefined;
+          if (doc?.startTimeMode === "prayer" && !value) {
+            return "Pick a prayer when start mode is set to prayer";
+          }
+          return true;
+        }),
+    }),
+    defineField({
+      name: "startPrayerLabel",
+      title: "Start Label",
+      type: "string",
+      initialValue: "After",
+      description: 'Word(s) before the prayer name on display. Default: "After".',
+      hidden: ({ document }) =>
+        (document as { startTimeMode?: string } | undefined)?.startTimeMode !== "prayer",
+      validation: (Rule) => Rule.max(20),
+    }),
+    defineField({
+      name: "customStartTime",
+      title: "Custom Start Time",
+      type: "string",
+      description: 'Free text shown verbatim, e.g. "TBD", "After dinner".',
+      hidden: ({ document }) =>
+        (document as { startTimeMode?: string } | undefined)?.startTimeMode !== "custom",
+      validation: (Rule) =>
+        Rule.max(80).custom((value, context) => {
+          const doc = context.document as { startTimeMode?: string } | undefined;
+          if (doc?.startTimeMode === "custom" && !value?.toString().trim()) {
+            return "Type the custom start time text";
+          }
+          return true;
+        }),
     }),
     defineField({
       name: "endTime",
@@ -302,15 +374,90 @@ export default defineType({
       options: {
         list: timeOptions,
       },
+      hidden: ({ document }) => {
+        const mode = (document as { endTimeMode?: string } | undefined)?.endTimeMode;
+        return mode === "prayer" || mode === "custom";
+      },
       validation: (Rule) =>
         Rule.custom((endTime, context) => {
-          const doc = context.document as { time?: string } | undefined;
+          const doc = context.document as { time?: string; endTimeMode?: string; startTimeMode?: string } | undefined;
+          // Skip the start-vs-end check unless both modes are fixed
+          if (doc?.endTimeMode && doc.endTimeMode !== "fixed") return true;
+          if (doc?.startTimeMode && doc.startTimeMode !== "fixed") return true;
           if (!endTime || !doc?.time) return true;
           const timeToIndex = (t: string) => timeOptions.findIndex((o) => o.value === t);
           const startIdx = timeToIndex(doc.time);
           const endIdx = timeToIndex(endTime);
           if (startIdx >= 0 && endIdx >= 0 && endIdx <= startIdx) {
             return "End time must be after start time";
+          }
+          return true;
+        }),
+    }),
+    // ── End time mode (fixed dropdown / prayer-relative / custom text) ──
+    defineField({
+      name: "endTimeMode",
+      title: "End Time Mode",
+      type: "string",
+      initialValue: "fixed",
+      description: "How to express end time.",
+      options: {
+        list: [
+          { title: "Fixed time (use the dropdown)", value: "fixed" },
+          { title: "Until / Before a prayer", value: "prayer" },
+          { title: "Custom text (e.g. Late night)", value: "custom" },
+        ],
+        layout: "radio",
+      },
+    }),
+    defineField({
+      name: "endPrayer",
+      title: "End Prayer",
+      type: "string",
+      description: "Which prayer this event ends relative to.",
+      options: {
+        list: [
+          { title: "Fajr", value: "fajr" },
+          { title: "Dhuhr", value: "dhuhr" },
+          { title: "Asr", value: "asr" },
+          { title: "Maghrib", value: "maghrib" },
+          { title: "Isha", value: "isha" },
+        ],
+        layout: "radio",
+      },
+      hidden: ({ document }) =>
+        (document as { endTimeMode?: string } | undefined)?.endTimeMode !== "prayer",
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const doc = context.document as { endTimeMode?: string } | undefined;
+          if (doc?.endTimeMode === "prayer" && !value) {
+            return "Pick a prayer when end mode is set to prayer";
+          }
+          return true;
+        }),
+    }),
+    defineField({
+      name: "endPrayerLabel",
+      title: "End Label",
+      type: "string",
+      initialValue: "Until",
+      description: 'Word(s) before the prayer name on display. Default: "Until".',
+      hidden: ({ document }) =>
+        (document as { endTimeMode?: string } | undefined)?.endTimeMode !== "prayer",
+      validation: (Rule) => Rule.max(20),
+    }),
+    defineField({
+      name: "customEndTime",
+      title: "Custom End Time",
+      type: "string",
+      description: 'Free text shown verbatim.',
+      hidden: ({ document }) =>
+        (document as { endTimeMode?: string } | undefined)?.endTimeMode !== "custom",
+      validation: (Rule) =>
+        Rule.max(80).custom((value, context) => {
+          const doc = context.document as { endTimeMode?: string } | undefined;
+          if (doc?.endTimeMode === "custom" && !value?.toString().trim()) {
+            return "Type the custom end time text";
           }
           return true;
         }),
