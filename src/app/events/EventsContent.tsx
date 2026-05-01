@@ -19,7 +19,6 @@ import { formatMelbourneDate } from "@/lib/time";
 import { urlFor } from "@/sanity/lib/image";
 import { SanityImage, SanitySimplePageSettings } from "@/types/sanity";
 import type { EventForDisplay } from "@/lib/event-time";
-export type { EventForDisplay };
 import {
   Calendar,
   Clock,
@@ -33,6 +32,9 @@ import {
   Users,
   X,
 } from "lucide-react";
+
+// Re-export for convenience so consumers can import from this module
+export type { EventForDisplay };
 
 // Helper to get image URL from Sanity or fallback to static path
 function getImageUrl(image: SanityImage | string | undefined): string {

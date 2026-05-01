@@ -77,7 +77,7 @@ function makeEvent(overrides: Partial<EventForDisplay> = {}): EventForDisplay {
     location: "Main Hall",
     eventType: "single",
     displayAs: "event",
-    resolvedTime: { start: overrides.time ?? "10:00 AM", end: overrides.endTime ?? "" },
+    resolvedTime: { start: overrides.resolvedTime?.start ?? "10:00 AM", end: overrides.resolvedTime?.end ?? "" },
     ...overrides,
   };
 }
