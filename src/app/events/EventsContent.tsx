@@ -17,7 +17,9 @@ import { BreadcrumbLight } from "@/components/ui/Breadcrumb";
 import { formatDate } from "@/lib/utils";
 import { formatMelbourneDate } from "@/lib/time";
 import { urlFor } from "@/sanity/lib/image";
-import { SanityEvent, SanityImage, SanitySimplePageSettings } from "@/types/sanity";
+import { SanityImage, SanitySimplePageSettings } from "@/types/sanity";
+import type { EventForDisplay } from "@/lib/event-time";
+export type { EventForDisplay };
 import {
   Calendar,
   Clock,
@@ -41,7 +43,7 @@ function getImageUrl(image: SanityImage | string | undefined): string {
 
 // Interactive Event Card with hover reveal
 interface EventCardProps {
-  event: SanityEvent;
+  event: EventForDisplay;
   viewMode: "grid" | "list";
   index: number;
 }
@@ -54,7 +56,7 @@ function isValidDate(dateStr: string | undefined): boolean {
 }
 
 // Helper to format display date (handles multi-day events)
-function getDisplayDate(event: SanityEvent): string {
+function getDisplayDate(event: EventForDisplay): string {
   if (event.eventType === "recurring") {
     return event.recurringDay || event.date || "";
   }
@@ -68,17 +70,15 @@ function getDisplayDate(event: SanityEvent): string {
   return formatDate(event.date);
 }
 
-// Helper to format time display (handles end time)
-function getDisplayTime(event: SanityEvent): string {
-  if (!event.time) return "";
-  if (event.endTime) {
-    return `${event.time} - ${event.endTime}`;
-  }
-  return event.time;
+// Helper to format time display from resolved time strings
+function getDisplayTime(event: EventForDisplay): string {
+  const { start, end } = event.resolvedTime;
+  if (start && end) return `${start} - ${end}`;
+  return start || end;
 }
 
 // Helper to get card description (short description or truncated full description)
-function getCardDescription(event: SanityEvent): string {
+function getCardDescription(event: EventForDisplay): string {
   if (event.shortDescription) {
     return event.shortDescription;
   }
@@ -361,7 +361,7 @@ const categories = [
 ];
 
 interface EventsContentProps {
-  events: SanityEvent[];
+  events: EventForDisplay[];
   pageSettings?: SanitySimplePageSettings | null;
 }
 

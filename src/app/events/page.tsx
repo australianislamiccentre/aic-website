@@ -1,17 +1,17 @@
 /**
  * Events Listing Page
  *
- * Server component that fetches all events from Sanity and passes them
- * to the EventsContent client component for filtering, sorting, and
- * display in grid or list view.
+ * Server component that fetches events + prayer settings, resolves time
+ * display strings, and passes augmented data to the client component.
  *
  * @route /events
  * @module app/events/page
  */
 import type { Metadata } from "next";
-import { getEvents, getEventsPageSettings } from "@/sanity/lib/fetch";
-import { SanityEvent } from "@/types/sanity";
-import EventsContent from "./EventsContent";
+import { getEvents, getEventsPageSettings, getPrayerSettings } from "@/sanity/lib/fetch";
+import { formatEventTime } from "@/lib/event-time";
+import type { SanityEvent } from "@/types/sanity";
+import EventsContent, { type EventForDisplay } from "./EventsContent";
 
 export const revalidate = 120;
 
@@ -25,10 +25,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function EventsPage() {
-  const [events, settings] = await Promise.all([
+  const [events, settings, prayerSettings] = await Promise.all([
     getEvents() as Promise<SanityEvent[]>,
     getEventsPageSettings(),
+    getPrayerSettings(),
   ]);
 
-  return <EventsContent events={events} pageSettings={settings} />;
+  const eventsForDisplay: EventForDisplay[] = events.map((event) => ({
+    ...event,
+    resolvedTime: formatEventTime(event, prayerSettings),
+  }));
+
+  return <EventsContent events={eventsForDisplay} pageSettings={settings} />;
 }
