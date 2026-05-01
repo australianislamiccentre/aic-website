@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { formatEventTime } from "./event-time";
-import type { SanityEvent, SanityPrayerSettings } from "@/types/sanity";
+import type { SanityEvent } from "@/types/sanity";
 
 function makeEvent(overrides: Partial<SanityEvent> = {}): SanityEvent {
   return {
@@ -134,7 +134,8 @@ describe("formatEventTime", () => {
         startPrayerLabel: "After",
       });
       const result = formatEventTime(event, null);
-      expect(result.start).toMatch(/^After Isha \(\d{1,2}:\d{2} (AM|PM)\)$/);
+      // Next Friday is 2026-05-01; May 1 Isha adhan = 6:47 PM (table index 120)
+      expect(result.start).toBe("After Isha (6:47 PM)");
     });
   });
 
@@ -190,6 +191,17 @@ describe("formatEventTime", () => {
       });
       const result = formatEventTime(event, null);
       expect(result.start).toMatch(/^After Isha /);
+    });
+
+    it("returns empty string when startPrayer is an invalid value (e.g. 'sunrise')", () => {
+      const event = makeEvent({
+        date: "2026-05-01",
+        startTimeMode: "prayer",
+        // Cast through unknown to bypass TS — defensive runtime guard for stale data
+        startPrayer: "sunrise" as unknown as "isha",
+      });
+      const result = formatEventTime(event, null);
+      expect(result.start).toBe("");
     });
   });
 
