@@ -24,6 +24,22 @@ export interface SanityEvent {
   recurringEndDate?: string;
   time: string;
   endTime?: string;
+  /** "fixed" = use existing time dropdown, "prayer" = relative to prayer, "custom" = free text. Defaults to "fixed". */
+  startTimeMode?: "fixed" | "prayer" | "custom";
+  /** Selected prayer when startTimeMode === "prayer". */
+  startPrayer?: "fajr" | "dhuhr" | "asr" | "maghrib" | "isha";
+  /** Editable label preceding the prayer name on display, e.g. "After", "Before". Default "After". */
+  startPrayerLabel?: string;
+  /** Free-text start time when startTimeMode === "custom", e.g. "TBD", "After dinner". */
+  customStartTime?: string;
+  /** Same modes as startTimeMode for the end side. */
+  endTimeMode?: "fixed" | "prayer" | "custom";
+  /** Selected prayer when endTimeMode === "prayer". */
+  endPrayer?: "fajr" | "dhuhr" | "asr" | "maghrib" | "isha";
+  /** Editable label preceding the prayer name. Default "Until". */
+  endPrayerLabel?: string;
+  /** Free-text end time when endTimeMode === "custom". */
+  customEndTime?: string;
   location: string;
   locationDetails?: string;
   categories: string[];
