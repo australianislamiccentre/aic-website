@@ -285,6 +285,23 @@ export default defineType({
       description: "Optional — leave blank if this event repeats indefinitely",
       hidden: ({ document }) => document?.eventType !== "recurring",
     }),
+    // ── Start time mode (chosen first; selection controls which input below appears) ──
+    defineField({
+      name: "startTimeMode",
+      title: "Start Time Mode",
+      type: "string",
+      initialValue: "fixed",
+      description:
+        'Pick how the start time is expressed before filling it in. "Fixed time" reveals the dropdown below. "Prayer" reveals a prayer picker plus an editable label (e.g. "After Isha"). "Custom text" reveals a free-text input for cases like "TBD" or "After dinner". Older events without a mode behave as Fixed time.',
+      options: {
+        list: [
+          { title: "Fixed time (use the dropdown)", value: "fixed" },
+          { title: "After / Before / Around a prayer", value: "prayer" },
+          { title: "Custom text (e.g. TBD, After dinner)", value: "custom" },
+        ],
+        layout: "radio",
+      },
+    }),
     defineField({
       name: "time",
       title: "Start Time",
@@ -295,23 +312,8 @@ export default defineType({
       },
       hidden: ({ document }) => {
         const mode = (document as { startTimeMode?: string } | undefined)?.startTimeMode;
+        // Hide for prayer/custom; show for "fixed" or undefined (legacy docs).
         return mode === "prayer" || mode === "custom";
-      },
-    }),
-    // ── Start time mode (fixed dropdown / prayer-relative / custom text) ──
-    defineField({
-      name: "startTimeMode",
-      title: "Start Time Mode",
-      type: "string",
-      initialValue: "fixed",
-      description: "How to express start time. Switching modes hides the other inputs.",
-      options: {
-        list: [
-          { title: "Fixed time (use the dropdown)", value: "fixed" },
-          { title: "After / Before / Around a prayer", value: "prayer" },
-          { title: "Custom text (e.g. TBD, After dinner)", value: "custom" },
-        ],
-        layout: "radio",
       },
     }),
     defineField({
@@ -366,6 +368,23 @@ export default defineType({
           return true;
         }),
     }),
+    // ── End time mode (chosen first; selection controls which input below appears) ──
+    defineField({
+      name: "endTimeMode",
+      title: "End Time Mode",
+      type: "string",
+      initialValue: "fixed",
+      description:
+        'Pick how the end time is expressed before filling it in. "Fixed time" reveals the dropdown below. "Prayer" reveals a prayer picker plus an editable label (e.g. "Until Fajr"). "Custom text" reveals a free-text input for cases like "Late night". Leave the input blank if the event has no end time.',
+      options: {
+        list: [
+          { title: "Fixed time (use the dropdown)", value: "fixed" },
+          { title: "Until / Before a prayer", value: "prayer" },
+          { title: "Custom text (e.g. Late night)", value: "custom" },
+        ],
+        layout: "radio",
+      },
+    }),
     defineField({
       name: "endTime",
       title: "End Time",
@@ -376,6 +395,7 @@ export default defineType({
       },
       hidden: ({ document }) => {
         const mode = (document as { endTimeMode?: string } | undefined)?.endTimeMode;
+        // Hide for prayer/custom; show for "fixed" or undefined (legacy docs).
         return mode === "prayer" || mode === "custom";
       },
       validation: (Rule) =>
@@ -393,22 +413,6 @@ export default defineType({
           }
           return true;
         }),
-    }),
-    // ── End time mode (fixed dropdown / prayer-relative / custom text) ──
-    defineField({
-      name: "endTimeMode",
-      title: "End Time Mode",
-      type: "string",
-      initialValue: "fixed",
-      description: "How to express end time.",
-      options: {
-        list: [
-          { title: "Fixed time (use the dropdown)", value: "fixed" },
-          { title: "Until / Before a prayer", value: "prayer" },
-          { title: "Custom text (e.g. Late night)", value: "custom" },
-        ],
-        layout: "radio",
-      },
     }),
     defineField({
       name: "endPrayer",
