@@ -71,6 +71,15 @@ export default async function HomePage() {
 
   const urgentAnnouncement = urgentAnnouncements.length > 0 ? urgentAnnouncements[0] : null;
 
+  const eventsWithTime = allEvents.map((event) => ({
+    ...event,
+    resolvedTime: formatEventTime(event, prayerSettings),
+  }));
+  const programsWithTime = programs.map((program) => ({
+    ...program,
+    resolvedTime: formatEventTime(program, prayerSettings),
+  }));
+
   return (
     <>
       <HeroSection
@@ -90,8 +99,8 @@ export default async function HomePage() {
       />
 
       <WhatsOnSection
-        events={allEvents.map((event) => ({ ...event, resolvedTime: formatEventTime(event, prayerSettings) }))}
-        programs={programs.map((program) => ({ ...program, resolvedTime: formatEventTime(program, prayerSettings) }))}
+        events={eventsWithTime}
+        programs={programsWithTime}
         services={services}
       />
 
