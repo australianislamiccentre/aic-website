@@ -10,7 +10,8 @@
  */
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { getEventBySlug, getEventsForStaticGeneration, getSiteSettings } from "@/sanity/lib/fetch";
+import { getEventBySlug, getEventsForStaticGeneration, getSiteSettings, getPrayerSettings } from "@/sanity/lib/fetch";
+import { formatEventTime } from "@/lib/event-time";
 import { SanityEvent } from "@/types/sanity";
 import { formatDate } from "@/lib/utils";
 import { urlFor } from "@/sanity/lib/image";
@@ -75,11 +76,16 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
 
 export default async function EventPage({ params }: EventPageProps) {
   const { slug } = await params;
-  const event = (await getEventBySlug(slug)) as SanityEvent | null;
+  const [event, prayerSettings] = await Promise.all([
+    getEventBySlug(slug) as Promise<SanityEvent | null>,
+    getPrayerSettings(),
+  ]);
 
   if (!event) {
     notFound();
   }
+
+  const resolvedTime = formatEventTime(event, prayerSettings);
 
   // Fetch trusted embed domains from site settings (only needed if event has an embed form)
   const siteSettings = event.formType === "embed" && event.embedFormUrl
@@ -103,14 +109,12 @@ export default async function EventPage({ params }: EventPageProps) {
     return "Date TBA";
   };
 
-  // Format time display
+  // Format time display from resolved time strings
   const getTimeDisplay = () => {
-    if (event.time) {
-      if (event.endTime) {
-        return `${event.time} - ${event.endTime}`;
-      }
-      return event.time;
-    }
+    const { start, end } = resolvedTime;
+    if (start && end) return `${start} - ${end}`;
+    if (start) return start;
+    if (end) return end;
     return "Time TBA";
   };
 
