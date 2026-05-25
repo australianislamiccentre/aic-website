@@ -1333,9 +1333,10 @@ function SpecialBand({
           <V4Ornament size={18} color="var(--v4-accent)" />
           <div>
             <div
-              className="text-[10px] uppercase font-bold"
+              className="text-sm sm:text-base lg:text-lg uppercase whitespace-nowrap"
               style={{
-                letterSpacing: "0.24em",
+                fontFamily: "var(--v4-serif)",
+                fontWeight: 500,
                 color: "var(--v4-accent)",
               }}
             >
@@ -1356,7 +1357,7 @@ function SpecialBand({
           </div>
         </div>
         <time
-          className="text-lg font-semibold tabular-nums"
+          className="text-sm sm:text-base lg:text-base font-semibold tabular-nums whitespace-nowrap"
           style={{ fontFamily: "var(--v4-sans)", color: "var(--v4-fg)" }}
           dateTime={toISO24Hour(time)}
         >
