@@ -1281,18 +1281,10 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                     />
                   )}
                   {eidFitrActive && eidFitrTime && (
-                    <SpecialBand
-                      label="Eid al-Fitr"
-                      tagline="Celebration of breaking the fast"
-                      time={eidFitrTime}
-                    />
+                    <SpecialBand label="Eid al-Fitr" time={eidFitrTime} />
                   )}
                   {eidAdhaActive && eidAdhaTime && (
-                    <SpecialBand
-                      label="Eid al-Adha"
-                      tagline="Festival of the sacrifice"
-                      time={eidAdhaTime}
-                    />
+                    <SpecialBand label="Eid al-Adha" time={eidAdhaTime} />
                   )}
                 </div>
               )}
@@ -1324,51 +1316,58 @@ function SpecialBand({
   time,
 }: {
   label: string;
-  tagline: string;
+  tagline?: string;
   time: string;
 }) {
+  // Mirror the Jumu'ah row's grid layout exactly so the ornament, label,
+  // and time columns line up across both rows when they sit one above the
+  // other (Jumu'ah at the top of the special bands stack, then Eid below).
+  // Tagline (Taraweeh's "Nightly prayer during Ramadan") stacks under the
+  // label inside the same middle column.
   return (
     <div
-      className="relative overflow-hidden px-4 py-4 sm:px-5"
+      className="relative overflow-hidden grid items-center
+                 grid-cols-[auto_1fr_auto]
+                 gap-x-2 sm:gap-x-3
+                 px-4 py-3 sm:px-5 sm:py-4 md:px-3 md:py-2.5 lg:px-3 lg:py-3 m-0"
       style={{
-        background: "rgba(127, 181, 57, 0.12)",
-        border: "1px solid rgba(127, 181, 57, 0.4)",
+        background: "var(--v4-surface)",
+        border: "1px solid rgba(127, 181, 57, 0.2)",
       }}
     >
-      <V4StarPattern opacity={0.06} size={44} color="var(--v4-accent)" />
-      <div className="relative flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <V4Ornament size={18} color="var(--v4-accent)" />
-          <div>
-            <div
-              className="text-[10px] uppercase font-bold"
-              style={{
-                letterSpacing: "0.24em",
-                color: "var(--v4-accent)",
-              }}
-            >
-              {label}
-            </div>
-            <div
-              className="text-[13px] mt-0.5"
-              style={{
-                fontFamily: "var(--v4-serif)",
-                color: "var(--v4-fg)",
-                fontWeight: 500,
-              }}
-            >
-              {tagline}
-            </div>
-          </div>
-        </div>
-        <time
-          className="text-lg font-semibold tabular-nums"
-          style={{ fontFamily: "var(--v4-sans)", color: "var(--v4-fg)" }}
-          dateTime={toISO24Hour(time)}
+      <V4StarPattern opacity={0.04} size={40} color="var(--v4-accent)" />
+      <V4Ornament size={18} color="var(--v4-accent)" />
+      <div className="relative min-w-0">
+        <div
+          className="text-sm sm:text-base lg:text-lg uppercase whitespace-nowrap"
+          style={{
+            fontFamily: "var(--v4-serif)",
+            fontWeight: 500,
+            color: "var(--v4-accent)",
+          }}
         >
-          {time}
-        </time>
+          {label}
+        </div>
+        {tagline && (
+          <div
+            className="text-[13px] mt-0.5"
+            style={{
+              fontFamily: "var(--v4-serif)",
+              color: "var(--v4-fg)",
+              fontWeight: 500,
+            }}
+          >
+            {tagline}
+          </div>
+        )}
       </div>
+      <time
+        className="relative text-sm sm:text-base lg:text-base font-semibold tabular-nums whitespace-nowrap justify-self-end"
+        style={{ fontFamily: "var(--v4-sans)", color: "var(--v4-fg)" }}
+        dateTime={toISO24Hour(time)}
+      >
+        {time}
+      </time>
     </div>
   );
 }

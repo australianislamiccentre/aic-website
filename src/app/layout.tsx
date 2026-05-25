@@ -33,6 +33,7 @@ import { FundraiseUpScript } from "@/components/FundraiseUpScript";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import { getYouTubeLiveStream } from "@/lib/youtube";
 import { LiveBanner } from "@/components/LiveBanner";
+import { EidBanner } from "@/components/layout/EidBanner";
 import { FormSettingsProvider } from "@/contexts/FormSettingsContext";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 
@@ -195,6 +196,7 @@ export default async function RootLayout({
             <GoogleAnalytics />
             <FundraiseUpScript settings={donationSettings} />
             <ScrollToTop />
+            <EidBanner prayerSettings={prayerSettings} />
             <LiveBanner liveStream={liveStream} />
             <HeaderB />
             <main id="main-content" className="overflow-x-hidden">{children}</main>

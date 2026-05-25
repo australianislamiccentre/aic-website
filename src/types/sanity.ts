@@ -765,10 +765,24 @@ export interface SanityPrayerSettings {
   taraweehTime?: string;
   // Eid al-Fitr
   eidFitrActive?: boolean;
+  eidFitrDate?: string;
   eidFitrTime?: string;
+  eidFitrBannerTitle?: string;
+  eidFitrBannerSubtitle?: string;
+  eidFitrBannerLinkType?: "none" | "page" | "custom";
+  eidFitrBannerInternalPage?: string;
+  eidFitrBannerCustomUrl?: string;
+  eidFitrBannerLinkLabel?: string;
   // Eid al-Adha
   eidAdhaActive?: boolean;
+  eidAdhaDate?: string;
   eidAdhaTime?: string;
+  eidAdhaBannerTitle?: string;
+  eidAdhaBannerSubtitle?: string;
+  eidAdhaBannerLinkType?: "none" | "page" | "custom";
+  eidAdhaBannerInternalPage?: string;
+  eidAdhaBannerCustomUrl?: string;
+  eidAdhaBannerLinkLabel?: string;
 }
 
 /** Header settings singleton — announcement bar, CTA, nav groups, etc. */

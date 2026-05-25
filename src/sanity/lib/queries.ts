@@ -655,9 +655,14 @@ export const prayerSettingsQuery = groq`
     jumuahArabicTime, jumuahEnglishTime,
     // Taraweeh
     taraweehEnabled, taraweehTime,
-    // Eid
-    eidFitrActive, eidFitrTime,
-    eidAdhaActive, eidAdhaTime
+    // Eid al-Fitr
+    eidFitrActive, eidFitrDate, eidFitrTime,
+    eidFitrBannerTitle, eidFitrBannerSubtitle,
+    eidFitrBannerLinkType, eidFitrBannerInternalPage, eidFitrBannerCustomUrl, eidFitrBannerLinkLabel,
+    // Eid al-Adha
+    eidAdhaActive, eidAdhaDate, eidAdhaTime,
+    eidAdhaBannerTitle, eidAdhaBannerSubtitle,
+    eidAdhaBannerLinkType, eidAdhaBannerInternalPage, eidAdhaBannerCustomUrl, eidAdhaBannerLinkLabel
   }
 `;
 
