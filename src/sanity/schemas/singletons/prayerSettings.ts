@@ -10,6 +10,68 @@
  * @module sanity/schemas/prayerSettings
  */
 import { defineField, defineType } from "sanity";
+import { InternalPagePicker } from "../../components/InternalPagePicker";
+
+function eidBannerFields(prefix: "eidFitr" | "eidAdha", eidName: string) {
+  return [
+    defineField({
+      name: `${prefix}BannerTitle`,
+      title: "Banner Title",
+      type: "string",
+      description: "Sitewide banner title. Edit to customise.",
+      initialValue: `${eidName} Prayer`,
+      hidden: ({ document }) => !document?.[`${prefix}Active`],
+    }),
+    defineField({
+      name: `${prefix}BannerSubtitle`,
+      title: "Banner Subtitle (optional)",
+      type: "string",
+      description: "Sitewide banner subtitle. Leave blank to auto-generate from the date and time (e.g. \"Saturday 6 June · 7:00 AM\").",
+      hidden: ({ document }) => !document?.[`${prefix}Active`],
+    }),
+    defineField({
+      name: `${prefix}BannerLinkType`,
+      title: "Banner Link Type",
+      type: "string",
+      options: {
+        list: [
+          { title: "No Link", value: "none" },
+          { title: "Internal Page", value: "page" },
+          { title: "Custom URL", value: "custom" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "none",
+      hidden: ({ document }) => !document?.[`${prefix}Active`],
+    }),
+    defineField({
+      name: `${prefix}BannerInternalPage`,
+      title: "Banner Internal Page",
+      type: "string",
+      description: "Pick any active page on the site.",
+      components: { input: InternalPagePicker },
+      hidden: ({ document }) =>
+        !document?.[`${prefix}Active`] || document?.[`${prefix}BannerLinkType`] !== "page",
+    }),
+    defineField({
+      name: `${prefix}BannerCustomUrl`,
+      title: "Banner Custom URL",
+      type: "url",
+      validation: (Rule) =>
+        Rule.uri({ allowRelative: true, scheme: ["http", "https"] }),
+      hidden: ({ document }) =>
+        !document?.[`${prefix}Active`] || document?.[`${prefix}BannerLinkType`] !== "custom",
+    }),
+    defineField({
+      name: `${prefix}BannerLinkLabel`,
+      title: "Banner Link Label (optional)",
+      type: "string",
+      description: 'CTA chip text. Defaults to "View details".',
+      hidden: ({ document }) =>
+        !document?.[`${prefix}Active`] || document?.[`${prefix}BannerLinkType`] === "none",
+    }),
+  ];
+}
 
 // Generate time options in 5-minute increments
 function generateTimeOptions() {
@@ -227,12 +289,27 @@ export default defineType({
       initialValue: "8:30 PM",
     }),
 
-    // ── Eid Prayers ──
+    // ── Eid al-Fitr ──
     defineField({
       name: "eidFitrActive",
       title: "Show Eid al-Fitr on Site",
       type: "boolean",
       initialValue: false,
+    }),
+    defineField({
+      name: "eidFitrDate",
+      title: "Eid al-Fitr Date",
+      type: "date",
+      description: "The Gregorian date Eid al-Fitr falls on (Melbourne). Banner auto-hides after this date.",
+      hidden: ({ document }) => !document?.eidFitrActive,
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const doc = context.document as { eidFitrActive?: boolean } | undefined;
+          if (doc?.eidFitrActive && !value) {
+            return "Date is required when Eid al-Fitr is active.";
+          }
+          return true;
+        }),
     }),
     defineField({
       name: "eidFitrTime",
@@ -242,11 +319,29 @@ export default defineType({
       hidden: ({ document }) => !document?.eidFitrActive,
       initialValue: "7:00 AM",
     }),
+    ...eidBannerFields("eidFitr", "Eid al-Fitr"),
+
+    // ── Eid al-Adha ──
     defineField({
       name: "eidAdhaActive",
       title: "Show Eid al-Adha on Site",
       type: "boolean",
       initialValue: false,
+    }),
+    defineField({
+      name: "eidAdhaDate",
+      title: "Eid al-Adha Date",
+      type: "date",
+      description: "The Gregorian date Eid al-Adha falls on (Melbourne). Banner auto-hides after this date.",
+      hidden: ({ document }) => !document?.eidAdhaActive,
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const doc = context.document as { eidAdhaActive?: boolean } | undefined;
+          if (doc?.eidAdhaActive && !value) {
+            return "Date is required when Eid al-Adha is active.";
+          }
+          return true;
+        }),
     }),
     defineField({
       name: "eidAdhaTime",
@@ -256,6 +351,7 @@ export default defineType({
       hidden: ({ document }) => !document?.eidAdhaActive,
       initialValue: "7:00 AM",
     }),
+    ...eidBannerFields("eidAdha", "Eid al-Adha"),
   ],
   preview: {
     prepare() {

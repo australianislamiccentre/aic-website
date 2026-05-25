@@ -1281,18 +1281,10 @@ export function PrayerWidget({ prayerSettings, testOpenInitially = false }: Pray
                     />
                   )}
                   {eidFitrActive && eidFitrTime && (
-                    <SpecialBand
-                      label="Eid al-Fitr"
-                      tagline="Celebration of breaking the fast"
-                      time={eidFitrTime}
-                    />
+                    <SpecialBand label="Eid al-Fitr" time={eidFitrTime} />
                   )}
                   {eidAdhaActive && eidAdhaTime && (
-                    <SpecialBand
-                      label="Eid al-Adha"
-                      tagline="Festival of the sacrifice"
-                      time={eidAdhaTime}
-                    />
+                    <SpecialBand label="Eid al-Adha" time={eidAdhaTime} />
                   )}
                 </div>
               )}
@@ -1324,7 +1316,7 @@ function SpecialBand({
   time,
 }: {
   label: string;
-  tagline: string;
+  tagline?: string;
   time: string;
 }) {
   return (
@@ -1349,16 +1341,18 @@ function SpecialBand({
             >
               {label}
             </div>
-            <div
-              className="text-[13px] mt-0.5"
-              style={{
-                fontFamily: "var(--v4-serif)",
-                color: "var(--v4-fg)",
-                fontWeight: 500,
-              }}
-            >
-              {tagline}
-            </div>
+            {tagline && (
+              <div
+                className="text-[13px] mt-0.5"
+                style={{
+                  fontFamily: "var(--v4-serif)",
+                  color: "var(--v4-fg)",
+                  fontWeight: 500,
+                }}
+              >
+                {tagline}
+              </div>
+            )}
           </div>
         </div>
         <time
