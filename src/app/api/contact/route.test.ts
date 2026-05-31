@@ -159,7 +159,7 @@ describe("POST /api/contact", () => {
     );
   });
 
-  it("extracts IP from x-forwarded-for header", async () => {
+  it("uses the trusted right-most x-forwarded-for hop, not the spoofable left-most (#69)", async () => {
     const req = new NextRequest("http://localhost:3000/api/contact", {
       method: "POST",
       headers: {
@@ -171,6 +171,22 @@ describe("POST /api/contact", () => {
 
     await POST(req);
 
-    expect(mockCheckRateLimit).toHaveBeenCalledWith("1.2.3.4");
+    expect(mockCheckRateLimit).toHaveBeenCalledWith("5.6.7.8");
+  });
+
+  it("prefers the platform-set x-real-ip and ignores a spoofed x-forwarded-for (#69)", async () => {
+    const req = new NextRequest("http://localhost:3000/api/contact", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-real-ip": "9.9.9.9",
+        "x-forwarded-for": "1.2.3.4",
+      },
+      body: JSON.stringify(validBody),
+    });
+
+    await POST(req);
+
+    expect(mockCheckRateLimit).toHaveBeenCalledWith("9.9.9.9");
   });
 });
