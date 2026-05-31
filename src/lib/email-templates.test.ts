@@ -297,3 +297,120 @@ describe("subscribeNotificationEmail", () => {
     expect(result.html).toContain("No");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Phone field HTML escaping (regression: issue #70)
+//
+// The `phone` field was interpolated raw into every notification/confirmation
+// email while the module claimed all input was escaped. A short payload like
+// `<img src=x>` fits under MAX_PHONE=20 and injected markup into staff emails.
+// ---------------------------------------------------------------------------
+describe("phone field HTML escaping (#70)", () => {
+  const MALICIOUS_PHONE = '<img src="x" onerror="alert(1)">';
+
+  const generators: Array<[string, () => { html: string }]> = [
+    [
+      "contactNotificationEmail",
+      () =>
+        contactNotificationEmail({
+          firstName: "John",
+          lastName: "Smith",
+          email: "john@example.com",
+          phone: MALICIOUS_PHONE,
+          inquiryType: "General",
+          message: "Hello",
+        }),
+    ],
+    [
+      "contactConfirmationEmail",
+      () =>
+        contactConfirmationEmail({
+          firstName: "John",
+          lastName: "Smith",
+          email: "john@example.com",
+          phone: MALICIOUS_PHONE,
+          inquiryType: "General",
+          message: "Hello",
+        }),
+    ],
+    [
+      "serviceNotificationEmail",
+      () =>
+        serviceNotificationEmail({
+          firstName: "John",
+          lastName: "Smith",
+          email: "john@example.com",
+          phone: MALICIOUS_PHONE,
+          serviceName: "Funeral Services",
+          message: "Hello",
+        }),
+    ],
+    [
+      "serviceConfirmationEmail",
+      () =>
+        serviceConfirmationEmail({
+          firstName: "John",
+          lastName: "Smith",
+          email: "john@example.com",
+          phone: MALICIOUS_PHONE,
+          serviceName: "Funeral Services",
+          message: "Hello",
+        }),
+    ],
+    [
+      "eventNotificationEmail",
+      () =>
+        eventNotificationEmail({
+          firstName: "John",
+          lastName: "Smith",
+          email: "john@example.com",
+          phone: MALICIOUS_PHONE,
+          eventName: "Community Iftar",
+          message: "Hello",
+        }),
+    ],
+    [
+      "eventConfirmationEmail",
+      () =>
+        eventConfirmationEmail({
+          firstName: "John",
+          lastName: "Smith",
+          email: "john@example.com",
+          phone: MALICIOUS_PHONE,
+          eventName: "Community Iftar",
+          message: "Hello",
+        }),
+    ],
+  ];
+
+  it.each(generators)(
+    "%s escapes a malicious phone value into inert markup",
+    (_name, generate) => {
+      const { html } = generate();
+      // The raw payload must NOT survive; the escaped entity MUST be present.
+      expect(html).not.toContain(MALICIOUS_PHONE);
+      expect(html).toContain("&lt;img src=&quot;x&quot;");
+    }
+  );
+
+  it("subscribeNotificationEmail escapes a malicious phone value", () => {
+    const { html } = subscribeNotificationEmail({
+      email: "sub@example.com",
+      phone: MALICIOUS_PHONE,
+    });
+    expect(html).not.toContain(MALICIOUS_PHONE);
+    expect(html).toContain("&lt;img src=&quot;x&quot;");
+  });
+
+  it("still shows 'Not provided' when phone is missing", () => {
+    const { html } = contactNotificationEmail({
+      firstName: "John",
+      lastName: "Smith",
+      email: "john@example.com",
+      phone: undefined,
+      inquiryType: "General",
+      message: "Hello",
+    });
+    expect(html).toContain("Not provided");
+  });
+});
