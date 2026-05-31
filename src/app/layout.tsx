@@ -109,6 +109,16 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  // Disable iOS Safari "format detection" — WebKit auto-wraps phone numbers,
+  // dates, and times (prayer times, the Eid banner, etc.) in <a> tags BEFORE
+  // React hydrates, mutating the server-rendered DOM and tripping a hydration
+  // error on every mobile homepage load. (Sentry AIC-WEBSITE-1 / issue #75.)
+  formatDetection: {
+    telephone: false,
+    date: false,
+    address: false,
+    email: false,
+  },
 };
 
 export default async function RootLayout({
