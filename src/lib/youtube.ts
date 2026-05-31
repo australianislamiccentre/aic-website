@@ -358,7 +358,7 @@ export async function getPlaylistVideos(playlistId: string): Promise<YouTubeVide
 
   try {
     // Step 1: Get video IDs from playlist (order matches playlist default)
-    const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?key=${YOUTUBE_API_KEY}&playlistId=${playlistId}&part=snippet&maxResults=50`;
+    const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?key=${YOUTUBE_API_KEY}&playlistId=${encodeURIComponent(playlistId)}&part=snippet&maxResults=50`;
     const playlistRes = await fetch(playlistUrl, { next: { revalidate: 3600 } });
 
     if (!playlistRes.ok) {

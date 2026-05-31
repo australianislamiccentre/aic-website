@@ -34,7 +34,6 @@ const singletonIds = [
   "donatePageSettings",
   "formSettings",
   "mediaGallery",
-  "offlineDonations",
   // Page singletons
   "aboutPageSettings",
   "architecturePageSettings",
@@ -229,8 +228,6 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                             .title("Inactive Campaigns")
                             .filter('_type == "donationCampaign" && active == false')
                         ),
-                      S.divider(),
-                      singleton(S, "offlineDonations", "Offline Donations"),
                     ])
                 ),
 
@@ -373,7 +370,6 @@ const previewPaths: Record<string, (slug?: string) => string> = {
   service: () => "/services",
   donationSettings: () => "/donate",
   donatePageSettings: () => "/donate",
-  offlineDonations: () => "/donate",
   donationCampaign: () => "/donate",
   galleryImage: () => "/media",
   mediaGallery: () => "/media",

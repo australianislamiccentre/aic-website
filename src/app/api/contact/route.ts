@@ -17,6 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getResendClient } from "@/lib/resend";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/client-ip";
 import { validateContactForm } from "@/lib/contact-validation";
 import {
   contactNotificationEmail,
@@ -46,10 +47,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Rate limiting — 5 requests per hour per IP (best-effort on serverless)
-    const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      "unknown";
+    // Rate limiting — 5 requests per hour per IP (best-effort on serverless).
+    // IP comes from a trusted, platform-set source — never the spoofable
+    // left-most x-forwarded-for value (issue #69).
+    const ip = getClientIp(request);
     const { allowed } = checkRateLimit(ip);
     if (!allowed) {
       return NextResponse.json(

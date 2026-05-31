@@ -45,7 +45,7 @@ function messageBox(message: string): string {
 // --- Contact Form ---
 
 export function contactNotificationEmail(data: ContactFormData): { subject: string; html: string } {
-  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone || "Not provided") + fieldRow("Enquiry Type", `<strong>${escapeHtml(data.inquiryType)}</strong>`);
+  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone ? escapeHtml(data.phone) : "Not provided") + fieldRow("Enquiry Type", `<strong>${escapeHtml(data.inquiryType)}</strong>`);
   return {
     subject: `New Contact Enquiry: ${data.inquiryType}`,
     html: adminLayout(`Contact Form - ${escapeHtml(data.inquiryType)}`, `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new enquiry has been submitted via the website contact form.</p>${detailsTable(rows)}${messageBox(data.message)}`),
@@ -53,7 +53,7 @@ export function contactNotificationEmail(data: ContactFormData): { subject: stri
 }
 
 export function contactConfirmationEmail(data: ContactFormData): { subject: string; html: string } {
-  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone || "Not provided") + fieldRow("Enquiry Type", `<strong>${escapeHtml(data.inquiryType)}</strong>`);
+  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone ? escapeHtml(data.phone) : "Not provided") + fieldRow("Enquiry Type", `<strong>${escapeHtml(data.inquiryType)}</strong>`);
   return {
     subject: "We've received your message - Australian Islamic Centre",
     html: confirmationLayout("Thanks for Getting in Touch", `<h2 style="margin:0 0 16px;color:${BLUE};font-size:18px">Assalamu Alaikum, ${escapeHtml(data.firstName)}!</h2><p style="color:#4b5563;line-height:1.6;margin:0 0 20px;font-size:14px">We've received your enquiry and will get back to you as soon as possible.</p><p style="margin:0 0 8px;color:#6b7280;font-size:13px;font-weight:600">Your submission details</p>${detailsTable(rows)}${messageBox(data.message)}`),
@@ -63,7 +63,7 @@ export function contactConfirmationEmail(data: ContactFormData): { subject: stri
 // --- Service Inquiry ---
 
 export function serviceNotificationEmail(data: ServiceInquiryFormData): { subject: string; html: string } {
-  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone || "Not provided") + fieldRow("Service", `<strong>${escapeHtml(data.serviceName)}</strong>`);
+  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone ? escapeHtml(data.phone) : "Not provided") + fieldRow("Service", `<strong>${escapeHtml(data.serviceName)}</strong>`);
   return {
     subject: `Service Inquiry: ${data.serviceName}`,
     html: adminLayout(`Service Inquiry - ${escapeHtml(data.serviceName)}`, `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new service inquiry has been submitted via the website.</p>${detailsTable(rows)}${messageBox(data.message)}`),
@@ -71,7 +71,7 @@ export function serviceNotificationEmail(data: ServiceInquiryFormData): { subjec
 }
 
 export function serviceConfirmationEmail(data: ServiceInquiryFormData): { subject: string; html: string } {
-  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone || "Not provided") + fieldRow("Service", `<strong>${escapeHtml(data.serviceName)}</strong>`);
+  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone ? escapeHtml(data.phone) : "Not provided") + fieldRow("Service", `<strong>${escapeHtml(data.serviceName)}</strong>`);
   return {
     subject: `We've received your inquiry about ${data.serviceName} - Australian Islamic Centre`,
     html: confirmationLayout(`${escapeHtml(data.serviceName)} Inquiry Received`, `<h2 style="margin:0 0 16px;color:${BLUE};font-size:18px">Assalamu Alaikum, ${escapeHtml(data.firstName)}!</h2><p style="color:#4b5563;line-height:1.6;margin:0 0 20px;font-size:14px">We've received your inquiry about <strong style="color:${BLUE}">${escapeHtml(data.serviceName)}</strong> and will get back to you as soon as possible.</p><p style="margin:0 0 8px;color:#6b7280;font-size:13px;font-weight:600">Your submission details</p>${detailsTable(rows)}${messageBox(data.message)}`),
@@ -81,7 +81,7 @@ export function serviceConfirmationEmail(data: ServiceInquiryFormData): { subjec
 // --- Event Inquiry ---
 
 export function eventNotificationEmail(data: EventInquiryFormData): { subject: string; html: string } {
-  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone || "Not provided") + fieldRow("Event", `<strong>${escapeHtml(data.eventName)}</strong>`);
+  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone ? escapeHtml(data.phone) : "Not provided") + fieldRow("Event", `<strong>${escapeHtml(data.eventName)}</strong>`);
   return {
     subject: `Event Inquiry: ${data.eventName}`,
     html: adminLayout(`Event Inquiry - ${escapeHtml(data.eventName)}`, `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new event inquiry has been submitted via the website.</p>${detailsTable(rows)}${messageBox(data.message)}`),
@@ -89,7 +89,7 @@ export function eventNotificationEmail(data: EventInquiryFormData): { subject: s
 }
 
 export function eventConfirmationEmail(data: EventInquiryFormData): { subject: string; html: string } {
-  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone || "Not provided") + fieldRow("Event", `<strong>${escapeHtml(data.eventName)}</strong>`);
+  const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone ? escapeHtml(data.phone) : "Not provided") + fieldRow("Event", `<strong>${escapeHtml(data.eventName)}</strong>`);
   return {
     subject: `We've received your inquiry about ${data.eventName} - Australian Islamic Centre`,
     html: confirmationLayout(`${escapeHtml(data.eventName)} Inquiry Received`, `<h2 style="margin:0 0 16px;color:${BLUE};font-size:18px">Assalamu Alaikum, ${escapeHtml(data.firstName)}!</h2><p style="color:#4b5563;line-height:1.6;margin:0 0 20px;font-size:14px">We've received your inquiry about <strong style="color:${BLUE}">${escapeHtml(data.eventName)}</strong> and will get back to you as soon as possible.</p><p style="margin:0 0 8px;color:#6b7280;font-size:13px;font-weight:600">Your submission details</p>${detailsTable(rows)}${messageBox(data.message)}`),

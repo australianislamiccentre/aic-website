@@ -45,6 +45,12 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
+        // Removed: the Ramadan live-donations wall (exposed donor data publicly).
+        source: "/live-donations",
+        destination: "/",
+        permanent: false,
+      },
+      {
         source: "/programs",
         destination: "/events",
         permanent: true,

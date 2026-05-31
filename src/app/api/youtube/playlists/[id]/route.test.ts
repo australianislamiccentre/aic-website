@@ -45,6 +45,28 @@ describe("GET /api/youtube/playlists/[id]", () => {
     expect(res.status).toBe(400);
   });
 
+  it("returns 400 for a playlist ID containing injected query params (#74)", async () => {
+    const { GET } = await import("./route");
+    const res = await GET(
+      new Request("http://localhost:3000/api/youtube/playlists/x"),
+      { params: Promise.resolve({ id: "PLabc123&maxResults=0&key=evil" }) }
+    );
+
+    expect(res.status).toBe(400);
+    expect(mockGetPlaylist).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 for a playlist ID with illegal characters (#74)", async () => {
+    const { GET } = await import("./route");
+    const res = await GET(
+      new Request("http://localhost:3000/api/youtube/playlists/x"),
+      { params: Promise.resolve({ id: "../../etc/passwd" }) }
+    );
+
+    expect(res.status).toBe(400);
+    expect(mockGetPlaylist).not.toHaveBeenCalled();
+  });
+
   it("returns 500 when fetch fails", async () => {
     mockGetPlaylist.mockRejectedValue(new Error("API error"));
     const { GET } = await import("./route");

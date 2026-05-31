@@ -24,6 +24,17 @@ export async function GET(
     );
   }
 
+  // Validate the ID format before using it — blocks query-parameter injection
+  // into the outbound YouTube API request (issue #74). YouTube playlist IDs are
+  // URL-safe tokens (letters, digits, '-', '_'); reject anything containing
+  // &, ?, =, or whitespace that could tamper with the outbound request.
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+    return NextResponse.json(
+      { error: "Invalid playlist ID" },
+      { status: 400 }
+    );
+  }
+
   try {
     const videos = await getPlaylistVideos(id);
     return NextResponse.json(videos, {
