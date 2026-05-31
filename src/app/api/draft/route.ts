@@ -19,6 +19,7 @@
 import { draftMode } from "next/headers";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
+import { safeEqual } from "@/lib/timing-safe";
 
 /**
  * GET handler — enables draft mode via secret query parameter.
@@ -28,8 +29,8 @@ export async function GET(request: NextRequest) {
   const secret = request.nextUrl.searchParams.get("secret");
   const slug = request.nextUrl.searchParams.get("slug") || "/";
 
-  // Validate the secret
-  if (secret !== process.env.SANITY_PREVIEW_SECRET) {
+  // Validate the secret (constant-time — avoids leaking it via response timing)
+  if (!safeEqual(secret, process.env.SANITY_PREVIEW_SECRET)) {
     return new Response("Invalid secret", { status: 401 });
   }
 

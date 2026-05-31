@@ -15,6 +15,7 @@
  */
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+import { safeEqual } from "@/lib/timing-safe";
 
 /** Shared secret between Sanity webhook and this endpoint. */
 const REVALIDATION_SECRET = process.env.SANITY_REVALIDATE_SECRET;
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (secret !== REVALIDATION_SECRET) {
+    if (!safeEqual(secret, REVALIDATION_SECRET)) {
       return NextResponse.json(
         { message: "Invalid secret" },
         { status: 401 }
