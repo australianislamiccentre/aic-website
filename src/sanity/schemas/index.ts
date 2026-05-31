@@ -15,7 +15,6 @@ import homepageSettings from "./singletons/homepageSettings";
 import prayerSettings from "./singletons/prayerSettings";
 import donationSettings from "./singletons/donationSettings";
 import donatePageSettings from "./singletons/donatePageSettings";
-import offlineDonations from "./singletons/offlineDonations";
 import mediaGallery from "./singletons/mediaGallery";
 import formSettings from "./singletons/formSettings"; // deprecated — hidden from desk
 import headerSettings from "./singletons/headerSettings";
@@ -64,7 +63,6 @@ export const schemaTypes = [
   prayerSettings,
   donationSettings,
   donatePageSettings,
-  offlineDonations,
   mediaGallery,
   formSettings,
   headerSettings,

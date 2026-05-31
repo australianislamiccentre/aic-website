@@ -60,7 +60,6 @@ const validDocumentTypes = new Set([
   "serviceInquiryFormSettings",
   "eventInquiryFormSettings",
   "newsletterSettings",
-  "offlineDonations",
 ]);
 
 /**
@@ -106,7 +105,6 @@ const documentTypeToPath: Record<string, string[]> = {
   serviceInquiryFormSettings: ["/services"],
   eventInquiryFormSettings: ["/events"],
   newsletterSettings: ["/"],
-  offlineDonations: ["/donate", "/live-donations"],
 };
 
 /**
