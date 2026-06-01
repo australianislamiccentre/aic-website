@@ -89,6 +89,15 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     );
   });
 
+  it("allows region-scoped Sentry ingest hosts so client-side error reports aren't blocked (AIC-WEBSITE-8/9)", () => {
+    // Modern Sentry DSNs ingest at o<org>.ingest.us.sentry.io. The legacy
+    // *.ingest.sentry.io wildcard does NOT match that host (a CSP wildcard
+    // only spans a single label), so the SDK's envelope POSTs were blocked.
+    const connectSrc = directive(csp(middleware(makeRequest())), "connect-src");
+    expect(connectSrc).toContain("https://*.ingest.sentry.io");
+    expect(connectSrc).toContain("https://*.ingest.us.sentry.io");
+  });
+
   it("generates a different nonce on every request", () => {
     const nonceOf = (res: Response) => csp(res).match(/'nonce-([^']+)'/)?.[1];
     const a = nonceOf(middleware(makeRequest()));

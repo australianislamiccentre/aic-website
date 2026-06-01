@@ -170,7 +170,12 @@ export function middleware(request: NextRequest) {
       'https://google.com', // Google Pay readiness check (apex; *.google.com doesn't match it)
       'https://www.google-analytics.com',
       'https://vitals.vercel-insights.com',
+      // Sentry error ingestion. Modern DSNs are region-scoped
+      // (o<org>.ingest.us.sentry.io), which the legacy *.ingest.sentry.io
+      // wildcard does NOT match — a CSP wildcard only spans one label. Both
+      // are listed so the client SDK's envelope POSTs aren't blocked.
       'https://*.ingest.sentry.io',
+      'https://*.ingest.us.sentry.io',
     ].join(' '),
 
     // Iframes: infrastructure + Sanity-managed content domains + FundraiseUp checkout
