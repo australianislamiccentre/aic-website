@@ -22,6 +22,7 @@ import { presentationTool } from "sanity/presentation";
 import { media } from "sanity-plugin-media";
 import { orderableDocumentListDeskItem } from "@sanity/orderable-document-list";
 import { schemaTypes } from "./src/sanity/schemas";
+import { apiVersion } from "./src/sanity/env";
 
 /** All singleton document IDs — delete/duplicate actions are blocked for these. */
 const singletonIds = [
@@ -103,7 +104,7 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                               S.listItem()
                                 .title("Events")
                                 .child(
-                                  S.documentList()
+                                  S.documentList().apiVersion(apiVersion)
                                     .title("Live Events")
                                     .filter(
                                       `_type == "event" && active == true && displayAs in ["event", "both"] && (
@@ -117,7 +118,7 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                               S.listItem()
                                 .title("Programs")
                                 .child(
-                                  S.documentList()
+                                  S.documentList().apiVersion(apiVersion)
                                     .title("Live Programs")
                                     .filter(
                                       `_type == "event" && active == true && displayAs in ["program", "both"] && (
@@ -133,7 +134,7 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                       S.listItem()
                         .title("Expired")
                         .child(
-                          S.documentList()
+                          S.documentList().apiVersion(apiVersion)
                             .title("Expired")
                             .filter(
                               `_type == "event" && active == true && !(
@@ -146,7 +147,7 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                       S.listItem()
                         .title("Inactive")
                         .child(
-                          S.documentList()
+                          S.documentList().apiVersion(apiVersion)
                             .title("Inactive")
                             .filter('_type == "event" && active == false')
                         ),
@@ -165,14 +166,14 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                       S.listItem()
                         .title("Active")
                         .child(
-                          S.documentList()
+                          S.documentList().apiVersion(apiVersion)
                             .title("Active Announcements")
                             .filter('_type == "announcement" && active == true')
                         ),
                       S.listItem()
                         .title("Inactive")
                         .child(
-                          S.documentList()
+                          S.documentList().apiVersion(apiVersion)
                             .title("Inactive Announcements")
                             .filter('_type == "announcement" && active == false')
                         ),
@@ -198,7 +199,7 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                       S.listItem()
                         .title("Inactive")
                         .child(
-                          S.documentList()
+                          S.documentList().apiVersion(apiVersion)
                             .title("Inactive Services")
                             .filter('_type == "service" && active == false')
                         ),
@@ -217,14 +218,14 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                       S.listItem()
                         .title("Active Campaigns")
                         .child(
-                          S.documentList()
+                          S.documentList().apiVersion(apiVersion)
                             .title("Active Campaigns")
                             .filter('_type == "donationCampaign" && active == true')
                         ),
                       S.listItem()
                         .title("Inactive Campaigns")
                         .child(
-                          S.documentList()
+                          S.documentList().apiVersion(apiVersion)
                             .title("Inactive Campaigns")
                             .filter('_type == "donationCampaign" && active == false')
                         ),
@@ -313,7 +314,7 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
               S.listItem()
                 .title("Custom Pages")
                 .child(
-                  S.documentList()
+                  S.documentList().apiVersion(apiVersion)
                     .title("Custom Pages")
                     .filter('_type == "pageContent"')
                 ),
