@@ -137,6 +137,7 @@ export function middleware(request: NextRequest) {
       'https://images.unsplash.com',
       'https://i.ytimg.com',
       'https://*.google.com',
+      'https://*.google-analytics.com', // GA4 image-beacon fallback (incl. regional hosts)
       'https://*.googleapis.com',
       'https://*.gstatic.com',
       'https://*.facebook.com',
@@ -168,9 +169,15 @@ export function middleware(request: NextRequest) {
       'https://*.paypal.com',
       'https://*.paypalobjects.com',
       'https://google.com', // Google Pay readiness check (apex; *.google.com doesn't match it)
-      'https://www.google-analytics.com',
+      // GA4 sends collection beacons to REGIONAL hosts (region1.google-analytics.com,
+      // region2…), which 'www.google-analytics.com' does not match. Use the wildcard.
+      'https://*.google-analytics.com',
       'https://vitals.vercel-insights.com',
-      'https://*.ingest.sentry.io',
+      // Sentry ingest. Region DSNs use o<org>.ingest.<region>.sentry.io
+      // (e.g. *.ingest.us.sentry.io), which '*.ingest.sentry.io' does NOT match,
+      // so use '*.sentry.io' to cover all regions. Otherwise the browser SDK
+      // can't send events and client error monitoring breaks under enforcement.
+      'https://*.sentry.io',
     ].join(' '),
 
     // Iframes: infrastructure + Sanity-managed content domains + FundraiseUp checkout

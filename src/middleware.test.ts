@@ -89,6 +89,22 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     );
   });
 
+  it("allows the Sentry ingest host (incl. region DSNs like *.ingest.us.sentry.io) in connect-src", () => {
+    // Regression: '*.ingest.sentry.io' does NOT match o<org>.ingest.us.sentry.io,
+    // which silently broke the Sentry browser SDK once the CSP was enforced.
+    const connectSrc = directive(csp(middleware(makeRequest())), "connect-src");
+    expect(connectSrc).toContain("https://*.sentry.io");
+    expect(connectSrc).not.toContain("https://*.ingest.sentry.io");
+  });
+
+  it("allows GA4 regional collection endpoints (region1.google-analytics.com, …)", () => {
+    // Regression: 'www.google-analytics.com' does NOT match region1.google-analytics.com,
+    // so GA4 analytics beacons were blocked once the CSP was enforced.
+    const value = csp(middleware(makeRequest()));
+    expect(directive(value, "connect-src")).toContain("https://*.google-analytics.com");
+    expect(directive(value, "img-src")).toContain("https://*.google-analytics.com");
+  });
+
   it("generates a different nonce on every request", () => {
     const nonceOf = (res: Response) => csp(res).match(/'nonce-([^']+)'/)?.[1];
     const a = nonceOf(middleware(makeRequest()));
