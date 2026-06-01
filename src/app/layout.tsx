@@ -10,7 +10,7 @@
  */
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, Amiri } from "next/font/google";
-import { draftMode } from "next/headers";
+import { draftMode, headers } from "next/headers";
 import { VisualEditing } from "next-sanity";
 import "./globals.css";
 import { HeaderB } from "@/components/layout/HeaderB";
@@ -128,6 +128,7 @@ export default async function RootLayout({
 }>) {
   const [
     { isEnabled: isDraftMode },
+    headersList,
     siteSettings,
     donationSettings,
     contactFormSettingsRaw,
@@ -140,6 +141,7 @@ export default async function RootLayout({
     prayerSettings,
   ] = await Promise.all([
     draftMode(),
+    headers(),
     getSiteSettings(),
     getDonationSettings(),
     getContactFormSettings(),
@@ -151,6 +153,14 @@ export default async function RootLayout({
     getFooterSettings(),
     getPrayerSettings(),
   ]);
+
+  // Per-request CSP nonce set by middleware. Threaded onto the executable inline
+  // scripts (the FundraiseUp bootstrap) and GA so they run under the enforced
+  // script-src policy, which no longer allows 'unsafe-inline'. NOTE: the JSON-LD
+  // block below intentionally does NOT receive the nonce — `application/ld+json`
+  // is non-executable data (CSP never gates it), and adding a nonce there causes
+  // a hydration mismatch because browsers strip the nonce attribute from the DOM.
+  const nonce = headersList.get("x-nonce") ?? undefined;
 
   return (
     <html lang="en" className="scroll-smooth">
@@ -203,8 +213,8 @@ export default async function RootLayout({
             serviceInquiryFormSettings={serviceInquiryFormSettingsRaw}
             newsletterSettings={newsletterSettingsRaw}
           >
-            <GoogleAnalytics />
-            <FundraiseUpScript settings={donationSettings} />
+            <GoogleAnalytics nonce={nonce} />
+            <FundraiseUpScript settings={donationSettings} nonce={nonce} />
             <ScrollToTop />
             <EidBanner prayerSettings={prayerSettings} />
             <LiveBanner liveStream={liveStream} />

@@ -21,6 +21,12 @@ import { DonationSettings } from "@/sanity/lib/fetch";
 
 interface FundraiseUpScriptProps {
   settings: DonationSettings | null;
+  /**
+   * Per-request CSP nonce (from middleware via the root layout). Required for
+   * the inline bootstrap to execute under the enforced `script-src` policy,
+   * which no longer permits 'unsafe-inline'.
+   */
+  nonce?: string;
 }
 
 /** Fallback org key if not configured in Sanity. Public by design (like Stripe publishable key). */
@@ -56,7 +62,7 @@ function isValidFundraiseUpScript(scriptContent: string): boolean {
   return true;
 }
 
-export function FundraiseUpScript({ settings }: FundraiseUpScriptProps) {
+export function FundraiseUpScript({ settings, nonce }: FundraiseUpScriptProps) {
   // Use custom script from Sanity if provided, otherwise use default
   const customScript = settings?.installationScript;
   const orgKey = settings?.organizationKey || DEFAULT_ORG_KEY;
@@ -69,6 +75,7 @@ export function FundraiseUpScript({ settings }: FundraiseUpScriptProps) {
         <Script
           id="fundraise-up"
           strategy="afterInteractive"
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: scriptContent,
           }}
@@ -84,6 +91,7 @@ export function FundraiseUpScript({ settings }: FundraiseUpScriptProps) {
     <Script
       id="fundraise-up"
       strategy="afterInteractive"
+      nonce={nonce}
       dangerouslySetInnerHTML={{
         __html: `(function(w,d,s,n,a){if(!w[n]){var l='call,catch,on,once,set,then,track,openCheckout'
 .split(','),i,o=function(n){return'function'==typeof n?o.l.push([arguments])&&o

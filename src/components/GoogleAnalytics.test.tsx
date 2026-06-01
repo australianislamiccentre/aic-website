@@ -8,8 +8,8 @@ import { render } from "@/test/test-utils";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("@next/third-parties/google", () => ({
-  GoogleAnalytics: ({ gaId }: { gaId: string }) => (
-    <div data-testid="ga4" data-ga-id={gaId} />
+  GoogleAnalytics: ({ gaId, nonce }: { gaId: string; nonce?: string }) => (
+    <div data-testid="ga4" data-ga-id={gaId} data-nonce={nonce ?? ""} />
   ),
 }));
 
@@ -40,6 +40,14 @@ describe("GoogleAnalytics", () => {
     const { GoogleAnalytics } = await import("./GoogleAnalytics");
     const { getByTestId } = render(<GoogleAnalytics />);
     expect(getByTestId("ga4")).toHaveAttribute("data-ga-id", "G-TEST123");
+  });
+
+  it("forwards the CSP nonce to GA4 so its scripts run under the enforced policy", async () => {
+    process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID = "G-TEST123";
+    process.env.NEXT_PUBLIC_VERCEL_ENV = "production";
+    const { GoogleAnalytics } = await import("./GoogleAnalytics");
+    const { getByTestId } = render(<GoogleAnalytics nonce="nonce-ga-789" />);
+    expect(getByTestId("ga4")).toHaveAttribute("data-nonce", "nonce-ga-789");
   });
 
   it("returns null when measurement ID is missing", async () => {
