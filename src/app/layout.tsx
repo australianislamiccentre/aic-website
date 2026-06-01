@@ -61,6 +61,15 @@ const amiri = Amiri({
 // every element resolves to var(--font-inter) via --v4-serif /
 // --v4-sans in globals.css. Drops Spectral + Figtree font loads.
 
+// This layout reads headers() (for the CSP nonce) — a dynamic API. Next would
+// otherwise try to STATICALLY prerender the not-found route (and the /[slug]
+// catch-all), where headers() throws DYNAMIC_SERVER_USAGE, making every unknown
+// URL return 500 instead of our custom 404. Forcing dynamic rendering makes those
+// routes render per-request like the rest of the app (already dynamic via
+// headers()/draftMode()). The fetch data cache (sanityFetch's explicit
+// `revalidate: 120`) is unaffected — verified the Next fetch cache still populates.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://australianislamiccentre.org"),
   title: {

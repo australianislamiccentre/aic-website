@@ -18,7 +18,7 @@ vi.mock("next/font/google", () => ({
 }));
 vi.mock("./globals.css", () => ({}));
 
-import { metadata } from "./layout";
+import { metadata, dynamic } from "./layout";
 
 describe("root layout metadata", () => {
   it("disables iOS format detection to prevent mobile hydration errors (#75)", () => {
@@ -28,6 +28,13 @@ describe("root layout metadata", () => {
       address: false,
       email: false,
     });
+  });
+
+  it("forces dynamic rendering so unknown routes return 404, not 500", () => {
+    // The layout reads headers() for the CSP nonce; without force-dynamic, Next
+    // tries to statically prerender the not-found route, headers() throws
+    // DYNAMIC_SERVER_USAGE, and every unknown URL 500s in production.
+    expect(dynamic).toBe("force-dynamic");
   });
 
   it("turns telephone auto-linking off specifically (the prayer-time/Eid-banner trigger)", () => {
