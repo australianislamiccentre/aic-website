@@ -115,6 +115,12 @@ export function middleware(request: NextRequest) {
       `script-src 'self' 'nonce-${nonce}' 'unsafe-eval'`,
       'https://cdn.fundraiseup.com',
       'https://*.fundraiseup.com',
+      // FundraiseUp checkout payment SDKs (Stripe / PayPal / Google Pay)
+      'https://*.stripe.com',
+      'https://m.stripe.network',
+      'https://*.paypal.com',
+      'https://*.paypalobjects.com',
+      'https://pay.google.com',
       'https://*.sanity.io',
       'https://www.googletagmanager.com',
       'https://www.google-analytics.com',
@@ -136,10 +142,14 @@ export function middleware(request: NextRequest) {
       'https://*.facebook.com',
       'https://*.instagram.com',
       'https://*.fundraiseup.com',
+      // FundraiseUp checkout images (Uploadcare) + PayPal marks
+      'https://ucarecdn.com',
+      'https://*.ucarecd.net',
+      'https://*.paypalobjects.com',
     ].join(' '),
 
     // Fonts
-    "font-src 'self' https://fonts.gstatic.com https://*.fundraiseup.com",
+    "font-src 'self' https://fonts.gstatic.com https://*.fundraiseup.com https://*.stripe.com",
 
     // API / XHR / WebSocket connections
     [
@@ -150,6 +160,13 @@ export function middleware(request: NextRequest) {
       'https://*.googleapis.com',
       'https://cdn.fundraiseup.com',
       'https://*.fundraiseup.com',
+      // FundraiseUp checkout telemetry + payment processor APIs
+      'https://fndrsp.net',
+      'https://fndrsp-checkout.net',
+      'https://*.stripe.com',
+      'https://*.paypal.com',
+      'https://*.paypalobjects.com',
+      'https://google.com', // Google Pay readiness check (apex; *.google.com doesn't match it)
       'https://www.google-analytics.com',
       'https://vitals.vercel-insights.com',
       'https://*.ingest.sentry.io',
@@ -169,11 +186,14 @@ export function middleware(request: NextRequest) {
       'https://www.instagram.com',
       'https://*.instagram.com',
       'https://*.fundraiseup.com',
+      // FundraiseUp checkout payment iframes (Stripe card field, PayPal)
+      'https://*.stripe.com',
+      'https://*.paypal.com',
       ...dynamicFrameSrc,
     ].join(' '),
 
-    // Media (audio/video)
-    "media-src 'self'",
+    // Media (audio/video): self + Cloudflare R2 (Sanity-configured hero video, pub-*.r2.dev)
+    "media-src 'self' https://*.r2.dev",
 
     // Web workers
     "worker-src 'self' blob:",

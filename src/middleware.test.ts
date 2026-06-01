@@ -59,6 +59,30 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     }
   });
 
+  it("allows the FundraiseUp payment ecosystem (Stripe / PayPal / Google Pay / Uploadcare)", () => {
+    // Per FundraiseUp's official CSP allow-list — the donation CHECKOUT loads
+    // payment SDKs and assets from these third parties (not *.fundraiseup.com).
+    const value = csp(middleware(makeRequest("/donate")));
+    // Stripe — card field iframe + SDK + telemetry
+    expect(directive(value, "script-src")).toContain("https://*.stripe.com");
+    expect(directive(value, "frame-src")).toContain("https://*.stripe.com");
+    expect(directive(value, "connect-src")).toContain("https://*.stripe.com");
+    expect(directive(value, "font-src")).toContain("https://*.stripe.com");
+    // PayPal + Google Pay SDKs
+    expect(directive(value, "script-src")).toContain("https://*.paypal.com");
+    expect(directive(value, "script-src")).toContain("https://pay.google.com");
+    // Uploadcare images + FundraiseUp checkout telemetry hosts
+    expect(directive(value, "img-src")).toContain("https://ucarecdn.com");
+    expect(directive(value, "connect-src")).toContain("https://fndrsp-checkout.net");
+    expect(directive(value, "connect-src")).toContain("https://fndrsp.net");
+    // Google Pay readiness check hits the apex google.com (not a subdomain)
+    expect(directive(value, "connect-src")).toContain("https://google.com");
+  });
+
+  it("allows the Cloudflare R2 host serving the hero video (media-src)", () => {
+    expect(directive(csp(middleware(makeRequest())), "media-src")).toContain("https://*.r2.dev");
+  });
+
   it("generates a different nonce on every request", () => {
     const nonceOf = (res: Response) => csp(res).match(/'nonce-([^']+)'/)?.[1];
     const a = nonceOf(middleware(makeRequest()));
