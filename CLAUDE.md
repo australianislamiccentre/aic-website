@@ -635,6 +635,40 @@ Before considering any task complete:
 
 ---
 
+## Reporting and Handoff (every completed job)
+
+When a job (or a distinct chunk of one) is finished, report it like this. This applies every time, not just when asked.
+
+### Snapshot first, detail on demand
+
+- Lead with a **short, sharp snapshot** of what changed — a few bullets or a small table, not paragraphs. Enough to know what happened at a glance.
+- **Do not** dump the full reasoning, file-by-file walkthrough, or long evidence logs by default. Offer to expand ("say the word for the detail on X") and only go deep when asked.
+- Prefer a compact table (file → one-line change) or tight bullets over prose.
+
+### Hand over local tests in small, focused blocks
+
+When the change is complete and there are things for the user to verify locally:
+
+- Break the tests into **small, focused, easy-to-follow chunks** — one concern per block. Never a single overwhelming wall of steps.
+- Each block: a clear heading, the exact action (command or click), and the **expected outcome** so the user knows what "pass" looks like.
+- Order them sensibly (quickest/most critical first) and keep each block independently runnable.
+- Make the set **comprehensive and relevant**: cover the change itself **and** the other parts of the code it touches or impacts (regressions, adjacent flows, edge cases) — not just the happy path.
+- Call out anything that **can't be verified locally** (e.g. production-only code) and why.
+
+Example shape:
+
+```
+### 1. <thing to check>  (≈30s)
+Do: <command or click>
+Expect: <specific, observable result>
+
+### 2. <next thing>  (≈1m)
+Do: ...
+Expect: ...
+```
+
+---
+
 ## CI/CD
 
 GitHub Actions (`.github/workflows/ci.yml`): checkout -> Node 20 -> `npm ci` -> type-check -> lint -> test:run -> build. Runs on push/PR to `main`.
