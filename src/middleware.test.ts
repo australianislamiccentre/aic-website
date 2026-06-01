@@ -83,6 +83,12 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     expect(directive(csp(middleware(makeRequest())), "media-src")).toContain("https://*.r2.dev");
   });
 
+  it("allows Sanity Studio's module CDN (sanity-cdn.com) so /studio's version check isn't blocked", () => {
+    expect(directive(csp(middleware(makeRequest("/studio"))), "connect-src")).toContain(
+      "https://sanity-cdn.com"
+    );
+  });
+
   it("generates a different nonce on every request", () => {
     const nonceOf = (res: Response) => csp(res).match(/'nonce-([^']+)'/)?.[1];
     const a = nonceOf(middleware(makeRequest()));

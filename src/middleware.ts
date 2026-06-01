@@ -155,6 +155,7 @@ export function middleware(request: NextRequest) {
     [
       "connect-src 'self'",
       'https://*.sanity.io',
+      'https://sanity-cdn.com', // Sanity Studio (/studio) module/version check
       'https://api.resend.com',
       'https://*.google.com',
       'https://*.googleapis.com',
