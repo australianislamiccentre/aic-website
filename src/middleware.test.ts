@@ -89,6 +89,14 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     );
   });
 
+  it("allows the Sentry ingest host (incl. region DSNs like *.ingest.us.sentry.io) in connect-src", () => {
+    // Regression: '*.ingest.sentry.io' does NOT match o<org>.ingest.us.sentry.io,
+    // which silently broke the Sentry browser SDK once the CSP was enforced.
+    const connectSrc = directive(csp(middleware(makeRequest())), "connect-src");
+    expect(connectSrc).toContain("https://*.sentry.io");
+    expect(connectSrc).not.toContain("https://*.ingest.sentry.io");
+  });
+
   it("generates a different nonce on every request", () => {
     const nonceOf = (res: Response) => csp(res).match(/'nonce-([^']+)'/)?.[1];
     const a = nonceOf(middleware(makeRequest()));
