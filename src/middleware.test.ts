@@ -105,6 +105,17 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     expect(directive(value, "img-src")).toContain("https://*.google-analytics.com");
   });
 
+  it("allows the full Google Tag (gtag/GTM) host set across script/img/connect", () => {
+    // gtag.js is served from *.googletagmanager.com (script), sends a /td diagnostics
+    // image beacon there (img — was blocked: AIC-WEBSITE-D), and GA4 connects to the
+    // GTM config + analytics.google.com. Matches Google's documented GA4 CSP.
+    const value = csp(middleware(makeRequest()));
+    expect(directive(value, "script-src")).toContain("https://*.googletagmanager.com");
+    expect(directive(value, "img-src")).toContain("https://*.googletagmanager.com");
+    expect(directive(value, "connect-src")).toContain("https://*.googletagmanager.com");
+    expect(directive(value, "connect-src")).toContain("https://*.analytics.google.com");
+  });
+
   it("generates a different nonce on every request", () => {
     const nonceOf = (res: Response) => csp(res).match(/'nonce-([^']+)'/)?.[1];
     const a = nonceOf(middleware(makeRequest()));
