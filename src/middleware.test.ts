@@ -93,6 +93,22 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     expect(directive(value, "connect-src")).toContain("wss://*.api.sanity.io");
   });
 
+  it("scopes the generous Sanity extras to /studio only — the public policy is unchanged", () => {
+    const studio = csp(middleware(makeRequest("/studio/structure")));
+    const publicPage = csp(middleware(makeRequest("/")));
+    // /studio (trusted, auth-gated admin) gets broad Sanity coverage…
+    expect(directive(studio, "script-src")).toContain("https://*.sanity.work");
+    expect(directive(studio, "connect-src")).toContain("https://*.sanity.work");
+    expect(directive(studio, "connect-src")).toContain("wss://*.sanity.io");
+    expect(directive(studio, "img-src")).toContain("https://*.sanity-cdn.com");
+    expect(directive(studio, "font-src")).toContain("data:");
+    // …but the strict PUBLIC policy must NOT inherit any of it.
+    expect(directive(publicPage, "script-src")).not.toContain("sanity.work");
+    expect(directive(publicPage, "connect-src")).not.toContain("sanity.work");
+    expect(directive(publicPage, "connect-src")).not.toContain("wss://*.sanity.io");
+    expect(directive(publicPage, "font-src")).not.toContain("data:");
+  });
+
   it("allows the Sentry ingest host (incl. region DSNs like *.ingest.us.sentry.io) in connect-src", () => {
     // Regression: '*.ingest.sentry.io' does NOT match o<org>.ingest.us.sentry.io,
     // which silently broke the Sentry browser SDK once the CSP was enforced.

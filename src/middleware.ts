@@ -108,6 +108,19 @@ export function middleware(request: NextRequest) {
   // when configured, so nothing is hardcoded and the policy stays clean without it.
   const reportUri = process.env.CSP_REPORT_URI;
 
+  // Sanity Studio (/studio) is a trusted, auth-gated admin app with broad, evolving
+  // host needs (realtime websockets, auto-update module CDN, asset/font hosts). Give it
+  // generous Sanity coverage so it stops churning the policy. These extras apply ONLY
+  // under /studio — the public site's policy is byte-for-byte unchanged. They only ADD
+  // Sanity-owned hosts (a superset of what Studio already gets), so they can't break it.
+  const isStudio = request.nextUrl.pathname.startsWith('/studio');
+  const studioScriptSrc = isStudio ? ['https://*.sanity.work'] : [];
+  const studioImgSrc = isStudio ? ['https://*.sanity.io', 'https://*.sanity-cdn.com'] : [];
+  const studioConnectSrc = isStudio
+    ? ['https://*.sanity.work', 'wss://*.sanity.io', 'wss://*.sanity.work']
+    : [];
+  const studioFontSrc = isStudio ? ' https://*.sanity.io data:' : '';
+
   const csp = [
     // Fallback for any directive not explicitly listed
     "default-src 'self'",
@@ -134,6 +147,7 @@ export function middleware(request: NextRequest) {
       // Social embeds in content (Facebook/Instagram post & video SDKs)
       'https://*.facebook.net',
       'https://www.instagram.com',
+      ...studioScriptSrc, // /studio only: *.sanity.work
     ].join(' '),
 
     // Styles: self + inline (Tailwind / Next.js injects inline styles) + FundraiseUp
@@ -161,10 +175,11 @@ export function middleware(request: NextRequest) {
       'https://ucarecdn.com',
       'https://*.ucarecd.net',
       'https://*.paypalobjects.com',
+      ...studioImgSrc, // /studio only: Sanity asset hosts
     ].join(' '),
 
     // Fonts
-    "font-src 'self' https://fonts.gstatic.com https://*.fundraiseup.com https://*.stripe.com",
+    `font-src 'self' https://fonts.gstatic.com https://*.fundraiseup.com https://*.stripe.com${studioFontSrc}`,
 
     // API / XHR / WebSocket connections
     [
@@ -172,6 +187,7 @@ export function middleware(request: NextRequest) {
       'https://*.sanity.io',
       'wss://*.api.sanity.io',    // Sanity Studio realtime listener (websocket)
       'https://*.sanity-cdn.com', // Sanity Studio modules / version check (core.sanity-cdn.com)
+      ...studioConnectSrc,        // /studio only: *.sanity.work + broader wss
       'https://api.resend.com',
       'https://*.google.com',
       'https://*.googleapis.com',
