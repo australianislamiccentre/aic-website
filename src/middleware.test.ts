@@ -83,10 +83,30 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     expect(directive(csp(middleware(makeRequest())), "media-src")).toContain("https://*.r2.dev");
   });
 
-  it("allows Sanity Studio's module CDN (sanity-cdn.com) so /studio's version check isn't blocked", () => {
-    expect(directive(csp(middleware(makeRequest("/studio"))), "connect-src")).toContain(
-      "https://sanity-cdn.com"
-    );
+  it("covers Sanity Studio's runtime hosts (sanity-cdn modules + realtime websocket)", () => {
+    const value = csp(middleware(makeRequest("/studio")));
+    // Auto-update module loader (core.sanity-cdn.com) loads scripts (AIC-WEBSITE-F)
+    expect(directive(value, "script-src")).toContain("https://*.sanity-cdn.com");
+    expect(directive(value, "connect-src")).toContain("https://*.sanity-cdn.com");
+    // Realtime listener uses a websocket — https://*.sanity.io does NOT cover wss://
+    // (AIC-WEBSITE-E/G).
+    expect(directive(value, "connect-src")).toContain("wss://*.api.sanity.io");
+  });
+
+  it("scopes the generous Sanity extras to /studio only — the public policy is unchanged", () => {
+    const studio = csp(middleware(makeRequest("/studio/structure")));
+    const publicPage = csp(middleware(makeRequest("/")));
+    // /studio (trusted, auth-gated admin) gets broad Sanity coverage…
+    expect(directive(studio, "script-src")).toContain("https://*.sanity.work");
+    expect(directive(studio, "connect-src")).toContain("https://*.sanity.work");
+    expect(directive(studio, "connect-src")).toContain("wss://*.sanity.io");
+    expect(directive(studio, "img-src")).toContain("https://*.sanity-cdn.com");
+    expect(directive(studio, "font-src")).toContain("data:");
+    // …but the strict PUBLIC policy must NOT inherit any of it.
+    expect(directive(publicPage, "script-src")).not.toContain("sanity.work");
+    expect(directive(publicPage, "connect-src")).not.toContain("sanity.work");
+    expect(directive(publicPage, "connect-src")).not.toContain("wss://*.sanity.io");
+    expect(directive(publicPage, "font-src")).not.toContain("data:");
   });
 
   it("allows the Sentry ingest host (incl. region DSNs like *.ingest.us.sentry.io) in connect-src", () => {
@@ -114,6 +134,24 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     expect(directive(value, "img-src")).toContain("https://*.googletagmanager.com");
     expect(directive(value, "connect-src")).toContain("https://*.googletagmanager.com");
     expect(directive(value, "connect-src")).toContain("https://*.analytics.google.com");
+  });
+
+  it("allows social embeds in content (Facebook / Instagram post & video SDKs)", () => {
+    // FB/IG embeds load an SDK script + XHR + images that the iframe-only
+    // allowedEmbedDomains mechanism can't cover (AIC-WEBSITE-H).
+    const value = csp(middleware(makeRequest()));
+    expect(directive(value, "script-src")).toContain("https://*.facebook.net");
+    expect(directive(value, "script-src")).toContain("https://www.instagram.com");
+    expect(directive(value, "connect-src")).toContain("https://*.facebook.com");
+    expect(directive(value, "img-src")).toContain("https://*.fbcdn.net");
+  });
+
+  it("keeps common embed providers in frame-src even with an empty domain cache (cold start)", () => {
+    // Regression (AIC-WEBSITE-J): on a cold serverless instance the Sanity domain
+    // cache is empty, so configured embeds must still come from static defaults.
+    const frameSrc = directive(csp(middleware(makeRequest("/events/x"))), "frame-src");
+    expect(frameSrc).toContain("https://*.jotform.com");
+    expect(frameSrc).toContain("https://*.typeform.com");
   });
 
   it("generates a different nonce on every request", () => {

@@ -96,13 +96,30 @@ export function middleware(request: NextRequest) {
   }
 
   // ── Content Security Policy ──
-  // Content-driven embed domains from Sanity (JotForm, Typeform, etc.)
-  const sanityDomains = cachedDomains ?? [];
-  const dynamicFrameSrc = sanityDomains.flatMap((d) => [`https://${d}`, `https://*.${d}`]);
+  // Content-driven embed domains (JotForm, Typeform, Google Forms, Vimeo, …).
+  // The common providers are kept STATIC so a cold serverless instance with an empty
+  // domain cache doesn't transiently block configured embeds (AIC-WEBSITE-J). Admin-
+  // added domains from siteSettings.allowedEmbedDomains merge on top.
+  const DEFAULT_EMBED_DOMAINS = ['jotform.com', 'typeform.com', 'player.vimeo.com'];
+  const embedDomains = Array.from(new Set([...DEFAULT_EMBED_DOMAINS, ...(cachedDomains ?? [])]));
+  const dynamicFrameSrc = embedDomains.flatMap((d) => [`https://${d}`, `https://*.${d}`]);
 
   // Optional violation reporting (e.g. a Sentry security endpoint). Only emitted
   // when configured, so nothing is hardcoded and the policy stays clean without it.
   const reportUri = process.env.CSP_REPORT_URI;
+
+  // Sanity Studio (/studio) is a trusted, auth-gated admin app with broad, evolving
+  // host needs (realtime websockets, auto-update module CDN, asset/font hosts). Give it
+  // generous Sanity coverage so it stops churning the policy. These extras apply ONLY
+  // under /studio — the public site's policy is byte-for-byte unchanged. They only ADD
+  // Sanity-owned hosts (a superset of what Studio already gets), so they can't break it.
+  const isStudio = request.nextUrl.pathname.startsWith('/studio');
+  const studioScriptSrc = isStudio ? ['https://*.sanity.work'] : [];
+  const studioImgSrc = isStudio ? ['https://*.sanity.io', 'https://*.sanity-cdn.com'] : [];
+  const studioConnectSrc = isStudio
+    ? ['https://*.sanity.work', 'wss://*.sanity.io', 'wss://*.sanity.work']
+    : [];
+  const studioFontSrc = isStudio ? ' https://*.sanity.io data:' : '';
 
   const csp = [
     // Fallback for any directive not explicitly listed
@@ -122,10 +139,15 @@ export function middleware(request: NextRequest) {
       'https://*.paypalobjects.com',
       'https://pay.google.com',
       'https://*.sanity.io',
+      'https://*.sanity-cdn.com', // Sanity Studio auto-update module loader (core.sanity-cdn.com)
       // Google Analytics 4 / gtag.js (served from *.googletagmanager.com)
       'https://*.googletagmanager.com',
       'https://www.google-analytics.com',
       'https://browser.sentry-cdn.com',
+      // Social embeds in content (Facebook/Instagram post & video SDKs)
+      'https://*.facebook.net',
+      'https://www.instagram.com',
+      ...studioScriptSrc, // /studio only: *.sanity.work
     ].join(' '),
 
     // Styles: self + inline (Tailwind / Next.js injects inline styles) + FundraiseUp
@@ -145,21 +167,27 @@ export function middleware(request: NextRequest) {
       'https://*.gstatic.com',
       'https://*.facebook.com',
       'https://*.instagram.com',
+      // Facebook / Instagram embed image CDNs
+      'https://*.fbcdn.net',
+      'https://*.cdninstagram.com',
       'https://*.fundraiseup.com',
       // FundraiseUp checkout images (Uploadcare) + PayPal marks
       'https://ucarecdn.com',
       'https://*.ucarecd.net',
       'https://*.paypalobjects.com',
+      ...studioImgSrc, // /studio only: Sanity asset hosts
     ].join(' '),
 
     // Fonts
-    "font-src 'self' https://fonts.gstatic.com https://*.fundraiseup.com https://*.stripe.com",
+    `font-src 'self' https://fonts.gstatic.com https://*.fundraiseup.com https://*.stripe.com${studioFontSrc}`,
 
     // API / XHR / WebSocket connections
     [
       "connect-src 'self'",
       'https://*.sanity.io',
-      'https://sanity-cdn.com', // Sanity Studio (/studio) module/version check
+      'wss://*.api.sanity.io',    // Sanity Studio realtime listener (websocket)
+      'https://*.sanity-cdn.com', // Sanity Studio modules / version check (core.sanity-cdn.com)
+      ...studioConnectSrc,        // /studio only: *.sanity.work + broader wss
       'https://api.resend.com',
       'https://*.google.com',
       'https://*.googleapis.com',
@@ -178,6 +206,9 @@ export function middleware(request: NextRequest) {
       'https://*.google-analytics.com',
       'https://*.analytics.google.com',
       'https://*.googletagmanager.com',
+      // Social embeds in content (Facebook/Instagram SDK XHRs)
+      'https://*.facebook.com',
+      'https://*.facebook.net',
       'https://vitals.vercel-insights.com',
       // Sentry ingest. Region DSNs use o<org>.ingest.<region>.sentry.io
       // (e.g. *.ingest.us.sentry.io), which '*.ingest.sentry.io' does NOT match,
