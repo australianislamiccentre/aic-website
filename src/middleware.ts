@@ -115,9 +115,22 @@ export function middleware(request: NextRequest) {
   // Sanity-owned hosts (a superset of what Studio already gets), so they can't break it.
   const isStudio = request.nextUrl.pathname.startsWith('/studio');
   const studioScriptSrc = isStudio ? ['https://*.sanity.work'] : [];
-  const studioImgSrc = isStudio ? ['https://*.sanity.io', 'https://*.sanity-cdn.com'] : [];
+  const studioImgSrc = isStudio
+    ? [
+        'https://*.sanity.io',
+        'https://*.sanity-cdn.com',
+        // Logged-in admin's Google SSO avatar (lh3–lh6.googleusercontent.com) (AIC-WEBSITE-M)
+        'https://*.googleusercontent.com',
+      ]
+    : [];
   const studioConnectSrc = isStudio
-    ? ['https://*.sanity.work', 'wss://*.sanity.io', 'wss://*.sanity.work']
+    ? [
+        'https://*.sanity.work',
+        'wss://*.sanity.io',
+        'wss://*.sanity.work',
+        // Version/module check hits the BARE apex — *.sanity-cdn.com doesn't match it (AIC-WEBSITE-K)
+        'https://sanity-cdn.com',
+      ]
     : [];
   const studioFontSrc = isStudio ? ' https://*.sanity.io data:' : '';
 
