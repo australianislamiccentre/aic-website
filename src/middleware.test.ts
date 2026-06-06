@@ -93,6 +93,27 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     expect(directive(value, "connect-src")).toContain("wss://*.api.sanity.io");
   });
 
+  it("allows the apex sanity-cdn.com on /studio connect-src (AIC-WEBSITE-K)", () => {
+    // Studio's version/module check connects to the BARE apex https://sanity-cdn.com,
+    // which the existing https://*.sanity-cdn.com wildcard does NOT match — the same
+    // apex-vs-wildcard trap as Google Pay's https://google.com.
+    const connectSrc = directive(
+      csp(middleware(makeRequest("/studio/structure/forms"))),
+      "connect-src"
+    );
+    expect(connectSrc).toContain("https://sanity-cdn.com");
+  });
+
+  it("allows the admin's Google SSO avatar on /studio img-src (AIC-WEBSITE-M)", () => {
+    // Studio shows the logged-in admin's Google profile picture, served from the
+    // rotating lh3–lh6.googleusercontent.com hosts (so allow the *.googleusercontent.com wildcard).
+    const imgSrc = directive(
+      csp(middleware(makeRequest("/studio/structure/forms"))),
+      "img-src"
+    );
+    expect(imgSrc).toContain("https://*.googleusercontent.com");
+  });
+
   it("scopes the generous Sanity extras to /studio only — the public policy is unchanged", () => {
     const studio = csp(middleware(makeRequest("/studio/structure")));
     const publicPage = csp(middleware(makeRequest("/")));
@@ -107,6 +128,12 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     expect(directive(publicPage, "connect-src")).not.toContain("sanity.work");
     expect(directive(publicPage, "connect-src")).not.toContain("wss://*.sanity.io");
     expect(directive(publicPage, "font-src")).not.toContain("data:");
+    // The apex sanity-cdn.com (AIC-WEBSITE-K) and Google avatar host (AIC-WEBSITE-M)
+    // are admin-only — they must not widen the public policy. Note the public
+    // connect-src keeps the *.sanity-cdn.com wildcard, which does not contain the
+    // apex substring, so this assertion is precise.
+    expect(directive(publicPage, "connect-src")).not.toContain("https://sanity-cdn.com");
+    expect(directive(publicPage, "img-src")).not.toContain("googleusercontent");
   });
 
   it("allows the Sentry ingest host (incl. region DSNs like *.ingest.us.sentry.io) in connect-src", () => {
