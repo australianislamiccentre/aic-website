@@ -40,6 +40,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { footerNavGroups } from "@/data/navigation";
 import { resolveLink } from "@/lib/resolve-link";
+import { getMelbourneDateString } from "@/lib/time";
 
 /** Renders the site-wide footer. Consumes SiteSettings and FormSettings contexts. */
 export function Footer() {
@@ -78,7 +79,10 @@ export function Footer() {
     { name: "Instagram", icon: Instagram, href: info.socialMedia.instagram },
     { name: "Youtube", icon: Youtube, href: info.socialMedia.youtube },
   ];
-  const currentYear = new Date().getFullYear();
+  // Melbourne-anchored year so SSR (UTC) and the client (local tz) render the same
+  // value across the New-Year boundary — avoids a copyright-line hydration mismatch
+  // (see "Dates and hydration" in CLAUDE.md).
+  const currentYear = getMelbourneDateString().slice(0, 4);
   const [subName, setSubName] = useState("");
   const [subEmail, setSubEmail] = useState("");
   const [subPhone, setSubPhone] = useState("");

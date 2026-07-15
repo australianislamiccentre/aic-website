@@ -163,6 +163,41 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     expect(directive(value, "connect-src")).toContain("https://*.analytics.google.com");
   });
 
+  it("allows the GA4 Google-signals ad/remarketing hosts (AIC-WEBSITE-Y/11/X/10/13/Q)", () => {
+    // With Google signals ON, gtag fires ad/remarketing traffic the generic Google
+    // entries don't cover: the ga-audiences pixel on the visitor's COUNTRY Google
+    // domain (google.com.au — a different registrable domain than *.google.com), the
+    // DoubleClick collect twin (doubleclick.net), and the ad-traffic-quality (SODAR)
+    // iframe on the '.google' gTLD. These are public-site requests, so they belong on
+    // the base policy, not the /studio-scoped extras.
+    const value = csp(middleware(makeRequest()));
+    expect(directive(value, "img-src")).toContain("https://www.google.com.au");
+    expect(directive(value, "connect-src")).toContain("https://www.google.com.au");
+    expect(directive(value, "connect-src")).toContain("https://stats.g.doubleclick.net");
+    expect(directive(value, "frame-src")).toContain("https://*.adtrafficquality.google");
+  });
+
+  it("allows the Samsung Pay wallet-readiness probe in connect-src (AIC-WEBSITE-12)", () => {
+    // The FundraiseUp/Stripe checkout SDK probes spay.samsung.com for Samsung Pay
+    // availability — same class as the Google Pay apex readiness check above.
+    expect(directive(csp(middleware(makeRequest("/donate"))), "connect-src")).toContain(
+      "https://spay.samsung.com"
+    );
+  });
+
+  it("allows the admin's GitHub SSO avatar on /studio img-src only (AIC-WEBSITE-T)", () => {
+    // Studio's member list renders the logged-in admin's GitHub avatar from
+    // avatars.githubusercontent.com. Studio-scoped: the strict public policy must
+    // NOT inherit it (mirrors the Google SSO avatar handling for AIC-WEBSITE-M).
+    const studioImg = directive(
+      csp(middleware(makeRequest("/studio/structure/sitePages"))),
+      "img-src"
+    );
+    const publicImg = directive(csp(middleware(makeRequest("/"))), "img-src");
+    expect(studioImg).toContain("https://avatars.githubusercontent.com");
+    expect(publicImg).not.toContain("githubusercontent");
+  });
+
   it("allows social embeds in content (Facebook / Instagram post & video SDKs)", () => {
     // FB/IG embeds load an SDK script + XHR + images that the iframe-only
     // allowedEmbedDomains mechanism can't cover (AIC-WEBSITE-H).

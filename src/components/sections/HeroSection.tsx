@@ -17,6 +17,7 @@ import { ArrowRight, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { aicImages } from "@/data/content";
 import type { SanityHomepageSettings } from "@/types/sanity";
 import { urlFor } from "@/sanity/lib/image";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 /** A resolved hero slide with text, buttons, and a ready-to-use image URL. */
 interface HeroButton {
@@ -171,6 +172,14 @@ export function HeroSection({ heroMode, heroVideoUrl, heroSlides, heroVideoOverl
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
 
+  // Gate the scroll-driven inline styles until after mount. On the server and the
+  // first client render these MotionValues resolve to their scroll=0 state, but a
+  // scroll-restored reload can hydrate at a different scrollYProgress, injecting a
+  // mismatched transform/opacity and tripping React hydration (Corrections Log #7,
+  // Sentry AIC-WEBSITE-1). Applying the dynamic style only post-mount keeps the SSR
+  // and first-render HTML identical.
+  const isMounted = useIsMounted();
+
   const getSlideVariant = (type: "enter" | "exit", dir: number) => ({
     x: type === "enter"
       ? (dir > 0 ? "100%" : "-100%")
@@ -191,7 +200,7 @@ export function HeroSection({ heroMode, heroVideoUrl, heroSlides, heroVideoOverl
     <section ref={containerRef} className="relative h-[100svh] min-h-[600px] overflow-hidden bg-black">
       {/* Background — Video or Image Carousel */}
       <motion.div
-        style={{ y, scale }}
+        style={isMounted ? { y, scale } : undefined}
         className="absolute inset-[-20px]"
       >
         {isVideoMode ? (
@@ -262,7 +271,7 @@ export function HeroSection({ heroMode, heroVideoUrl, heroSlides, heroVideoOverl
 
       {/* Main Content */}
       <motion.div
-        style={{ opacity }}
+        style={isMounted ? { opacity } : undefined}
         className="relative h-full flex items-center z-30"
       >
         <div className="max-w-7xl mx-auto px-6 w-full">

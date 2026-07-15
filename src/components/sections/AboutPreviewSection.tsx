@@ -18,6 +18,7 @@ import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
 import { PortableText } from "@portabletext/react";
 import type { SanityHomepageSettings } from "@/types/sanity";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 interface AboutPreviewSectionProps {
   welcomeSection?: SanityHomepageSettings["welcomeSection"];
@@ -48,6 +49,10 @@ export function AboutPreviewSection({ welcomeSection }: AboutPreviewSectionProps
 
   const imageY = useTransform(scrollYProgress, [0, 1], ["5%", "-5%"]);
 
+  // Gate the parallax style until mounted so a scroll-restored reload can't hydrate
+  // with a mismatched transform (hydration-safety; see Corrections Log #7).
+  const isMounted = useIsMounted();
+
   const imageSrc = welcomeSection?.image
     ? urlFor(welcomeSection.image).width(800).url()
     : "/images/aic 9.jpeg";
@@ -76,7 +81,7 @@ export function AboutPreviewSection({ welcomeSection }: AboutPreviewSectionProps
             <div className="relative">
               {/* Main image */}
               <motion.div
-                style={{ y: imageY }}
+                style={isMounted ? { y: imageY } : undefined}
                 className="relative rounded-2xl overflow-hidden shadow-2xl"
               >
                 <Image
