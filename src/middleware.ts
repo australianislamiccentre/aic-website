@@ -121,6 +121,8 @@ export function middleware(request: NextRequest) {
         'https://*.sanity-cdn.com',
         // Logged-in admin's Google SSO avatar (lh3–lh6.googleusercontent.com) (AIC-WEBSITE-M)
         'https://*.googleusercontent.com',
+        // Logged-in admin's GitHub SSO avatar in the Studio member list (AIC-WEBSITE-T)
+        'https://avatars.githubusercontent.com',
       ]
     : [];
   const studioConnectSrc = isStudio
@@ -173,6 +175,12 @@ export function middleware(request: NextRequest) {
       'https://images.unsplash.com',
       'https://i.ytimg.com',
       'https://*.google.com',
+      // GA4 Google-signals remarketing pixel (/ads/ga-audiences) is sent to the
+      // visitor's country Google domain, which '*.google.com' does not match
+      // (google.com.au is a different registrable domain) (AIC-WEBSITE-Y/11).
+      // Melbourne-first audience → com.au is the only high-volume ccTLD; the
+      // co.uk/com.sg/etc. long tail is left unlisted (see note on connect-src).
+      'https://www.google.com.au',
       // Google Analytics 4 image beacons: GA collect + gtag /td diagnostics pixel
       'https://*.google-analytics.com',
       'https://*.googletagmanager.com',
@@ -213,6 +221,17 @@ export function middleware(request: NextRequest) {
       'https://*.paypal.com',
       'https://*.paypalobjects.com',
       'https://google.com', // Google Pay readiness check (apex; *.google.com doesn't match it)
+      // GA4 Google-signals: ga-audiences beacon on the visitor's country Google
+      // domain + the DoubleClick collect twin. Neither is matched by the google
+      // entries above (com.au is a different domain; doubleclick.net isn't listed)
+      // (AIC-WEBSITE-X/10/13). NOTE: these three GA4-signals hosts (here, img-src,
+      // and frame-src) only fire when Google signals is ON in the GA4 property —
+      // removable if remarketing/ads personalization is disabled there.
+      'https://www.google.com.au',
+      'https://stats.g.doubleclick.net',
+      // Samsung Pay wallet-readiness probe from the FundraiseUp/Stripe checkout SDK,
+      // same class as the Google Pay apex above (AIC-WEBSITE-12)
+      'https://spay.samsung.com',
       // Google Analytics 4 / gtag: collection beacons hit REGIONAL hosts
       // (region1.google-analytics.com…) and analytics.google.com, and gtag config
       // is fetched from *.googletagmanager.com — none matched by the entries above.
@@ -235,6 +254,10 @@ export function middleware(request: NextRequest) {
       "frame-src 'self'",
       'https://*.sanity.io',
       'https://*.google.com',
+      // GA4 Google-signals ad-traffic-quality (SODAR) verification iframe. The
+      // '.google' gTLD is not matched by '*.google.com' (AIC-WEBSITE-Q); the
+      // wildcard covers the rotating ep1/ep2/ep3 subdomains.
+      'https://*.adtrafficquality.google',
       'https://*.googleapis.com',
       'https://maps.app.goo.gl',
       'https://www.youtube.com',
