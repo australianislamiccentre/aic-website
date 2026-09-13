@@ -36,6 +36,7 @@ import { LiveBanner } from "@/components/LiveBanner";
 import { EidBanner } from "@/components/layout/EidBanner";
 import { FormSettingsProvider } from "@/contexts/FormSettingsContext";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { VercelAnalytics } from "@/components/VercelAnalytics";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -223,6 +224,7 @@ export default async function RootLayout({
             newsletterSettings={newsletterSettingsRaw}
           >
             <GoogleAnalytics nonce={nonce} />
+            <VercelAnalytics />
             <FundraiseUpScript settings={donationSettings} nonce={nonce} />
             <ScrollToTop />
             <EidBanner prayerSettings={prayerSettings} />
