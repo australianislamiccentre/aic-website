@@ -10,8 +10,9 @@
  */
 "use client";
 
-import DOMPurify from "isomorphic-dompurify";
+import DOMPurify from "dompurify";
 import { Heart } from "lucide-react";
+import { useIsMounted } from "@/hooks/useIsMounted";
 import type { DonatePageSettings, DonatePageImpactStat } from "@/sanity/lib/fetch";
 
 interface DonateContentProps {
@@ -35,12 +36,32 @@ const sanitizeFundraiseUpElement = (code: string): string => {
   });
 };
 
-/** Renders a sanitised Fundraise Up HTML snippet. */
+/**
+ * Renders a sanitised Fundraise Up HTML snippet — client-side only.
+ *
+ * The snippet is an inert placeholder (a hidden anchor) that the Fundraise Up
+ * SDK swaps out once it boots in the browser, so server-rendering it buys us
+ * nothing. Deferring past mount keeps DOMPurify — and the DOM it needs — out
+ * of the server bundle entirely.
+ *
+ * That is not just tidiness. `isomorphic-dompurify` drags jsdom into the SSR
+ * graph, and on Vercel one of jsdom's transitive deps (html-encoding-sniffer)
+ * CommonJS-`require()`s an ES module, throwing ERR_REQUIRE_ESM at module
+ * evaluation and 500-ing the whole page. Plain `dompurify` has no such graph.
+ *
+ * The wrapper div still renders on the server so the surrounding flex layout
+ * is identical before and after hydration — only the inner HTML is deferred,
+ * which keeps the server and first-client render byte-identical.
+ */
 function FundraiseUpWidget({ html, className }: { html: string; className?: string }) {
+  const isMounted = useIsMounted();
+
   return (
     <div
       className={className}
-      dangerouslySetInnerHTML={{ __html: sanitizeFundraiseUpElement(html) }}
+      dangerouslySetInnerHTML={
+        isMounted ? { __html: sanitizeFundraiseUpElement(html) } : undefined
+      }
     />
   );
 }
