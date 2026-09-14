@@ -4,22 +4,21 @@
  * Audits the dataset for missing or empty content that the live site depends on.
  * Does NOT mutate anything. Safe to run anywhere, including CI.
  *
+ * Reads published content without a token — the same access the live site
+ * has — so an expired token in .env.local can't fail it (see
+ * sanity-health-client.ts).
+ *
  * Exits 1 if any critical gap is found so CI can fail on it.
  *
  * Usage: npx tsx scripts/check-sanity-content.ts
  */
 import { createClient } from "@sanity/client";
 import dotenv from "dotenv";
+import { buildHealthCheckClientConfig } from "./sanity-health-client";
 
 dotenv.config({ path: ".env.local" });
 
-const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  apiVersion: "2024-01-01",
-  useCdn: false,
-  token: process.env.SANITY_API_READ_TOKEN || process.env.SANITY_API_WRITE_TOKEN,
-});
+const client = createClient(buildHealthCheckClientConfig(process.env));
 
 type Gap = { severity: "error" | "warn"; message: string };
 const gaps: Gap[] = [];

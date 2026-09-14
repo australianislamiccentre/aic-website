@@ -14,7 +14,7 @@ npm run test             # Vitest in watch mode
 npm run test:run         # Run all tests once
 npx vitest run src/components/ui/Button.test.tsx  # Run a single test file
 npm run test:coverage    # Tests with v8 coverage
-npm run validate         # Full CI check: type-check -> lint -> test:run -> build
+npm run validate         # type-check -> lint -> test:run -> build -> check:sanity (CI runs the first four only)
 ```
 
 Pre-commit hooks (Husky + lint-staged) auto-fix ESLint on `*.{ts,tsx,js,jsx,json,md}`. The hook is lightweight (lint only) — CI runs the full `validate` check on push.
