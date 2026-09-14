@@ -10,6 +10,10 @@
  * - "preview"    → every other branch or PR deploy (including .vercel.app URLs)
  * - undefined    → local `npm run dev`
  *
+ * Google signals must stay OFF in the GA4 property (Admin → Data collection).
+ * The site's CSP (`src/middleware.ts`) deliberately doesn't allow the remarketing
+ * hosts signals uses, so re-enabling it floods Sentry with CSP reports.
+ *
  * @module components/GoogleAnalytics
  */
 "use client";
