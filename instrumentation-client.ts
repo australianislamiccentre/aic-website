@@ -11,6 +11,7 @@
  * @see https://docs.sentry.io/platforms/javascript/guides/nextjs/
  */
 import * as Sentry from "@sentry/nextjs";
+import { IGNORED_ERRORS, filterBrowserEvent } from "@/lib/sentry-filters";
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -25,18 +26,10 @@ Sentry.init({
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 1.0,
 
-  // Filter out noisy browser extension errors
-  ignoreErrors: [
-    // Browser extensions
-    /extensions\//i,
-    /^chrome-extension:\/\//,
-    // Network errors that aren't actionable
-    "Network request failed",
-    "Failed to fetch",
-    "Load failed",
-    // ResizeObserver noise
-    "ResizeObserver loop",
-  ],
+  // Drop recurring, non-actionable noise (extensions, blocked third-party
+  // scripts, flaky networks). See src/lib/sentry-filters.ts for why each exists.
+  ignoreErrors: IGNORED_ERRORS,
+  beforeSend: filterBrowserEvent,
 
   integrations: [
     Sentry.replayIntegration({
