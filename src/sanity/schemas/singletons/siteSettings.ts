@@ -117,9 +117,9 @@ export default defineType({
       title: "Trusted Embed Domains",
       type: "array",
       description:
-        "For security, the site only allows iframes/embeds from domains listed here. " +
-        "If an embedded form or video isn't loading, add its domain to this list. " +
-        "Example: if a JotForm registration form isn't showing on an event page, add 'form.jotform.com' here.",
+        "For security, the site only allows iframes/embeds from trusted domains. " +
+        "JotForm (all of its addresses, including pci.jotform.com for payment forms), Typeform and Vimeo are trusted automatically. " +
+        "For any other provider, add its domain here — e.g. 'docs.google.com' for Google Forms. A domain also covers its subdomains.",
       of: [
         {
           type: "object",
