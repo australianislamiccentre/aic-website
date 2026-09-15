@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@/test/test-utils";
+import { render, screen, within } from "@/test/test-utils";
 import AboutContent from "./AboutContent";
 import type { SanityAboutPageSettings } from "@/types/sanity";
 
@@ -54,6 +54,26 @@ const defaultSettings: SanityAboutPageSettings = {
   heroDescription: "A vibrant community hub",
   heroStats: [{ value: "40+", label: "Years Serving" }],
 };
+
+describe("AboutContent — hero heading", () => {
+  it("shows the accent after the heading when the heading doesn't contain it (regression: live H1 read just 'About the')", () => {
+    render(
+      <AboutContent
+        settings={{ ...defaultSettings, heroHeading: "About the", heroHeadingAccent: "Australian Islamic Centre" }}
+      />,
+    );
+    const h1 = screen.getByRole("heading", { level: 1 });
+    expect(h1).toHaveTextContent(/^About the\s*Australian Islamic Centre$/);
+    expect(within(h1).getByText("Australian Islamic Centre")).toHaveClass("text-teal-600");
+  });
+
+  it("still highlights the accent in place when the heading contains it", () => {
+    render(<AboutContent settings={defaultSettings} />);
+    const h1 = screen.getByRole("heading", { level: 1 });
+    expect(h1).toHaveTextContent(/^About the Australian Islamic Centre$/);
+    expect(within(h1).getByText("Australian Islamic Centre")).toHaveClass("text-teal-600");
+  });
+});
 
 describe("AboutContent", () => {
   it("renders hero heading from Sanity settings", () => {

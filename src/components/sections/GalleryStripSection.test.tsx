@@ -48,6 +48,16 @@ function makeImage(overrides: Partial<SanityGalleryImage> = {}): SanityGalleryIm
   };
 }
 
+describe("GalleryStripSection — items without images", () => {
+  it("renders nothing when no gallery item has an uploaded image (regression: empty 'Life at AIC' strip on the homepage)", () => {
+    const noImage = { image: undefined as unknown as SanityGalleryImage["image"] };
+    const { container } = render(
+      <GalleryStripSection images={[makeImage(noImage), makeImage(noImage)]} />,
+    );
+    expect(container).toBeEmptyDOMElement();
+  });
+});
+
 describe("GalleryStripSection", () => {
   it("renders nothing when images array is empty", () => {
     const { container } = render(<GalleryStripSection images={[]} />);

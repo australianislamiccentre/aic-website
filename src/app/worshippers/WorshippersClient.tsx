@@ -72,6 +72,9 @@ export default function WorshippersClient({
 }: WorshippersClientProps) {
   const info = useSiteSettings();
 
+  // Studio's "Show Khutbah Videos Section" toggle; the section is hidden anyway without videos
+  const showKhutbah = pageSettings?.khutbahVisible !== false && youtubeVideos.length > 0;
+
   // Normalize Sanity data with hardcoded fallbacks
   // pageSettings.etiquetteItems takes highest priority, then etiquette prop, then fallback
   const etiquetteItems = (pageSettings?.etiquetteItems && pageSettings.etiquetteItems.length > 0)
@@ -141,7 +144,7 @@ export default function WorshippersClient({
       </section>
 
       {/* YouTube — Islamic Talks */}
-      {youtubeVideos.length > 0 && (
+      {showKhutbah && (
         <section className="py-10 md:py-14 bg-neutral-50">
           <div className="max-w-7xl mx-auto px-6">
             <FadeIn>
@@ -201,7 +204,7 @@ export default function WorshippersClient({
 
       {/* Mosque Etiquette */}
       {pageSettings?.etiquetteVisible !== false && (
-        <section id="etiquette" className={`py-10 md:py-14 ${youtubeVideos.length > 0 ? "bg-white" : "bg-neutral-50"}`}>
+        <section id="etiquette" className={`py-10 md:py-14 ${showKhutbah ?"bg-white" : "bg-neutral-50"}`}>
           <div className="max-w-7xl mx-auto px-6">
             <FadeIn>
               <div className="mb-6">
@@ -238,7 +241,7 @@ export default function WorshippersClient({
 
       {/* Get Directions CTA */}
       {pageSettings?.ctaVisible !== false && (
-        <section className={`py-10 ${youtubeVideos.length > 0 ? "bg-neutral-50" : "bg-white"}`}>
+        <section className={`py-10 ${showKhutbah ?"bg-neutral-50" : "bg-white"}`}>
           <div className="max-w-7xl mx-auto px-6">
             <FadeIn>
               {(pageSettings?.ctaHeading || pageSettings?.ctaDescription) && (

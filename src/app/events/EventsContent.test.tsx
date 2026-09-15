@@ -82,6 +82,28 @@ function makeEvent(overrides: Partial<EventForDisplay> = {}): EventForDisplay {
   };
 }
 
+describe("EventsContent — programs anchor", () => {
+  it("anchors the Weekly Programs section at #programs for the header and footer 'Programs' links", () => {
+    const { container } = render(
+      <EventsContent
+        events={[makeEvent({ eventType: "recurring", displayAs: "program", recurringDay: "Fridays", date: undefined })]}
+      />,
+    );
+    const section = container.querySelector("#programs");
+    expect(section).toBeInTheDocument();
+    expect(section).toHaveTextContent("Weekly Programs");
+  });
+
+  it("shows the day a program repeats on without mangling it (regression: 'Every Tuedays')", () => {
+    render(
+      <EventsContent
+        events={[makeEvent({ eventType: "recurring", displayAs: "program", recurringDay: "Tuesdays", date: undefined })]}
+      />,
+    );
+    expect(screen.getByText("Tuesday")).toBeInTheDocument();
+  });
+});
+
 describe("EventsContent", () => {
   it("renders the page title", () => {
     render(<EventsContent events={[]} />);

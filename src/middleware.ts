@@ -31,6 +31,7 @@
  * @module middleware
  */
 import { NextRequest, NextResponse } from 'next/server';
+import { DEFAULT_EMBED_DOMAINS } from './lib/embed-domains';
 
 // ── Cached embed domains for CSP header ──
 // Fetched directly from Sanity CDN API (no client import needed for Edge runtime).
@@ -99,8 +100,8 @@ export function middleware(request: NextRequest) {
   // Content-driven embed domains (JotForm, Typeform, Google Forms, Vimeo, …).
   // The common providers are kept STATIC so a cold serverless instance with an empty
   // domain cache doesn't transiently block configured embeds (AIC-WEBSITE-J). Admin-
-  // added domains from siteSettings.allowedEmbedDomains merge on top.
-  const DEFAULT_EMBED_DOMAINS = ['jotform.com', 'typeform.com', 'player.vimeo.com'];
+  // added domains from siteSettings.allowedEmbedDomains merge on top. The defaults are
+  // shared with the event page's form embed so both layers trust the same domains.
   const embedDomains = Array.from(new Set([...DEFAULT_EMBED_DOMAINS, ...(cachedDomains ?? [])]));
   const dynamicFrameSrc = embedDomains.flatMap((d) => [`https://${d}`, `https://*.${d}`]);
 

@@ -87,7 +87,7 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
   const ogImage = service.image ? urlFor(service.image).width(1200).height(630).url() : undefined;
 
   return {
-    title: `${service.title} | Australian Islamic Centre`,
+    title: service.title,
     description: service.shortDescription,
     alternates: { canonical: `/services/${slug}` },
     openGraph: {

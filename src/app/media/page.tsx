@@ -11,6 +11,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getMediaGallery, getMediaPageSettings } from "@/sanity/lib/fetch";
+import { pageTitle } from "@/lib/seo";
 import { getYouTubeVideos, getYouTubeLiveStream, getYouTubePlaylists } from "@/lib/youtube";
 import MediaContent from "./MediaContent";
 
@@ -19,7 +20,7 @@ export const revalidate = 120;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getMediaPageSettings();
   return {
-    title: settings?.seo?.title ?? "Media Gallery | Australian Islamic Centre",
+    title: pageTitle(settings?.seo?.title, "Media Gallery"),
     description: settings?.seo?.description ?? "Photos and videos from the Australian Islamic Centre community.",
     alternates: { canonical: "/media" },
   };

@@ -10,6 +10,7 @@
  */
 import type { Metadata } from "next";
 import { getResources, getResourcesPageSettings } from "@/sanity/lib/fetch";
+import { pageTitle } from "@/lib/seo";
 import { SanityResource } from "@/types/sanity";
 import ResourcesContent from "./ResourcesContent";
 
@@ -18,7 +19,7 @@ export const revalidate = 120;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getResourcesPageSettings();
   return {
-    title: settings?.seo?.title ?? "Resources | Australian Islamic Centre",
+    title: pageTitle(settings?.seo?.title, "Resources"),
     description: settings?.seo?.description ?? "Browse and download community resources including Islamic literature, audio lectures, video content, and educational materials from the Australian Islamic Centre.",
     alternates: { canonical: "/resources" },
   };

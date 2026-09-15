@@ -253,38 +253,28 @@ describe("validateEventInquiry", () => {
     firstName: "Ali",
     lastName: "Hassan",
     email: "ali@example.com",
-    eventName: "Community Iftar",
+    eventSlug: "community-iftar",
     message: "How can I participate?",
   };
 
-  it("accepts valid data", () => {
+  it("accepts valid data and identifies the event by slug", () => {
     const result = validateEventInquiry(validData);
     expect(result.valid).toBe(true);
     if (result.valid) {
-      expect(result.data.eventName).toBe("Community Iftar");
-      expect(result.data.contactEmail).toBeUndefined();
+      expect(result.data.eventSlug).toBe("community-iftar");
     }
   });
 
-  it("includes contactEmail when valid", () => {
+  it("never passes a client-supplied recipient or event name through (open-relay regression)", () => {
     const result = validateEventInquiry({
       ...validData,
-      contactEmail: "organiser@example.com",
+      contactEmail: "victim@example.com",
+      eventName: "Your account is suspended",
     });
     expect(result.valid).toBe(true);
     if (result.valid) {
-      expect(result.data.contactEmail).toBe("organiser@example.com");
-    }
-  });
-
-  it("ignores invalid contactEmail", () => {
-    const result = validateEventInquiry({
-      ...validData,
-      contactEmail: "not-valid",
-    });
-    expect(result.valid).toBe(true);
-    if (result.valid) {
-      expect(result.data.contactEmail).toBeUndefined();
+      expect(result.data).not.toHaveProperty("contactEmail");
+      expect(result.data).not.toHaveProperty("eventName");
     }
   });
 
@@ -297,17 +287,17 @@ describe("validateEventInquiry", () => {
     expect(validateEventInquiry(data).valid).toBe(false);
   });
 
-  it("rejects missing eventName", () => {
-    const { eventName: _, ...data } = validData;
+  it("rejects missing eventSlug", () => {
+    const { eventSlug: _, ...data } = validData;
     const result = validateEventInquiry(data);
     expect(result.valid).toBe(false);
-    if (!result.valid) expect(result.error).toMatch(/event name/i);
+    if (!result.valid) expect(result.error).toMatch(/event/i);
   });
 
-  it("rejects eventName exceeding 200 characters", () => {
+  it("rejects eventSlug exceeding 200 characters", () => {
     const result = validateEventInquiry({
       ...validData,
-      eventName: "x".repeat(201),
+      eventSlug: "x".repeat(201),
     });
     expect(result.valid).toBe(false);
   });

@@ -2,8 +2,12 @@
  * Form Embed
  *
  * Client component that renders an external registration or sign-up form
- * inside a collapsible iframe. Validates the embed URL against an allowlist
- * of trusted domains fetched from Sanity before rendering.
+ * inside a collapsible iframe. Validates the embed URL against the built-in
+ * trusted providers plus the domains listed in Sanity before rendering.
+ *
+ * The iframe is only created after mount: a server-rendered iframe starts
+ * loading before hydration, and JotForm posts its one `setHeight` message
+ * before the listener below exists — leaving the form stuck at MIN_HEIGHT.
  *
  * @module app/events/[slug]/FormEmbed
  */
@@ -11,19 +15,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ClipboardCheck, ChevronDown, ChevronUp } from "lucide-react";
-
-function isAllowedUrl(url: string, allowedDomains: string[]): boolean {
-  if (allowedDomains.length === 0) return false;
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== "https:") return false;
-    return allowedDomains.some(
-      (d) => parsed.hostname === d || parsed.hostname.endsWith("." + d)
-    );
-  } catch {
-    return false;
-  }
-}
+import { useIsMounted } from "@/hooks/useIsMounted";
+import { isAllowedEmbedUrl } from "@/lib/embed-domains";
 
 /** Minimum height so the iframe never collapses to nothing */
 const MIN_HEIGHT = 320;
@@ -38,6 +31,7 @@ export function FormEmbedSection({ url, allowedDomains }: FormEmbedProps) {
   const [open, setOpen] = useState(true);
   const [iframeHeight, setIframeHeight] = useState<number>(MIN_HEIGHT);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const isMounted = useIsMounted();
 
   // Listen for postMessage height updates from the embedded form.
   // JotForm sends: { type: "jotform-height", height: N }  or  "setHeight:N:frameId"
@@ -83,7 +77,7 @@ export function FormEmbedSection({ url, allowedDomains }: FormEmbedProps) {
     return () => window.removeEventListener("message", handleMessage);
   }, [open, handleMessage]);
 
-  if (!isAllowedUrl(url, allowedDomains)) {
+  if (!isAllowedEmbedUrl(url, allowedDomains)) {
     return null;
   }
 
@@ -92,6 +86,7 @@ export function FormEmbedSection({ url, allowedDomains }: FormEmbedProps) {
       <div className="max-w-5xl mx-auto px-6">
         <button
           onClick={() => setOpen(!open)}
+          aria-expanded={open}
           className="w-full flex items-center justify-between py-5 group cursor-pointer"
         >
           <div className="flex items-center gap-2.5">
@@ -108,18 +103,23 @@ export function FormEmbedSection({ url, allowedDomains }: FormEmbedProps) {
 
       {open && (
         <div className="max-w-5xl mx-auto px-6 pb-8">
-          {/* sandbox: allow-same-origin is required for JotForm/Typeform to function;
-              allow-top-navigation and allow-popups-to-escape-sandbox removed for security */}
-          <iframe
-            ref={iframeRef}
-            src={url}
-            title="Registration Form"
-            className="w-full border-0 rounded-xl transition-[height] duration-200"
-            style={{ height: `${iframeHeight}px` }}
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-            allow="payment"
-            referrerPolicy="no-referrer"
-          />
+          {isMounted ? (
+            /* sandbox: allow-same-origin is required for JotForm/Typeform to function;
+               allow-top-navigation and allow-popups-to-escape-sandbox removed for security */
+            <iframe
+              ref={iframeRef}
+              src={url}
+              title="Registration Form"
+              className="w-full border-0 rounded-xl transition-[height] duration-200"
+              style={{ height: `${iframeHeight}px` }}
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              allow="payment"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            // Same footprint as the iframe so nothing shifts when it mounts
+            <div aria-hidden="true" className="w-full" style={{ height: `${iframeHeight}px` }} />
+          )}
         </div>
       )}
     </section>

@@ -10,6 +10,7 @@
  * @module sanity/schemas/event
  */
 import { defineField, defineType } from "sanity";
+import { isAllowedEmbedUrl } from "../../../lib/embed-domains";
 
 // Time options in 30-minute intervals (full 24 hours)
 const timeOptions = [
@@ -548,12 +549,12 @@ export default defineType({
       description: 'Shows a "Visit Website" button on the event page',
     }),
 
-    // ── 9. Embedded Form (sidebar on event page) ──
+    // ── 9. Embedded Form (full width below the event details) ──
     defineField({
       name: "formType",
       title: "Embedded Form",
       type: "string",
-      description: "Choose which form to show in the sidebar of the event page",
+      description: "Choose which form to show below the event details on the event page",
       initialValue: "none",
       options: {
         list: [
@@ -575,9 +576,9 @@ export default defineType({
       title: "External Form URL",
       type: "url",
       description:
-        'Paste the form URL from your provider (e.g. https://form.jotform.com/12345). The domain must be added to the Allowed Embed Domains list in Site Settings.',
+        "Paste the form URL from your provider (e.g. https://form.jotform.com/12345). JotForm (including payment forms on pci.jotform.com) and Typeform links work automatically. For any other provider, first add its domain under Site Settings → Trusted Embed Domains.",
       hidden: ({ document }) => document?.formType !== "embed",
-      validation: (Rule) =>
+      validation: (Rule) => [
         Rule.custom((url, context) => {
           const doc = context.document as { formType?: string } | undefined;
           if (doc?.formType === "embed" && !url) {
@@ -595,6 +596,24 @@ export default defineType({
           }
           return true;
         }),
+        // The event page silently skips forms from untrusted domains, so tell the editor here.
+        // A warning, not an error: it must never block publishing (e.g. if Site Settings can't be read).
+        Rule.custom(async (url, context) => {
+          const doc = context.document as { formType?: string } | undefined;
+          if (doc?.formType !== "embed" || typeof url !== "string") return true;
+          try {
+            const { hostname, protocol } = new URL(url);
+            if (protocol !== "https:") return true; // the rule above already reports this
+            const siteDomains = await context
+              .getClient({ apiVersion: "2024-01-01" })
+              .fetch<(string | null)[] | null>(`*[_id == "siteSettings"][0].allowedEmbedDomains[].domain`);
+            if (isAllowedEmbedUrl(url, siteDomains ?? [])) return true;
+            return `This form won't appear on the website because ${hostname} isn't a trusted domain. Add it under Site Settings → Trusted Embed Domains.`;
+          } catch {
+            return true;
+          }
+        }).warning(),
+      ],
     }),
   ],
   preview: {

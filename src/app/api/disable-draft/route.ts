@@ -7,7 +7,7 @@
  *
  * @route POST /api/disable-draft
  * @module api/disable-draft
- * @see src/app/api/draft/route.ts     — enables draft mode
+ * @see src/app/api/draft-mode/enable/route.ts — enables draft mode
  * @see src/components/PreviewBanner.tsx — UI that calls this endpoint
  */
 import { draftMode } from "next/headers";

@@ -9,6 +9,7 @@
  */
 import type { Metadata } from "next";
 import { getPartners, getPartnersPageSettings } from "@/sanity/lib/fetch";
+import { pageTitle } from "@/lib/seo";
 import PartnersContent from "./PartnersContent";
 
 export const revalidate = 120;
@@ -16,7 +17,7 @@ export const revalidate = 120;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getPartnersPageSettings();
   return {
-    title: settings?.seo?.title ?? "Partners | Australian Islamic Centre",
+    title: pageTitle(settings?.seo?.title, "Partners"),
     description: settings?.seo?.description ?? "Discover the Australian Islamic Centre's affiliated partner organisations working together in education, sports, and community development.",
     alternates: { canonical: "/partners" },
   };

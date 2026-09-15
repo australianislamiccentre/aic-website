@@ -9,6 +9,7 @@
  */
 import type { Metadata } from "next";
 import { getEvents, getEventsPageSettings, getPrayerSettings } from "@/sanity/lib/fetch";
+import { pageTitle } from "@/lib/seo";
 import { formatEventTime } from "@/lib/event-time";
 import type { SanityEvent } from "@/types/sanity";
 import EventsContent, { type EventForDisplay } from "./EventsContent";
@@ -18,7 +19,7 @@ export const revalidate = 120;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getEventsPageSettings();
   return {
-    title: settings?.seo?.title ?? "Events | Australian Islamic Centre",
+    title: pageTitle(settings?.seo?.title, "Events"),
     description: settings?.seo?.description ?? "Join us for spiritual gatherings, educational workshops, and community celebrations at the Australian Islamic Centre.",
     alternates: { canonical: "/events" },
   };

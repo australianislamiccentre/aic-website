@@ -119,7 +119,8 @@ describe("DynamicPage", () => {
       const metadata = await generateMetadata({
         params: Promise.resolve({ slug: "test-page" }),
       });
-      expect(metadata.title).toBe("Test SEO Title | Australian Islamic Centre");
+      // The root layout's title template appends " | Australian Islamic Centre" (regression: doubled titles)
+      expect(metadata.title).toBe("Test SEO Title");
       expect(metadata.description).toBe("Test SEO description");
     });
 
@@ -131,7 +132,7 @@ describe("DynamicPage", () => {
       const metadata = await generateMetadata({
         params: Promise.resolve({ slug: "test-page" }),
       });
-      expect(metadata.title).toBe("Test Page | Australian Islamic Centre");
+      expect(metadata.title).toBe("Test Page");
       expect(metadata.description).toBe("This is a test introduction.");
     });
 

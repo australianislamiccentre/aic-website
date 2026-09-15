@@ -265,7 +265,8 @@ function EventCard({ event, viewMode, index }: EventCardProps) {
               <>
                 <p className="text-sm font-bold text-green-600">Every</p>
                 <p className="text-lg font-bold text-gray-800">
-                  {(event.recurringDay || event.date || "").replace("s", "")}
+                  {/* "Tuesdays" → "Tuesday"; only the plural s at the end, not the first s in the word */}
+                  {(event.recurringDay || event.date || "").replace(/s$/, "")}
                 </p>
               </>
             ) : isValidDate(event.date) ? (
@@ -601,9 +602,10 @@ export default function EventsContent({ events, pageSettings }: EventsContentPro
         </section>
       )}
 
-      {/* Weekly / Recurring Programs Section */}
+      {/* Weekly / Recurring Programs Section — #programs is the target of the
+          header/footer "Programs" links (/events#programs) */}
       {filteredRecurringEvents.length > 0 && (
-        <section className="py-16 bg-white">
+        <section id="programs" className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Weekly Programs</h2>
             <p className="text-gray-500 mb-8">Recurring events that run on a regular schedule</p>

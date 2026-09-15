@@ -32,6 +32,7 @@ import { PrayerWidget } from "@/components/layout/PrayerWidget";
 import { FundraiseUpScript } from "@/components/FundraiseUpScript";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import { getYouTubeLiveStream } from "@/lib/youtube";
+import { buildMosqueJsonLd } from "@/lib/structured-data";
 import { LiveBanner } from "@/components/LiveBanner";
 import { EidBanner } from "@/components/layout/EidBanner";
 import { FormSettingsProvider } from "@/contexts/FormSettingsContext";
@@ -185,37 +186,7 @@ export default async function RootLayout({
         </a>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Mosque",
-              name: "Australian Islamic Centre",
-              url: "https://australianislamiccentre.org",
-              address: {
-                "@type": "PostalAddress",
-                streetAddress: "23-27 Blenheim Road",
-                addressLocality: "Newport",
-                addressRegion: "VIC",
-                postalCode: "3015",
-                addressCountry: "AU",
-              },
-              telephone: "+61 3 9391 5724",
-              openingHoursSpecification: {
-                "@type": "OpeningHoursSpecification",
-                dayOfWeek: [
-                  "Monday",
-                  "Tuesday",
-                  "Wednesday",
-                  "Thursday",
-                  "Friday",
-                  "Saturday",
-                  "Sunday",
-                ],
-                opens: "04:30",
-                closes: "22:30",
-              },
-            }),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildMosqueJsonLd(siteSettings)) }}
         />
         <SiteSettingsProvider siteSettings={siteSettings} customNavPages={navigationPages.map(p => ({ title: p.title, slug: p.slug, navLabel: p.navLabel }))} headerSettings={headerSettings} footerSettings={footerSettings}>
           <FormSettingsProvider

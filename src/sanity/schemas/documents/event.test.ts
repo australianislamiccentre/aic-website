@@ -159,3 +159,91 @@ describe("event schema — prayer-relative time fields", () => {
     expect(hidden?.({ document: { startTimeMode: "custom" } })).toBe(true);
   });
 });
+
+type ValidationContext = {
+  document: Record<string, unknown>;
+  getClient?: (options: { apiVersion: string }) => { fetch: (query: string) => Promise<unknown> };
+};
+type CustomValidator = (value: unknown, context: ValidationContext) => string | true | Promise<string | true>;
+
+/** Minimal stand-in for Sanity's Rule builder: records each custom() rule and its severity. */
+function collectCustomRules(fieldName: string) {
+  const rules: Array<{ validate: CustomValidator; level: "error" | "warning" }> = [];
+  const rule = {
+    custom(validate: CustomValidator) {
+      const entry: { validate: CustomValidator; level: "error" | "warning" } = { validate, level: "error" };
+      rules.push(entry);
+      const chain = {
+        warning: () => {
+          entry.level = "warning";
+          return chain;
+        },
+        error: () => chain,
+      };
+      return chain;
+    },
+  };
+  (getField(fieldName)?.validation as unknown as (r: typeof rule) => unknown)(rule);
+  return rules;
+}
+
+function siteSettingsClient(fetch: () => Promise<unknown>): ValidationContext["getClient"] {
+  return () => ({ fetch });
+}
+
+describe("Event Schema — embedFormUrl validation", () => {
+  const embedDoc = { formType: "embed" };
+
+  it("still requires a URL when the external form embed is selected", async () => {
+    const errorRule = collectCustomRules("embedFormUrl").find((r) => r.level === "error");
+    expect(await errorRule?.validate(undefined, { document: embedDoc })).toContain("Form URL is required");
+  });
+
+  it("warns the editor when the form's domain isn't trusted, because the form won't show on the site", async () => {
+    const warningRule = collectCustomRules("embedFormUrl").find((r) => r.level === "warning");
+    expect(warningRule).toBeDefined();
+    const result = await warningRule?.validate("https://forms.office.com/r/abc", {
+      document: embedDoc,
+      getClient: siteSettingsClient(async () => ["docs.google.com"]),
+    });
+    expect(result).toMatch(/Trusted Embed Domains/);
+  });
+
+  it("does not warn for JotForm payment forms, which are trusted by default", async () => {
+    const warningRule = collectCustomRules("embedFormUrl").find((r) => r.level === "warning");
+    const result = await warningRule?.validate("https://pci.jotform.com/form/262558336270864", {
+      document: embedDoc,
+      getClient: siteSettingsClient(async () => ["form.jotform.com"]),
+    });
+    expect(result).toBe(true);
+  });
+
+  it("does not warn for a domain listed in Site Settings", async () => {
+    const warningRule = collectCustomRules("embedFormUrl").find((r) => r.level === "warning");
+    const result = await warningRule?.validate("https://docs.google.com/forms/d/e/abc/viewform", {
+      document: embedDoc,
+      getClient: siteSettingsClient(async () => ["docs.google.com"]),
+    });
+    expect(result).toBe(true);
+  });
+
+  it("does not warn when Site Settings can't be read", async () => {
+    const warningRule = collectCustomRules("embedFormUrl").find((r) => r.level === "warning");
+    const result = await warningRule?.validate("https://forms.office.com/r/abc", {
+      document: embedDoc,
+      getClient: siteSettingsClient(async () => {
+        throw new Error("network down");
+      }),
+    });
+    expect(result).toBe(true);
+  });
+
+  it("does not warn about a leftover URL when the embed form isn't selected", async () => {
+    const warningRule = collectCustomRules("embedFormUrl").find((r) => r.level === "warning");
+    const result = await warningRule?.validate("https://forms.office.com/r/abc", {
+      document: { formType: "none" },
+      getClient: siteSettingsClient(async () => []),
+    });
+    expect(result).toBe(true);
+  });
+});

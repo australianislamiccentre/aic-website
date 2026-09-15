@@ -32,8 +32,11 @@ function getSanityImageUrl(image: SanityGalleryImage): string | null {
 }
 
 export function GalleryStripSection({ images }: GalleryStripSectionProps) {
-  // Hide entire section when there are no gallery images
-  if (images.length === 0) return null;
+  // Only items with an uploaded image count — a gallery doc can exist without
+  // one (e.g. created by the metadata-only migration), and a heading over an
+  // empty grid is worse than no section.
+  const withImages = images.filter((image) => image.image?.asset);
+  if (withImages.length === 0) return null;
 
   const displayCount = 6;
 
@@ -63,7 +66,7 @@ export function GalleryStripSection({ images }: GalleryStripSectionProps) {
 
         {/* Image Strip */}
         <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5 md:gap-3">
-          {images.slice(0, displayCount).map((image, index) => {
+          {withImages.slice(0, displayCount).map((image, index) => {
             const imageUrl = getSanityImageUrl(image);
             if (!imageUrl) return null;
             return (

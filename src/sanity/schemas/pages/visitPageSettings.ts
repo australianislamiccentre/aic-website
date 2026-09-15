@@ -32,7 +32,7 @@ export default defineType({
           defineField({ name: "name", title: "Facility Name", type: "string" }),
           defineField({ name: "capacity", title: "Capacity", type: "string", description: "e.g. '1,000+'" }),
           defineField({ name: "description", title: "Description", type: "text", rows: 2 }),
-          defineField({ name: "icon", title: "Icon", type: "string", options: { list: ["Users", "GraduationCap", "Building", "BookOpen", "Heart"].map(v => ({ title: v, value: v })) } }),
+          defineField({ name: "icon", title: "Icon", type: "string", options: { list: ["Users", "GraduationCap", "Building", "BookOpen", "Heart", "Dumbbell", "UtensilsCrossed"].map(v => ({ title: v, value: v })) } }),
         ],
         preview: { select: { title: "name", subtitle: "capacity" } },
       }],
@@ -55,7 +55,7 @@ export default defineType({
         fields: [
           defineField({ name: "title", title: "Title", type: "string", validation: (Rule) => Rule.required() }),
           defineField({ name: "description", title: "Description", type: "text", rows: 2 }),
-          defineField({ name: "icon", title: "Icon", type: "string", options: { list: ["Footprints", "VolumeX", "Shirt", "Heart", "Hand", "Droplets", "CameraOff", "Clock"].map(v => ({ title: v, value: v })) } }),
+          defineField({ name: "icon", title: "Icon", type: "string", options: { list: ["Footprints", "VolumeX", "Shirt", "Heart", "Hand", "Droplets", "CameraOff", "Clock", "HelpCircle"].map(v => ({ title: v, value: v })) } }),
         ],
         preview: { select: { title: "title" } },
       }],

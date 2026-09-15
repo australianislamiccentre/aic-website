@@ -10,6 +10,7 @@
  */
 import type { Metadata } from "next";
 import { getTeamMembersByCategory, getImamsPageSettings } from "@/sanity/lib/fetch";
+import { pageTitle } from "@/lib/seo";
 import ImamsContent from "./ImamsContent";
 
 export const revalidate = 120;
@@ -17,10 +18,10 @@ export const revalidate = 120;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getImamsPageSettings();
   return {
-    title: settings?.seo?.title ?? "Our Imams | Australian Islamic Centre",
+    title: pageTitle(settings?.seo?.title, "Our Imams"),
     description: settings?.seo?.description ?? "Meet the dedicated imams and scholars of the Australian Islamic Centre.",
     openGraph: {
-      title: settings?.seo?.title ?? "Our Imams | Australian Islamic Centre",
+      title: pageTitle(settings?.seo?.title, "Our Imams"),
       description: settings?.seo?.description ?? "Meet the dedicated imams and scholars of the Australian Islamic Centre.",
       type: "website",
     },

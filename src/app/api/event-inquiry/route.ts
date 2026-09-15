@@ -7,6 +7,9 @@
  * contact email if one was set on the event document in Sanity.
  *
  * Security: Rate-limited (5 req/hr per IP), honeypot field, Sanity toggle.
+ * The request only names the event by slug; the event title and recipient
+ * are read from Sanity, and only events using the enquiry form are accepted —
+ * otherwise anyone could send AIC-branded email to an address of their choice.
  *
  * @route POST /api/event-inquiry
  * @module api/event-inquiry
@@ -15,6 +18,7 @@
  * @see src/lib/form-settings.ts      — Sanity-based form toggle & recipient lookup
  */
 import { NextRequest, NextResponse } from "next/server";
+import { stegaClean } from "next-sanity";
 import { getResendClient } from "@/lib/resend";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/client-ip";
@@ -24,6 +28,7 @@ import {
   eventConfirmationEmail,
 } from "@/lib/email-templates";
 import { getFormRecipientEmail, isFormEnabled } from "@/lib/form-settings";
+import { getEventBySlug } from "@/sanity/lib/fetch";
 
 /** Verified domain sender, falls back to Resend's testing sender during dev. */
 const FROM_EMAIL =
@@ -71,11 +76,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    const { data } = result;
+    const { eventSlug, ...submission } = result.data;
+
+    // Only real events that show the enquiry form can receive enquiries.
+    const event = await getEventBySlug(eventSlug);
+    if (!event || event.formType !== "contact") {
+      return NextResponse.json(
+        { error: "This event isn't accepting enquiries." },
+        { status: 404 }
+      );
+    }
+
+    // stegaClean: in draft mode the lookup returns strings with invisible stega characters
+    const data = { ...submission, eventName: stegaClean(event.title) };
     const resend = getResendClient();
 
     // Use event-specific contact email if set in Sanity, otherwise fall back to global recipient
-    const toEmail = data.contactEmail || await getFormRecipientEmail("eventInquiry");
+    const toEmail = stegaClean(event.contactEmail) || await getFormRecipientEmail("eventInquiry");
 
     // Send notification to AIC staff
     const notification = eventNotificationEmail(data);

@@ -389,7 +389,7 @@ export default async function EventPage({ params }: EventPageProps) {
             <p className="text-sm text-gray-500 mb-6 text-center">Have a question? Send us a message and we&apos;ll get back to you.</p>
             <EventContactForm
               eventName={event.title}
-              contactEmail={event.contactEmail}
+              eventSlug={slug}
             />
           </div>
         </section>

@@ -161,7 +161,7 @@ See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for detailed diagrams cover
 | `/api/service-inquiry` | POST | Service inquiry from detail page |
 | `/api/subscribe` | POST | Newsletter signup (Resend audience) |
 | `/api/revalidate` | POST | Sanity webhook for ISR invalidation |
-| `/api/draft` | GET/POST | Enable draft mode (preview unpublished) |
+| `/api/draft-mode/enable` | GET | Enable draft mode for the Presentation tool (Sanity preview secret validated by next-sanity) |
 | `/api/disable-draft` | POST | Exit draft mode |
 
 ## Testing
