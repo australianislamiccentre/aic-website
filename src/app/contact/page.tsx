@@ -9,6 +9,7 @@
  */
 import type { Metadata } from "next";
 import { getContactPageSettings } from "@/sanity/lib/fetch";
+import { pageTitle } from "@/lib/seo";
 import ContactContent from "./ContactContent";
 
 export const revalidate = 120;
@@ -16,7 +17,7 @@ export const revalidate = 120;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getContactPageSettings();
   return {
-    title: settings?.seo?.title ?? "Contact Us | Australian Islamic Centre",
+    title: pageTitle(settings?.seo?.title, "Contact Us"),
     description: settings?.seo?.description ?? "Get in touch with the Australian Islamic Centre. Send us a message, call, or visit us at 23-27 Blenheim Road, Newport VIC 3015.",
     alternates: { canonical: "/contact" },
   };

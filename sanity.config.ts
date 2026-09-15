@@ -23,6 +23,16 @@ import { media } from "sanity-plugin-media";
 import { orderableDocumentListDeskItem } from "@sanity/orderable-document-list";
 import { schemaTypes } from "./src/sanity/schemas";
 import { apiVersion } from "./src/sanity/env";
+import { getMelbourneDateString } from "./src/lib/time";
+import {
+  liveEventsFilter,
+  liveProgramsFilter,
+  expiredEventsFilter,
+  inactiveEventsFilter,
+  activeAnnouncementsFilter,
+  expiredAnnouncementsFilter,
+  inactiveAnnouncementsFilter,
+} from "./src/sanity/deskFilters";
 
 /** All singleton document IDs — delete/duplicate actions are blocked for these. */
 const singletonIds = [
@@ -64,8 +74,12 @@ const singleton = (S: StructureBuilder, schemaType: string, title: string) =>
     .child(S.document().schemaType(schemaType).documentId(schemaType));
 
 /** Custom desk structure — page-centric sidebar. */
-const structure = (S: StructureBuilder, context: StructureResolverContext) =>
-  S.list()
+const structure = (S: StructureBuilder, context: StructureResolverContext) => {
+  // Date-driven lists (Events, Announcements) compare against Melbourne's calendar
+  // date so the desk agrees with the website, which filters the same way.
+  const today = getMelbourneDateString();
+
+  return S.list()
     .title("Content")
     .items([
       // ── Site Pages ──
@@ -106,13 +120,8 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                                 .child(
                                   S.documentList().apiVersion(apiVersion)
                                     .title("Live Events")
-                                    .filter(
-                                      `_type == "event" && active == true && displayAs in ["event", "both"] && (
-                                        (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
-                                        date >= string::split(string(now()), "T")[0] ||
-                                        endDate >= string::split(string(now()), "T")[0]
-                                      )`
-                                    )
+                                    .filter(liveEventsFilter)
+                                    .params({ today })
                                     .initialValueTemplates([S.initialValueTemplateItem("event-as-event")])
                                 ),
                               S.listItem()
@@ -120,13 +129,8 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                                 .child(
                                   S.documentList().apiVersion(apiVersion)
                                     .title("Live Programs")
-                                    .filter(
-                                      `_type == "event" && active == true && displayAs in ["program", "both"] && (
-                                        recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0] ||
-                                        date >= string::split(string(now()), "T")[0] ||
-                                        endDate >= string::split(string(now()), "T")[0]
-                                      )`
-                                    )
+                                    .filter(liveProgramsFilter)
+                                    .params({ today })
                                     .initialValueTemplates([S.initialValueTemplateItem("event-as-program")])
                                 ),
                             ])
@@ -136,20 +140,15 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                         .child(
                           S.documentList().apiVersion(apiVersion)
                             .title("Expired")
-                            .filter(
-                              `_type == "event" && active == true && !(
-                                (eventType == "recurring" && (recurringEndDate == null || recurringEndDate >= string::split(string(now()), "T")[0])) ||
-                                date >= string::split(string(now()), "T")[0] ||
-                                endDate >= string::split(string(now()), "T")[0]
-                              )`
-                            )
+                            .filter(expiredEventsFilter)
+                            .params({ today })
                         ),
                       S.listItem()
                         .title("Inactive")
                         .child(
                           S.documentList().apiVersion(apiVersion)
                             .title("Inactive")
-                            .filter('_type == "event" && active == false')
+                            .filter(inactiveEventsFilter)
                         ),
                     ])
                 ),
@@ -168,14 +167,23 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
                         .child(
                           S.documentList().apiVersion(apiVersion)
                             .title("Active Announcements")
-                            .filter('_type == "announcement" && active == true')
+                            .filter(activeAnnouncementsFilter)
+                            .params({ today })
+                        ),
+                      S.listItem()
+                        .title("Expired")
+                        .child(
+                          S.documentList().apiVersion(apiVersion)
+                            .title("Expired Announcements")
+                            .filter(expiredAnnouncementsFilter)
+                            .params({ today })
                         ),
                       S.listItem()
                         .title("Inactive")
                         .child(
                           S.documentList().apiVersion(apiVersion)
                             .title("Inactive Announcements")
-                            .filter('_type == "announcement" && active == false')
+                            .filter(inactiveAnnouncementsFilter)
                         ),
                     ])
                 ),
@@ -358,6 +366,7 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) =>
       // ── Site Settings ──
       singleton(S, "siteSettings", "Site Settings"),
     ]);
+};
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET!;

@@ -10,6 +10,7 @@
  */
 import type { Metadata } from "next";
 import { getEtiquette, getWorshippersPageSettings } from "@/sanity/lib/fetch";
+import { pageTitle } from "@/lib/seo";
 import { getYouTubeVideos } from "@/lib/youtube";
 import type { SanityEtiquette } from "@/types/sanity";
 import WorshippersClient from "./WorshippersClient";
@@ -19,7 +20,7 @@ export const revalidate = 120;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getWorshippersPageSettings();
   return {
-    title: settings?.seo?.title ?? "For Worshippers | Australian Islamic Centre",
+    title: pageTitle(settings?.seo?.title, "For Worshippers"),
     description: settings?.seo?.description ?? "Mosque etiquette, khutbah videos, and guidance for worshippers at the Australian Islamic Centre.",
   };
 }

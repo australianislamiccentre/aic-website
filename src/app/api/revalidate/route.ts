@@ -175,9 +175,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Bust the Sanity data cache (fetch tags) so fresh data is fetched
-    revalidateTag("sanity", "default");
-    revalidateTag(documentType, "default");
+    // Bust the Sanity data cache (fetch tags) so fresh data is fetched.
+    // `{ expire: 0 }` expires the entries outright — a profile string ("default"/"max")
+    // only marks them stale, so the first visit after publishing would still get old data.
+    revalidateTag("sanity", { expire: 0 });
+    revalidateTag(documentType, { expire: 0 });
 
     // Revalidate each path (busts the rendered page cache)
     for (const path of pathsToRevalidate) {

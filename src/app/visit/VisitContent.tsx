@@ -32,11 +32,18 @@ import {
   ChevronDown,
   Building,
   GraduationCap,
+  BookOpen,
+  Heart,
+  Dumbbell,
+  UtensilsCrossed,
   Footprints,
   Shirt,
   Volume2,
+  VolumeX,
+  Hand,
   HandHeart,
   Droplets,
+  CameraOff,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -87,20 +94,41 @@ const fallbackFaqs = [
   },
 ];
 
-const facilityIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+type IconComponent = React.ComponentType<{ className?: string }>;
+
+// Keys are lower-case lucide names (the Studio option lists), plus the short
+// names older documents used. Resolve with `iconFor()`.
+const facilityIconMap: Record<string, IconComponent> = {
   users: Users,
+  graduationcap: GraduationCap,
   graduation: GraduationCap,
   building: Building,
+  bookopen: BookOpen,
+  heart: Heart,
+  dumbbell: Dumbbell,
+  utensilscrossed: UtensilsCrossed,
 };
 
-const etiquetteIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+const etiquetteIcons: Record<string, IconComponent> = {
   footprints: Footprints,
   shirt: Shirt,
+  volumex: VolumeX,
   volume: Volume2,
+  heart: Heart,
+  hand: Hand,
   hands: HandHeart,
   droplets: Droplets,
+  cameraoff: CameraOff,
+  clock: Clock,
+  helpcircle: HelpCircle,
   help: HelpCircle,
 };
+
+/** Looks up an icon by its Studio value, tolerating case and a trailing "Icon" (e.g. "ShirtIcon"). */
+function iconFor(icons: Record<string, IconComponent>, name: string | undefined, fallback: IconComponent): IconComponent {
+  const key = (name ?? "").replace(/Icon$/, "").toLowerCase();
+  return icons[key] ?? fallback;
+}
 
 interface VisitContentProps {
   etiquette: SanityEtiquette[];
@@ -304,8 +332,7 @@ export default function VisitContent({ etiquette, faqs, pageSettings }: VisitCon
                   <div className="grid grid-cols-2 gap-4">
                     {hasSanityFacilityCards
                       ? pageSettings!.facilitiesCards!.map((card) => {
-                          const Icon =
-                            (card.icon ? facilityIconMap[card.icon] : undefined) ?? Users;
+                          const Icon = iconFor(facilityIconMap, card.icon, Users);
                           return (
                             <div
                               key={card.name}
@@ -382,7 +409,7 @@ export default function VisitContent({ etiquette, faqs, pageSettings }: VisitCon
             {displayEtiquette.length > 0 ? (
               <div className="grid md:grid-cols-2 gap-3 max-w-3xl mx-auto">
                 {displayEtiquette.map((item) => {
-                  const Icon = etiquetteIcons[item.icon] || CheckCircle2;
+                  const Icon = iconFor(etiquetteIcons, item.icon, CheckCircle2);
                   return (
                     <div key={item._id} className="flex items-start gap-3 p-3 rounded-lg bg-neutral-50">
                       <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -482,9 +509,11 @@ export default function VisitContent({ etiquette, faqs, pageSettings }: VisitCon
                     <Button
                       key={i}
                       href={btn.url}
-                      variant={btn.variant === "primary" ? "gold" : btn.variant === "outline" ? "outline" : "ghost"}
+                      // Anything but primary is a white outline: the band is dark, so a ghost
+                      // button (navy text) would be unreadable. Live data holds "secondary".
+                      variant={btn.variant === "primary" ? "gold" : "outline"}
                       size="lg"
-                      className={btn.variant === "outline" ? "border-white/30 text-white hover:bg-white/10" : undefined}
+                      className={btn.variant === "primary" ? undefined : "border-white/30 text-white hover:bg-white/10"}
                     >
                       {btn.label}
                     </Button>

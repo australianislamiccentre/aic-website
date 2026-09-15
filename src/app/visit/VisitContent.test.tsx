@@ -116,6 +116,60 @@ function makeFaq(overrides: Partial<SanityFaq> = {}): SanityFaq {
   };
 }
 
+describe("VisitContent — icon and button settings from Studio", () => {
+  it("shows the facility icons chosen in Studio (regression: every card showed the fallback icon)", () => {
+    const { container } = render(
+      <VisitContent
+        etiquette={[]}
+        faqs={[]}
+        pageSettings={{
+          facilitiesCards: [
+            { name: "Education Centre", icon: "GraduationCap" },
+            { name: "Sports Hall", icon: "Dumbbell" },
+          ],
+        }}
+      />,
+    );
+    expect(container.querySelector(".lucide-graduation-cap")).toBeInTheDocument();
+    expect(container.querySelector(".lucide-dumbbell")).toBeInTheDocument();
+  });
+
+  it("shows the etiquette icons chosen in Studio, including older seeded names like 'ShirtIcon'", () => {
+    const { container } = render(
+      <VisitContent
+        etiquette={[]}
+        faqs={[]}
+        pageSettings={{
+          etiquetteItems: [
+            { title: "Keep noise down", icon: "VolumeX" },
+            { title: "Dress modestly", icon: "ShirtIcon" },
+          ],
+        }}
+      />,
+    );
+    expect(container.querySelector(".lucide-volume-x")).toBeInTheDocument();
+    expect(container.querySelector(".lucide-shirt")).toBeInTheDocument();
+  });
+
+  it("keeps a non-primary CTA button readable on the dark band (regression: 'Prayer Times' was navy on dark)", () => {
+    render(
+      <VisitContent
+        etiquette={[]}
+        faqs={[]}
+        pageSettings={{
+          ctaButtons: [
+            // Live data holds "secondary", which isn't one of the schema's options
+            { label: "Prayer Times", url: "/worshippers", variant: "secondary" as "outline" },
+          ],
+        }}
+      />,
+    );
+    const button = screen.getByRole("link", { name: /prayer times/i });
+    expect(button).toHaveClass("text-white");
+    expect(button).not.toHaveClass("text-primary-700");
+  });
+});
+
 describe("VisitContent", () => {
   it("renders the page title", () => {
     render(<VisitContent etiquette={[]} faqs={[]} />);

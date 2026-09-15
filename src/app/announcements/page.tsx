@@ -10,6 +10,7 @@
  */
 import type { Metadata } from "next";
 import { getAnnouncements, getAnnouncementsPageSettings } from "@/sanity/lib/fetch";
+import { pageTitle } from "@/lib/seo";
 import { SanityAnnouncement } from "@/types/sanity";
 import AnnouncementsContent from "./AnnouncementsContent";
 
@@ -18,7 +19,7 @@ export const revalidate = 120;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getAnnouncementsPageSettings();
   return {
-    title: settings?.seo?.title ?? "Announcements | Australian Islamic Centre",
+    title: pageTitle(settings?.seo?.title, "Announcements"),
     description: settings?.seo?.description ?? "Stay informed about important updates, community news, and upcoming activities at the Australian Islamic Centre.",
     alternates: { canonical: "/announcements" },
   };

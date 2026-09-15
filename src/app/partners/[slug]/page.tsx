@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: PartnerPageProps): Promise<Me
   const { slug } = await params;
   const partner = await getPartnerBySlug(slug);
   return {
-    title: partner?.name ?? "Partner | Australian Islamic Centre",
+    title: partner?.name ?? "Partner",
     description: partner?.shortDescription ?? "Learn about our partner organisations.",
     alternates: { canonical: `/partners/${slug}` },
   };

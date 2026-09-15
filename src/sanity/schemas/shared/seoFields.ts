@@ -15,9 +15,9 @@ export const seoFields = [
         name: "title",
         title: "Meta Title",
         type: "string",
-        placeholder: "e.g. About Us | Australian Islamic Centre",
+        placeholder: "e.g. About Us",
         description:
-          "Browser tab title and Google result title. Leave blank to use the page heading. Example: 'Events | Australian Islamic Centre'",
+          "Browser tab title and Google result title. ' | Australian Islamic Centre' is added automatically, so enter just the page part (e.g. 'Events'). Leave blank to use the page's default title.",
         validation: (Rule) => Rule.max(70).warning("Keep under 70 characters for best results."),
       }),
       defineField({

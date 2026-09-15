@@ -56,6 +56,15 @@ describe("POST /api/revalidate", () => {
     expect(mockRevalidatePath).toHaveBeenCalled();
   });
 
+  it("expires cached Sanity data immediately so the first visit after publishing shows the change", async () => {
+    // Profile strings like "max"/"default" are stale-while-revalidate: the next visit would
+    // still be served the old content. Next.js documents { expire: 0 } for webhooks.
+    await POST(makePostRequest({ _type: "siteSettings" }, "test-secret-123"));
+
+    expect(mockRevalidateTag).toHaveBeenCalledWith("sanity", { expire: 0 });
+    expect(mockRevalidateTag).toHaveBeenCalledWith("siteSettings", { expire: 0 });
+  });
+
   it("revalidates detail page when slug is present", async () => {
     const res = await POST(
       makePostRequest(

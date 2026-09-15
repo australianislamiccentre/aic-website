@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { parse, evaluate } from "groq-js";
 import {
   donatePageSettingsQuery,
   formSettingsQuery,
@@ -7,7 +8,89 @@ import {
   featuredServicesQuery,
   eventBySlugQuery,
   announcementBySlugQuery,
+  announcementsQuery,
+  urgentAnnouncementsQuery,
+  latestAnnouncementsQuery,
+  teamMembersByCategoryQuery,
 } from "./queries";
+
+/** Runs a query against an in-memory dataset with real GROQ semantics. */
+async function runQuery(
+  query: string,
+  dataset: object[],
+  params: Record<string, unknown> = {},
+  timestamp?: Date,
+) {
+  const value = await evaluate(parse(query, { params }), { dataset, params, timestamp });
+  return value.get();
+}
+
+describe("announcement expiry (Melbourne calendar date, not UTC now())", () => {
+  const announcement = (expiresAt?: string) => ({
+    _id: "eid",
+    _type: "announcement",
+    title: "Eid Prayer",
+    active: true,
+    featured: true,
+    priority: "urgent",
+    date: "2026-09-01",
+    ...(expiresAt && { expiresAt }),
+  });
+  // 6:21 pm in Melbourne on 15 Sep — the evening of the expiry day
+  const eveningOfExpiryDay = new Date("2026-09-15T08:21:00Z");
+  const queries = [
+    ["announcementsQuery", announcementsQuery],
+    ["urgentAnnouncementsQuery", urgentAnnouncementsQuery],
+    ["latestAnnouncementsQuery", latestAnnouncementsQuery],
+  ] as const;
+
+  it.each(queries)(
+    "%s keeps an announcement up for its whole expiry day (regression: it vanished at 10am)",
+    async (_name, query) => {
+      const result = await runQuery(query, [announcement("2026-09-15")], { today: "2026-09-15" }, eveningOfExpiryDay);
+      expect(result).toHaveLength(1);
+    },
+  );
+
+  it.each(queries)("%s hides the announcement from the day after it expires", async (_name, query) => {
+    const result = await runQuery(query, [announcement("2026-09-15")], { today: "2026-09-16" });
+    expect(result).toHaveLength(0);
+  });
+
+  it.each(queries)("%s keeps announcements that have no expiry date", async (_name, query) => {
+    const result = await runQuery(query, [announcement()], { today: "2026-09-16" });
+    expect(result).toHaveLength(1);
+  });
+});
+
+describe("teamMembersByCategoryQuery", () => {
+  it("returns the profile fields the Imams page renders", async () => {
+    const member = {
+      _id: "imam-1",
+      _type: "teamMember",
+      name: "Imam Example",
+      category: "imam",
+      active: true,
+      bio: "Leads Friday prayers.",
+      qualifications: ["Ijazah in Quran"],
+      specializations: ["Tafsir"],
+      showContactInfo: true,
+      email: "imam@example.com",
+      phone: "03 0000 0000",
+      officeHours: "Mon–Thu, 10am–2pm",
+    };
+    const [result] = await runQuery(teamMembersByCategoryQuery, [member], { category: "imam" });
+    expect(result).toMatchObject({
+      bio: member.bio,
+      qualifications: member.qualifications,
+      specializations: member.specializations,
+      showContactInfo: true,
+      email: member.email,
+      phone: member.phone,
+      officeHours: member.officeHours,
+    });
+  });
+});
 
 describe("GROQ Queries", () => {
   describe("formSettingsQuery", () => {

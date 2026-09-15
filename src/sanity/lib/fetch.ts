@@ -229,7 +229,11 @@ export async function getFeaturedEvents(): Promise<SanityEvent[]> {
 // Announcements
 export async function getAnnouncements(): Promise<SanityAnnouncement[]> {
   try {
-    const result = await sanityFetch<SanityAnnouncement[]>(announcementsQuery, {}, ["announcements"]);
+    const result = await sanityFetch<SanityAnnouncement[]>(
+      announcementsQuery,
+      { today: getMelbourneDateString() },
+      ["announcements"]
+    );
     return result ?? [];
   } catch (error) {
     console.error("Failed to fetch announcements from Sanity:", error);
@@ -249,7 +253,7 @@ export async function getAnnouncementBySlug(slug: string): Promise<SanityAnnounc
 // For static generation (no draft mode check - used in generateStaticParams)
 export async function getAnnouncementsForStaticGeneration(): Promise<SanityAnnouncement[]> {
   try {
-    const result = await client.fetch<SanityAnnouncement[]>(announcementsQuery, {}, {
+    const result = await client.fetch<SanityAnnouncement[]>(announcementsQuery, { today: getMelbourneDateString() }, {
       next: {
         revalidate: REVALIDATE_TIME,
         tags: ["sanity", "announcements"],
@@ -264,7 +268,11 @@ export async function getAnnouncementsForStaticGeneration(): Promise<SanityAnnou
 
 export async function getUrgentAnnouncements(): Promise<SanityAnnouncement[]> {
   try {
-    const result = await sanityFetch<SanityAnnouncement[]>(urgentAnnouncementsQuery, {}, ["announcements"]);
+    const result = await sanityFetch<SanityAnnouncement[]>(
+      urgentAnnouncementsQuery,
+      { today: getMelbourneDateString() },
+      ["announcements"]
+    );
     return result ?? [];
   } catch (error) {
     console.error("Failed to fetch urgent announcements from Sanity:", error);
@@ -640,7 +648,11 @@ export interface LatestUpdateItem {
 
 export async function getLatestAnnouncements(): Promise<LatestUpdateItem[]> {
   try {
-    const result = await sanityFetch<LatestUpdateItem[]>(latestAnnouncementsQuery, {}, ["announcements"]);
+    const result = await sanityFetch<LatestUpdateItem[]>(
+      latestAnnouncementsQuery,
+      { today: getMelbourneDateString() },
+      ["announcements"]
+    );
     return result ?? [];
   } catch (error) {
     console.error("Failed to fetch latest announcements from Sanity:", error);

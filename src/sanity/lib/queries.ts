@@ -8,22 +8,20 @@
  * ## Date filtering
  *
  * Queries that filter by calendar date (event.date, event.endDate,
- * event.recurringEndDate) accept a `$today` parameter instead of reading
- * `now()` directly. `$today` is supplied by the fetch layer as a YYYY-MM-DD
- * string representing **today in Australia/Melbourne** (see
+ * event.recurringEndDate, announcement.expiresAt) accept a `$today` parameter
+ * instead of reading `now()` directly. `$today` is supplied by the fetch layer
+ * as a YYYY-MM-DD string representing **today in Australia/Melbourne** (see
  * `getMelbourneDateString()` in `src/lib/time.ts`).
  *
  * This is necessary because GROQ's `now()` returns UTC. For the ~10-hour
  * window each day between Melbourne midnight (00:00 AEST/AEDT) and UTC
- * midnight, `$today` returns *yesterday's*
- * date in Melbourne terms, which means an admin-expired event keeps
- * showing until UTC catches up. Passing Melbourne-today as a parameter
- * closes that skew.
+ * midnight, a date derived from `now()` is *yesterday's* date in Melbourne
+ * terms, which means an admin-expired event keeps showing until UTC catches
+ * up. Comparing a `date` field directly with `now()` is worse: the date
+ * string sorts before the same day's timestamp, so an announcement "expiring"
+ * on the 15th disappears at 10–11am Melbourne time on the 15th.
  *
- * Queries that compare absolute timestamps (e.g. `expiresAt > now()` on
- * announcements) continue to use `now()` directly — the `datetime` field
- * is already stored as UTC by Sanity Studio, so a tz-neutral comparison
- * is correct.
+ * Only `datetime` fields (full UTC timestamps) should be compared with `now()`.
  *
  * @module sanity/lib/queries
  * @see src/sanity/lib/fetch.ts for the getter functions that execute these queries
@@ -158,7 +156,7 @@ export const featuredEventsQuery = groq`
 
 // Announcements - active only, not expired
 export const announcementsQuery = groq`
-  *[_type == "announcement" && active != false && (expiresAt == null || expiresAt > now())] | order(priority desc, date desc) {
+  *[_type == "announcement" && active != false && (expiresAt == null || expiresAt >= $today)] | order(priority desc, date desc) {
     _id,
     title,
     "slug": slug.current,
@@ -196,7 +194,7 @@ export const announcementBySlugQuery = groq`
 
 // Urgent announcements for alert banner
 export const urgentAnnouncementsQuery = groq`
-  *[_type == "announcement" && active != false && priority == "urgent" && (expiresAt == null || expiresAt > now())] | order(date desc) [0...1] {
+  *[_type == "announcement" && active != false && priority == "urgent" && (expiresAt == null || expiresAt >= $today)] | order(date desc) [0...1] {
     _id,
     title,
     "slug": slug.current,
@@ -464,6 +462,13 @@ export const teamMembersByCategoryQuery = groq`
     role,
     image,
     shortBio,
+    bio,
+    qualifications,
+    specializations,
+    showContactInfo,
+    email,
+    phone,
+    officeHours,
     featured
   }
 `;
@@ -707,7 +712,7 @@ export const formSettingsQuery = groq`
 // Featured Announcements for homepage
 // ============================================
 export const latestAnnouncementsQuery = groq`
-  *[_type == "announcement" && active != false && featured == true && (expiresAt == null || expiresAt > now())] | order(date desc) [0...6] {
+  *[_type == "announcement" && active != false && featured == true && (expiresAt == null || expiresAt >= $today)] | order(date desc) [0...6] {
     _id,
     _type,
     title,

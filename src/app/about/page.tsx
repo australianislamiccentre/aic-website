@@ -9,6 +9,7 @@
  */
 import type { Metadata } from "next";
 import { getAboutPageSettings } from "@/sanity/lib/fetch";
+import { pageTitle } from "@/lib/seo";
 import AboutContent from "./AboutContent";
 
 export const revalidate = 120;
@@ -16,7 +17,7 @@ export const revalidate = 120;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getAboutPageSettings();
   return {
-    title: settings?.seo?.title ?? "About Us | Australian Islamic Centre",
+    title: pageTitle(settings?.seo?.title, "About Us"),
     description:
       settings?.seo?.description ??
       "Learn about the Australian Islamic Centre — a vibrant community hub in Newport, Melbourne.",

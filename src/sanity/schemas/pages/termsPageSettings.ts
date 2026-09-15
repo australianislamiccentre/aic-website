@@ -32,7 +32,13 @@ export default defineType({
             name: "link",
             type: "object",
             title: "Link",
-            fields: [{ name: "href", type: "url", title: "URL" }],
+            fields: [{
+              name: "href",
+              type: "url",
+              title: "URL",
+              // Default url validation is http/https only, which rejects the page's mailto: link
+              validation: (Rule) => Rule.uri({ allowRelative: true, scheme: ["http", "https", "mailto", "tel"] }),
+            }],
           }],
         },
       }],

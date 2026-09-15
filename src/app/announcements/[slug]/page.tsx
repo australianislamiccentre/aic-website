@@ -85,7 +85,7 @@ export async function generateMetadata({ params }: AnnouncementPageProps): Promi
   const ogImage = announcement.image ? urlFor(announcement.image).width(1200).height(630).url() : undefined;
 
   return {
-    title: `${announcement.title} | Australian Islamic Centre`,
+    title: announcement.title,
     description: announcement.excerpt,
     alternates: { canonical: `/announcements/${slug}` },
     openGraph: {

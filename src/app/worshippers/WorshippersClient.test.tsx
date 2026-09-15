@@ -132,6 +132,22 @@ describe("WorshippersClient", () => {
     expect(screen.getByText("Friday Khutbah")).toBeInTheDocument();
   });
 
+  it("hides the Islamic Talks section when 'Show Khutbah Videos Section' is switched off in Studio", () => {
+    const videos = [
+      {
+        id: "abc123",
+        title: "Friday Khutbah",
+        thumbnail: "https://example.com/thumb.jpg",
+        url: "https://youtube.com/watch?v=abc123",
+        publishedAt: "2024-01-01",
+        duration: "30:00",
+      },
+    ];
+    render(<WorshippersClient youtubeVideos={videos} pageSettings={{ khutbahVisible: false }} />);
+    expect(screen.queryByText("Islamic Talks")).not.toBeInTheDocument();
+    expect(screen.queryByText("Friday Khutbah")).not.toBeInTheDocument();
+  });
+
   describe("pageSettings wiring", () => {
     it("renders fallback hero content when pageSettings is null", () => {
       render(<WorshippersClient pageSettings={null} />);

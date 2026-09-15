@@ -176,7 +176,9 @@ export default function AboutContent({ settings }: AboutContentProps) {
   const heroBadge = settings?.heroBadge ?? "Welcome to AIC";
 
   // Build heading text with accent highlight.
-  // If the accent phrase appears in the heading, wrap it in a span.
+  // If the accent phrase appears in the heading, wrap it in a span; otherwise
+  // it follows the heading (Studio's example: heading "About the", accent
+  // "Australian Islamic Centre").
   const renderHeroHeading = () => {
     if (heroHeadingAccent && heroHeading.includes(heroHeadingAccent)) {
       const parts = heroHeading.split(heroHeadingAccent);
@@ -185,6 +187,13 @@ export default function AboutContent({ settings }: AboutContentProps) {
           {parts[0]}
           <span className="text-teal-600">{heroHeadingAccent}</span>
           {parts[1]}
+        </h1>
+      );
+    }
+    if (heroHeadingAccent) {
+      return (
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          {heroHeading} <span className="text-teal-600">{heroHeadingAccent}</span>
         </h1>
       );
     }

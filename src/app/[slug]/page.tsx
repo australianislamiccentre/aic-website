@@ -9,6 +9,7 @@
  * @module app/[slug]/page
  */
 import { notFound } from "next/navigation";
+import { pageTitle } from "@/lib/seo";
 import { Metadata } from "next";
 import {
   getPageContent,
@@ -81,7 +82,7 @@ export async function generateMetadata({
       : undefined;
 
   return {
-    title: `${title} | Australian Islamic Centre`,
+    title: pageTitle(title, page.title),
     description,
     alternates: { canonical: `/${slug}` },
     openGraph: {
