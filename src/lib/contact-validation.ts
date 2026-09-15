@@ -34,15 +34,24 @@ export interface ServiceInquiryFormData {
   message: string;
 }
 
+/** Event inquiry as used by the email templates, after the event is resolved from Sanity. */
 export interface EventInquiryFormData {
   firstName: string;
   lastName: string;
   email: string;
   phone?: string;
   eventName: string;
-  contactEmail?: string;
   message: string;
 }
+
+/**
+ * Validated event inquiry request. The event is identified by slug only — its
+ * name and recipient email are looked up server-side so a request can't choose
+ * where AIC-branded email is sent.
+ */
+export type EventInquiryRequest = Omit<EventInquiryFormData, "eventName"> & {
+  eventSlug: string;
+};
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -171,7 +180,7 @@ export function validateServiceInquiry(
 
 export function validateEventInquiry(
   data: unknown
-): { valid: true; data: EventInquiryFormData } | { valid: false; error: string } {
+): { valid: true; data: EventInquiryRequest } | { valid: false; error: string } {
   if (!data || typeof data !== "object") {
     return { valid: false, error: "Invalid request body" };
   }
@@ -199,11 +208,11 @@ export function validateEventInquiry(
   if (d.phone && typeof d.phone === "string" && tooLong(d.phone, MAX_PHONE)) {
     return { valid: false, error: `Phone number must be under ${MAX_PHONE} characters` };
   }
-  if (!d.eventName || typeof d.eventName !== "string") {
-    return { valid: false, error: "Event name is required" };
+  if (!d.eventSlug || typeof d.eventSlug !== "string" || d.eventSlug.trim().length === 0) {
+    return { valid: false, error: "Event is required" };
   }
-  if (tooLong(String(d.eventName), MAX_LABEL)) {
-    return { valid: false, error: "Event name is too long" };
+  if (tooLong(String(d.eventSlug), MAX_LABEL)) {
+    return { valid: false, error: "Event is too long" };
   }
   if (!d.message || typeof d.message !== "string" || d.message.trim().length === 0) {
     return { valid: false, error: "Message is required" };
@@ -219,10 +228,7 @@ export function validateEventInquiry(
       lastName: String(d.lastName).trim(),
       email: String(d.email).trim().toLowerCase(),
       phone: d.phone ? String(d.phone).trim() : undefined,
-      eventName: String(d.eventName).trim(),
-      contactEmail: d.contactEmail && typeof d.contactEmail === "string" && EMAIL_REGEX.test(d.contactEmail)
-        ? String(d.contactEmail).trim().toLowerCase()
-        : undefined,
+      eventSlug: String(d.eventSlug).trim(),
       message: String(d.message).trim(),
     },
   };

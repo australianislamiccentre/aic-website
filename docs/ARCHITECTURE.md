@@ -163,13 +163,14 @@ Editors can preview unpublished Sanity content before it goes live.
 ```mermaid
 sequenceDiagram
     participant E as Editor in Sanity Studio
-    participant D as /api/draft
+    participant D as /api/draft-mode/enable
+    participant X as /api/disable-draft
     participant N as Next.js
     participant P as Preview Client
     participant B as Browser with Banner
 
-    E->>D: POST (from Presentation tool iframe)
-    D->>D: Validate origin header
+    E->>D: GET with preview secret (from Presentation tool iframe)
+    D->>D: Validate secret with Sanity (defineEnableDraftMode)
     D->>N: Enable draftMode() cookie
     N-->>B: Redirect to page
 
@@ -180,8 +181,8 @@ sequenceDiagram
     N-->>B: Page with preview banner
 
     B->>B: Click "Exit Preview"
-    B->>D: POST /api/disable-draft
-    D->>N: Disable draftMode() cookie
+    B->>X: POST /api/disable-draft
+    X->>N: Disable draftMode() cookie
     N-->>B: Normal mode restored
 ```
 

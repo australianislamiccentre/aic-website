@@ -2,8 +2,9 @@
  * Event Contact Form
  *
  * Client component providing an inline contact form on event detail pages.
- * Collects name, email, phone, and message, then submits to the site's
- * contact API endpoint with the event name pre-filled.
+ * Collects name, email, phone, and message, then submits to the event
+ * inquiry API with the event's slug — the API looks up the event's name and
+ * recipient in Sanity, so no email address is ever sent from the browser.
  *
  * @module app/events/[slug]/EventContactForm
  */
@@ -14,10 +15,10 @@ import { Send, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
 interface EventContactFormProps {
   eventName: string;
-  contactEmail?: string;
+  eventSlug: string;
 }
 
-export function EventContactForm({ eventName, contactEmail }: EventContactFormProps) {
+export function EventContactForm({ eventName, eventSlug }: EventContactFormProps) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -47,8 +48,7 @@ export function EventContactForm({ eventName, contactEmail }: EventContactFormPr
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          eventName,
-          contactEmail: contactEmail || "",
+          eventSlug,
           _gotcha: (document.getElementById("_gotcha_event") as HTMLInputElement)?.value || "",
         }),
       });
