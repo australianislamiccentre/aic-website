@@ -709,6 +709,17 @@ npm run validate             # Confirm build is good after rebase
 
 Never push without running `npm run validate` first. Never create a branch from a stale local `main` — always `git pull origin main` first. Never push commits that were made after a PR was already merged — they will be orphaned on the remote branch and never reach production.
 
+### Test on the Vercel preview before merging
+
+Vercel builds a preview deployment for every pushed branch; the **Vercel** check on the PR links to it. Test the change there before merging to `main` — it is the only place to check what local dev can't (Edge middleware and CSP, Vercel env vars, real email delivery). A long-lived testing branch isn't used: per-PR previews give the same safety without keeping two branches in sync.
+
+- Previews are behind Vercel Authentication: open them while logged in to Vercel, or send the client the preview's **Share** link.
+- Previews read the **production** Sanity dataset, so `<preview>/studio` edits live content — don't publish test edits there. For schema changes that need throwaway content, point that preview at the `staging` dataset; refreshing `staging` from production writes to Sanity, so ask first.
+- Outside production, all form email goes to `EMAIL_TEST_RECIPIENT` (or isn't sent when it's unset) and newsletter sign-ups never join the Resend audience — see `src/lib/email-delivery.ts`. Route every new email through `sendEmail()`; a test fails if an API route uses the Resend client directly.
+- Donations (FundraiseUp) on previews are real — don't complete one.
+- Never hardcode `https://aic-website.vercel.app`: it is behind Vercel's login, so anything loaded from it (email images, Studio preview links) breaks. `src/protected-hosts.test.ts` enforces this.
+- The Sanity webhook pointing at `aic-website.vercel.app` (the Vercel test environment) is kept deliberately. It only gets past Vercel's login with a Protection Bypass for Automation header; without the webhook, previews pick up content edits within 2 minutes (settings documents within an hour).
+
 ---
 
 ## When Making Any Change in This Project

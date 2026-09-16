@@ -154,6 +154,8 @@ flowchart TD
 4. **Validation** — required fields, email format, max lengths
 5. **CSP** — Content Security Policy set by Edge middleware
 
+**Delivery:** every email and newsletter sign-up goes through `src/lib/email-delivery.ts`. Only the production deployment contacts real people; on Vercel previews and in local dev, email goes to `EMAIL_TEST_RECIPIENT` (or isn't sent) and sign-ups skip the Resend audience.
+
 ---
 
 ## Draft Mode (Preview)
@@ -269,11 +271,11 @@ src/
 | Variable | Purpose |
 |----------|---------|
 | `SANITY_API_READ_TOKEN` | Sanity read token (draft mode) |
-| `SANITY_PREVIEW_SECRET` | Shared secret for draft mode entry |
 | `SANITY_REVALIDATE_SECRET` | Shared secret for ISR webhook |
 | `RESEND_API_KEY` | Resend email API key |
 | `RESEND_FROM_EMAIL` | Verified sender email address |
 | `RESEND_AUDIENCE_ID` | Resend audience for newsletter |
+| `EMAIL_TEST_RECIPIENT` | Outside production, receives every form email (unset = not sent) |
 | `YOUTUBE_API_KEY` | YouTube Data API v3 key |
 | `YOUTUBE_CHANNEL_ID` | AIC YouTube channel ID |
 | `CONTACT_FORM_TO_EMAIL` | Contact form recipient |
