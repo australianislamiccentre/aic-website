@@ -9,7 +9,12 @@
  * - `previewClient` — Authenticated read client for draft mode with stega enabled
  *   for click-to-edit overlays in the Sanity Presentation tool.
  *
- * CDN is disabled on all clients — Next.js ISR is the sole caching layer.
+ * Reads go through the Sanity API CDN (`useCdn: true`). The Next.js fetch data
+ * cache (see fetch.ts) sits in front of it, so most renders never reach Sanity at
+ * all; the requests that do are metered against the 1M/month "API CDN requests"
+ * quota rather than the 250k/month "API requests" quota. Sanity invalidates the
+ * CDN on publish, so freshness is unchanged. Only the tokened clients
+ * (`writeClient`, `previewClient`) bypass the CDN.
  *
  * @module sanity/lib/client
  * @see src/sanity/lib/fetch.ts for the data-fetching functions that use these clients
@@ -26,9 +31,10 @@ export const client = createClient({
   projectId,
   dataset,
   apiVersion,
-  // Disable CDN — use API directly for fresh data on every ISR revalidation.
-  // Next.js ISR (revalidate: 60) handles caching at the edge instead.
-  useCdn: false,
+  // Serve reads from apicdn.sanity.io. Counted against the API CDN quota
+  // (1M/month) instead of the API quota (250k/month); Sanity invalidates the
+  // CDN on publish, and the Next.js data cache in fetch.ts sits in front of it.
+  useCdn: true,
   perspective: "published",
   stega: {
     studioUrl,
@@ -39,12 +45,15 @@ export const client = createClient({
   },
 });
 
-// Client for singleton settings (prayer times, site settings, donation config)
+// Client for singleton settings (prayer times, site settings, donation config).
+// Kept as a separate export for compatibility; it is configured like `client`.
+// Singletons get their freshness from the /api/revalidate webhook, not from
+// bypassing the CDN.
 export const noCdnClient = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: false,
+  useCdn: true,
   perspective: "published",
 });
 

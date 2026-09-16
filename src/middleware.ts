@@ -40,7 +40,7 @@ import { DEFAULT_EMBED_DOMAINS } from './lib/embed-domains';
 let cachedDomains: string[] | null = null;
 let lastFetchTs = 0;
 let fetchInFlight = false;
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 60 * 60 * 1000; // 60 minutes — the allowlist rarely changes and DEFAULT_EMBED_DOMAINS covers the known providers
 
 const SANITY_PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const SANITY_DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
@@ -54,7 +54,9 @@ function refreshCacheInBackground(): void {
   fetchInFlight = true;
 
   const query = encodeURIComponent('*[_id == "siteSettings"][0].allowedEmbedDomains[].domain');
-  const url = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${SANITY_DATASET}?query=${query}`;
+  // apicdn (not api): this runs on every cold edge isolate, so it must count
+  // against the 1M/month CDN quota rather than the 250k/month API quota.
+  const url = `https://${SANITY_PROJECT_ID}.apicdn.sanity.io/v2024-01-01/data/query/${SANITY_DATASET}?query=${query}`;
 
   fetch(url)
     .then(async (res) => {

@@ -154,6 +154,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // The Sanity webhooks fire for draft autosaves too (every few seconds while
+    // an editor types). The site only reads published documents, so a draft
+    // change has nothing to revalidate — and each call below expires the entire
+    // Sanity data cache, which is then rebuilt from Sanity on the next requests.
+    if (typeof body._id === "string" && body._id.startsWith("drafts.")) {
+      return NextResponse.json({
+        revalidated: false,
+        reason: "draft",
+        documentType,
+      });
+    }
+
     // Get paths to revalidate for this document type
     const pathsToRevalidate = [...(documentTypeToPath[documentType] || [])];
 

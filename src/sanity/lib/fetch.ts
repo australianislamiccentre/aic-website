@@ -138,6 +138,13 @@ export interface DonationSettings {
 // 120s is sufficient since the webhook provides real-time updates.
 const REVALIDATE_TIME = 120;
 
+// Singleton settings (site, header, footer, prayer, form + page settings) only
+// change through Studio publishes, and every publish expires their tags via the
+// webhook above. The root layout reads nine of them on every request, so a short
+// window here means nine Sanity requests every two minutes around the clock
+// (crawlers keep the cache warm) — ~6k requests/day, ~45% of the monthly quota.
+const SETTINGS_REVALIDATE_TIME = 3600;
+
 // Generic fetch function with caching and draft mode support
 async function sanityFetch<T>(
   query: string,
@@ -153,13 +160,15 @@ async function sanityFetch<T>(
     return previewClient.fetch<T>(query, params);
   }
 
-  // Use noCdnClient for singleton settings that must always be fresh
+  // `skipCdn` marks singleton settings: they use the settings client and the
+  // long revalidate window (their freshness comes from the publish webhook).
   const fetchClient = options.skipCdn ? noCdnClient : client;
+  const revalidate = options.skipCdn ? SETTINGS_REVALIDATE_TIME : REVALIDATE_TIME;
 
-  // Fetch with ISR caching (Next.js handles the caching layer)
+  // Fetch through the Next.js data cache; misses go to the Sanity API CDN.
   return fetchClient.fetch<T>(query, params, {
     next: {
-      revalidate: REVALIDATE_TIME,
+      revalidate,
       tags: ["sanity", ...tags],
     },
   });
