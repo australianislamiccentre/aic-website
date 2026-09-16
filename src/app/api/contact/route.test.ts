@@ -4,7 +4,7 @@
  * Covers: valid submission, missing fields, honeypot, rate limiting,
  * form disabled, and email send failure.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
 // Mock dependencies before importing the route
@@ -55,6 +55,8 @@ describe("POST /api/contact", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    // Route behaviour is tested as the production deployment; non-production email is covered below
+    vi.stubEnv("VERCEL_ENV", "production");
     mockIsFormEnabled.mockResolvedValue(true);
     mockCheckRateLimit.mockReturnValue({ allowed: true });
     mockSend.mockResolvedValue({ id: "test-id" });
@@ -188,5 +190,23 @@ describe("POST /api/contact", () => {
     await POST(req);
 
     expect(mockCheckRateLimit).toHaveBeenCalledWith("9.9.9.9");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("on a preview deployment, sends every email to the test inbox instead of real people", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("EMAIL_TEST_RECIPIENT", "tester@aic.example");
+    mockGetFormRecipientEmail.mockResolvedValue("admin@example.com");
+
+    const res = await POST(makeRequest(validBody));
+
+    expect(res.status).toBe(200);
+    const recipients = mockSend.mock.calls.map(([sent]) => sent.to);
+    expect(recipients.length).toBeGreaterThan(0);
+    expect(new Set(recipients)).toEqual(new Set(["tester@aic.example"]));
+    expect(mockSend.mock.calls[0][0].subject).toContain("[TEST → admin@example.com]");
   });
 });

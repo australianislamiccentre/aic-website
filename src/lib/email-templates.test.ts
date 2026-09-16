@@ -414,3 +414,20 @@ describe("phone field HTML escaping (#70)", () => {
     expect(html).toContain("Not provided");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Branding assets
+// ---------------------------------------------------------------------------
+describe("email logo", () => {
+  it("loads from the public site, not the login-protected aic-website.vercel.app host (regression: broken logo)", () => {
+    const { html } = contactConfirmationEmail({
+      firstName: "John",
+      lastName: "Smith",
+      email: "john@example.com",
+      inquiryType: "General",
+      message: "Hello",
+    });
+    expect(html).toContain('src="https://australianislamiccentre.org/images/aic%20logo.png"');
+    expect(html).not.toContain("vercel.app");
+  });
+});

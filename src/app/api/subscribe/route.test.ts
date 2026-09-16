@@ -4,7 +4,7 @@
  * Covers: valid subscription, missing/invalid email, honeypot, rate limiting,
  * form disabled, and audience sync.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
 const mockSend = vi.fn().mockResolvedValue({ id: "test-id" });
@@ -47,6 +47,8 @@ describe("POST /api/subscribe", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    // Route behaviour is tested as the production deployment; non-production email is covered below
+    vi.stubEnv("VERCEL_ENV", "production");
     mockIsFormEnabled.mockResolvedValue(true);
     mockCheckRateLimit.mockReturnValue({ allowed: true });
     mockSend.mockResolvedValue({ id: "test-id" });
@@ -156,5 +158,62 @@ describe("POST /api/subscribe", () => {
     const call = mockSend.mock.calls[0][0];
     expect(call.html).toContain("WhatsApp Group");
     expect(call.html).toContain("Yes");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("on a preview deployment, sends every email to the test inbox instead of real people", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("EMAIL_TEST_RECIPIENT", "tester@aic.example");
+
+    const res = await POST(makeRequest({ email: "sub@example.com", phone: "0412345678" }));
+
+    expect(res.status).toBe(200);
+    const recipients = mockSend.mock.calls.map(([sent]) => sent.to);
+    expect(recipients.length).toBeGreaterThan(0);
+    expect(new Set(recipients)).toEqual(new Set(["tester@aic.example"]));
+    expect(mockSend.mock.calls[0][0].subject).toContain("[TEST → admin@example.com]");
+  });
+});
+
+describe("POST /api/subscribe — newsletter audience", () => {
+  let POST: (req: NextRequest) => Promise<Response>;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    mockIsFormEnabled.mockResolvedValue(true);
+    mockCheckRateLimit.mockReturnValue({ allowed: true });
+    mockSend.mockResolvedValue({ id: "test-id" });
+    mockContactsCreate.mockResolvedValue({ data: { id: "contact-id" }, error: null });
+    // The audience ID is read when the route module loads, so load a fresh copy with it set
+    vi.stubEnv("RESEND_AUDIENCE_ID", "aud_123");
+    vi.resetModules();
+    POST = (await import("./route")).POST;
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("adds the subscriber to the Resend audience on the production deployment", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+
+    await POST(makeRequest({ email: "sub@example.com", name: "Ahmed Khan", phone: "0412345678" }));
+
+    expect(mockContactsCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ audienceId: "aud_123", email: "sub@example.com", firstName: "Ahmed", lastName: "Khan" }),
+    );
+  });
+
+  it("keeps test sign-ups out of the real audience outside production", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const res = await POST(makeRequest({ email: "sub@example.com", phone: "0412345678" }));
+
+    expect(res.status).toBe(200);
+    expect(mockContactsCreate).not.toHaveBeenCalled();
   });
 });
