@@ -40,7 +40,7 @@ Sanity Studio publish -> webhook POST /api/revalidate -> ISR cache invalidated
 Next request -> src/sanity/lib/fetch.ts -> sanityFetch() -> page.tsx -> *Content.tsx
 ```
 
-- **All Sanity clients have `useCdn: false`** - Next.js ISR (`revalidate: 120`) is the sole cache
+- **Read clients use the Sanity API CDN (`useCdn: true`)** - the Next.js fetch data cache (`revalidate: 120`, singletons `3600`) is the primary cache in front of it. The CDN keeps site reads on the 1M/month "API CDN requests" quota; the 250k/month "API requests" quota is for the Studio, tokened preview reads and mutations only. Never set `useCdn: false` on `client`/`noCdnClient` — that is what blew the API quota every month from April to September 2026
 - Fetch functions in `src/sanity/lib/fetch.ts` never throw; they return `[]` or `null` on error
 - GROQ queries live in `src/sanity/lib/queries.ts`; types in `src/types/sanity.ts`
 

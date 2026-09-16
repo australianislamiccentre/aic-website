@@ -65,6 +65,34 @@ describe("POST /api/revalidate", () => {
     expect(mockRevalidateTag).toHaveBeenCalledWith("siteSettings", { expire: 0 });
   });
 
+  it("ignores draft autosaves so editing in Studio does not flush the Sanity data cache", async () => {
+    // The site only reads published documents; a draft change has nothing to
+    // revalidate, and every call expires the whole "sanity" tag otherwise.
+    const res = await POST(
+      makePostRequest(
+        { _id: "drafts.abc123", _type: "event", slug: { current: "eid-prayer" } },
+        "test-secret-123"
+      )
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.revalidated).toBe(false);
+    expect(json.reason).toBe("draft");
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("still revalidates the published document after the draft is published", async () => {
+    const res = await POST(
+      makePostRequest({ _id: "abc123", _type: "event" }, "test-secret-123")
+    );
+    const json = await res.json();
+
+    expect(json.revalidated).toBe(true);
+    expect(mockRevalidateTag).toHaveBeenCalledWith("event", { expire: 0 });
+  });
+
   it("revalidates detail page when slug is present", async () => {
     const res = await POST(
       makePostRequest(

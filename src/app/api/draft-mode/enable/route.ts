@@ -16,6 +16,9 @@ import { defineEnableDraftMode } from "next-sanity/draft-mode";
 /** Sanity client augmented with a read token for authenticated preview queries. */
 const clientWithToken = client.withConfig({
   token: process.env.SANITY_API_READ_TOKEN,
+  // Preview-secret validation must read live data; tokened requests are cached
+  // per token on the API CDN, so bypass the CDN here.
+  useCdn: false,
 });
 
 export const { GET } = defineEnableDraftMode({
