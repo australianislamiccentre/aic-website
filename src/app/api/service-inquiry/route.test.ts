@@ -4,7 +4,7 @@
  * Covers: valid submission, missing fields, honeypot, rate limiting,
  * form disabled, per-service recipient lookup, and fallback.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
 const mockSend = vi.fn().mockResolvedValue({ id: "test-id" });
@@ -59,6 +59,8 @@ describe("POST /api/service-inquiry", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    // Route behaviour is tested as the production deployment; non-production email is covered below
+    vi.stubEnv("VERCEL_ENV", "production");
     mockIsFormEnabled.mockResolvedValue(true);
     mockCheckRateLimit.mockReturnValue({ allowed: true });
     mockSend.mockResolvedValue({ id: "test-id" });
@@ -172,5 +174,22 @@ describe("POST /api/service-inquiry", () => {
 
     const res = await POST(makeRequest(validBody));
     expect(res.status).toBe(500);
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("on a preview deployment, sends every email to the test inbox instead of real people", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("EMAIL_TEST_RECIPIENT", "tester@aic.example");
+
+    const res = await POST(makeRequest(validBody));
+
+    expect(res.status).toBe(200);
+    const recipients = mockSend.mock.calls.map(([sent]) => sent.to);
+    expect(recipients.length).toBeGreaterThan(0);
+    expect(new Set(recipients)).toEqual(new Set(["tester@aic.example"]));
+    expect(mockSend.mock.calls[0][0].subject).toContain("[TEST → admin@example.com]");
   });
 });

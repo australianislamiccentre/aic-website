@@ -18,7 +18,7 @@
  * @see src/lib/form-settings.ts   — Sanity-based form toggle & recipient lookup
  */
 import { NextRequest, NextResponse } from "next/server";
-import { getResendClient } from "@/lib/resend";
+import { addToNewsletterAudience, sendEmail } from "@/lib/email-delivery";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/client-ip";
 import { getFormRecipientEmail, isFormEnabled } from "@/lib/form-settings";
@@ -83,13 +83,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Please enter your phone number." }, { status: 400 });
     }
 
-    const resend = getResendClient();
-
-    // Add to Resend Audience if configured (enables broadcast campaigns from Resend dashboard)
-    // Uses create-then-update pattern: create first, if contact already exists, update instead.
+    // Add to Resend Audience if configured (enables broadcast campaigns from Resend dashboard).
+    // Production only — see src/lib/email-delivery.ts.
     if (AUDIENCE_ID) {
       const [firstName, ...rest] = name.split(" ");
-      const contactData = {
+      await addToNewsletterAudience({
+        audienceId: AUDIENCE_ID,
+        email,
         firstName: firstName || undefined,
         lastName: rest.join(" ") || undefined,
         unsubscribed: false,
@@ -97,29 +97,14 @@ export async function POST(request: NextRequest) {
           phone: phone || "",
           whatsapp: whatsapp ? "yes" : "no",
         },
-      };
-
-      const { error: createError } = await resend.contacts.create({
-        audienceId: AUDIENCE_ID,
-        email,
-        ...contactData,
       });
-
-      // If create fails (e.g. contact was previously deleted or already exists), update instead
-      if (createError) {
-        await resend.contacts.update({
-          audienceId: AUDIENCE_ID,
-          email,
-          ...contactData,
-        });
-      }
     }
 
     // Notify admin with branded template
     const toEmail = await getFormRecipientEmail("newsletter");
     const notification = subscribeNotificationEmail({ email, name: name || undefined, phone: phone || undefined, whatsapp });
 
-    await resend.emails.send({
+    await sendEmail({
       from: `AIC Website <${FROM_EMAIL}>`,
       to: toEmail,
       replyTo: email,

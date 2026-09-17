@@ -370,8 +370,9 @@ const structure = (S: StructureBuilder, context: StructureResolverContext) => {
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET!;
+// Fallback is the public site: aic-website.vercel.app is behind Vercel's login
 const baseUrl =
-  process.env.NEXT_PUBLIC_BASE_URL || "https://aic-website.vercel.app";
+  process.env.NEXT_PUBLIC_BASE_URL || "https://australianislamiccentre.org";
 
 /** Maps each Sanity document type to the Next.js preview path. */
 const previewPaths: Record<string, (slug?: string) => string> = {

@@ -18,7 +18,8 @@ const BLUE = "#01476b";
 const GREEN_DARK = "#00ad4c";
 const GREEN_LIGHT = "#98c93c";
 
-const LOGO_URL = "https://aic-website.vercel.app/images/aic%20logo.png";
+// Served from the public site: aic-website.vercel.app is behind Vercel's login, so images there don't load in email
+const LOGO_URL = "https://australianislamiccentre.org/images/aic%20logo.png";
 
 function adminLayout(title: string, content: string): string {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"><div style="max-width:600px;margin:0 auto;padding:20px 8px"><div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08)"><div style="background:${BLUE};padding:24px 32px"><h1 style="margin:0;color:#fff;font-size:20px;font-weight:600">${title}</h1><div style="margin-top:8px;height:3px;width:60px;background:linear-gradient(to right,${GREEN_DARK},${GREEN_LIGHT});border-radius:2px"></div></div><div style="padding:32px">${content}</div></div></div></body></html>`;

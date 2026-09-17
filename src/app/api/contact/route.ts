@@ -15,7 +15,7 @@
  * @see src/lib/form-settings.ts      — Sanity-based form toggle & recipient lookup
  */
 import { NextRequest, NextResponse } from "next/server";
-import { getResendClient } from "@/lib/resend";
+import { sendEmail } from "@/lib/email-delivery";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/client-ip";
 import { validateContactForm } from "@/lib/contact-validation";
@@ -72,12 +72,11 @@ export async function POST(request: NextRequest) {
     }
 
     const { data } = result;
-    const resend = getResendClient();
     const toEmail = await getFormRecipientEmail("contact");
 
     // Send notification to AIC staff
     const notification = contactNotificationEmail(data);
-    await resend.emails.send({
+    await sendEmail({
       from: `AIC Website <${FROM_EMAIL}>`,
       to: toEmail,
       replyTo: data.email,
@@ -87,7 +86,7 @@ export async function POST(request: NextRequest) {
 
     // Send confirmation to the submitter
     const confirmation = contactConfirmationEmail(data);
-    await resend.emails.send({
+    await sendEmail({
       from: `Australian Islamic Centre <${FROM_EMAIL}>`,
       to: data.email,
       subject: confirmation.subject,

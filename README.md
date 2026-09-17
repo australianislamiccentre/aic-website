@@ -44,13 +44,14 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 
 # Sanity (server-only)
 SANITY_API_READ_TOKEN=
-SANITY_PREVIEW_SECRET=
 SANITY_REVALIDATE_SECRET=
 
 # Resend (email)
 RESEND_API_KEY=
 RESEND_FROM_EMAIL=
 RESEND_AUDIENCE_ID=
+# Outside production, all form email goes here (unset = not sent)
+EMAIL_TEST_RECIPIENT=
 
 # Form recipients
 CONTACT_FORM_TO_EMAIL=
