@@ -163,18 +163,18 @@ describe("middleware — CSP enforcement (issue #68)", () => {
     expect(directive(value, "connect-src")).toContain("https://*.analytics.google.com");
   });
 
-  it("allows the GA4 Google-signals ad/remarketing hosts (AIC-WEBSITE-Y/11/X/10/13/Q)", () => {
-    // With Google signals ON, gtag fires ad/remarketing traffic the generic Google
-    // entries don't cover: the ga-audiences pixel on the visitor's COUNTRY Google
-    // domain (google.com.au — a different registrable domain than *.google.com), the
-    // DoubleClick collect twin (doubleclick.net), and the ad-traffic-quality (SODAR)
-    // iframe on the '.google' gTLD. These are public-site requests, so they belong on
-    // the base policy, not the /studio-scoped extras.
-    const value = csp(middleware(makeRequest()));
-    expect(directive(value, "img-src")).toContain("https://www.google.com.au");
-    expect(directive(value, "connect-src")).toContain("https://www.google.com.au");
-    expect(directive(value, "connect-src")).toContain("https://stats.g.doubleclick.net");
-    expect(directive(value, "frame-src")).toContain("https://*.adtrafficquality.google");
+  it("does not allow the GA4 Google-signals remarketing hosts — signals is off (AIC-WEBSITE-Y/11/X/10/13/Q)", () => {
+    // Google signals is disabled in the GA4 property (AIC runs no Google Ads), so gtag
+    // no longer sends the ga-audiences pixel to each visitor's country Google domain,
+    // the DoubleClick collect twin, or the ad-traffic-quality (SODAR) iframe. Their
+    // allowances were removed to keep the policy tight. If signals is re-enabled these
+    // hosts come back as CSP reports — one Sentry issue per country domain.
+    for (const path of ["/", "/studio/structure"]) {
+      const value = csp(middleware(makeRequest(path)));
+      expect(value).not.toContain("google.com.au");
+      expect(value).not.toContain("doubleclick.net");
+      expect(value).not.toContain("adtrafficquality");
+    }
   });
 
   it("allows the Samsung Pay wallet-readiness probe in connect-src (AIC-WEBSITE-12)", () => {
