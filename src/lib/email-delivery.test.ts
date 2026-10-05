@@ -121,6 +121,57 @@ describe("sendEmail", () => {
       expect.objectContaining({ message: "Invalid `to` field" }),
     );
   });
+
+  it("sends one email to several recipients in production", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    const toBoth = { ...email, to: ["taher@aic.example", "developer@aic.example"] };
+
+    await sendEmail(toBoth);
+
+    expect(sendMock).toHaveBeenCalledWith(toBoth);
+  });
+
+  it("names every intended recipient when redirecting to the test inbox", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("EMAIL_TEST_RECIPIENT", "tester@aic.example");
+
+    await sendEmail({ ...email, to: ["taher@aic.example", "developer@aic.example"] });
+
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "tester@aic.example",
+        subject: "[TEST → taher@aic.example, developer@aic.example] New Contact Enquiry: General",
+      }),
+    );
+  });
+
+  it("returns Resend's email ID once sent, so the submission record can point to the email", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+
+    await expect(sendEmail(email)).resolves.toBe("email-1");
+  });
+
+  it("returns the email ID for a test-inbox delivery too", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("EMAIL_TEST_RECIPIENT", "tester@aic.example");
+
+    await expect(sendEmail(email)).resolves.toBe("email-1");
+  });
+
+  it("returns null when nothing is sent", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    await expect(sendEmail(email)).resolves.toBeNull();
+  });
+
+  it("returns null when Resend rejects the email", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    sendMock.mockResolvedValue({ data: null, error: { name: "validation_error", message: "Invalid `to` field" } });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(sendEmail(email)).resolves.toBeNull();
+  });
 });
 
 describe("addToNewsletterAudience", () => {

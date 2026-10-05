@@ -10,12 +10,16 @@
  * The request only names the event by slug; the event title and recipient
  * are read from Sanity, and only events using the enquiry form are accepted —
  * otherwise anyone could send AIC-branded email to an address of their choice.
+ * Every request is logged with its sender's request details, and every accepted
+ * submission is stored privately with them (see `lib/submission-record`). The
+ * details go to staff only — never into the response or the confirmation email.
  *
  * @route POST /api/event-inquiry
  * @module api/event-inquiry
  * @see src/lib/contact-validation.ts — validateEventInquiry
  * @see src/lib/email-templates.ts    — eventNotificationEmail, eventConfirmationEmail
  * @see src/lib/form-settings.ts      — Sanity-based form toggle & recipient lookup
+ * @see src/lib/submission-record.ts  — stored record, log line, Sentry context
  */
 import { NextRequest, NextResponse } from "next/server";
 import { stegaClean } from "next-sanity";
@@ -28,6 +32,13 @@ import {
   eventConfirmationEmail,
 } from "@/lib/email-templates";
 import { getFormRecipientEmail, isFormEnabled } from "@/lib/form-settings";
+import {
+  finishSubmission,
+  logSubmission,
+  reportSubmissionError,
+  startSubmission,
+  type SubmissionEmails,
+} from "@/lib/submission-record";
 import { getEventBySlug } from "@/sanity/lib/fetch";
 
 /** Verified domain sender, falls back to Resend's testing sender during dev. */
@@ -37,15 +48,18 @@ const FROM_EMAIL =
 /**
  * Processes an event inquiry submission.
  *
- * Pipeline: toggle check → rate limit → honeypot → validate → send emails.
+ * Pipeline: capture request details → toggle check → rate limit → honeypot →
+ * validate → event lookup → send emails → store the record.
  *
  * @returns `{ success: true }` on success, `{ error: string }` with appropriate HTTP status on failure.
  */
 export async function POST(request: NextRequest) {
+  const submission = startSubmission("event-inquiry", request);
   try {
     // Check if event inquiry form is enabled in Sanity (allows staff to disable without a deploy)
     const enabled = await isFormEnabled("eventInquiry");
     if (!enabled) {
+      logSubmission(submission, "disabled");
       return NextResponse.json(
         { error: "Event inquiries are currently disabled." },
         { status: 403 }
@@ -58,6 +72,7 @@ export async function POST(request: NextRequest) {
     const ip = getClientIp(request);
     const { allowed } = checkRateLimit(ip);
     if (!allowed) {
+      logSubmission(submission, "rate_limited");
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
         { status: 429 }
@@ -68,19 +83,22 @@ export async function POST(request: NextRequest) {
 
     // Honeypot: hidden field filled by bots — return fake success to avoid tipping them off
     if (body._gotcha) {
+      logSubmission(submission, "honeypot");
       return NextResponse.json({ success: true });
     }
 
     const result = validateEventInquiry(body);
     if (!result.valid) {
+      logSubmission(submission, "invalid");
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    const { eventSlug, ...submission } = result.data;
+    const { eventSlug, ...inquiry } = result.data;
 
     // Only real events that show the enquiry form can receive enquiries.
     const event = await getEventBySlug(eventSlug);
     if (!event || event.formType !== "contact") {
+      logSubmission(submission, "not_found");
       return NextResponse.json(
         { error: "This event isn't accepting enquiries." },
         { status: 404 }
@@ -88,33 +106,46 @@ export async function POST(request: NextRequest) {
     }
 
     // stegaClean: in draft mode the lookup returns strings with invisible stega characters
-    const data = { ...submission, eventName: stegaClean(event.title) };
+    const data = { ...inquiry, eventName: stegaClean(event.title) };
+    const emails: SubmissionEmails = { notification: null, confirmation: null };
+    let outcome: "accepted" | "error" = "error";
 
-    // Use event-specific contact email if set in Sanity, otherwise fall back to global recipient
-    const toEmail = stegaClean(event.contactEmail) || await getFormRecipientEmail("eventInquiry");
+    try {
+      // Use event-specific contact email if set in Sanity, otherwise fall back to global recipient
+      const toEmail = stegaClean(event.contactEmail) || await getFormRecipientEmail("eventInquiry");
 
-    // Send notification to AIC staff
-    const notification = eventNotificationEmail(data);
-    await sendEmail({
-      from: `AIC Website <${FROM_EMAIL}>`,
-      to: toEmail,
-      replyTo: data.email,
-      subject: notification.subject,
-      html: notification.html,
-    });
+      // Send notification to AIC staff, with the request details
+      const notification = eventNotificationEmail(data, submission);
+      emails.notification = await sendEmail({
+        from: `AIC Website <${FROM_EMAIL}>`,
+        to: toEmail,
+        replyTo: data.email,
+        subject: notification.subject,
+        html: notification.html,
+      });
 
-    // Send confirmation to the submitter
-    const confirmation = eventConfirmationEmail(data);
-    await sendEmail({
-      from: `Australian Islamic Centre <${FROM_EMAIL}>`,
-      to: data.email,
-      subject: confirmation.subject,
-      html: confirmation.html,
-    });
+      // Send confirmation to the submitter
+      const confirmation = eventConfirmationEmail(data);
+      emails.confirmation = await sendEmail({
+        from: `Australian Islamic Centre <${FROM_EMAIL}>`,
+        to: data.email,
+        subject: confirmation.subject,
+        html: confirmation.html,
+      });
+      outcome = "accepted";
+    } finally {
+      // Keep the record even if an email failed; storage problems never fail the request
+      await finishSubmission(submission, outcome, {
+        fields: { ...data, eventSlug },
+        emails,
+        messageLength: data.message.length,
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[API] /api/event-inquiry POST error:", error);
+    reportSubmissionError(submission, error);
     return NextResponse.json(
       { error: "Failed to send inquiry. Please try again." },
       { status: 500 }

@@ -13,9 +13,12 @@ import {
   eventNotificationEmail,
   eventConfirmationEmail,
   subscribeNotificationEmail,
+  submissionDetailsEmail,
   escapeHtml,
 } from "./email-templates";
+import type { SubmissionRecord } from "./submission-record";
 import type { ContactFormData, ServiceInquiryFormData, EventInquiryFormData } from "./contact-validation";
+import { makeEmptyRequestMeta, makeRequestMeta } from "@/test/request-meta-fixtures";
 
 // ---------------------------------------------------------------------------
 // escapeHtml
@@ -429,5 +432,146 @@ describe("email logo", () => {
     });
     expect(html).toContain('src="https://australianislamiccentre.org/images/aic%20logo.png"');
     expect(html).not.toContain("vercel.app");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Staff notifications: reference + "Request details" link, never the IP
+// ---------------------------------------------------------------------------
+describe("staff notification reference", () => {
+  const reference = {
+    submissionId: "1c21ff89-a427-436f-95e5-185e8c607e6c",
+    detailsUrl: "https://australianislamiccentre.org/submission-details?record=production%2Fcontact%2Fx.json&sig=abc",
+  };
+  const contact: ContactFormData = {
+    firstName: "John",
+    lastName: "Smith",
+    email: "john@example.com",
+    inquiryType: "General",
+    message: "Hello",
+  };
+
+  const notifications: Array<[string, (r?: typeof reference) => { html: string }]> = [
+    ["contactNotificationEmail", (r) => contactNotificationEmail(contact, r)],
+    ["serviceNotificationEmail", (r) => serviceNotificationEmail({ ...contact, serviceName: "Nikah" }, r)],
+    ["eventNotificationEmail", (r) => eventNotificationEmail({ ...contact, eventName: "Open Day" }, r)],
+    ["subscribeNotificationEmail", (r) => subscribeNotificationEmail({ email: "sub@example.com" }, r)],
+  ];
+
+  it.each(notifications)("%s shows the reference and a Request details link", (_name, build) => {
+    const { html } = build(reference);
+    expect(html).toContain(`Ref ${reference.submissionId}`);
+    expect(html).toContain(`href="${escapeHtml(reference.detailsUrl)}"`);
+    expect(html).toContain(">Request details</a>");
+  });
+
+  it.each(notifications)("%s has no reference when none is given", (_name, build) => {
+    const { html } = build();
+    expect(html).not.toContain("Ref ");
+    expect(html).not.toContain("Request details");
+  });
+
+  it("shows just the reference when links can't be signed", () => {
+    const { html } = contactNotificationEmail(contact, { ...reference, detailsUrl: null });
+    expect(html).toContain(`Ref ${reference.submissionId}`);
+    expect(html).not.toContain("Request details");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Submission details email (sent when someone uses the Request details link)
+// ---------------------------------------------------------------------------
+describe("submissionDetailsEmail", () => {
+  const PATH = "production/contact/2026-10-05/2026-10-05T01-02-03-456Z_1c21ff89-a427-436f-95e5-185e8c607e6c.json";
+  const record: SubmissionRecord = {
+    submissionId: "1c21ff89-a427-436f-95e5-185e8c607e6c",
+    form: "contact",
+    environment: "production",
+    fields: {
+      firstName: "John",
+      lastName: "Smith",
+      email: "john@example.com",
+      phone: "0412345678",
+      inquiryType: "General",
+      message: "A message body",
+    },
+    security: makeRequestMeta({
+      ipHeaders: { xForwardedFor: "1.1.1.1, 203.0.113.7", xRealIp: "203.0.113.7", xVercelForwardedFor: "203.0.113.7" },
+    }),
+    emails: { notification: "email-notification", confirmation: "email-confirmation" },
+  };
+
+  it("names the form and the reference in the subject", () => {
+    expect(submissionDetailsEmail(record, PATH).subject).toBe(
+      "Submission details: contact form (Ref 1c21ff89-a427-436f-95e5-185e8c607e6c)",
+    );
+  });
+
+  it("includes everything submitted", () => {
+    const { html } = submissionDetailsEmail(record, PATH);
+    for (const value of ["John", "Smith", "john@example.com", "0412345678", "General", "A message body"]) {
+      expect(html).toContain(value);
+    }
+    expect(html).toContain("First name");
+    expect(html).toContain("Enquiry type");
+  });
+
+  it("includes the request details: IP, raw x-forwarded-for, location, browser, Vercel request ID", () => {
+    const { html } = submissionDetailsEmail(record, PATH);
+
+    expect(html).toContain("Request details");
+    expect(html).toContain("1.1.1.1, 203.0.113.7");
+    expect(html).toContain("Newport, VIC 3015, AU");
+    expect(html).toContain("-37.8444, 144.8836");
+    expect(html).toContain("Australia/Melbourne");
+    expect(html).toContain("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)");
+    expect(html).toContain("en-AU,en;q=0.9");
+    expect(html).toContain("syd1::iad1::abcde-1759622400000-0123456789ab");
+    expect(html).toContain("t13d1516h2_8daaf6152771_02713d6af862");
+  });
+
+  it("shows the time received in Melbourne time and in UTC", () => {
+    const { html } = submissionDetailsEmail(record, PATH);
+    // 01:02 UTC on 5 Oct 2026 is 12:02 pm AEDT
+    expect(html).toContain("12:02 pm");
+    expect(html).toContain("2026-10-05T01:02:03.456Z");
+  });
+
+  it("says where the record is stored and which emails were sent", () => {
+    const { html } = submissionDetailsEmail(record, PATH);
+    expect(html).toContain(PATH);
+    expect(html).toContain("email-notification");
+    expect(html).toContain("email-confirmation");
+  });
+
+  it("shows yes/no for checkboxes such as the WhatsApp opt-in", () => {
+    const signup = { ...record, form: "subscribe" as const, fields: { email: "sub@example.com", whatsapp: true } };
+    const { html, subject } = submissionDetailsEmail(signup, PATH);
+    expect(subject).toContain("newsletter sign-up");
+    expect(html).toContain("WhatsApp group");
+    expect(html).toContain("Yes");
+  });
+
+  it("escapes everything, since the sender controls the fields and headers", () => {
+    const hostile = {
+      ...record,
+      fields: { ...record.fields, firstName: "<script>alert(1)</script>" },
+      security: makeRequestMeta({
+        client: { ...makeRequestMeta().client, userAgent: '<img src=x onerror="alert(1)">' },
+      }),
+    };
+    const { html } = submissionDetailsEmail(hostile, PATH);
+
+    expect(html).not.toContain("<script>alert(1)</script>");
+    expect(html).not.toContain("<img src=x");
+    expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+  });
+
+  it("shows 'Not available' for anything the request didn't include", () => {
+    const { html } = submissionDetailsEmail({ ...record, security: makeEmptyRequestMeta() }, PATH);
+
+    expect(html).toContain("unknown");
+    expect(html).toContain("Not available");
+    expect(html).not.toContain(">null<");
   });
 });

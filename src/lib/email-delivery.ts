@@ -22,7 +22,7 @@ import { getResendClient } from "@/lib/resend";
 /** An email built by a form route. */
 export interface OutgoingEmail {
   from: string;
-  to: string;
+  to: string | string[];
   replyTo?: string;
   subject: string;
   html: string;
@@ -47,8 +47,12 @@ export function isProductionDeployment(): boolean {
   return (process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_VERCEL_ENV) === "production";
 }
 
-/** Sends an email to its real recipient in production, or to the test inbox everywhere else. */
-export async function sendEmail(email: OutgoingEmail): Promise<void> {
+/**
+ * Sends an email to its real recipient in production, or to the test inbox everywhere else.
+ *
+ * @returns Resend's email ID, or `null` when nothing was sent (no test inbox, or Resend rejected it).
+ */
+export async function sendEmail(email: OutgoingEmail): Promise<string | null> {
   let delivery = email;
 
   if (!isProductionDeployment()) {
@@ -57,16 +61,19 @@ export async function sendEmail(email: OutgoingEmail): Promise<void> {
       console.warn(
         `[email] Not sent: this isn't the production deployment and EMAIL_TEST_RECIPIENT is unset ("${email.subject}")`,
       );
-      return;
+      return null;
     }
-    delivery = { ...email, to: testInbox, subject: `[TEST → ${email.to}] ${email.subject}` };
+    const intended = [email.to].flat().join(", ");
+    delivery = { ...email, to: testInbox, subject: `[TEST → ${intended}] ${email.subject}` };
   }
 
   // Resend reports API failures in the response rather than throwing
-  const { error } = await getResendClient().emails.send(delivery);
+  const { data, error } = await getResendClient().emails.send(delivery);
   if (error) {
     console.error(`[email] Resend rejected "${email.subject}":`, error);
+    return null;
   }
+  return data?.id ?? null;
 }
 
 /** Adds (or updates) a newsletter subscriber in the Resend audience — production only. */

@@ -6,6 +6,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
+import { describeSubmissionRecords } from "@/test/form-submission-records";
 
 const mockSend = vi.fn().mockResolvedValue({ id: "test-id" });
 
@@ -30,6 +31,19 @@ const mockCheckRateLimit = vi.fn().mockReturnValue({ allowed: true });
 
 vi.mock("@/lib/rate-limit", () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
+}));
+
+// Storage and Sentry, for the submission security records
+const { putMock, captureExceptionMock } = vi.hoisted(() => ({
+  putMock: vi.fn(),
+  captureExceptionMock: vi.fn(),
+}));
+
+vi.mock("@vercel/blob", () => ({ put: putMock }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: captureExceptionMock,
+  setContext: vi.fn(),
+  setTag: vi.fn(),
 }));
 
 const mockGetServiceBySlug = vi.fn().mockResolvedValue(null);
@@ -61,6 +75,8 @@ describe("POST /api/service-inquiry", () => {
     vi.clearAllMocks();
     // Route behaviour is tested as the production deployment; non-production email is covered below
     vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("BLOB_STORE_ID", "store_test");
+    vi.spyOn(console, "info").mockImplementation(() => {});
     mockIsFormEnabled.mockResolvedValue(true);
     mockCheckRateLimit.mockReturnValue({ allowed: true });
     mockSend.mockResolvedValue({ id: "test-id" });
@@ -191,5 +207,20 @@ describe("POST /api/service-inquiry", () => {
     expect(recipients.length).toBeGreaterThan(0);
     expect(new Set(recipients)).toEqual(new Set(["tester@aic.example"]));
     expect(mockSend.mock.calls[0][0].subject).toContain("[TEST → admin@example.com]");
+  });
+
+  describeSubmissionRecords({
+    form: "service-inquiry",
+    path: "/api/service-inquiry",
+    post: () => POST,
+    validBody,
+    invalidBody: { ...validBody, email: "not-an-email" },
+    expectedFields: validBody,
+    privateValues: [validBody.message, validBody.email, validBody.lastName],
+    sendsConfirmation: true,
+    sendMock: mockSend,
+    putMock,
+    captureExceptionMock,
+    rateLimitMock: mockCheckRateLimit,
   });
 });
