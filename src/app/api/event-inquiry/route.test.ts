@@ -7,6 +7,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
+import { describeSubmissionRecords } from "@/test/form-submission-records";
 
 const mockSend = vi.fn().mockResolvedValue({ id: "test-id" });
 
@@ -31,6 +32,19 @@ const mockCheckRateLimit = vi.fn().mockReturnValue({ allowed: true });
 
 vi.mock("@/lib/rate-limit", () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
+}));
+
+// Storage and Sentry, for the submission security records
+const { putMock, captureExceptionMock } = vi.hoisted(() => ({
+  putMock: vi.fn(),
+  captureExceptionMock: vi.fn(),
+}));
+
+vi.mock("@vercel/blob", () => ({ put: putMock }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: captureExceptionMock,
+  setContext: vi.fn(),
+  setTag: vi.fn(),
 }));
 
 const sanityEvent = {
@@ -69,6 +83,8 @@ describe("POST /api/event-inquiry", () => {
     vi.clearAllMocks();
     // Route behaviour is tested as the production deployment; non-production email is covered below
     vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("BLOB_STORE_ID", "store_test");
+    vi.spyOn(console, "info").mockImplementation(() => {});
     mockIsFormEnabled.mockResolvedValue(true);
     mockCheckRateLimit.mockReturnValue({ allowed: true });
     mockSend.mockResolvedValue({ id: "test-id" });
@@ -232,5 +248,33 @@ describe("POST /api/event-inquiry", () => {
     expect(recipients.length).toBeGreaterThan(0);
     expect(new Set(recipients)).toEqual(new Set(["tester@aic.example"]));
     expect(mockSend.mock.calls[0][0].subject).toContain("[TEST → events@aic.example]");
+  });
+
+  describeSubmissionRecords({
+    form: "event-inquiry",
+    path: "/api/event-inquiry",
+    post: () => POST,
+    validBody,
+    invalidBody: { ...validBody, email: "not-an-email" },
+    // The event name is looked up in Sanity, never taken from the request
+    expectedFields: { ...validBody, eventName: "Community Iftar" },
+    privateValues: [validBody.message, validBody.email, validBody.lastName],
+    sendsConfirmation: true,
+    sendMock: mockSend,
+    putMock,
+    captureExceptionMock,
+    rateLimitMock: mockCheckRateLimit,
+  });
+
+  it("logs an enquiry for an unknown event but doesn't store it", async () => {
+    mockGetEventBySlug.mockResolvedValue(null);
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+
+    const res = await POST(makeRequest(validBody));
+
+    expect(res.status).toBe(404);
+    expect(putMock).not.toHaveBeenCalled();
+    const lines = info.mock.calls.map(([line]) => JSON.parse(String(line)));
+    expect(lines).toEqual([expect.objectContaining({ event: "form_submission", outcome: "not_found" })]);
   });
 });

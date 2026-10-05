@@ -6,6 +6,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
+import { describeSubmissionRecords } from "@/test/form-submission-records";
 
 const mockSend = vi.fn().mockResolvedValue({ id: "test-id" });
 const mockContactsCreate = vi.fn().mockResolvedValue({ id: "contact-id" });
@@ -34,6 +35,19 @@ vi.mock("@/lib/rate-limit", () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
 }));
 
+// Storage and Sentry, for the submission security records
+const { putMock, captureExceptionMock } = vi.hoisted(() => ({
+  putMock: vi.fn(),
+  captureExceptionMock: vi.fn(),
+}));
+
+vi.mock("@vercel/blob", () => ({ put: putMock }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: captureExceptionMock,
+  setContext: vi.fn(),
+  setTag: vi.fn(),
+}));
+
 function makeRequest(body: Record<string, unknown>) {
   return new NextRequest("http://localhost:3000/api/subscribe", {
     method: "POST",
@@ -49,6 +63,8 @@ describe("POST /api/subscribe", () => {
     vi.clearAllMocks();
     // Route behaviour is tested as the production deployment; non-production email is covered below
     vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("BLOB_STORE_ID", "store_test");
+    vi.spyOn(console, "info").mockImplementation(() => {});
     mockIsFormEnabled.mockResolvedValue(true);
     mockCheckRateLimit.mockReturnValue({ allowed: true });
     mockSend.mockResolvedValue({ id: "test-id" });
@@ -176,6 +192,21 @@ describe("POST /api/subscribe", () => {
     expect(new Set(recipients)).toEqual(new Set(["tester@aic.example"]));
     expect(mockSend.mock.calls[0][0].subject).toContain("[TEST → admin@example.com]");
   });
+
+  describeSubmissionRecords({
+    form: "subscribe",
+    path: "/api/subscribe",
+    post: () => POST,
+    validBody: { email: "sub@example.com", name: "Ahmed Khan", phone: "0412345678", whatsapp: true },
+    invalidBody: { email: "not-an-email", phone: "0412345678" },
+    expectedFields: { email: "sub@example.com", name: "Ahmed Khan", phone: "0412345678", whatsapp: true },
+    privateValues: ["sub@example.com", "Ahmed Khan", "0412345678"],
+    sendsConfirmation: false,
+    sendMock: mockSend,
+    putMock,
+    captureExceptionMock,
+    rateLimitMock: mockCheckRateLimit,
+  });
 });
 
 describe("POST /api/subscribe — newsletter audience", () => {
@@ -187,6 +218,7 @@ describe("POST /api/subscribe — newsletter audience", () => {
     mockCheckRateLimit.mockReturnValue({ allowed: true });
     mockSend.mockResolvedValue({ id: "test-id" });
     mockContactsCreate.mockResolvedValue({ data: { id: "contact-id" }, error: null });
+    vi.spyOn(console, "info").mockImplementation(() => {});
     // The audience ID is read when the route module loads, so load a fresh copy with it set
     vi.stubEnv("RESEND_AUDIENCE_ID", "aud_123");
     vi.resetModules();

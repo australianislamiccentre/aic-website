@@ -16,6 +16,7 @@ import {
   escapeHtml,
 } from "./email-templates";
 import type { ContactFormData, ServiceInquiryFormData, EventInquiryFormData } from "./contact-validation";
+import { makeEmptyRequestMeta, makeRequestMeta } from "@/test/request-meta-fixtures";
 
 // ---------------------------------------------------------------------------
 // escapeHtml
@@ -429,5 +430,80 @@ describe("email logo", () => {
     });
     expect(html).toContain('src="https://australianislamiccentre.org/images/aic%20logo.png"');
     expect(html).not.toContain("vercel.app");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Request details (security record) on staff notifications
+// ---------------------------------------------------------------------------
+describe("request details block", () => {
+  const details = { submissionId: "3f2b9c1e-0000-4000-8000-000000000001", meta: makeRequestMeta() };
+  const contact: ContactFormData = {
+    firstName: "John",
+    lastName: "Smith",
+    email: "john@example.com",
+    inquiryType: "General",
+    message: "Hello",
+  };
+
+  const notifications: Array<[string, (d?: typeof details) => { html: string }]> = [
+    ["contactNotificationEmail", (d) => contactNotificationEmail(contact, d)],
+    ["serviceNotificationEmail", (d) => serviceNotificationEmail({ ...contact, serviceName: "Nikah" }, d)],
+    ["eventNotificationEmail", (d) => eventNotificationEmail({ ...contact, eventName: "Open Day" }, d)],
+    ["subscribeNotificationEmail", (d) => subscribeNotificationEmail({ email: "sub@example.com" }, d)],
+  ];
+
+  it.each(notifications)("%s shows the request details when given", (_name, build) => {
+    const { html } = build(details);
+    expect(html).toContain("Request details");
+    expect(html).toContain(details.submissionId);
+    expect(html).toContain("203.0.113.7");
+  });
+
+  it.each(notifications)("%s has no request details when none are given", (_name, build) => {
+    expect(build().html).not.toContain("Request details");
+  });
+
+  it("lists the IP, raw x-forwarded-for, location, browser and Vercel request ID", () => {
+    const meta = makeRequestMeta({
+      ipHeaders: { xForwardedFor: "1.1.1.1, 203.0.113.7", xRealIp: "203.0.113.7", xVercelForwardedFor: "203.0.113.7" },
+    });
+    const { html } = contactNotificationEmail(contact, { submissionId: "sub-1", meta });
+
+    expect(html).toContain("IP address");
+    expect(html).toContain("1.1.1.1, 203.0.113.7");
+    expect(html).toContain("Newport, VIC 3015, AU");
+    expect(html).toContain("-37.8444, 144.8836");
+    expect(html).toContain("Australia/Melbourne");
+    expect(html).toContain("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)");
+    expect(html).toContain("en-AU,en;q=0.9");
+    expect(html).toContain("https://australianislamiccentre.org/contact");
+    expect(html).toContain("syd1::iad1::abcde-1759622400000-0123456789ab");
+    expect(html).toContain("t13d1516h2_8daaf6152771_02713d6af862");
+  });
+
+  it("shows the time received in Melbourne time and in UTC", () => {
+    const { html } = contactNotificationEmail(contact, details);
+    // 01:02 UTC on 5 Oct 2026 is 12:02 pm AEDT
+    expect(html).toContain("12:02 pm");
+    expect(html).toContain("2026-10-05T01:02:03.456Z");
+  });
+
+  it("escapes header values, which the sender controls", () => {
+    const meta = makeRequestMeta({
+      client: { ...makeRequestMeta().client, userAgent: '<img src=x onerror="alert(1)">' },
+    });
+    const { html } = contactNotificationEmail(contact, { submissionId: "sub-1", meta });
+
+    expect(html).not.toContain("<img src=x");
+    expect(html).toContain("&lt;img src=x onerror=&quot;alert(1)&quot;&gt;");
+  });
+
+  it("shows 'Not available' for anything the request didn't include", () => {
+    const { html } = contactNotificationEmail(contact, { submissionId: "sub-1", meta: makeEmptyRequestMeta() });
+
+    expect(html).toContain("unknown");
+    expect(html).toContain("Not available");
+    expect(html).not.toContain("null");
   });
 });

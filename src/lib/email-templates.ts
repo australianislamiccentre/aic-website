@@ -2,8 +2,10 @@
  * Email Template System
  *
  * Generates branded HTML emails for all form submissions. Two email types:
- * - **Admin notification** — Sent to AIC staff with form details (uses `adminLayout`).
+ * - **Admin notification** — Sent to AIC staff with form details (uses `adminLayout`),
+ *   followed by the "Request details" security block when the route passes one.
  * - **User confirmation** — Sent to the submitter acknowledging receipt (uses `confirmationLayout`).
+ *   Confirmations never take request details: the submitter must not see them.
  *
  * All user input is passed through `escapeHtml()` before interpolation
  * to prevent XSS in email clients.
@@ -12,6 +14,8 @@
  * @see src/app/api/contact/route.ts for usage example
  */
 import type { ContactFormData, ServiceInquiryFormData, EventInquiryFormData } from "./contact-validation";
+import type { RequestMeta } from "./request-meta";
+import { formatMelbourneDate, formatMelbourneTime } from "./time";
 
 // AIC Brand Colors
 const BLUE = "#01476b";
@@ -43,13 +47,63 @@ function messageBox(message: string): string {
   return `<div style="background:#f9fafb;border-radius:8px;padding:16px;border-left:4px solid ${GREEN_DARK}"><p style="margin:0 0 8px;color:#6b7280;font-size:13px;font-weight:600">Message</p><p style="margin:0;color:#111827;font-size:14px;white-space:pre-wrap;line-height:1.6">${escapeHtml(message)}</p></div>`;
 }
 
+/** The security record shown to staff under a submission. */
+export interface RequestDetails {
+  submissionId: string;
+  meta: RequestMeta;
+}
+
+/** Joins the parts that are present, or returns null when none are. */
+function joinPresent(parts: Array<string | null>, separator: string): string | null {
+  const present = parts.filter((part): part is string => Boolean(part));
+  return present.length > 0 ? present.join(separator) : null;
+}
+
+/**
+ * "Request details" block for staff notifications: who sent the submission, as
+ * far as the platform can tell. Every value comes from request headers the
+ * sender controls, so all of it is escaped. The full record is stored privately.
+ */
+function requestDetailsBlock({ submissionId, meta }: RequestDetails): string {
+  const received = new Date(meta.receivedAt);
+  const melbourne = `${formatMelbourneDate(received, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}, ${formatMelbourneTime(received)} Melbourne time`;
+  const { location, client, vercel } = meta;
+  const place = joinPresent(
+    [location.city, joinPresent([location.countryRegion, location.postalCode], " "), location.country],
+    ", ",
+  );
+  const coordinates = location.latitude && location.longitude ? `${location.latitude}, ${location.longitude}` : null;
+
+  const row = (label: string, value: string | null) => fieldRow(label, value ? escapeHtml(value) : "Not available");
+  const rows =
+    row("Submission ID", submissionId) +
+    row("Received", `${melbourne} (${meta.receivedAt} UTC)`) +
+    row("IP address", meta.ip) +
+    row("X-Forwarded-For (raw)", meta.ipHeaders.xForwardedFor) +
+    row("Location (approximate, from IP)", place) +
+    row("Coordinates", coordinates) +
+    row("IP timezone", location.timezone) +
+    row("Browser", client.userAgent) +
+    row("Language", client.language) +
+    row("Referrer", client.referer) +
+    row("Vercel request ID", vercel.requestId) +
+    row("TLS fingerprint (JA4)", vercel.ja4Digest);
+
+  return `<p style="margin:24px 0 8px;color:#6b7280;font-size:13px;font-weight:600">Request details</p>${detailsTable(rows)}<p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.5">For staff only. Location is based on the IP address and is approximate. The full record is stored privately under the submission ID.</p>`;
+}
+
+/** The request details block, or nothing when the route didn't pass any. */
+function optionalRequestDetails(details?: RequestDetails): string {
+  return details ? requestDetailsBlock(details) : "";
+}
+
 // --- Contact Form ---
 
-export function contactNotificationEmail(data: ContactFormData): { subject: string; html: string } {
+export function contactNotificationEmail(data: ContactFormData, details?: RequestDetails): { subject: string; html: string } {
   const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone ? escapeHtml(data.phone) : "Not provided") + fieldRow("Enquiry Type", `<strong>${escapeHtml(data.inquiryType)}</strong>`);
   return {
     subject: `New Contact Enquiry: ${data.inquiryType}`,
-    html: adminLayout(`Contact Form - ${escapeHtml(data.inquiryType)}`, `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new enquiry has been submitted via the website contact form.</p>${detailsTable(rows)}${messageBox(data.message)}`),
+    html: adminLayout(`Contact Form - ${escapeHtml(data.inquiryType)}`, `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new enquiry has been submitted via the website contact form.</p>${detailsTable(rows)}${messageBox(data.message)}${optionalRequestDetails(details)}`),
   };
 }
 
@@ -63,11 +117,11 @@ export function contactConfirmationEmail(data: ContactFormData): { subject: stri
 
 // --- Service Inquiry ---
 
-export function serviceNotificationEmail(data: ServiceInquiryFormData): { subject: string; html: string } {
+export function serviceNotificationEmail(data: ServiceInquiryFormData, details?: RequestDetails): { subject: string; html: string } {
   const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone ? escapeHtml(data.phone) : "Not provided") + fieldRow("Service", `<strong>${escapeHtml(data.serviceName)}</strong>`);
   return {
     subject: `Service Inquiry: ${data.serviceName}`,
-    html: adminLayout(`Service Inquiry - ${escapeHtml(data.serviceName)}`, `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new service inquiry has been submitted via the website.</p>${detailsTable(rows)}${messageBox(data.message)}`),
+    html: adminLayout(`Service Inquiry - ${escapeHtml(data.serviceName)}`, `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new service inquiry has been submitted via the website.</p>${detailsTable(rows)}${messageBox(data.message)}${optionalRequestDetails(details)}`),
   };
 }
 
@@ -81,11 +135,11 @@ export function serviceConfirmationEmail(data: ServiceInquiryFormData): { subjec
 
 // --- Event Inquiry ---
 
-export function eventNotificationEmail(data: EventInquiryFormData): { subject: string; html: string } {
+export function eventNotificationEmail(data: EventInquiryFormData, details?: RequestDetails): { subject: string; html: string } {
   const rows = fieldRow("Name", `${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}`) + fieldRow("Email", escapeHtml(data.email), true) + fieldRow("Phone", data.phone ? escapeHtml(data.phone) : "Not provided") + fieldRow("Event", `<strong>${escapeHtml(data.eventName)}</strong>`);
   return {
     subject: `Event Inquiry: ${data.eventName}`,
-    html: adminLayout(`Event Inquiry - ${escapeHtml(data.eventName)}`, `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new event inquiry has been submitted via the website.</p>${detailsTable(rows)}${messageBox(data.message)}`),
+    html: adminLayout(`Event Inquiry - ${escapeHtml(data.eventName)}`, `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new event inquiry has been submitted via the website.</p>${detailsTable(rows)}${messageBox(data.message)}${optionalRequestDetails(details)}`),
   };
 }
 
@@ -106,11 +160,11 @@ export interface SubscribeData {
   whatsapp?: boolean;
 }
 
-export function subscribeNotificationEmail(data: SubscribeData): { subject: string; html: string } {
+export function subscribeNotificationEmail(data: SubscribeData, details?: RequestDetails): { subject: string; html: string } {
   const rows = fieldRow("Email", escapeHtml(data.email), true) + (data.name ? fieldRow("Name", escapeHtml(data.name)) : "") + (data.phone ? fieldRow("Phone", escapeHtml(data.phone)) : "") + fieldRow("WhatsApp Group", data.whatsapp ? "Yes — wants to join" : "No");
   return {
     subject: `New Newsletter Subscriber: ${data.name || data.email}`,
-    html: adminLayout("New Newsletter Subscriber", `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new subscriber has signed up for the AIC newsletter.</p>${detailsTable(rows)}`),
+    html: adminLayout("New Newsletter Subscriber", `<p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.5">A new subscriber has signed up for the AIC newsletter.</p>${detailsTable(rows)}${optionalRequestDetails(details)}`),
   };
 }
 

@@ -7,12 +7,16 @@
  * 2. **User confirmation** — branded acknowledgement to the submitter.
  *
  * Security: Rate-limited (5 req/hr per IP), honeypot field, Sanity toggle.
+ * Every request is logged with its sender's request details, and every accepted
+ * submission is stored privately with them (see `lib/submission-record`). The
+ * details go to staff only — never into the response or the confirmation email.
  *
  * @route POST /api/contact
  * @module api/contact
  * @see src/lib/contact-validation.ts — validates the request body
  * @see src/lib/email-templates.ts    — generates branded HTML emails
  * @see src/lib/form-settings.ts      — Sanity-based form toggle & recipient lookup
+ * @see src/lib/submission-record.ts  — stored record, log line, Sentry context
  */
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email-delivery";
@@ -24,6 +28,13 @@ import {
   contactConfirmationEmail,
 } from "@/lib/email-templates";
 import { getFormRecipientEmail, isFormEnabled } from "@/lib/form-settings";
+import {
+  finishSubmission,
+  logSubmission,
+  reportSubmissionError,
+  startSubmission,
+  type SubmissionEmails,
+} from "@/lib/submission-record";
 
 /** Verified domain sender, falls back to Resend's testing sender during dev. */
 const FROM_EMAIL =
@@ -32,15 +43,18 @@ const FROM_EMAIL =
 /**
  * Processes a contact form submission.
  *
- * Pipeline: toggle check → rate limit → honeypot → validate → send emails.
+ * Pipeline: capture request details → toggle check → rate limit → honeypot →
+ * validate → send emails → store the record.
  *
  * @returns `{ success: true }` on success, `{ error: string }` with appropriate HTTP status on failure.
  */
 export async function POST(request: NextRequest) {
+  const submission = startSubmission("contact", request);
   try {
     // Check if form is enabled in Sanity (allows staff to disable without a deploy)
     const enabled = await isFormEnabled("contact");
     if (!enabled) {
+      logSubmission(submission, "disabled");
       return NextResponse.json(
         { error: "This form is currently disabled." },
         { status: 403 }
@@ -53,6 +67,7 @@ export async function POST(request: NextRequest) {
     const ip = getClientIp(request);
     const { allowed } = checkRateLimit(ip);
     if (!allowed) {
+      logSubmission(submission, "rate_limited");
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
         { status: 429 }
@@ -63,39 +78,51 @@ export async function POST(request: NextRequest) {
 
     // Honeypot: hidden field filled by bots — return fake success to avoid tipping them off
     if (body._gotcha) {
+      logSubmission(submission, "honeypot");
       return NextResponse.json({ success: true });
     }
 
     const result = validateContactForm(body);
     if (!result.valid) {
+      logSubmission(submission, "invalid");
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
     const { data } = result;
-    const toEmail = await getFormRecipientEmail("contact");
+    const emails: SubmissionEmails = { notification: null, confirmation: null };
+    let outcome: "accepted" | "error" = "error";
 
-    // Send notification to AIC staff
-    const notification = contactNotificationEmail(data);
-    await sendEmail({
-      from: `AIC Website <${FROM_EMAIL}>`,
-      to: toEmail,
-      replyTo: data.email,
-      subject: notification.subject,
-      html: notification.html,
-    });
+    try {
+      const toEmail = await getFormRecipientEmail("contact");
 
-    // Send confirmation to the submitter
-    const confirmation = contactConfirmationEmail(data);
-    await sendEmail({
-      from: `Australian Islamic Centre <${FROM_EMAIL}>`,
-      to: data.email,
-      subject: confirmation.subject,
-      html: confirmation.html,
-    });
+      // Send notification to AIC staff, with the request details
+      const notification = contactNotificationEmail(data, submission);
+      emails.notification = await sendEmail({
+        from: `AIC Website <${FROM_EMAIL}>`,
+        to: toEmail,
+        replyTo: data.email,
+        subject: notification.subject,
+        html: notification.html,
+      });
+
+      // Send confirmation to the submitter
+      const confirmation = contactConfirmationEmail(data);
+      emails.confirmation = await sendEmail({
+        from: `Australian Islamic Centre <${FROM_EMAIL}>`,
+        to: data.email,
+        subject: confirmation.subject,
+        html: confirmation.html,
+      });
+      outcome = "accepted";
+    } finally {
+      // Keep the record even if an email failed; storage problems never fail the request
+      await finishSubmission(submission, outcome, { fields: data, emails, messageLength: data.message.length });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[API] /api/contact POST error:", error);
+    reportSubmissionError(submission, error);
     return NextResponse.json(
       { error: "Failed to send message. Please try again." },
       { status: 500 }
