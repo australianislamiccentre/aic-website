@@ -122,6 +122,29 @@ describe("sendEmail", () => {
     );
   });
 
+  it("sends one email to several recipients in production", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    const toBoth = { ...email, to: ["taher@aic.example", "developer@aic.example"] };
+
+    await sendEmail(toBoth);
+
+    expect(sendMock).toHaveBeenCalledWith(toBoth);
+  });
+
+  it("names every intended recipient when redirecting to the test inbox", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("EMAIL_TEST_RECIPIENT", "tester@aic.example");
+
+    await sendEmail({ ...email, to: ["taher@aic.example", "developer@aic.example"] });
+
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "tester@aic.example",
+        subject: "[TEST → taher@aic.example, developer@aic.example] New Contact Enquiry: General",
+      }),
+    );
+  });
+
   it("returns Resend's email ID once sent, so the submission record can point to the email", async () => {
     vi.stubEnv("VERCEL_ENV", "production");
 

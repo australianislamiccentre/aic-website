@@ -6,14 +6,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 import { VERCEL_REQUEST_HEADERS } from "@/test/request-meta-fixtures";
 
-const { putMock, captureExceptionMock, setContextMock, setTagMock } = vi.hoisted(() => ({
+const { putMock, getMock, captureExceptionMock, setContextMock, setTagMock } = vi.hoisted(() => ({
   putMock: vi.fn(),
+  getMock: vi.fn(),
   captureExceptionMock: vi.fn(),
   setContextMock: vi.fn(),
   setTagMock: vi.fn(),
 }));
 
-vi.mock("@vercel/blob", () => ({ put: putMock }));
+vi.mock("@vercel/blob", () => ({ put: putMock, get: getMock }));
 vi.mock("@sentry/nextjs", () => ({
   captureException: captureExceptionMock,
   setContext: setContextMock,
@@ -23,10 +24,12 @@ vi.mock("@sentry/nextjs", () => ({
 import {
   finishSubmission,
   logSubmission,
+  readSubmissionRecord,
   reportSubmissionError,
   startSubmission,
   storeSubmission,
 } from "./submission-record";
+import { verifyRecordPath } from "./submission-link";
 
 function makeRequest(): NextRequest {
   return new NextRequest("https://australianislamiccentre.org/api/contact", {
@@ -48,14 +51,27 @@ function loggedLines(info: ReturnType<typeof vi.spyOn>): Array<Record<string, un
   return info.mock.calls.map((call: unknown[]) => JSON.parse(String(call[0])));
 }
 
+/** A Blob `get()` result whose body is `text`. */
+function blobResult(text: string) {
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(text));
+      controller.close();
+    },
+  });
+  return { statusCode: 200, stream, headers: new Headers(), blob: {} };
+}
+
 beforeEach(() => {
   putMock.mockReset().mockResolvedValue({ pathname: "stored.json" });
+  getMock.mockReset();
   captureExceptionMock.mockReset();
   setContextMock.mockReset();
   setTagMock.mockReset();
   vi.stubEnv("VERCEL_ENV", "production");
   vi.stubEnv("BLOB_STORE_ID", "store_abc123");
   vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+  vi.stubEnv("SUBMISSION_LINK_SECRET", "test-secret-0123456789");
 });
 
 afterEach(() => {
@@ -73,6 +89,22 @@ describe("startSubmission", () => {
     expect(first.form).toBe("contact");
     expect(first.meta.ip).toBe("203.0.113.7");
     expect(first.meta.location.city).toBe("Newport");
+  });
+
+  it("gives the submission a signed Request details link to the record it will be stored as", async () => {
+    const submission = startSubmission("contact", makeRequest());
+    await storeSubmission(submission, fields, {});
+
+    const link = new URL(submission.detailsUrl!);
+    expect(link.origin).toBe("https://australianislamiccentre.org");
+    expect(link.pathname).toBe("/submission-details");
+    expect(link.searchParams.get("record")).toBe(putMock.mock.calls[0][0]);
+    expect(verifyRecordPath(link.searchParams.get("record"), link.searchParams.get("sig"))).toBe(true);
+  });
+
+  it("has no Request details link when links can't be signed", () => {
+    vi.stubEnv("SUBMISSION_LINK_SECRET", "");
+    expect(startSubmission("contact", makeRequest()).detailsUrl).toBeNull();
   });
 
   it("attaches the security record to Sentry, tagged with the form and submission ID", () => {
@@ -290,5 +322,22 @@ describe("reportSubmissionError", () => {
       expect.objectContaining({ tags: { form: "subscribe", submission_id: submission.submissionId } }),
     );
     expect(loggedLines(info)[0]).toEqual(expect.objectContaining({ outcome: "error" }));
+  });
+});
+
+describe("readSubmissionRecord", () => {
+  const PATH = "production/contact/2026-10-05/2026-10-05T07-11-01-490Z_1c21ff89-a427-436f-95e5-185e8c607e6c.json";
+
+  it("reads a stored record from the private store", async () => {
+    const record = { submissionId: "1c21ff89-a427-436f-95e5-185e8c607e6c", form: "contact", fields };
+    getMock.mockResolvedValue(blobResult(JSON.stringify(record)));
+
+    await expect(readSubmissionRecord(PATH)).resolves.toEqual(record);
+    expect(getMock).toHaveBeenCalledWith(PATH, { access: "private" });
+  });
+
+  it("returns null when there is no record at that path", async () => {
+    getMock.mockResolvedValue(null);
+    await expect(readSubmissionRecord(PATH)).resolves.toBeNull();
   });
 });

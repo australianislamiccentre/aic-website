@@ -16,6 +16,10 @@
  * `{environment}/{form}/{UTC date}/{UTC time}_{submissionId}.json`, so preview
  * test submissions never mix with production records.
  *
+ * Staff notification emails don't show the request details; they carry a
+ * signed "Request details" link (`detailsUrl`, see `lib/submission-link`) that
+ * emails the stored record to a fixed list of people.
+ *
  * Nothing here is ever returned to the submitter.
  *
  * Reading records: `vercel blob list --prefix production/contact/` then
@@ -28,9 +32,10 @@
  */
 import { randomUUID } from "node:crypto";
 import type { NextRequest } from "next/server";
-import { put } from "@vercel/blob";
+import { get, put } from "@vercel/blob";
 import * as Sentry from "@sentry/nextjs";
 import { captureRequestMeta, type RequestMeta } from "@/lib/request-meta";
+import { submissionDetailsUrl } from "@/lib/submission-link";
 
 /** The site's form endpoints, named after their API routes. */
 export type FormName = "contact" | "event-inquiry" | "service-inquiry" | "subscribe";
@@ -53,10 +58,34 @@ export interface Submission {
   submissionId: string;
   form: FormName;
   meta: RequestMeta;
+  /** Signed "Request details" link to the record this submission is stored as; null when links can't be signed. */
+  detailsUrl: string | null;
+}
+
+/** The private record stored for an accepted submission. */
+export interface SubmissionRecord {
+  submissionId: string;
+  form: FormName;
+  environment: string;
+  fields: Record<string, unknown>;
+  security: RequestMeta;
+  emails: SubmissionEmails;
 }
 
 /** Submissions that already have their log line — one line per request. */
 const logged = new WeakSet<Submission>();
+
+/** `production`, `preview`, or `development` (local). */
+function environment(): string {
+  return process.env.VERCEL_ENV || "development";
+}
+
+/** Where a record is filed: `{environment}/{form}/{UTC date}/{UTC time}_{submissionId}.json`. */
+function recordPath({ submissionId, form, meta }: Pick<Submission, "submissionId" | "form" | "meta">): string {
+  const date = meta.receivedAt.slice(0, 10);
+  const time = meta.receivedAt.replace(/[:.]/g, "-");
+  return `${environment()}/${form}/${date}/${time}_${submissionId}.json`;
+}
 
 /** The security record as flat Sentry context (nested objects render poorly there). */
 function sentryContext({ submissionId, form, meta }: Submission): Record<string, string | null> {
@@ -87,10 +116,10 @@ function sentryScope(submission: Submission) {
  * Call it first thing in a form route, before any check that can reject.
  */
 export function startSubmission(form: FormName, request: NextRequest): Submission {
+  const started = { submissionId: randomUUID(), form, meta: captureRequestMeta(request) };
   const submission: Submission = {
-    submissionId: randomUUID(),
-    form,
-    meta: captureRequestMeta(request),
+    ...started,
+    detailsUrl: submissionDetailsUrl(request.nextUrl.origin, recordPath(started)),
   };
 
   Sentry.setTag("form", form);
@@ -98,18 +127,6 @@ export function startSubmission(form: FormName, request: NextRequest): Submissio
   Sentry.setContext("form_submission", sentryContext(submission));
 
   return submission;
-}
-
-/** `production`, `preview`, or `development` (local). */
-function environment(): string {
-  return process.env.VERCEL_ENV || "development";
-}
-
-/** Where a record is filed: `{environment}/{form}/{UTC date}/{UTC time}_{submissionId}.json`. */
-function recordPath({ submissionId, form, meta }: Submission): string {
-  const date = meta.receivedAt.slice(0, 10);
-  const time = meta.receivedAt.replace(/[:.]/g, "-");
-  return `${environment()}/${form}/${date}/${time}_${submissionId}.json`;
 }
 
 /**
@@ -138,11 +155,11 @@ export async function storeSubmission(
     return false;
   }
 
-  const record = {
+  const record: SubmissionRecord = {
     submissionId: submission.submissionId,
     form: submission.form,
     environment: environment(),
-    fields,
+    fields: { ...fields },
     security: submission.meta,
     emails,
   };
@@ -211,4 +228,15 @@ export async function finishSubmission(
 export function reportSubmissionError(submission: Submission, error: unknown): void {
   Sentry.captureException(error, sentryScope(submission));
   logSubmission(submission, "error");
+}
+
+/**
+ * Reads a stored record from the private store.
+ *
+ * @returns The record, or null when there's none at that path.
+ */
+export async function readSubmissionRecord(pathname: string): Promise<SubmissionRecord | null> {
+  const result = await get(pathname, { access: "private" });
+  if (!result || result.statusCode !== 200) return null;
+  return JSON.parse(await new Response(result.stream).text()) as SubmissionRecord;
 }

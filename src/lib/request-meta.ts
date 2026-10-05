@@ -2,8 +2,8 @@
  * Request Metadata — the Security Record for Form Submissions
  *
  * Captures who sent a request, as far as the platform can tell, so every form
- * submission leaves a durable trail (stored record, staff email, log line,
- * Sentry context). Built after a threatening contact-form message arrived and
+ * submission leaves a durable trail (stored record, log line, Sentry context,
+ * and the details email IT can request from the staff notification). Built after a threatening contact-form message arrived and
  * the site had recorded nothing about its sender.
  *
  * Sources, per Vercel's request-header docs:
@@ -23,7 +23,8 @@
  * headers can only come from the client. They are never read.
  *
  * Never send any of this back to the submitter (API responses, confirmation
- * emails): it is for staff and authorities only.
+ * emails), and keep it out of routine staff emails: it is for IT and
+ * authorities only.
  *
  * @module lib/request-meta
  * @see https://vercel.com/docs/headers/request-headers

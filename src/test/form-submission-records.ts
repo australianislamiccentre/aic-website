@@ -1,7 +1,7 @@
 /**
  * Shared tests for the security trail every form route must leave: the private
- * stored record, the "Request details" block in the staff email, the log line,
- * and Sentry reporting. Each form route's test file runs these against its own
+ * stored record, the reference + "Request details" link in the staff email,
+ * the log line, and Sentry reporting. Each form route's test file runs these against its own
  * route, so a new form can't skip any of it.
  *
  * The calling file must mock `@vercel/blob` (`put`), `@sentry/nextjs`
@@ -11,6 +11,7 @@
 import { describe, it, expect, beforeEach, vi, type Mock, type MockInstance } from "vitest";
 import { NextRequest } from "next/server";
 import type { FormName } from "@/lib/submission-record";
+import { verifyRecordPath } from "@/lib/submission-link";
 import { VERCEL_REQUEST_HEADERS } from "./request-meta-fixtures";
 
 interface SubmissionRecordTestOptions {
@@ -42,6 +43,7 @@ export function describeSubmissionRecords(options: SubmissionRecordTestOptions):
     beforeEach(() => {
       vi.stubEnv("VERCEL_ENV", "production");
       vi.stubEnv("BLOB_STORE_ID", "store_abc123");
+      vi.stubEnv("SUBMISSION_LINK_SECRET", "test-secret-0123456789");
       putMock.mockReset().mockResolvedValue({ pathname: "record.json" });
       captureExceptionMock.mockReset();
       sendMock
@@ -106,20 +108,33 @@ export function describeSubmissionRecords(options: SubmissionRecordTestOptions):
       expect(await res.json()).toEqual({ success: true });
     });
 
-    it("adds the request details to the staff notification only", async () => {
+    it("ends the staff notification with the reference and a signed Request details link to the stored record", async () => {
       await submit(validBody);
 
-      const [notification, confirmation] = sendMock.mock.calls.map(([sent]) => sent);
-      expect(notification.html).toContain("Request details");
-      expect(notification.html).toContain("203.0.113.7");
-      expect(notification.html).toContain(storedRecord().submissionId);
+      const [notification] = sendMock.mock.calls.map(([sent]) => sent);
+      const [pathname] = putMock.mock.calls[0];
+      expect(notification.html).toContain(`Ref ${storedRecord().submissionId}`);
+      const href = notification.html.match(/href="([^"]+)"[^>]*>Request details<\/a>/)?.[1];
+      const link = new URL(href!.replace(/&amp;/g, "&"));
+      expect(link.origin).toBe("https://australianislamiccentre.org");
+      expect(link.searchParams.get("record")).toBe(pathname);
+      expect(verifyRecordPath(link.searchParams.get("record"), link.searchParams.get("sig"))).toBe(true);
+    });
+
+    it("keeps the sender's IP and browser out of every email", async () => {
+      await submit(validBody);
+
+      const sent = sendMock.mock.calls.map(([email]) => email);
+      expect(sent).toHaveLength(options.sendsConfirmation ? 2 : 1);
+      for (const email of sent) {
+        expect(email.html).not.toContain("203.0.113.7");
+        expect(email.html).not.toContain(VERCEL_REQUEST_HEADERS["user-agent"]);
+        expect(email.html).not.toContain(VERCEL_REQUEST_HEADERS["x-vercel-id"]);
+      }
       if (options.sendsConfirmation) {
+        const confirmation = sent[1];
         expect(confirmation.html).not.toContain("Request details");
-        expect(confirmation.html).not.toContain("203.0.113.7");
-        expect(confirmation.html).not.toContain(VERCEL_REQUEST_HEADERS["x-vercel-id"]);
         expect(confirmation.html).not.toContain(storedRecord().submissionId);
-      } else {
-        expect(confirmation).toBeUndefined();
       }
     });
 

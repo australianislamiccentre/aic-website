@@ -22,7 +22,7 @@ import { getResendClient } from "@/lib/resend";
 /** An email built by a form route. */
 export interface OutgoingEmail {
   from: string;
-  to: string;
+  to: string | string[];
   replyTo?: string;
   subject: string;
   html: string;
@@ -63,7 +63,8 @@ export async function sendEmail(email: OutgoingEmail): Promise<string | null> {
       );
       return null;
     }
-    delivery = { ...email, to: testInbox, subject: `[TEST → ${email.to}] ${email.subject}` };
+    const intended = [email.to].flat().join(", ");
+    delivery = { ...email, to: testInbox, subject: `[TEST → ${intended}] ${email.subject}` };
   }
 
   // Resend reports API failures in the response rather than throwing
